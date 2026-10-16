@@ -4,7 +4,7 @@ use cpal::{
     FromSample, Sample,
     traits::{DeviceTrait, HostTrait, StreamTrait},
 };
-use crossbeam_channel::Sender;
+use crossbeam_channel::{Receiver, Sender, TrySendError};
 use dictation_core::audio::{AudioError, AudioFormat, AudioProcessor, MAX_SECONDS};
 use rtrb::{Consumer, Producer, RingBuffer};
 use std::sync::{
@@ -40,6 +40,8 @@ pub enum CaptureError {
     Native(String),
     #[error("Audio controller disconnected")]
     ControllerGone,
+    #[error("Audio event capacity exceeded")]
+    EventOverflow,
     #[error("Audio worker could not be started or joined")]
     Worker,
 }
@@ -223,19 +225,27 @@ pub enum CaptureEvent {
     },
 }
 
+fn send_event(events: &Sender<CaptureEvent>, event: CaptureEvent) -> Result<(), CaptureError> {
+    events.try_send(event).map_err(|error| match error {
+        TrySendError::Full(_) => CaptureError::EventOverflow,
+        TrySendError::Disconnected(_) => CaptureError::ControllerGone,
+    })
+}
+
 /// Stream construction, DSP and destruction stay on this owner thread.
 /// Requesting stop never blocks the controller or the GUI.
 pub struct CaptureHandle {
     stop: Arc<AtomicBool>,
-    worker: JoinHandle<Result<(), CaptureError>>,
+    worker: Option<JoinHandle<Result<(), CaptureError>>>,
+    events: Receiver<CaptureEvent>,
 }
 
 impl CaptureHandle {
-    pub fn start(
-        session: u64,
-        device_name: Option<String>,
-        events: Sender<CaptureEvent>,
-    ) -> Result<Self, CaptureError> {
+    pub fn start(session: u64, device_name: Option<String>) -> Result<Self, CaptureError> {
+        // Exactly one Started, at most one Warning, exactly one Finished.
+        // This reserved channel holds the complete lifecycle even if the
+        // controller has not read any event yet; progress cannot occupy it.
+        let (events, incoming) = crossbeam_channel::bounded(3);
         let stop = Arc::new(AtomicBool::new(false));
         let requested = Arc::clone(&stop);
         let worker = thread::Builder::new()
@@ -249,25 +259,47 @@ impl CaptureHandle {
                     &requested,
                     &mut maximum,
                 );
-                events
-                    .send(CaptureEvent::Finished {
+                send_event(
+                    &events,
+                    CaptureEvent::Finished {
                         session,
                         result,
                         maximum,
-                    })
-                    .map_err(|_| CaptureError::ControllerGone)
+                    },
+                )
             })
             .map_err(|_| CaptureError::Worker)?;
-        Ok(Self { stop, worker })
+        Ok(Self {
+            stop,
+            worker: Some(worker),
+            events: incoming,
+        })
     }
 
     pub fn request_stop(&self) {
         self.stop.store(true, Ordering::Release);
     }
 
+    pub fn next_event(&self) -> Option<CaptureEvent> {
+        // Disconnection has no additional event; join retains worker errors.
+        self.events.try_recv().ok()
+    }
+
+    /// If finished without a terminal event, join exposes the worker error.
+    pub fn is_finished(&self) -> bool {
+        self.worker.as_ref().is_none_or(JoinHandle::is_finished)
+    }
+
     /// Join outside the GUI, after Finished or during controlled shutdown.
-    pub fn join(self) -> Result<(), CaptureError> {
-        self.worker.join().map_err(|_| CaptureError::Worker)?
+    pub fn join(mut self) -> Result<(), CaptureError> {
+        let worker = self.worker.take().ok_or(CaptureError::Worker)?;
+        worker.join().map_err(|_| CaptureError::Worker)?
+    }
+}
+
+impl Drop for CaptureHandle {
+    fn drop(&mut self) {
+        self.request_stop();
     }
 }
 
@@ -384,26 +416,24 @@ fn record(
     };
     stream.play()?;
     let started = Instant::now();
-    if events
-        .send(CaptureEvent::Started {
+    if let Err(error) = send_event(
+        events,
+        CaptureEvent::Started {
             session,
             format,
             started,
-        })
-        .is_err()
-    {
+        },
+    ) {
         reader.close();
         drop(stream);
-        return Err(CaptureError::ControllerGone);
+        return Err(error);
     }
     let mut warned = false;
     let processing = (|| -> Result<(), CaptureError> {
         loop {
             let elapsed = started.elapsed();
             if !warned && elapsed >= Duration::from_secs((MAX_SECONDS - 30) as u64) {
-                events
-                    .send(CaptureEvent::MaximumWarning { session })
-                    .map_err(|_| CaptureError::ControllerGone)?;
+                send_event(events, CaptureEvent::MaximumWarning { session })?;
                 warned = true;
             }
             if elapsed >= Duration::from_secs(MAX_SECONDS as u64) || reader.maximum_reached() {
@@ -440,6 +470,48 @@ fn record(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_saturated_event_consumer_cannot_block_the_microphone_owner()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (sender, _receiver) = crossbeam_channel::bounded(1);
+        send_event(&sender, CaptureEvent::MaximumWarning { session: 1 })?;
+        let started = Instant::now();
+        assert!(matches!(
+            send_event(&sender, CaptureEvent::MaximumWarning { session: 1 }),
+            Err(CaptureError::EventOverflow)
+        ));
+        assert!(started.elapsed() < Duration::from_millis(100));
+        Ok(())
+    }
+
+    #[test]
+    fn dropping_a_capture_handle_requests_stop_without_waiting_for_its_worker()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let stop = Arc::new(AtomicBool::new(false));
+        let observed = Arc::clone(&stop);
+        let (finished, done) = crossbeam_channel::bounded(1);
+        let worker = thread::spawn(move || {
+            let deadline = Instant::now() + Duration::from_secs(2);
+            while !observed.load(Ordering::Acquire) && Instant::now() < deadline {
+                thread::sleep(Duration::from_millis(1));
+            }
+            finished
+                .send(observed.load(Ordering::Acquire))
+                .map_err(|_| CaptureError::ControllerGone)
+        });
+        let (_events, incoming) = crossbeam_channel::bounded(3);
+        let handle = CaptureHandle {
+            stop,
+            worker: Some(worker),
+            events: incoming,
+        };
+        let started = Instant::now();
+        drop(handle);
+        assert!(started.elapsed() < Duration::from_millis(100));
+        assert!(done.recv_timeout(Duration::from_millis(500))?);
+        Ok(())
+    }
 
     #[test]
     fn automatic_sample_limit_closes_on_a_whole_frame_without_overflow()
