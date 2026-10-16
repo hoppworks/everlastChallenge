@@ -8,6 +8,8 @@ publish.workspace = true
 [dependencies]
 serde.workspace = true
 thiserror.workspace = true
+rubato = "=0.16.2"
+ts-rs = { version = "=11.1.0", features = ["serde-compat"] }
 
 [lints]
 workspace = true

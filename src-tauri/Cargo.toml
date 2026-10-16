@@ -15,6 +15,13 @@ macos-integration = { path = "../crates/macos-integration", version = "=0.1.0" }
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
+cpal = "=0.15.3"
+whisper-rs = { version = "=0.16.0", features = ["metal"] }
+rtrb = "=0.3.5"
+crossbeam-channel = "=0.5.17"
+reqwest = { version = "=0.12.28", default-features = false, features = ["rustls-tls", "blocking"] }
+sha2 = "=0.10.9"
+tauri-plugin-global-shortcut = "=2.4.1"
 
 [lints]
 workspace = true

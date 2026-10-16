@@ -74,6 +74,22 @@ for (const [name, source, valid] of [
   command("cargo", lintArgs, valid);
   console.log(`Proved Rust rule: ${name}`);
 }
+fs.writeFileSync(`${directory}/src/lib.rs`, "pub fn valid() {}");
+fs.writeFileSync(
+  `${directory}/build.rs`,
+  "#![forbid(unsafe_code)]\nfn main() {}",
+);
+command("cargo", lintArgs, true);
+fs.writeFileSync(
+  `${directory}/build.rs`,
+  "#![forbid(unsafe_code)]\nunsafe fn invalid() {}\nfn main() {}",
+);
+command("cargo", lintArgs, false);
+fs.writeFileSync(
+  `${directory}/build.rs`,
+  "#![forbid(unsafe_code)]\nfn main() {}",
+);
+console.log("Proved host build-script unsafe rejection");
 
 const typescriptFixtures = [
   ["valid", 'export const name: string = "valid";', true],
@@ -83,13 +99,7 @@ for (const [name, source, valid] of typescriptFixtures) {
   fs.writeFileSync(`${directory}/sample.ts`, source);
   command(
     "node_modules/.bin/tsc",
-    [
-      "--strict",
-      "--noEmit",
-      "--skipLibCheck",
-      "--ignoreConfig",
-      `${directory}/sample.ts`,
-    ],
+    ["--strict", "--noEmit", "--skipLibCheck", `${directory}/sample.ts`],
     valid,
   );
   console.log(`Proved TypeScript rule: ${name}`);

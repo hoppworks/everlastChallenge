@@ -1,15 +1,48 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
 
 export function inspectSource(file, source) {
   const errors = [];
-  if (
-    file.startsWith("src/") &&
-    !file.startsWith("src/ipc/") &&
-    /['"]@tauri-apps\//u.test(source)
-  ) {
-    errors.push(`${file}: native imports must stay at the IPC boundary`);
+  if (file.startsWith("src/") && !file.startsWith("src/ipc/")) {
+    const tree = ts.createSourceFile(
+      file,
+      source,
+      ts.ScriptTarget.Latest,
+      true,
+      file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    );
+    const checkModule = (node) => {
+      if (
+        !node ||
+        !ts.isStringLiteralLike(node) ||
+        node.text.startsWith("@tauri-apps/")
+      ) {
+        errors.push(
+          `${file}: native or computed imports must stay at the IPC boundary`,
+        );
+      }
+    };
+    const visit = (node) => {
+      if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+        if (node.moduleSpecifier) checkModule(node.moduleSpecifier);
+      } else if (
+        ts.isCallExpression(node) &&
+        (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+          (ts.isIdentifier(node.expression) &&
+            node.expression.text === "require"))
+      ) {
+        checkModule(node.arguments[0]);
+      } else if (
+        ts.isImportEqualsDeclaration(node) &&
+        ts.isExternalModuleReference(node.moduleReference)
+      ) {
+        checkModule(node.moduleReference.expression);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(tree);
   }
   if (
     file.endsWith(".rs") &&
@@ -44,19 +77,23 @@ export function inspectSource(file, source) {
   return errors;
 }
 
-function filesIn(directory) {
-  if (!fs.existsSync(directory)) return [];
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const file = path.posix.join(directory, entry.name);
-    return entry.isDirectory() ? filesIn(file) : [file];
-  });
+function filesIn(directory, root) {
+  if (!fs.existsSync(path.join(root, directory))) return [];
+  return fs
+    .readdirSync(path.join(root, directory), { withFileTypes: true })
+    .flatMap((entry) => {
+      const file = path.posix.join(directory, entry.name);
+      return entry.isDirectory() ? filesIn(file, root) : [file];
+    });
 }
 
-export function inspectProject() {
-  return ["src", "src-tauri/src", "crates"]
-    .flatMap(filesIn)
+export function inspectProject(root = ".") {
+  return ["src", "src-tauri", "crates"]
+    .flatMap((directory) => filesIn(directory, root))
     .filter((file) => /\.(?:rs|tsx?|mjs)$/u.test(file))
-    .flatMap((file) => inspectSource(file, fs.readFileSync(file, "utf8")));
+    .flatMap((file) =>
+      inspectSource(file, fs.readFileSync(path.join(root, file), "utf8")),
+    );
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
