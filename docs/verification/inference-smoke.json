@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-17",
+  "kind": "developer fixture smoke; not P05/P06 acceptance",
+  "hardware": {"chip":"Apple M5","memory_bytes":34359738368,"os":"macOS 27.0.1 (26A434)"},
+  "profile": "debug",
+  "backend_requested": "Metal; execution backend not separately profiled",
+  "environment": "local executable with GPU access outside the agent execution sandbox",
+  "model": {"file":"ggml-large-v3-turbo-q5_0.bin","bytes":574041195,"sha256":"394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"},
+  "fixture": {"file":"tests/fixtures/jfk.wav","sha256":"59dfb9a4acb36fe2a2affc14bacbee2920ff435cb13cc314a08c13f66ba7860e","frames":176000,"sample_rate":16000,"channels":1},
+  "parameters": {"language":"en","translate":false,"threads":4,"greedy_best_of":1,"flash_attention":false,"no_context":true,"no_speech_threshold":0.6,"log_probability_threshold":-1.0,"entropy_threshold":2.4,"suppress_non_speech_tokens":true},
+  "model_load_including_hash_seconds": 18.673995333,
+  "runs": [{"fresh_state":true,"phrase_recognized":true,"text_bytes":108,"seconds":1.271392084},{"fresh_state":true,"phrase_recognized":true,"text_bytes":108,"seconds":0.974953083}],
+  "limits": ["No actual microphone or paste", "No frozen acceptance corpus or WER", "No real-time input pacing", "No release-performance claim", "Sandboxed Metal allocation crashed; identical minimal probe outside sandbox loaded successfully"]
+}
