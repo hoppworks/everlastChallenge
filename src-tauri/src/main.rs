@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 
+pub mod audio;
 pub mod control;
 
 fn main() {

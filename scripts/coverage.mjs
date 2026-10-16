@@ -27,12 +27,12 @@ export function measureRust({ manifest, directory, sourceRoot }) {
   fs.mkdirSync(output, { recursive: true });
   const environment = {
     ...process.env,
-    RUSTFLAGS: "-C instrument-coverage",
+    RUSTFLAGS: "-C instrument-coverage -C link-dead-code",
     LLVM_PROFILE_FILE: `${output}/run-%p-%m.profraw`,
   };
   const messages = run(
     "cargo",
-    ["test", "--manifest-path", manifest, "--lib", "--message-format=json"],
+    ["test", "--manifest-path", manifest, "--tests", "--message-format=json"],
     { env: environment },
   );
   const objects = messages
@@ -65,6 +65,7 @@ export function measureRust({ manifest, directory, sourceRoot }) {
     run("xcrun", [
       "llvm-cov",
       "export",
+      "--summary-only",
       objects[0],
       ...objects.slice(1).flatMap((object) => ["-object", object]),
       `-instr-profile=${merged}`,
