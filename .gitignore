@@ -1,0 +1,9 @@
+/node_modules/
+/target/
+/dist/
+/coverage/
+/src-tauri/gen/
+/.DS_Store
+*.part
+/artifacts/
+/tests/guardrails/.generated/

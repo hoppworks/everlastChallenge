@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "vitest", "import"],
+  "categories": { "correctness": "error" },
+  "rules": {
+    "typescript/ban-ts-comment": "error",
+    "vitest/no-disabled-tests": "error"
+  },
+  "ignorePatterns": ["dist", "coverage", "src-tauri/gen", "tests/guardrails"]
+}

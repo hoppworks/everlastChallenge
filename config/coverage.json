@@ -1,0 +1,15 @@
+{
+  "coreLineMinimum": 90,
+  "frontendMinimum": {
+    "statements": 80,
+    "branches": 80,
+    "functions": 80,
+    "lines": 80
+  },
+  "exclusions": [
+    {
+      "path": "src/main.tsx",
+      "reason": "React root mounting only; component behavior must be covered separately."
+    }
+  ]
+}

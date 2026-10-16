@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Generated dependencies, binaries and isolated rule fixtures; never application source."
+paths = ['''(^|/)(node_modules|target|dist|coverage|\.git)/''', '''tests/guardrails/\.generated/''', '''src-tauri/gen/''']

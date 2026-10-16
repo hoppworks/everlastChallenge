@@ -1,0 +1,41 @@
+{
+  "name": "everlast-dictation",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "setup": "npm ci && cargo fetch --locked",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "format": "cargo fmt --all && prettier --write src scripts config *.json *.ts index.html",
+    "check": "cargo fmt --all -- --check && cargo clippy --workspace --all-targets --locked -- -D warnings && tsc --noEmit && oxlint --deny-warnings --report-unused-disable-directives-severity error src scripts vite.config.ts vitest.config.ts && node scripts/guardrails.mjs",
+    "test": "cargo test --workspace --locked && vitest run --passWithNoTests && node --test scripts/*.test.mjs",
+    "verify": "npm run check && npm run test && npm run coverage && npm run test:guardrails && node scripts/secrets.mjs && cargo deny check && npm audit --audit-level=high",
+    "test:guardrails": "node scripts/prove-guardrails.mjs",
+    "coverage": "node scripts/coverage.mjs",
+    "tauri": "tauri",
+    "release": "MACOSX_DEPLOYMENT_TARGET=27.0 tauri build --target aarch64-apple-darwin"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.12.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "@vitest/coverage-v8": "5.0.5",
+    "@testing-library/react": "16.3.3",
+    "jsdom": "30.1.3",
+    "oxlint": "1.88.0",
+    "prettier": "3.8.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.4",
+    "vitest": "5.0.5"
+  }
+}

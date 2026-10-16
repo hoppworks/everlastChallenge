@@ -1,0 +1,20 @@
+[package]
+name = "everlast-dictation"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[build-dependencies]
+tauri-build = { version = "=2.7.3", features = [] }
+
+[dependencies]
+tauri = { version = "=2.12.4", features = ["tray-icon", "image-png"] }
+dictation-core = { path = "../crates/dictation-core", version = "=0.1.0" }
+macos-integration = { path = "../crates/macos-integration", version = "=0.1.0" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true
