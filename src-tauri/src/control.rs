@@ -43,6 +43,8 @@ pub struct ControlRx<T> {
     requests: Receiver<T>,
     wake: Receiver<()>,
     priority: Arc<Priority>,
+    #[cfg(test)]
+    before_wait: Option<Box<dyn Fn() + Send>>,
 }
 
 /// Capacity has a minimum of one; wakeups occupy a separate single slot.
@@ -63,6 +65,8 @@ pub fn mailbox<T>(capacity: usize) -> (ControlTx<T>, ControlRx<T>) {
             requests: incoming,
             wake: awakened,
             priority,
+            #[cfg(test)]
+            before_wait: None,
         },
     )
 }
@@ -135,6 +139,11 @@ impl<T> ControlRx<T> {
         if let Some(control) = self.poll() {
             return Some(control);
         }
+        // Test-only rendezvous after the initial poll: production has no hook.
+        #[cfg(test)]
+        if let Some(before_wait) = &self.before_wait {
+            before_wait();
+        }
         match self.wake.recv_timeout(timeout) {
             Ok(())
             | Err(crossbeam_channel::RecvTimeoutError::Timeout)
@@ -181,12 +190,21 @@ mod tests {
 
     #[test]
     fn priority_wakes_a_waiting_receiver() -> Result<(), Box<dyn std::error::Error>> {
-        let (tx, rx) = mailbox::<()>(1);
-        let worker = std::thread::spawn(move || rx.wait(Duration::from_secs(1)));
+        let (tx, mut rx) = mailbox::<()>(1);
+        let (waiting, ready) = crossbeam_channel::bounded(0);
+        rx.before_wait = Some(Box::new(move || assert!(waiting.send(()).is_ok())));
+        let worker = std::thread::spawn(move || {
+            let started = std::time::Instant::now();
+            let control = rx.wait(Duration::from_secs(5));
+            (control, started.elapsed())
+        });
+        ready.recv_timeout(Duration::from_secs(1))?;
         tx.stop(1)?;
-        assert_eq!(
-            worker.join().map_err(|_| "test worker panicked")?,
-            Some(Control::Stop(1))
+        let (control, elapsed) = worker.join().map_err(|_| "test worker panicked")?;
+        assert_eq!(control, Some(Control::Stop(1)));
+        assert!(
+            elapsed < Duration::from_secs(1),
+            "priority was only noticed after waiting: {elapsed:?}"
         );
         Ok(())
     }
