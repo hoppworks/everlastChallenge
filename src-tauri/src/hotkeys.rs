@@ -109,6 +109,7 @@ pub struct Hotkeys {
     registry: Box<dyn Registry>,
     dispatch: Dispatch,
     toggle: Option<Binding>,
+    configuration: Hotkey,
     cancel: Option<Binding>,
     orphan: Option<Binding>,
     errors: Arc<Mutex<Option<String>>>,
@@ -179,6 +180,7 @@ impl Hotkeys {
             registry,
             dispatch,
             toggle: None,
+            configuration: key.clone(),
             cancel: None,
             orphan: None,
             errors,
@@ -214,6 +216,20 @@ impl Hotkeys {
             )
             .map_err(HotkeyError::Registry)?;
         Ok(Binding { key, gate, kind })
+    }
+    /// Last successfully registered configuration, only while its owned toggle
+    /// remains active. This reports our registration ownership, not a new OS probe.
+    pub fn current_binding(&self) -> Option<Hotkey> {
+        let binding = self.toggle.as_ref()?;
+        if self.closed
+            || !binding.gate.enabled.load(Ordering::Acquire)
+            || binding.gate.pressed.is_poisoned()
+            || binding.kind != Kind::Toggle
+            || shortcut(&self.configuration).ok() != Some(binding.key)
+        {
+            return None;
+        }
+        Some(self.configuration.clone())
     }
     /// Capture infrastructure errors without delivering callbacks from a non-main thread.
     pub fn take_error(&self) -> Result<Option<String>, HotkeyError> {
@@ -303,6 +319,7 @@ impl Hotkeys {
         }
         binding.gate.enabled.store(true, Ordering::Release);
         self.toggle = Some(binding);
+        self.configuration = key;
         Ok(())
     }
     /// Disables callbacks immediately, unregistering only keys owned by this value.
@@ -610,11 +627,22 @@ mod tests {
     fn successful_rebind_revokes_queued_old_handler() -> Result<(), Box<dyn std::error::Error>> {
         let mut fixture = Fixture::new()?;
         let old = Shortcut::new(Some(Modifiers::ALT), Code::KeyD);
+        assert_eq!(
+            fixture.owner.current_binding(),
+            Some(crate::settings::Settings::default().hotkey)
+        );
         let old_handler = fixture.handler(old)?;
         fixture.owner.reconfigure(Hotkey {
             key: PhysicalKey::G,
             ..crate::settings::Settings::default().hotkey
         })?;
+        assert_eq!(
+            fixture.owner.current_binding(),
+            Some(Hotkey {
+                key: PhysicalKey::G,
+                ..crate::settings::Settings::default().hotkey
+            })
+        );
         assert!(fixture.handler(old).is_err());
         old_handler(ShortcutState::Pressed);
         let new_handler = fixture.handler(Shortcut::new(Some(Modifiers::ALT), Code::KeyG))?;
@@ -636,6 +664,10 @@ mod tests {
         let old_handler = fixture.handler(old)?;
         fixture.state.lock().map_err(|_| "lock")?.fail_register = true;
         assert!(fixture.owner.reconfigure(replacement.clone()).is_err());
+        assert_eq!(
+            fixture.owner.current_binding(),
+            Some(crate::settings::Settings::default().hotkey)
+        );
         old_handler(ShortcutState::Pressed);
         assert_eq!(fixture.toggles.load(Ordering::Acquire), 1);
         old_handler(ShortcutState::Released);
@@ -645,6 +677,10 @@ mod tests {
             state.fail_remove = vec![old.id(), new.id()];
         }
         assert!(fixture.owner.reconfigure(replacement.clone()).is_err());
+        assert_eq!(
+            fixture.owner.current_binding(),
+            Some(crate::settings::Settings::default().hotkey)
+        );
         let abandoned_handler = fixture.handler(new)?;
         abandoned_handler(ShortcutState::Pressed);
         old_handler(ShortcutState::Pressed);
@@ -652,6 +688,10 @@ mod tests {
         // A failed rollback owns one disabled registration; retry its removal
         // before another replacement, so failures cannot grow an unbounded list.
         assert!(fixture.owner.reconfigure(replacement).is_err());
+        assert_eq!(
+            fixture.owner.current_binding(),
+            Some(crate::settings::Settings::default().hotkey)
+        );
         fixture
             .state
             .lock()
@@ -659,6 +699,7 @@ mod tests {
             .fail_remove
             .clear();
         fixture.owner.shutdown()?;
+        assert_eq!(fixture.owner.current_binding(), None);
         assert!(
             fixture
                 .state
@@ -703,6 +744,7 @@ mod tests {
             .fail_remove
             .clear();
         fixture.owner.shutdown()?;
+        assert_eq!(fixture.owner.current_binding(), None);
         assert!(
             fixture
                 .state
@@ -711,6 +753,35 @@ mod tests {
                 .handlers
                 .is_empty()
         );
+        Ok(())
+    }
+
+    #[test]
+    fn failed_shutdown_reports_no_binding_while_retaining_native_cleanup_ownership()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let mut fixture = Fixture::new()?;
+        let toggle = Shortcut::new(Some(Modifiers::ALT), Code::KeyD);
+        let handler = fixture.handler(toggle)?;
+        fixture
+            .state
+            .lock()
+            .map_err(|_| "lock")?
+            .fail_remove
+            .push(toggle.id());
+        assert!(fixture.owner.shutdown().is_err());
+        assert!(fixture.handler(toggle).is_ok());
+        assert_eq!(fixture.owner.current_binding(), None);
+        handler(ShortcutState::Pressed);
+        assert_eq!(fixture.toggles.load(Ordering::Acquire), 0);
+        fixture
+            .state
+            .lock()
+            .map_err(|_| "lock")?
+            .fail_remove
+            .clear();
+        fixture.owner.shutdown()?;
+        assert_eq!(fixture.owner.current_binding(), None);
+        assert!(fixture.handler(toggle).is_err());
         Ok(())
     }
 

@@ -1,6 +1,6 @@
 //! Serial host actor connecting capture, inference and the main-thread bridge.
 use crate::{
-    audio::{CaptureEvent, CaptureHandle},
+    audio::{CaptureEvent, CaptureHandle, CaptureProgress},
     control::{self, Control, ControlTx, MailboxError},
     controller::{Action, Controller, Event, SessionSettings, SessionSnapshot},
     inference_service::{InferenceService, WorkToken},
@@ -85,6 +85,8 @@ pub struct RuntimeSnapshot {
     pub model_ready: bool,
     pub session: SessionSnapshot,
     pub maximum_warning: bool,
+    pub elapsed_millis: u64,
+    pub level_permille: u16,
     pub error: Option<String>,
 }
 
@@ -128,6 +130,8 @@ impl Drop for RuntimeExit<'_> {
             shared.closing = true;
             shared.snapshot.running = false;
             shared.snapshot.model_ready = false;
+            shared.snapshot.elapsed_millis = 0;
+            shared.snapshot.level_permille = 0;
             shared.snapshot.revision = shared.snapshot.revision.saturating_add(1);
         }
         reject_pending(self.requests);
@@ -342,6 +346,9 @@ trait AudioDriver: Send + 'static {
     fn start(&mut self, session: u64, device: Option<String>) -> Result<(), String>;
     fn stop(&self, session: u64);
     fn poll(&mut self) -> Vec<CaptureEvent>;
+    fn take_progress(&mut self) -> Option<CaptureProgress> {
+        None
+    }
     fn shutdown(&mut self) -> Result<(), String>;
 }
 
@@ -350,6 +357,11 @@ struct CpalAudio {
     active: Option<(u64, CaptureHandle)>,
 }
 impl AudioDriver for CpalAudio {
+    fn take_progress(&mut self) -> Option<CaptureProgress> {
+        self.active
+            .as_ref()
+            .and_then(|(_, handle)| handle.take_progress())
+    }
     fn start(&mut self, session: u64, device: Option<String>) -> Result<(), String> {
         if self.active.is_some() {
             return Err("Microphone is still occupied".into());
@@ -448,6 +460,8 @@ impl Runtime {
                 model_ready: false,
                 session: controller.snapshot(),
                 maximum_warning: false,
+                elapsed_millis: 0,
+                level_permille: 0,
                 error: None,
             },
             cancellation: None,
@@ -469,6 +483,7 @@ impl Runtime {
                     native,
                     shared,
                     maximum_warning: false,
+                    progress: None,
                     error: None,
                     capture_pending: None,
                     deferred_audio: None,
@@ -581,6 +596,7 @@ struct Actor<A: AudioDriver> {
     native: NativePort,
     shared: Arc<Mutex<Shared>>,
     maximum_warning: bool,
+    progress: Option<CaptureProgress>,
     error: Option<String>,
     capture_pending: Option<(u64, Instant)>,
     deferred_audio: Option<(u64, Option<String>)>,
@@ -816,6 +832,19 @@ impl<A: AudioDriver> Actor<A> {
             let actions = self.accept(event).map_err(service_error)?;
             self.execute(actions)?;
         }
+        if let Some(mut progress) = self.audio.take_progress() {
+            let session = self.controller.snapshot();
+            if session.phase == Phase::Recording
+                && session.session == Some(progress.session)
+                && self.progress.is_none_or(|old| {
+                    old.session != progress.session || old.elapsed_millis <= progress.elapsed_millis
+                })
+            {
+                progress.elapsed_millis = progress.elapsed_millis.min(300_000);
+                progress.level_permille = progress.level_permille.min(1_000);
+                self.progress = Some(progress);
+            }
+        }
         if let Some(service) = &self.inference
             && let Some(done) = service.take_result().map_err(service_error)?
         {
@@ -910,12 +939,25 @@ impl<A: AudioDriver> Actor<A> {
             .shared
             .lock()
             .map_err(|_| RuntimeError::Synchronization)?;
+        let session = self.controller.snapshot();
+        let progress = self.progress.filter(|value| {
+            !shared.closing
+                && !shared.suspended
+                && session.phase == Phase::Recording
+                && session.session == Some(value.session)
+                && self
+                    .controller
+                    .cancellation_handles()
+                    .is_some_and(|(id, _, work)| id == value.session && work.is_valid())
+        });
         let mut next = RuntimeSnapshot {
             revision: shared.snapshot.revision,
             running: true,
             model_ready: self.inference.as_ref().is_some_and(InferenceService::ready),
-            session: self.controller.snapshot(),
+            session,
             maximum_warning: self.maximum_warning,
+            elapsed_millis: progress.map_or(0, |value| value.elapsed_millis),
+            level_permille: progress.map_or(0, |value| value.level_permille),
             error: self.error.clone(),
         };
         if next != shared.snapshot {
@@ -955,6 +997,7 @@ mod tests {
         stopped: Sender<u64>,
         closed: Arc<AtomicBool>,
         gate: Option<(Arc<AtomicBool>, Sender<()>, Receiver<()>)>,
+        progress: Option<Arc<crate::audio::ProgressSlot>>,
     }
     impl AudioDriver for ControlledAudio {
         fn start(&mut self, session: u64, _: Option<String>) -> Result<(), String> {
@@ -977,6 +1020,9 @@ mod tests {
         fn shutdown(&mut self) -> Result<(), String> {
             self.closed.store(true, Ordering::Release);
             Ok(())
+        }
+        fn take_progress(&mut self) -> Option<crate::audio::CaptureProgress> {
+            self.progress.as_ref().and_then(|slot| slot.take())
         }
     }
     fn settings() -> SessionSettings {
@@ -1032,6 +1078,7 @@ mod tests {
         at_poll: Receiver<()>,
         continue_poll: Sender<()>,
         closed: Arc<AtomicBool>,
+        progress: Arc<crate::audio::ProgressSlot>,
     }
     impl LifecycleFixture {
         fn new() -> Result<Self, Box<dyn std::error::Error>> {
@@ -1045,6 +1092,7 @@ mod tests {
             let (continue_poll, proceed) = bounded(1);
             let armed = Arc::new(AtomicBool::new(false));
             let closed = Arc::new(AtomicBool::new(false));
+            let progress = Arc::new(crate::audio::ProgressSlot::default());
             let (port, native) = native_mailbox();
             let runtime = Runtime::with_audio(
                 InferenceService::with_decoder(decoder)?,
@@ -1056,6 +1104,7 @@ mod tests {
                     stopped,
                     closed: Arc::clone(&closed),
                     gate: Some((Arc::clone(&armed), entered, proceed)),
+                    progress: Some(Arc::clone(&progress)),
                 },
             )?;
             wait_for(&runtime.client(), |state| state.model_ready)?;
@@ -1069,6 +1118,7 @@ mod tests {
                 at_poll,
                 continue_poll,
                 closed,
+                progress,
             })
         }
         fn pause(&self) -> Result<(), Box<dyn std::error::Error>> {
@@ -1118,6 +1168,132 @@ mod tests {
                 _ => Err("delivery missing".into()),
             }
         }
+    }
+
+    #[test]
+    fn progress_is_monotone_session_bound_and_cannot_displace_cancel_or_finish()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use crate::audio::CaptureProgress;
+        let fixture = LifecycleFixture::new()?;
+        fixture.record()?;
+        let client = fixture.runtime.client();
+        let (mut port, mut reader) = crate::audio::capture_buffer(AudioFormat {
+            sample_rate: 16_000,
+            channels: 2,
+        })?;
+        port.publish(&[0.3_f32, 0.4]);
+        reader.read()?;
+        fixture
+            .progress
+            .publish(reader.progress(1, Duration::from_millis(120)));
+        let measured = wait_for(&client, |state| state.elapsed_millis == 120)?;
+        assert_eq!(measured.level_permille, 354);
+        fixture.pause()?;
+        fixture.progress.publish(CaptureProgress {
+            session: 1,
+            elapsed_millis: 110,
+            level_permille: 10,
+        });
+        fixture.proceed()?;
+        accepted(client.clear_text()?)?;
+        assert_eq!(client.snapshot()?.elapsed_millis, 120);
+        assert_eq!(client.snapshot()?.level_permille, 354);
+        fixture.pause()?;
+        for elapsed_millis in 1_000..11_000 {
+            fixture.progress.publish(CaptureProgress {
+                session: 1,
+                elapsed_millis,
+                level_permille: 500,
+            });
+        }
+        client.stop(1)?;
+        client.cancel(1)?;
+        fixture.audio.send(CaptureEvent::Finished {
+            session: 1,
+            result: Ok(vec![]),
+            maximum: false,
+        })?;
+        fixture.proceed()?;
+        wait_for(&client, |state| state.session.phase == Phase::Idle)?;
+        assert_eq!(
+            (
+                client.snapshot()?.elapsed_millis,
+                client.snapshot()?.level_permille
+            ),
+            (0, 0)
+        );
+        accepted(client.start(settings(), None, false, false)?)?;
+        assert_eq!(fixture.starts.recv_timeout(Duration::from_secs(1))?, 2);
+        fixture.audio.send(CaptureEvent::Started {
+            session: 2,
+            format: AudioFormat {
+                sample_rate: 16_000,
+                channels: 1,
+            },
+            started: Instant::now(),
+        })?;
+        wait_for(&client, |state| state.session.phase == Phase::Recording)?;
+        fixture.pause()?;
+        fixture.progress.publish(CaptureProgress {
+            session: 1,
+            elapsed_millis: 90_000,
+            level_permille: 999,
+        });
+        fixture.proceed()?;
+        accepted(client.clear_text()?)?;
+        assert_eq!(
+            (
+                client.snapshot()?.elapsed_millis,
+                client.snapshot()?.level_permille
+            ),
+            (0, 0)
+        );
+        fixture.progress.publish(CaptureProgress {
+            session: 2,
+            elapsed_millis: 50,
+            level_permille: 250,
+        });
+        wait_for(&client, |state| state.elapsed_millis == 50)?;
+        client.shutdown()?;
+        fixture.runtime.join()?;
+        Ok(())
+    }
+
+    #[test]
+    fn progress_flood_preserves_stop_and_finished_through_the_runtime()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        fixture.record()?;
+        let client = fixture.runtime.client();
+        fixture.pause()?;
+        for elapsed_millis in 0..10_000 {
+            fixture.progress.publish(CaptureProgress {
+                session: 1,
+                elapsed_millis,
+                level_permille: 500,
+            });
+        }
+        client.stop(1)?;
+        fixture.proceed()?;
+        assert_eq!(fixture.stops.recv_timeout(Duration::from_secs(1))?, 1);
+        wait_for(&client, |state| state.session.phase == Phase::Finalizing)?;
+        assert_eq!(client.snapshot()?.elapsed_millis, 0);
+        fixture.audio.send(CaptureEvent::Finished {
+            session: 1,
+            result: Ok(vec![0.1; 800]),
+            maximum: false,
+        })?;
+        assert!(matches!(
+            fixture
+                .native
+                .requests
+                .recv_timeout(Duration::from_secs(1))?,
+            NativeCommand::Deliver { session: 1, .. }
+        ));
+        assert_eq!(client.snapshot()?.level_permille, 0);
+        client.shutdown()?;
+        fixture.runtime.join()?;
+        Ok(())
     }
 
     #[test]
@@ -1591,6 +1767,7 @@ mod tests {
                 stopped,
                 closed: Arc::new(AtomicBool::new(false)),
                 gate: Some((Arc::clone(&armed), entered, continue_poll)),
+                progress: None,
             },
         )?;
         let client = runtime.client();
@@ -1632,6 +1809,7 @@ mod tests {
                 stopped,
                 closed: Arc::clone(&closed),
                 gate: None,
+                progress: None,
             },
         )?;
         let client = runtime.client();
@@ -1712,6 +1890,7 @@ mod tests {
                 stopped,
                 closed: Arc::new(AtomicBool::new(false)),
                 gate: None,
+                progress: None,
             },
         )?;
         let client = runtime.client();
@@ -1756,6 +1935,7 @@ mod tests {
                 stopped,
                 closed: Arc::new(AtomicBool::new(false)),
                 gate: Some((Arc::clone(&armed), entered, continue_poll)),
+                progress: None,
             },
         )?;
         let client = runtime.client();

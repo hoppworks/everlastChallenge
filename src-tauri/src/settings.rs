@@ -12,13 +12,14 @@ use std::{
     path::{Path, PathBuf},
     sync::atomic::{AtomicU64, Ordering},
 };
+use ts_rs::TS;
 
 pub const SCHEMA_VERSION: u32 = 1;
 const MAX_FILE_BYTES: usize = 16 * 1024;
 const MAX_DEVICE_BYTES: usize = 512;
 static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(1);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
 pub enum SettingsLanguage {
     German,
@@ -50,7 +51,7 @@ impl ModelChoice {
 
 /// Physical ANSI letter position, independent of the current keyboard layout.
 /// The native shortcut adapter resolves its displayed label from that layout.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 pub enum PhysicalKey {
     A,
     B,
@@ -80,7 +81,7 @@ pub enum PhysicalKey {
     Z,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(deny_unknown_fields)]
 pub struct Hotkey {
     pub key: PhysicalKey,

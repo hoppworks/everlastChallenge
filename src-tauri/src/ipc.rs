@@ -3,7 +3,7 @@
     reason = "Tauri 2.12 async command wrappers generate discarded internal Results; handwritten handlers return and check their Results."
 )]
 //! The only renderer command surface. Capabilities and the window label both restrict access.
-use crate::{contracts::Snapshot, desktop::Desktop};
+use crate::{contracts::Snapshot, desktop::Desktop, preferences::SettingsDraft};
 use macos_integration::ui_services;
 use tauri::{AppHandle, State, WebviewWindow};
 
@@ -158,6 +158,24 @@ pub async fn accessibility_request(
     Ok(())
 }
 
+#[tauri::command]
+pub async fn settings_save(
+    window: WebviewWindow,
+    desktop: State<'_, Desktop>,
+    settings: SettingsDraft,
+) -> Result<(), String> {
+    authorize(&window)?;
+    desktop.save_settings(settings).await
+}
+#[tauri::command]
+pub async fn devices_refresh(
+    window: WebviewWindow,
+    desktop: State<'_, Desktop>,
+) -> Result<(), String> {
+    authorize(&window)?;
+    desktop.refresh_devices().await
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
@@ -186,6 +204,8 @@ mod tests {
             "transcript_clear",
             "microphone_request",
             "accessibility_request",
+            "settings_save",
+            "devices_refresh",
         ] {
             assert!(
                 authority

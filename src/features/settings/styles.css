@@ -1,0 +1,81 @@
+.settings-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.settings-header h2 {
+  margin: 0;
+}
+.settings-view fieldset {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 26px 0 20px;
+}
+.settings-view legend,
+.settings-view h3 {
+  font: inherit;
+  font-weight: 600;
+  padding: 0;
+  margin: 0 0 10px;
+}
+.settings-field {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0;
+}
+.settings-view select {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  min-height: 34px;
+  padding: 7px 10px;
+  width: 100%;
+}
+.settings-view select:focus-visible,
+.settings-view input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.settings-view select:disabled {
+  color: var(--muted);
+  opacity: 0.65;
+}
+.settings-modifiers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+}
+.settings-modifiers label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+}
+.settings-modifiers input {
+  accent-color: var(--accent);
+  margin: 0;
+}
+.settings-help {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.settings-detail {
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.settings-detail dl > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 18px;
+  margin: 8px 0;
+}
+.settings-detail dd {
+  color: var(--muted);
+}

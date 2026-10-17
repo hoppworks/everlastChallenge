@@ -11,7 +11,7 @@ use dictation_core::{
 };
 use rtrb::{Consumer, Producer, RingBuffer};
 use std::sync::{
-    Arc,
+    Arc, Mutex,
     atomic::{AtomicBool, AtomicU8, AtomicUsize, Ordering},
 };
 use std::{
@@ -105,6 +105,37 @@ pub struct CaptureReader {
     format: AudioFormat,
     scratch: Vec<f32>,
     gate: Arc<Gate>,
+    energy: f64,
+    measured_samples: u64,
+    elapsed_millis: u64,
+}
+
+/// Latest input RMS, linear full-scale amplitude, rounded to 0..=1000.
+/// Duration is real owner elapsed time, capped at the recording limit.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct CaptureProgress {
+    pub session: u64,
+    pub elapsed_millis: u64,
+    pub level_permille: u16,
+}
+
+/// One replaceable value, independent of the reserved lifecycle-event channel.
+/// Only the owner/controller use this lock; never the realtime callback.
+#[derive(Default)]
+pub(crate) struct ProgressSlot(Mutex<Option<CaptureProgress>>);
+impl ProgressSlot {
+    pub(crate) fn publish(&self, value: CaptureProgress) {
+        *self
+            .0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner()) = Some(value);
+    }
+    pub(crate) fn take(&self) -> Option<CaptureProgress> {
+        self.0
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .take()
+    }
 }
 
 /// Reserve exactly one second of the effective input format, in full frames.
@@ -133,6 +164,9 @@ pub fn capture_buffer(format: AudioFormat) -> Result<(CapturePort, CaptureReader
             format,
             scratch,
             gate,
+            energy: 0.0,
+            measured_samples: 0,
+            elapsed_millis: 0,
         },
     ))
 }
@@ -175,6 +209,27 @@ impl CapturePort {
 }
 
 impl CaptureReader {
+    /// Measure accepted interleaved samples since the previous call. An empty
+    /// interval has zero level; channels contribute equally, before downmixing.
+    /// Supply time since stream start from the owner, never a UI clock.
+    pub fn progress(&mut self, session: u64, elapsed: Duration) -> CaptureProgress {
+        self.elapsed_millis = self
+            .elapsed_millis
+            .max(elapsed.as_millis().min(300_000) as u64);
+        let rms = if self.measured_samples == 0 {
+            0.0
+        } else {
+            (self.energy / self.measured_samples as f64).sqrt()
+        };
+        self.energy = 0.0;
+        self.measured_samples = 0;
+        CaptureProgress {
+            session,
+            elapsed_millis: self.elapsed_millis,
+            level_permille: (rms.min(1.0) * 1_000.0).round() as u16,
+        }
+    }
+
     pub fn format(&self) -> AudioFormat {
         self.format
     }
@@ -208,6 +263,12 @@ impl CaptureReader {
         self.scratch.extend_from_slice(first);
         self.scratch.extend_from_slice(second);
         chunk.commit_all();
+        self.energy += self
+            .scratch
+            .iter()
+            .map(|sample| f64::from(*sample).powi(2))
+            .sum::<f64>();
+        self.measured_samples += self.scratch.len() as u64;
         Ok(&self.scratch)
     }
 }
@@ -241,6 +302,7 @@ pub struct CaptureHandle {
     stop: Arc<AtomicBool>,
     worker: Option<JoinHandle<Result<(), CaptureError>>>,
     events: Receiver<CaptureEvent>,
+    progress: Arc<ProgressSlot>,
 }
 
 impl CaptureHandle {
@@ -251,6 +313,8 @@ impl CaptureHandle {
         let (events, incoming) = crossbeam_channel::bounded(3);
         let stop = Arc::new(AtomicBool::new(false));
         let requested = Arc::clone(&stop);
+        let progress = Arc::new(ProgressSlot::default());
+        let published = Arc::clone(&progress);
         let worker = thread::Builder::new()
             .name("microphone-dsp".into())
             .spawn(move || {
@@ -261,6 +325,7 @@ impl CaptureHandle {
                     &events,
                     &requested,
                     &mut maximum,
+                    &published,
                 );
                 send_event(
                     &events,
@@ -276,6 +341,7 @@ impl CaptureHandle {
             stop,
             worker: Some(worker),
             events: incoming,
+            progress,
         })
     }
 
@@ -286,6 +352,10 @@ impl CaptureHandle {
     pub fn next_event(&self) -> Option<CaptureEvent> {
         // Disconnection has no additional event; join retains worker errors.
         self.events.try_recv().ok()
+    }
+
+    pub fn take_progress(&self) -> Option<CaptureProgress> {
+        self.progress.take()
     }
 
     /// If finished without a terminal event, join exposes the worker error.
@@ -399,6 +469,7 @@ fn record(
     events: &Sender<CaptureEvent>,
     stop: &AtomicBool,
     maximum: &mut bool,
+    progress: &ProgressSlot,
 ) -> Result<Vec<f32>, CaptureError> {
     if stop.load(Ordering::Acquire) {
         return Ok(Vec::new());
@@ -432,6 +503,7 @@ fn record(
         return Err(error);
     }
     let mut limits = RecordingLimits::default();
+    let mut next_progress = Duration::from_millis(50);
     let processing = (|| -> Result<(), CaptureError> {
         loop {
             match limits.advance(started.elapsed(), reader.maximum_reached()) {
@@ -452,6 +524,11 @@ fn record(
                 thread::sleep(Duration::from_millis(2));
             } else {
                 processor.push_interleaved(chunk)?;
+            }
+            let elapsed = started.elapsed();
+            if elapsed >= next_progress {
+                progress.publish(reader.progress(session, elapsed));
+                next_progress = elapsed + Duration::from_millis(50);
             }
         }
         Ok(())
@@ -474,6 +551,98 @@ fn record(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn reader_measures_accepted_energy_and_monotone_elapsed_time()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (mut port, mut reader) = capture_buffer(AudioFormat {
+            sample_rate: 16_000,
+            channels: 2,
+        })?;
+        port.publish(&[0.3_f32, 0.4, -0.3, -0.4]);
+        assert_eq!(reader.read()?.len(), 4);
+        let measured = reader.progress(7, Duration::from_millis(120));
+        assert_eq!(measured.session, 7);
+        assert_eq!(measured.elapsed_millis, 120);
+        assert_eq!(measured.level_permille, 354);
+        port.publish(&[f32::MAX, -f32::MAX]);
+        reader.read()?;
+        let clipped = reader.progress(7, Duration::from_millis(119));
+        assert_eq!(clipped.elapsed_millis, 120);
+        assert_eq!(clipped.level_permille, 1_000);
+        assert_eq!(
+            reader
+                .progress(7, Duration::from_millis(150))
+                .level_permille,
+            0
+        );
+        assert_eq!(
+            reader.progress(7, Duration::from_secs(301)).elapsed_millis,
+            300_000
+        );
+        assert_eq!(reader.progress(7, Duration::ZERO).elapsed_millis, 300_000);
+        Ok(())
+    }
+
+    #[test]
+    fn progress_flood_does_not_use_lifecycle_capacity_or_hide_stop()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (events, incoming) = crossbeam_channel::bounded(3);
+        let stop = Arc::new(AtomicBool::new(false));
+        let handle = CaptureHandle {
+            stop: Arc::clone(&stop),
+            worker: None,
+            events: incoming,
+            progress: Arc::new(ProgressSlot::default()),
+        };
+        send_event(
+            &events,
+            CaptureEvent::Started {
+                session: 4,
+                format: AudioFormat {
+                    sample_rate: 16_000,
+                    channels: 1,
+                },
+                started: Instant::now(),
+            },
+        )?;
+        send_event(&events, CaptureEvent::MaximumWarning { session: 4 })?;
+        send_event(
+            &events,
+            CaptureEvent::Finished {
+                session: 4,
+                result: Ok(vec![0.25]),
+                maximum: false,
+            },
+        )?;
+        for elapsed_millis in 0..10_000 {
+            handle.progress.publish(CaptureProgress {
+                session: 4,
+                elapsed_millis,
+                level_permille: 250,
+            });
+        }
+        handle.request_stop();
+        assert!(stop.load(Ordering::Acquire));
+        assert_eq!(
+            handle.take_progress().map(|value| value.elapsed_millis),
+            Some(9_999)
+        );
+        assert!(handle.take_progress().is_none());
+        assert!(matches!(
+            handle.next_event(),
+            Some(CaptureEvent::Started { session: 4, .. })
+        ));
+        assert!(matches!(
+            handle.next_event(),
+            Some(CaptureEvent::MaximumWarning { session: 4 })
+        ));
+        assert!(
+            matches!(handle.next_event(), Some(CaptureEvent::Finished { session: 4, result: Ok(audio), .. }) if audio == vec![0.25])
+        );
+        assert!(handle.next_event().is_none());
+        Ok(())
+    }
 
     #[test]
     fn every_supported_ring_holds_exactly_one_second_of_complete_frames()
@@ -606,6 +775,7 @@ mod tests {
             stop,
             worker: Some(worker),
             events: incoming,
+            progress: Arc::new(ProgressSlot::default()),
         };
         let started = Instant::now();
         drop(handle);

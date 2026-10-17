@@ -22,7 +22,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             ipc::transcript_copy,
             ipc::transcript_clear,
             ipc::microphone_request,
-            ipc::accessibility_request
+            ipc::accessibility_request,
+            ipc::settings_save,
+            ipc::devices_refresh
         ])
         .setup(|app| {
             let desktop = Desktop::spawn(app.handle().clone()).map_err(std::io::Error::other)?;

@@ -13,6 +13,8 @@ fn main() {
             "transcript_copy",
             "microphone_request",
             "accessibility_request",
+            "settings_save",
+            "devices_refresh",
         ]));
     if let Err(error) = tauri_build::try_build(attributes) {
         eprintln!("Tauri build configuration failed: {error}");

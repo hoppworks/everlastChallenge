@@ -8,4 +8,6 @@ export type Session = {
   text: string;
   outcome: SessionOutcome | null;
   maximumWarning: boolean;
+  elapsedMillis: number;
+  levelPermille: number;
 };

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AppView } from "./features/app/AppView";
-import { command, connect, sessionCommand } from "./ipc";
+import { command, connect, sessionCommand, saveSettings } from "./ipc";
+import { SettingsView } from "./features/settings/SettingsView";
 import type { Snapshot } from "./ipc";
 export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
@@ -8,10 +9,6 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
   const [pending, setPending] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRequest = useRef(0);
-  const settingsHeading = useRef<HTMLHeadingElement>(null);
-  useEffect(() => {
-    if (settingsOpen) settingsHeading.current?.focus();
-  }, [settingsOpen]);
   useEffect(() => {
     let disposed = false;
     let disconnect: (() => void) | undefined;
@@ -80,6 +77,8 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
           phase: snapshot.session.phase,
           text: snapshot.session.text,
           maximumWarning: snapshot.session.maximumWarning,
+          elapsedSeconds: snapshot.session.elapsedMillis / 1000,
+          level: snapshot.session.levelPermille / 1000,
           ...(snapshot.session.outcome
             ? { outcome: snapshot.session.outcome }
             : {}),
@@ -101,34 +100,28 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
         onSettings={() => setSettingsOpen(!settingsOpen)}
       />
       {settingsOpen && (
-        <section className="dictation-app" aria-label="Einstellungen">
-          <h2 ref={settingsHeading} tabIndex={-1}>
-            Berechtigungen
-          </h2>
-          <p>
-            Aufnahme und Spracherkennung erfolgen lokal. Zum automatischen
-            Einfügen werden zusätzlich die Bedienungshilfen benötigt.
-          </p>
-          <div className="app-actions">
-            <button
-              type="button"
-              disabled={pending > 0 || snapshot.settingsBusy}
-              onClick={() => run(() => command("microphone_request"))}
-            >
-              Mikrofonzugriff anfragen
-            </button>
-            <button
-              type="button"
-              disabled={pending > 0 || snapshot.settingsBusy}
-              onClick={() => run(() => command("accessibility_request"))}
-            >
-              Bedienungshilfen freigeben
-            </button>
-            <button type="button" onClick={() => setSettingsOpen(false)}>
-              Schließen
-            </button>
-          </div>
-        </section>
+        <SettingsView
+          preferences={snapshot.preferences}
+          setup={{
+            phase: snapshot.setup.phase,
+            model: snapshot.setup.model,
+            ...(snapshot.setup.error ? { error: snapshot.setup.error } : {}),
+          }}
+          permissions={snapshot.permissions}
+          busy={
+            pending > 0 ||
+            snapshot.settingsBusy ||
+            snapshot.session.phase !== "Idle" ||
+            ["Checking", "Downloading", "Loading", "Cancelling"].includes(
+              snapshot.setup.phase,
+            )
+          }
+          onSave={(draft) => run(() => saveSettings(draft))}
+          onRefresh={() => run(() => command("devices_refresh"))}
+          onMicrophone={() => run(() => command("microphone_request"))}
+          onAccessibility={() => run(() => command("accessibility_request"))}
+          onClose={() => setSettingsOpen(false)}
+        />
       )}
     </>
   );

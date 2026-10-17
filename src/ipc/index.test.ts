@@ -1,5 +1,11 @@
 import { beforeEach, expect, test, vi } from "vitest";
-import { command, connect, decodeSnapshot, sessionCommand } from "./index";
+import {
+  command,
+  connect,
+  decodeSnapshot,
+  sessionCommand,
+  saveSettings,
+} from "./index";
 import type { Snapshot } from "./index";
 
 const native = vi.hoisted(() => ({
@@ -21,6 +27,24 @@ function snapshot(): Snapshot {
     running: true,
     settingsBusy: false,
     settingsRequest: 0,
+    preferences: {
+      current: {
+        device: null,
+        language: "german",
+        hotkey: {
+          key: "D",
+          option: true,
+          command: false,
+          control: false,
+          shift: false,
+        },
+      },
+      devices: [],
+      error: null,
+      refreshing: false,
+      needsRestart: false,
+      languages: ["german"],
+    },
     error: null,
     setup: {
       phase: "Ready",
@@ -41,6 +65,8 @@ function snapshot(): Snapshot {
       text: "",
       outcome: null,
       maximumWarning: false,
+      elapsedMillis: 0,
+      levelPermille: 0,
     },
     permissions: { microphone: "granted", accessibility: "granted" },
     labels: { device: "Standardmikrofon", language: "Deutsch", hotkey: "⌥D" },
@@ -376,3 +402,91 @@ test.each([-1, 0.5, Number.NaN, 4_294_967_296])(
     ).toThrow("Ungültiger Anwendungsstatus");
   },
 );
+
+test("accepts bounded live telemetry and available preference choices", () => {
+  const value = snapshot();
+  value.session.elapsedMillis = 300_000;
+  value.session.levelPermille = 1000;
+  value.preferences.devices = [{ name: "Externes Mikrofon", available: true }];
+  value.preferences.current.device = "Externes Mikrofon";
+  expect(decodeSnapshot(value)).toEqual(value);
+});
+
+test.each([
+  { elapsedMillis: -1 },
+  { elapsedMillis: 300_001 },
+  { elapsedMillis: 1.5 },
+  { levelPermille: -1 },
+  { levelPermille: 1001 },
+  { levelPermille: NaN },
+])("rejects out-of-range live telemetry %#", (patch) => {
+  const value = snapshot();
+  expect(() =>
+    decodeSnapshot({ ...value, session: { ...value.session, ...patch } }),
+  ).toThrow("Ungültiger Anwendungsstatus");
+});
+
+test.each([
+  { current: null },
+  { current: { ...snapshot().preferences.current, model: "small" } },
+  { current: { ...snapshot().preferences.current, language: "auto" } },
+  { current: { ...snapshot().preferences.current, device: " bad " } },
+  { current: { ...snapshot().preferences.current, device: "x".repeat(513) } },
+  {
+    current: {
+      ...snapshot().preferences.current,
+      hotkey: {
+        key: "D",
+        option: false,
+        command: false,
+        control: false,
+        shift: true,
+      },
+    },
+  },
+  {
+    current: {
+      ...snapshot().preferences.current,
+      hotkey: { ...snapshot().preferences.current.hotkey, key: "F1" },
+    },
+  },
+  {
+    devices: Array.from({ length: 129 }, () => ({
+      name: "Mic",
+      available: true,
+    })),
+  },
+  { devices: [{ name: "Mic", available: "true" }] },
+  { devices: [{ name: "Mic\n", available: true }] },
+  { devices: [{ name: "Mic", available: true, extra: true }] },
+  { languages: ["auto"] },
+  { languages: ["german", "german"] },
+  { languages: [] },
+  { refreshing: 1 },
+  { needsRestart: null },
+  { error: false },
+  { extra: true },
+])("rejects malformed preferences %#", (patch) => {
+  const value = snapshot();
+  expect(() =>
+    decodeSnapshot({
+      ...value,
+      preferences: { ...value.preferences, ...patch },
+    }),
+  ).toThrow("Ungültiger Anwendungsstatus");
+});
+
+test("saves only a validated preferences draft using the settings command", async () => {
+  native.invoke.mockResolvedValue(undefined);
+  const draft = snapshot().preferences.current;
+  await saveSettings(draft);
+  expect(native.invoke).toHaveBeenCalledWith("settings_save", {
+    settings: draft,
+  });
+  await expect(saveSettings({ ...draft, device: " bad " })).rejects.toThrow(
+    "Ungültige Einstellungen",
+  );
+  expect(native.invoke).toHaveBeenCalledTimes(1);
+  await command("devices_refresh");
+  expect(native.invoke).toHaveBeenLastCalledWith("devices_refresh");
+});

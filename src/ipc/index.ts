@@ -2,6 +2,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import type { Snapshot } from "./generated/Snapshot";
 export type { Snapshot } from "./generated/Snapshot";
+import type { SettingsDraft } from "./generated/SettingsDraft";
+export type { SettingsDraft } from "./generated/SettingsDraft";
 
 type Obj = Record<string, unknown>;
 function object(value: unknown, keys: string[]): value is Obj {
@@ -28,6 +30,67 @@ function optionalText(value: unknown): boolean {
 }
 function oneOf(value: unknown, options: string[]): boolean {
   return typeof value === "string" && options.includes(value);
+}
+function deviceName(value: unknown): value is string {
+  return (
+    text(value, 512) &&
+    value.length > 0 &&
+    value.trim() === value &&
+    Array.from(value).every((character) => {
+      const code = character.charCodeAt(0);
+      return code >= 32 && (code < 127 || code > 159);
+    })
+  );
+}
+function draft(value: unknown): value is SettingsDraft {
+  if (!object(value, ["device", "language", "hotkey"])) return false;
+  const hotkey = value.hotkey;
+  return (
+    (value.device === null || deviceName(value.device)) &&
+    oneOf(value.language, ["german", "english"]) &&
+    object(hotkey, ["key", "option", "command", "control", "shift"]) &&
+    typeof hotkey.key === "string" &&
+    /^[A-Z]$/.test(hotkey.key) &&
+    typeof hotkey.option === "boolean" &&
+    typeof hotkey.command === "boolean" &&
+    typeof hotkey.control === "boolean" &&
+    typeof hotkey.shift === "boolean" &&
+    (hotkey.option || hotkey.command || hotkey.control)
+  );
+}
+function preferences(value: unknown): boolean {
+  if (
+    !object(value, [
+      "current",
+      "devices",
+      "error",
+      "refreshing",
+      "needsRestart",
+      "languages",
+    ])
+  )
+    return false;
+  return (
+    draft(value.current) &&
+    Array.isArray(value.devices) &&
+    value.devices.length <= 128 &&
+    value.devices.every(
+      (device) =>
+        object(device, ["name", "available"]) &&
+        deviceName(device.name) &&
+        typeof device.available === "boolean",
+    ) &&
+    optionalText(value.error) &&
+    typeof value.refreshing === "boolean" &&
+    typeof value.needsRestart === "boolean" &&
+    Array.isArray(value.languages) &&
+    value.languages.length > 0 &&
+    value.languages.length <= 2 &&
+    value.languages.every((language) =>
+      oneOf(language, ["german", "english"]),
+    ) &&
+    new Set(value.languages).size === value.languages.length
+  );
 }
 const setupPhases = [
   "Missing",
@@ -65,12 +128,14 @@ export function decodeSnapshot(value: unknown): Snapshot {
       "labels",
       "settingsBusy",
       "settingsRequest",
+      "preferences",
       "error",
     ])
   )
     throw new Error("Ungültiger Anwendungsstatus");
   const { setup, session, labels, permissions: access } = value;
   if (
+    !preferences(value.preferences) ||
     !number(value.revision) ||
     typeof value.running !== "boolean" ||
     typeof value.settingsBusy !== "boolean" ||
@@ -98,11 +163,23 @@ export function decodeSnapshot(value: unknown): Snapshot {
     !setup.model.sourceUrl.startsWith(
       "https://huggingface.co/ggerganov/whisper.cpp/resolve/",
     ) ||
-    !object(session, ["phase", "id", "text", "outcome", "maximumWarning"]) ||
+    !object(session, [
+      "phase",
+      "id",
+      "text",
+      "outcome",
+      "maximumWarning",
+      "elapsedMillis",
+      "levelPermille",
+    ]) ||
     !oneOf(session.phase, sessionPhases) ||
     !(session.id === null || (number(session.id) && session.id > 0)) ||
     !text(session.text, 262144) ||
     typeof session.maximumWarning !== "boolean" ||
+    !number(session.elapsedMillis) ||
+    session.elapsedMillis > 300_000 ||
+    !number(session.levelPermille) ||
+    session.levelPermille > 1_000 ||
     !object(labels, ["device", "language", "hotkey"]) ||
     !text(labels.device) ||
     !text(labels.language) ||
@@ -170,7 +247,8 @@ export function command(
     | "transcript_clear"
     | "transcript_copy"
     | "microphone_request"
-    | "accessibility_request",
+    | "accessibility_request"
+    | "devices_refresh",
 ): Promise<void> {
   return invoke(name);
 }
@@ -181,4 +259,10 @@ export function sessionCommand(
   if (!Number.isSafeInteger(session) || session <= 0)
     return Promise.reject(new Error("Ungültige Sitzungskennung"));
   return invoke(name, { session });
+}
+
+export function saveSettings(settings: SettingsDraft): Promise<void> {
+  if (!draft(settings))
+    return Promise.reject(new Error("Ungültige Einstellungen"));
+  return invoke("settings_save", { settings });
 }

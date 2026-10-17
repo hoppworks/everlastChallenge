@@ -14,6 +14,7 @@ const ipc = vi.hoisted(() => ({
   connect: vi.fn<typeof import("./ipc").connect>(),
   command: vi.fn<typeof import("./ipc").command>(),
   sessionCommand: vi.fn<typeof import("./ipc").sessionCommand>(),
+  saveSettings: vi.fn<typeof import("./ipc").saveSettings>(),
 }));
 vi.mock("./ipc", () => ipc);
 
@@ -23,6 +24,24 @@ function snapshot(): Snapshot {
     running: true,
     settingsBusy: false,
     settingsRequest: 0,
+    preferences: {
+      current: {
+        device: null,
+        language: "german",
+        hotkey: {
+          key: "D",
+          option: true,
+          command: false,
+          control: false,
+          shift: false,
+        },
+      },
+      devices: [],
+      error: null,
+      refreshing: false,
+      needsRestart: false,
+      languages: ["german"],
+    },
     error: null,
     setup: {
       phase: "Ready",
@@ -43,6 +62,8 @@ function snapshot(): Snapshot {
       text: "",
       outcome: null,
       maximumWarning: false,
+      elapsedMillis: 0,
+      levelPermille: 0,
     },
     permissions: { microphone: "granted", accessibility: "granted" },
     labels: { device: "Standardmikrofon", language: "Deutsch", hotkey: "⌥D" },
@@ -53,6 +74,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   ipc.command.mockResolvedValue(undefined);
   ipc.sessionCommand.mockResolvedValue(undefined);
+  ipc.saveSettings.mockResolvedValue(undefined);
 });
 afterEach(cleanup);
 
@@ -83,7 +105,7 @@ test("native settings requests survive initial delivery and only reopen for a hi
   expect(screen.queryByRole("button", { name: "Einstellungen" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Aufnehmen" })).toBeNull();
   expect(document.activeElement).toBe(
-    screen.getByRole("heading", { name: "Berechtigungen" }),
+    screen.getByRole("heading", { name: "Einstellungen" }),
   );
   const permission = screen.getByRole("button", {
     name: "Mikrofonzugriff anfragen",
@@ -367,4 +389,78 @@ test("subscription errors remain visible without replacing the last valid snapsh
   view.unmount();
   act(() => report?.(new Error("Verspäteter Fehler")));
   expect(screen.queryByRole("alert")).toBeNull();
+});
+
+test("settings save and refresh use explicit native actions and retain draft on rejected save", async () => {
+  connected();
+  fireEvent.click(await screen.findByRole("button", { name: "Einstellungen" }));
+  fireEvent.change(screen.getByLabelText("Physische Taste (US-Position)"), {
+    target: { value: "K" },
+  });
+  ipc.saveSettings.mockRejectedValueOnce(new Error("Tastenkürzel belegt"));
+  fireEvent.click(
+    screen.getByRole("button", { name: "Einstellungen speichern" }),
+  );
+  await waitFor(() =>
+    expect(screen.getByRole("alert").textContent).toContain(
+      "Tastenkürzel belegt",
+    ),
+  );
+  expect(ipc.saveSettings).toHaveBeenCalledWith(
+    expect.objectContaining({
+      hotkey: {
+        key: "K",
+        option: true,
+        command: false,
+        control: false,
+        shift: false,
+      },
+    }),
+  );
+  expect(
+    (
+      screen.getByLabelText(
+        "Physische Taste (US-Position)",
+      ) as HTMLSelectElement
+    ).value,
+  ).toBe("K");
+  fireEvent.click(
+    screen.getByRole("button", { name: "Mikrofone aktualisieren" }),
+  );
+  await waitFor(() =>
+    expect(ipc.command).toHaveBeenCalledWith("devices_refresh"),
+  );
+});
+
+test.each(["session", "setup"])(
+  "settings edits are disabled during active %s",
+  async (kind) => {
+    const value = snapshot();
+    value.settingsRequest = 1;
+    if (kind === "session") value.session.phase = "Recording";
+    else value.setup.phase = "Downloading";
+    connected(value);
+    await screen.findByRole("region", { name: "Einstellungen" });
+    expect(screen.getByLabelText("Mikrofon").matches(":disabled")).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+    expect(screen.queryByRole("region", { name: "Einstellungen" })).toBeNull();
+  },
+);
+
+test("native elapsed time and input level reach the recording readout", async () => {
+  const value = snapshot();
+  value.session = {
+    ...value.session,
+    phase: "Recording",
+    elapsedMillis: 65000,
+    levelPermille: 420,
+  };
+  connected(value);
+  expect((await screen.findByLabelText("Aufnahmedauer")).textContent).toBe(
+    "1:05",
+  );
+  expect(
+    (screen.getByRole("meter", { name: "Mikrofonpegel" }) as HTMLMeterElement)
+      .value,
+  ).toBe(0.42);
 });

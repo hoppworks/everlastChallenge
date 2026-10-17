@@ -18,6 +18,8 @@
     "allow-transcript-clear",
     "allow-transcript-copy",
     "allow-microphone-request",
-    "allow-accessibility-request"
+    "allow-accessibility-request",
+    "allow-settings-save",
+    "allow-devices-refresh"
   ]
 }

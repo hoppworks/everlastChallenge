@@ -12,9 +12,11 @@ pub mod inference_service;
 pub mod ipc;
 pub mod model;
 pub mod native_service;
+pub mod preferences;
 pub mod runtime;
 pub mod settings;
 pub mod setup;
 pub mod transcription;
 
 pub mod application;
+pub mod devices;

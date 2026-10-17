@@ -4,10 +4,12 @@ use crate::{
     contracts as view,
     controller::SessionSettings,
     hotkeys::{self, Hotkeys},
+    preferences::{HotkeyRebinder, PreferencesError, PreferencesStore, SettingsDraft},
     runtime::Client as RuntimeClient,
     settings::{Settings, SettingsStore},
     setup,
 };
+use crossbeam_channel::{Receiver, Sender, bounded};
 use dictation_core::session::{Outcome, Phase};
 use macos_integration::{
     target::ProcessIdentity,
@@ -31,6 +33,54 @@ struct Shared {
     settings: Settings,
     action_error: Option<String>,
     settings_requests: u32,
+    preferences: PreferenceState,
+}
+#[derive(Default)]
+struct PreferenceState {
+    devices: Vec<crate::devices::InputDevice>,
+    error: Option<String>,
+    needs_restart: bool,
+}
+#[derive(Default)]
+struct Admission {
+    suspended: bool,
+    pending_starts: usize,
+    changing_settings: bool,
+    refreshing_devices: bool,
+}
+enum ReservationKind {
+    Start,
+    Settings,
+    Devices,
+}
+struct Reservation {
+    owner: Arc<Inner>,
+    kind: ReservationKind,
+}
+impl Drop for Reservation {
+    fn drop(&mut self) {
+        let mut admission = self
+            .owner
+            .admission
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        match self.kind {
+            ReservationKind::Start => admission.pending_starts -= 1,
+            ReservationKind::Settings => admission.changing_settings = false,
+            ReservationKind::Devices => admission.refreshing_devices = false,
+        }
+    }
+}
+enum SettingsCommand {
+    Save {
+        draft: SettingsDraft,
+        reply: oneshot::Sender<Result<(), String>>,
+        _reservation: Reservation,
+    },
+    Devices {
+        reply: oneshot::Sender<Result<(), String>>,
+        _reservation: Reservation,
+    },
 }
 struct Inner {
     shared: Mutex<Shared>,
@@ -41,12 +91,14 @@ struct Inner {
     admissions: Arc<Semaphore>,
     prompts: Arc<Semaphore>,
     // Serializes a power transition with start admission and runtime handoff.
-    suspended: Mutex<bool>,
+    admission: Mutex<Admission>,
+    requests: Sender<SettingsCommand>,
 }
 #[derive(Clone)]
 pub struct Desktop(Arc<Inner>);
 impl Desktop {
     pub fn spawn(app: tauri::AppHandle) -> Result<Self, String> {
+        let (requests, receive) = bounded(8);
         let desktop = Self(Arc::new(Inner {
             shared: Mutex::new(Shared {
                 view: initial(),
@@ -54,6 +106,7 @@ impl Desktop {
                 settings: Settings::default(),
                 action_error: None,
                 settings_requests: 0,
+                preferences: PreferenceState::default(),
             }),
             closing: AtomicBool::new(false),
             refresh: AtomicBool::new(true),
@@ -61,14 +114,15 @@ impl Desktop {
             finished: AtomicBool::new(false),
             admissions: Arc::new(Semaphore::new(16)),
             prompts: Arc::new(Semaphore::new(1)),
-            suspended: Mutex::new(false),
+            admission: Mutex::new(Admission::default()),
+            requests,
         }));
         let owner = desktop.clone();
         let worker = thread::Builder::new()
             .name("desktop-owner".into())
             .spawn(move || {
                 let _finished = Finish(Arc::clone(&owner.0));
-                owner.run(app)
+                owner.run(app, receive)
             })
             .map_err(|error| error.to_string())?;
         *desktop.0.worker.lock().map_err(|_| "Desktop lock failed")? = Some(worker);
@@ -145,9 +199,9 @@ impl Desktop {
     }
     /// Called by the native notification observer. Never joins workers or resumes recording.
     pub fn set_suspended(&self, sleeping: bool) -> Result<(), String> {
-        let mut suspended = self.0.suspended.lock().map_err(|_| "Power lock failed")?;
-        *suspended = sleeping;
-        if !*suspended {
+        let mut suspended = self.0.admission.lock().map_err(|_| "Power lock failed")?;
+        suspended.suspended = sleeping;
+        if !suspended.suspended {
             self.refresh_permissions();
         }
         if self.0.closing.load(Ordering::Acquire) {
@@ -167,7 +221,7 @@ impl Desktop {
                 Err(error) => return Err(error.to_string()),
             };
             if let Some(runtime) = runtime {
-                if *suspended {
+                if suspended.suspended {
                     runtime.suspend().map_err(|error| error.to_string())?;
                 } else {
                     runtime.resume().map_err(|error| error.to_string())?;
@@ -229,10 +283,29 @@ impl Desktop {
         delivery: bool,
         toggle: bool,
     ) -> Result<oneshot::Receiver<Result<(), String>>, String> {
-        let suspended = self.0.suspended.lock().map_err(|_| "Power lock failed")?;
-        if *suspended {
+        let mut admission = self
+            .0
+            .admission
+            .lock()
+            .map_err(|_| "Admission lock failed")?;
+        if admission.suspended {
             return Err("Aufnahme während des Ruhezustands nicht verfügbar".into());
         }
+        if admission.changing_settings || admission.pending_starts >= 16 {
+            return Err(
+                "Einstellungen werden geändert oder eine Aufnahme wird noch gestartet".into(),
+            );
+        }
+        let settings = {
+            let shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+            if shared.preferences.needs_restart {
+                return Err(
+                    "Einstellungen konnten nicht wiederhergestellt werden; bitte neu starten"
+                        .into(),
+                );
+            }
+            shared.settings.clone()
+        };
         let runtime = self.runtime()?;
         let stopping = toggle
             && matches!(
@@ -246,14 +319,7 @@ impl Desktop {
         if !stopping && ui_services::microphone_authorization() != MicAuthorization::Granted {
             return Err("Bitte zuerst den Mikrofonzugriff freigeben".into());
         }
-        let settings = self
-            .0
-            .shared
-            .lock()
-            .map_err(|_| "Desktop lock failed")?
-            .settings
-            .clone();
-        runtime
+        let reply = runtime
             .start(
                 SessionSettings {
                     device: settings.device,
@@ -264,7 +330,14 @@ impl Desktop {
                 delivery,
                 toggle,
             )
-            .map_err(|error| error.to_string())
+            .map_err(|error| error.to_string())?;
+        admission.pending_starts += 1;
+        let reservation = Reservation {
+            owner: Arc::clone(&self.0),
+            kind: ReservationKind::Start,
+        };
+        drop(admission);
+        Ok(forward_start(reply, reservation))
     }
     pub async fn start_recording(&self) -> Result<(), String> {
         let _admission = self
@@ -353,6 +426,213 @@ impl Desktop {
             }
         }
     }
+    pub async fn save_settings(&self, draft: SettingsDraft) -> Result<(), String> {
+        let _permit = self.ui_permit()?;
+        self.enqueue_settings(draft)?
+            .await
+            .map_err(|_| "Einstellungsanfrage beendet".to_owned())?
+    }
+    fn enqueue_settings(
+        &self,
+        draft: SettingsDraft,
+    ) -> Result<oneshot::Receiver<Result<(), String>>, String> {
+        let mut admission = self
+            .0
+            .admission
+            .lock()
+            .map_err(|_| "Admission lock failed")?;
+        if self.0.closing.load(Ordering::Acquire) {
+            return Err("Anwendung wird beendet".into());
+        }
+        if admission.changing_settings || admission.pending_starts != 0 {
+            return Err("Eine Aufnahme oder Einstellungsänderung wird noch gestartet".into());
+        }
+        let current = {
+            let shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+            if shared.preferences.needs_restart {
+                return Err(
+                    "Bitte Anwendung neu starten, bevor Einstellungen geändert werden".into(),
+                );
+            }
+            shared.settings.clone()
+        };
+        draft.clone().apply_to(&current).map_err(preference_error)?;
+        let client = self.app_client()?;
+        let setup = client
+            .snapshot()
+            .map_err(|error| error.to_string())?
+            .setup
+            .phase;
+        if matches!(
+            setup,
+            setup::Phase::Checking
+                | setup::Phase::Downloading
+                | setup::Phase::Loading
+                | setup::Phase::Cancelling
+        ) {
+            return Err("Bitte zuerst die Modelleinrichtung abschließen".into());
+        }
+        if client
+            .runtime()
+            .map_err(|error| error.to_string())?
+            .map(|runtime| runtime.snapshot().map_err(|error| error.to_string()))
+            .transpose()?
+            .is_some_and(|snapshot| snapshot.session.phase != Phase::Idle)
+        {
+            return Err("Einstellungen sind während eines Diktats gesperrt".into());
+        }
+        admission.changing_settings = true;
+        let reservation = Reservation {
+            owner: Arc::clone(&self.0),
+            kind: ReservationKind::Settings,
+        };
+        drop(admission);
+        let (reply, receive) = oneshot::channel();
+        self.0
+            .requests
+            .try_send(SettingsCommand::Save {
+                draft,
+                reply,
+                _reservation: reservation,
+            })
+            .map_err(|_| "Einstellungsanfrage konnte nicht angenommen werden".to_owned())?;
+        Ok(receive)
+    }
+    pub async fn refresh_devices(&self) -> Result<(), String> {
+        let _permit = self.ui_permit()?;
+        let receive = {
+            let mut admission = self
+                .0
+                .admission
+                .lock()
+                .map_err(|_| "Admission lock failed")?;
+            if self.0.closing.load(Ordering::Acquire) {
+                return Err("Anwendung wird beendet".into());
+            }
+            if admission.refreshing_devices {
+                return Err("Mikrofonliste wird bereits aktualisiert".into());
+            }
+            admission.refreshing_devices = true;
+            let reservation = Reservation {
+                owner: Arc::clone(&self.0),
+                kind: ReservationKind::Devices,
+            };
+            drop(admission);
+            let (reply, receive) = oneshot::channel();
+            self.0
+                .requests
+                .try_send(SettingsCommand::Devices {
+                    reply,
+                    _reservation: reservation,
+                })
+                .map_err(|_| "Mikrofonliste konnte nicht angefragt werden".to_owned())?;
+            receive
+        };
+        receive
+            .await
+            .map_err(|_| "Mikrofonanfrage beendet".to_owned())?
+    }
+    fn refresh_device_inventory(&self) -> Result<(), String> {
+        let result = crate::devices::input_devices();
+        let mut shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+        match result {
+            Ok(devices) => {
+                shared.preferences.devices = devices;
+                if !shared.preferences.needs_restart {
+                    shared.preferences.error = None;
+                }
+                Ok(())
+            }
+            Err(error) => {
+                shared.preferences.error = Some(error.clone());
+                Err(error)
+            }
+        }
+    }
+    fn process_settings(
+        &self,
+        request: SettingsCommand,
+        store: &PreferencesStore,
+        hotkeys: &mut Option<Hotkeys>,
+        app: &tauri::AppHandle,
+    ) {
+        match request {
+            SettingsCommand::Devices {
+                reply,
+                _reservation,
+            } => {
+                let result = self.refresh_device_inventory();
+                if reply.send(result).is_err() { /* caller no longer waiting */ }
+            }
+            SettingsCommand::Save {
+                draft,
+                reply,
+                _reservation,
+            } => {
+                let result = self.apply_preferences(draft, store, hotkeys, app);
+                if reply.send(result).is_err() { /* caller no longer waiting */ }
+            }
+        }
+    }
+    fn apply_preferences(
+        &self,
+        draft: SettingsDraft,
+        store: &PreferencesStore,
+        hotkeys: &mut Option<Hotkeys>,
+        app: &tauri::AppHandle,
+    ) -> Result<(), String> {
+        self.refresh_device_inventory()?;
+        let current = {
+            let shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+            if let Some(selected) = &draft.device
+                && !shared
+                    .preferences
+                    .devices
+                    .iter()
+                    .any(|device| device.name == *selected && device.available)
+            {
+                return Err(
+                    "Das gewählte Mikrofon ist nicht verfügbar oder nicht eindeutig".into(),
+                );
+            }
+            shared.settings.clone()
+        };
+        let mut binder = DesktopBinder {
+            hotkeys,
+            app,
+            desktop: self.clone(),
+            last_error: None,
+        };
+        let result = store.commit(&current, draft, &mut binder);
+        let native_error = binder.last_error.take();
+        let mut shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+        match result {
+            Ok(settings) => {
+                shared.settings = settings;
+                shared.preferences.error = None;
+                shared.action_error = None;
+                Ok(())
+            }
+            Err(error) => {
+                let degraded = matches!(error, PreferencesError::Degraded { .. });
+                let mut message = preference_error(error);
+                if let Some(native) = native_error {
+                    message.push_str(": ");
+                    message.push_str(&native);
+                }
+                shared.preferences.error = Some(message.clone());
+                shared.preferences.needs_restart |= degraded;
+                drop(shared);
+                if degraded
+                    && let Some(hotkeys) = binder.hotkeys
+                    && let Err(error) = hotkeys.shutdown()
+                {
+                    eprintln!("Shortcut cleanup after rollback failed: {error}");
+                }
+                Err(message)
+            }
+        }
+    }
     pub fn shutdown(&self) {
         self.0.closing.store(true, Ordering::Release);
         if let Ok(shared) = self.0.shared.lock()
@@ -384,7 +664,7 @@ impl Desktop {
             None => Ok(()),
         }
     }
-    fn run(&self, app: tauri::AppHandle) -> Result<(), String> {
+    fn run(&self, app: tauri::AppHandle, receive: Receiver<SettingsCommand>) -> Result<(), String> {
         let mut supervisor = None;
         let mut hotkeys = None;
         let result = (|| {
@@ -422,6 +702,14 @@ impl Desktop {
                 .lock()
                 .map_err(|_| "Desktop lock failed")?
                 .client = Some(client.clone());
+            let preference_store = PreferencesStore::new(
+                app.path()
+                    .app_data_dir()
+                    .map_err(|error| error.to_string())?,
+            );
+            if let Err(error) = self.refresh_device_inventory() {
+                self.action_error(error);
+            }
             let callback = self.clone();
             if self.0.closing.load(Ordering::Acquire) {
                 return Ok(());
@@ -433,20 +721,25 @@ impl Desktop {
                 Err(error) => self.action_error(format!("Tastenkürzel nicht verfügbar: {error}")),
             }
             while !self.0.closing.load(Ordering::Acquire) {
+                let pending = receive.try_recv().ok();
                 let application = client.snapshot().map_err(|error| error.to_string())?;
-                let suspended = self.0.suspended.lock().map_err(|_| "Power lock failed")?;
+                let suspended = self.0.admission.lock().map_err(|_| "Power lock failed")?;
                 let runtime = match client.runtime() {
                     Ok(runtime) => runtime,
                     Err(_) if self.0.closing.load(Ordering::Acquire) => break,
                     Err(error) => return Err(error.to_string()),
                 };
-                if *suspended && let Some(runtime) = &runtime {
+                if suspended.suspended
+                    && let Some(runtime) = &runtime
+                {
                     runtime.suspend().map_err(|error| error.to_string())?;
                 }
                 let runtime = runtime
                     .map(|runtime| runtime.snapshot())
                     .transpose()
                     .map_err(|error| error.to_string())?;
+                let changing_settings = suspended.changing_settings;
+                let refreshing_devices = suspended.refreshing_devices;
                 drop(suspended);
                 let active = runtime
                     .as_ref()
@@ -476,6 +769,15 @@ impl Desktop {
                     next.permissions = permissions(native);
                 }
                 next.settings_request = shared.settings_requests;
+                next.preferences = view::Preferences {
+                    current: draft_of(&shared.settings),
+                    devices: shared.preferences.devices.clone(),
+                    error: shared.preferences.error.clone(),
+                    refreshing: refreshing_devices,
+                    needs_restart: shared.preferences.needs_restart,
+                    languages: crate::preferences::SUPPORTED_LANGUAGES.to_vec(),
+                };
+                next.settings_busy |= changing_settings || shared.preferences.needs_restart;
                 next.error = shared.action_error.clone().or(next.error);
                 next.revision = shared.view.revision;
                 if next != shared.view {
@@ -488,6 +790,9 @@ impl Desktop {
                         .map_err(|error| error.to_string())?;
                 }
                 drop(shared);
+                if let Some(pending) = pending {
+                    self.process_settings(pending, &preference_store, &mut hotkeys, &app);
+                }
                 thread::sleep(Duration::from_millis(50));
             }
             Ok::<(), String>(())
@@ -540,6 +845,76 @@ fn valid_id(id: u64) -> Result<(), String> {
         Ok(())
     }
 }
+fn draft_of(settings: &Settings) -> SettingsDraft {
+    SettingsDraft {
+        device: settings.device.clone(),
+        language: settings.language,
+        hotkey: settings.hotkey.clone(),
+    }
+}
+fn forward_start(
+    reply: oneshot::Receiver<Result<(), String>>,
+    reservation: Reservation,
+) -> oneshot::Receiver<Result<(), String>> {
+    let (send, receive) = oneshot::channel();
+    tauri::async_runtime::spawn(async move {
+        let result = reply
+            .await
+            .unwrap_or_else(|_| Err("Aufnahmeanfrage beendet".into()));
+        // The Runtime publishes its state before the ACK. Caller cancellation
+        // cannot release this reservation while a queued start still exists.
+        drop(reservation);
+        if send.send(result).is_err() { /* caller no longer waiting */ }
+    });
+    receive
+}
+struct DesktopBinder<'a> {
+    hotkeys: &'a mut Option<Hotkeys>,
+    app: &'a tauri::AppHandle,
+    desktop: Desktop,
+    last_error: Option<String>,
+}
+impl HotkeyRebinder for DesktopBinder<'_> {
+    type Error = String;
+    fn binding(&self) -> Option<crate::settings::Hotkey> {
+        self.hotkeys.as_ref().and_then(Hotkeys::current_binding)
+    }
+    fn rebind(&mut self, requested: Option<&crate::settings::Hotkey>) -> Result<(), String> {
+        let result = match (requested, self.hotkeys.as_mut()) {
+            (Some(key), Some(owner)) => owner
+                .reconfigure(key.clone())
+                .map_err(|error| error.to_string()),
+            (Some(key), None) => {
+                let desktop = self.desktop.clone();
+                Hotkeys::install(self.app.clone(), key.clone(), move |event| {
+                    desktop.hotkey(event)
+                })
+                .map(|owner| *self.hotkeys = Some(owner))
+                .map_err(|error| error.to_string())
+            }
+            (None, Some(owner)) => owner
+                .shutdown()
+                .map(|()| *self.hotkeys = None)
+                .map_err(|error| error.to_string()),
+            (None, None) => Ok(()),
+        };
+        if let Err(error) = &result {
+            self.last_error = Some(error.clone());
+        }
+        result
+    }
+}
+fn preference_error(error: PreferencesError) -> String {
+    match error {
+        PreferencesError::LanguageUnavailable => "Diese Sprache ist noch nicht freigegeben".into(),
+        PreferencesError::Invalid(_) => "Mikrofon oder Tastenkürzel ist ungültig".into(),
+        PreferencesError::Registration => "Tastenkürzel konnte nicht registriert werden; vorherige Einstellung bleibt".into(),
+        PreferencesError::Storage => "Einstellungen konnten nicht gespeichert werden; vorherige Einstellung bleibt".into(),
+        PreferencesError::Stale => "Die Einstellungsdatei wurde geändert; bitte Anwendung neu starten".into(),
+        PreferencesError::Unreadable => "Die Einstellungsdatei konnte nicht sicher gelesen werden".into(),
+        PreferencesError::Degraded { .. } => "Einstellungen konnten nicht sicher wiederhergestellt werden. Tastenkürzel sind deaktiviert; bitte Anwendung neu starten".into(),
+    }
+}
 fn permissions(native: ui_services::PermissionSnapshot) -> view::Permissions {
     view::Permissions {
         microphone: match native.microphone {
@@ -580,6 +955,8 @@ fn initial() -> view::Snapshot {
             text: String::new(),
             outcome: None,
             maximum_warning: false,
+            elapsed_millis: 0,
+            level_permille: 0,
         },
         permissions: view::Permissions {
             microphone: view::PermissionStatus::Unavailable,
@@ -592,6 +969,14 @@ fn initial() -> view::Snapshot {
         },
         settings_busy: true,
         settings_request: 0,
+        preferences: view::Preferences {
+            current: draft_of(&settings),
+            devices: Vec::new(),
+            error: None,
+            refreshing: false,
+            needs_restart: false,
+            languages: crate::preferences::SUPPORTED_LANGUAGES.to_vec(),
+        },
         error: None,
     }
 }
@@ -681,6 +1066,8 @@ fn project(
         result.session.id = runtime.session.session;
         result.session.text = runtime.session.text.clone().unwrap_or_default();
         result.session.maximum_warning = runtime.maximum_warning;
+        result.session.elapsed_millis = runtime.elapsed_millis;
+        result.session.level_permille = runtime.level_permille;
         result.session.outcome = runtime
             .session
             .outcome
@@ -715,6 +1102,7 @@ mod tests {
     use super::*;
     use crate::{controller::SessionSnapshot, model::REFERENCE, runtime::RuntimeSnapshot};
     fn unstarted_desktop() -> Desktop {
+        let (requests, _) = bounded(8);
         Desktop(Arc::new(Inner {
             shared: Mutex::new(Shared {
                 view: initial(),
@@ -722,6 +1110,7 @@ mod tests {
                 settings: Settings::default(),
                 action_error: None,
                 settings_requests: 0,
+                preferences: PreferenceState::default(),
             }),
             closing: AtomicBool::new(false),
             refresh: AtomicBool::new(false),
@@ -729,7 +1118,8 @@ mod tests {
             finished: AtomicBool::new(false),
             admissions: Arc::new(Semaphore::new(16)),
             prompts: Arc::new(Semaphore::new(1)),
-            suspended: Mutex::new(false),
+            admission: Mutex::new(Admission::default()),
+            requests,
         }))
     }
     #[test]
@@ -904,6 +1294,8 @@ mod tests {
                 outcome: None,
             },
             maximum_warning: true,
+            elapsed_millis: 0,
+            level_permille: 0,
             error: None,
         };
         let result = project(
@@ -932,6 +1324,8 @@ mod tests {
                 outcome: Some(Outcome::Held("Original field changed".into())),
             },
             maximum_warning: false,
+            elapsed_millis: 0,
+            level_permille: 0,
             error: None,
         };
         let result = project(
@@ -951,5 +1345,231 @@ mod tests {
         assert!(valid_id(9_007_199_254_740_992).is_err());
         assert!(valid_id(1).is_ok());
         assert!(valid_id(9_007_199_254_740_991).is_ok());
+    }
+
+    fn start_reservation(desktop: &Desktop) -> Result<Reservation, String> {
+        desktop
+            .0
+            .admission
+            .lock()
+            .map_err(|_| "admission lock")?
+            .pending_starts += 1;
+        Ok(Reservation {
+            owner: Arc::clone(&desktop.0),
+            kind: ReservationKind::Start,
+        })
+    }
+
+    fn await_start_release(desktop: &Desktop) -> Result<(), String> {
+        let deadline = std::time::Instant::now() + Duration::from_secs(2);
+        while desktop
+            .0
+            .admission
+            .lock()
+            .map_err(|_| "admission lock")?
+            .pending_starts
+            != 0
+        {
+            if std::time::Instant::now() >= deadline {
+                return Err("start reservation was not released".into());
+            }
+            thread::sleep(Duration::from_millis(1));
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn dropped_start_caller_retains_reservation_until_real_ack()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let desktop = unstarted_desktop();
+        let (complete, pending) = oneshot::channel();
+        let caller = forward_start(pending, start_reservation(&desktop)?);
+        drop(caller);
+        assert!(
+            matches!(desktop.enqueue_settings(draft_of(&Settings::default())), Err(message) if message == "Eine Aufnahme oder Einstellungsänderung wird noch gestartet")
+        );
+        // Give the detached forwarding task time to observe the closed caller.
+        // A closed UI receiver must not complete the still-pending runtime request.
+        let deadline = std::time::Instant::now() + Duration::from_millis(25);
+        while std::time::Instant::now() < deadline {
+            assert_eq!(
+                desktop
+                    .0
+                    .admission
+                    .lock()
+                    .map_err(|_| "admission lock")?
+                    .pending_starts,
+                1
+            );
+            assert!(!complete.is_closed());
+            thread::sleep(Duration::from_millis(1));
+        }
+        assert!(complete.send(Ok(())).is_ok());
+        await_start_release(&desktop)?;
+        assert!(
+            matches!(desktop.enqueue_settings(draft_of(&Settings::default())), Err(message) if message == "Anwendung wird eingerichtet")
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn failed_or_closed_real_ack_releases_start_and_forwards_failure()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for closed in [false, true] {
+            let desktop = unstarted_desktop();
+            let (complete, pending) = oneshot::channel();
+            let caller = forward_start(pending, start_reservation(&desktop)?);
+            if closed {
+                drop(complete);
+            } else {
+                assert!(complete.send(Err("start rejected".into())).is_ok());
+            }
+            let result = tauri::async_runtime::block_on(caller)?;
+            assert_eq!(
+                result,
+                Err(if closed {
+                    "Aufnahmeanfrage beendet"
+                } else {
+                    "start rejected"
+                }
+                .into())
+            );
+            assert_eq!(
+                desktop
+                    .0
+                    .admission
+                    .lock()
+                    .map_err(|_| "admission lock")?
+                    .pending_starts,
+                0
+            );
+        }
+        Ok(())
+    }
+
+    struct SettingsQueueFixture {
+        desktop: Desktop,
+        requests: Receiver<SettingsCommand>,
+        supervisor: AppSupervisor,
+        _directory: tempfile::TempDir,
+    }
+
+    fn desktop_with_settings_queue() -> Result<SettingsQueueFixture, Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let supervisor =
+            AppSupervisor::spawn(directory.path().join("no-models"), REFERENCE, |_| {
+                Err("empty-cache fixture must never start native services".into())
+            })?;
+        let client = supervisor.client();
+        let deadline = std::time::Instant::now() + Duration::from_secs(2);
+        while {
+            let snapshot = client.snapshot()?;
+            snapshot.setup.phase != setup::Phase::Missing || snapshot.revision <= 1
+        } {
+            if std::time::Instant::now() >= deadline {
+                return Err("empty cache check did not complete".into());
+            }
+            thread::sleep(Duration::from_millis(1));
+        }
+        let mut desktop = unstarted_desktop();
+        let (requests, receive) = bounded(8);
+        Arc::get_mut(&mut desktop.0)
+            .ok_or("fixture unexpectedly shared")?
+            .requests = requests;
+        desktop.0.shared.lock().map_err(|_| "desktop lock")?.client = Some(client);
+        Ok(SettingsQueueFixture {
+            desktop,
+            requests: receive,
+            supervisor,
+            _directory: directory,
+        })
+    }
+
+    #[test]
+    fn settings_request_survives_caller_drop_and_blocks_start_until_owner_finishes()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let SettingsQueueFixture {
+            desktop,
+            requests,
+            supervisor,
+            _directory,
+        } = desktop_with_settings_queue()?;
+        let caller = desktop.enqueue_settings(draft_of(&Settings::default()))?;
+        drop(caller);
+        assert!(
+            matches!(desktop.start_request(None, false, false), Err(message) if message.contains("Einstellungen werden geändert"))
+        );
+        assert!(
+            desktop
+                .enqueue_settings(draft_of(&Settings::default()))
+                .is_err()
+        );
+        let SettingsCommand::Save {
+            reply,
+            _reservation,
+            ..
+        } = requests.recv_timeout(Duration::from_secs(1))?
+        else {
+            return Err("expected settings request".into());
+        };
+        assert!(
+            desktop
+                .0
+                .admission
+                .lock()
+                .map_err(|_| "admission lock")?
+                .changing_settings
+        );
+        assert!(reply.send(Ok(())).is_err());
+        // The owner, not delivery of its acknowledgement, releases the reservation.
+        assert!(
+            desktop
+                .0
+                .admission
+                .lock()
+                .map_err(|_| "admission lock")?
+                .changing_settings
+        );
+        drop(_reservation);
+        assert!(
+            !desktop
+                .0
+                .admission
+                .lock()
+                .map_err(|_| "admission lock")?
+                .changing_settings
+        );
+        assert!(
+            matches!(desktop.start_request(None, false, false), Err(message) if message == "Spracherkennung ist noch nicht bereit")
+        );
+        supervisor.join()?;
+        Ok(())
+    }
+
+    #[test]
+    fn disconnected_settings_queue_releases_the_settings_flag()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let SettingsQueueFixture {
+            desktop,
+            requests,
+            supervisor,
+            _directory,
+        } = desktop_with_settings_queue()?;
+        drop(requests);
+        for _ in 0..2 {
+            assert!(
+                matches!(desktop.enqueue_settings(draft_of(&Settings::default())), Err(message) if message == "Einstellungsanfrage konnte nicht angenommen werden")
+            );
+            assert!(
+                !desktop
+                    .0
+                    .admission
+                    .lock()
+                    .map_err(|_| "admission lock")?
+                    .changing_settings
+            );
+        }
+        supervisor.join()?;
+        Ok(())
     }
 }

@@ -67,6 +67,9 @@ pub struct Session {
     pub text: String,
     pub outcome: Option<SessionOutcome>,
     pub maximum_warning: bool,
+    #[ts(type = "number")]
+    pub elapsed_millis: u64,
+    pub level_permille: u16,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(deny_unknown_fields)]
@@ -83,6 +86,16 @@ pub struct Labels {
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Preferences {
+    pub current: crate::preferences::SettingsDraft,
+    pub devices: Vec<crate::devices::InputDevice>,
+    pub error: Option<String>,
+    pub refreshing: bool,
+    pub needs_restart: bool,
+    pub languages: Vec<crate::settings::SettingsLanguage>,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Snapshot {
     #[ts(type = "number")]
     pub revision: u64,
@@ -93,5 +106,6 @@ pub struct Snapshot {
     pub labels: Labels,
     pub settings_busy: bool,
     pub settings_request: u32,
+    pub preferences: Preferences,
     pub error: Option<String>,
 }
