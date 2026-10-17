@@ -4,7 +4,7 @@ use dictation_core::audio::AudioFormat;
 use everlast_dictation::audio::{
     CaptureEvent, CaptureHandle,
     replay::{
-        clock::{Publication, feed},
+        clock::{Publication, WaitSummary, feed},
         schedule::{JITTER_TOLERANCE, ReplaySchedule},
     },
 };
@@ -33,6 +33,7 @@ pub struct Run {
     pub join_unverified: bool,
     pub join_failure: Option<String>,
     pub publications: Vec<Publication>,
+    pub wait_summary: Option<WaitSummary>,
 }
 
 fn drain_events(
@@ -132,6 +133,7 @@ pub fn run(samples: &[f32], finish_budget: Duration) -> Run {
                     && stop - evidence.planned_stop_offset <= JITTER_TOLERANCE;
                 run.planned_stop_offset_nanos = Some(evidence.planned_stop_offset.as_nanos());
                 run.publications = evidence.publications;
+                run.wait_summary = Some(evidence.wait_summary);
             }
             Err(error) => {
                 run.observation_failure = Some(error.to_string());
@@ -198,6 +200,8 @@ mod tests {
         assert_eq!(json["publications"].as_array().map(Vec::len), Some(1));
         assert!(json["observationFailure"].is_string());
         assert_eq!(json["passed"], false);
+        assert_eq!(json["waitSummary"]["observedPublications"], 1);
+        assert!(json["waitSummary"]["maxReserveNanos"].is_number());
         Ok(())
     }
 
