@@ -6,8 +6,9 @@ use crate::{
     hotkeys::{self, Hotkeys},
     preferences::{HotkeyRebinder, PreferencesError, PreferencesStore, SettingsDraft},
     runtime::Client as RuntimeClient,
-    settings::{Settings, SettingsStore},
+    settings::Settings,
     setup,
+    startup_settings::StartupSettings,
 };
 use crossbeam_channel::{Receiver, Sender, bounded};
 use dictation_core::session::{Outcome, Phase};
@@ -40,6 +41,7 @@ struct PreferenceState {
     devices: Vec<crate::devices::InputDevice>,
     error: Option<String>,
     needs_restart: bool,
+    recovery_required: bool,
 }
 #[derive(Default)]
 struct Admission {
@@ -72,6 +74,10 @@ impl Drop for Reservation {
     }
 }
 enum SettingsCommand {
+    Reset {
+        reply: oneshot::Sender<Result<(), String>>,
+        _reservation: Reservation,
+    },
     Save {
         draft: SettingsDraft,
         reply: oneshot::Sender<Result<(), String>>,
@@ -498,6 +504,52 @@ impl Desktop {
             .map_err(|_| "Einstellungsanfrage konnte nicht angenommen werden".to_owned())?;
         Ok(receive)
     }
+    pub async fn reset_settings(&self) -> Result<(), String> {
+        let _permit = self.ui_permit()?;
+        self.enqueue_reset()?
+            .await
+            .map_err(|_| "Zurücksetzen wurde beendet".to_owned())?
+    }
+    fn enqueue_reset(&self) -> Result<oneshot::Receiver<Result<(), String>>, String> {
+        let mut admission = self
+            .0
+            .admission
+            .lock()
+            .map_err(|_| "Admission lock failed")?;
+        if self.0.closing.load(Ordering::Acquire) {
+            return Err("Anwendung wird beendet".into());
+        }
+        if admission.changing_settings || admission.pending_starts != 0 {
+            return Err("Eine Einstellungsanfrage läuft bereits".into());
+        }
+        if !self
+            .0
+            .shared
+            .lock()
+            .map_err(|_| "Desktop lock failed")?
+            .preferences
+            .recovery_required
+        {
+            return Err(
+                "Zurücksetzen ist nur bei nicht lesbaren Starteinstellungen möglich".into(),
+            );
+        }
+        admission.changing_settings = true;
+        let reservation = Reservation {
+            owner: Arc::clone(&self.0),
+            kind: ReservationKind::Settings,
+        };
+        drop(admission);
+        let (reply, receive) = oneshot::channel();
+        self.0
+            .requests
+            .try_send(SettingsCommand::Reset {
+                reply,
+                _reservation: reservation,
+            })
+            .map_err(|_| "Zurücksetzen konnte nicht angefragt werden".to_owned())?;
+        Ok(receive)
+    }
     pub async fn refresh_devices(&self) -> Result<(), String> {
         let _permit = self.ui_permit()?;
         let receive = {
@@ -538,7 +590,7 @@ impl Desktop {
         match result {
             Ok(devices) => {
                 shared.preferences.devices = devices;
-                if !shared.preferences.needs_restart {
+                if !shared.preferences.needs_restart && !shared.preferences.recovery_required {
                     shared.preferences.error = None;
                 }
                 Ok(())
@@ -557,6 +609,15 @@ impl Desktop {
         app: &tauri::AppHandle,
     ) {
         match request {
+            SettingsCommand::Reset {
+                reply,
+                _reservation,
+            } => {
+                if reply
+                    .send(Err("Starteinstellungen sind bereits gültig".into()))
+                    .is_err()
+                { /* caller gone */ }
+            }
             SettingsCommand::Devices {
                 reply,
                 _reservation,
@@ -633,19 +694,28 @@ impl Desktop {
             }
         }
     }
-    pub fn shutdown(&self) {
-        self.0.closing.store(true, Ordering::Release);
+    fn close(&self) -> bool {
+        let first = {
+            let _admission = self
+                .0
+                .admission
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            !self.0.closing.swap(true, Ordering::AcqRel)
+        };
         if let Ok(shared) = self.0.shared.lock()
             && let Some(client) = &shared.client
             && let Err(error) = client.shutdown()
         {
             eprintln!("Application shutdown request failed: {error}");
         }
+        first
+    }
+    pub fn shutdown(&self) {
+        self.close();
     }
     pub fn begin_shutdown(&self) -> bool {
-        let first = !self.0.closing.swap(true, Ordering::AcqRel);
-        self.shutdown();
-        first
+        self.close()
     }
     pub fn is_finished(&self) -> bool {
         self.0.finished.load(Ordering::Acquire)
@@ -664,6 +734,109 @@ impl Desktop {
             None => Ok(()),
         }
     }
+    fn publish_recovery(
+        &self,
+        error: Option<&str>,
+        publish: &mut impl FnMut(&view::Snapshot) -> Result<(), String>,
+    ) -> Result<(), String> {
+        let mut shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+        shared.preferences.recovery_required = error.is_some();
+        shared.preferences.error = error.map(str::to_owned);
+        shared.view.preferences.recovery_required = error.is_some();
+        shared.view.preferences.error = error.map(str::to_owned);
+        shared.view.setup.phase = if error.is_some() {
+            view::SetupPhase::Failed
+        } else {
+            view::SetupPhase::Checking
+        };
+        shared.view.setup.error = error.map(str::to_owned);
+        shared.view.settings_busy = true;
+        shared.view.revision = shared
+            .view
+            .revision
+            .checked_add(1)
+            .ok_or("Snapshot revision exhausted")?;
+        publish(&shared.view)
+    }
+    fn await_startup_settings(
+        &self,
+        startup: &mut StartupSettings,
+        receive: &Receiver<SettingsCommand>,
+        mut publish: impl FnMut(&view::Snapshot) -> Result<(), String>,
+    ) -> Result<Option<Settings>, String> {
+        if let Some(settings) = startup.ready() {
+            return Ok(Some(settings.clone()));
+        }
+        self.publish_recovery(startup.error(), &mut publish)?;
+        while !self.0.closing.load(Ordering::Acquire) {
+            match receive.recv_timeout(Duration::from_millis(50)) {
+                Ok(SettingsCommand::Reset {
+                    reply,
+                    _reservation,
+                }) => {
+                    let result = startup.reset();
+                    self.publish_recovery(startup.error(), &mut publish)?;
+                    let success = result.is_ok();
+                    if reply.send(result.map(|_| ())).is_err() { /* explicit request survives caller drop */
+                    }
+                    if success {
+                        return Ok((!self.0.closing.load(Ordering::Acquire))
+                            .then(|| startup.ready().cloned())
+                            .flatten());
+                    }
+                }
+                Ok(SettingsCommand::Save {
+                    reply,
+                    _reservation,
+                    ..
+                }) => {
+                    if reply
+                        .send(Err(
+                            "Bitte zuerst die Starteinstellungen wiederherstellen".into()
+                        ))
+                        .is_err()
+                    { /* caller gone */ }
+                }
+                Ok(SettingsCommand::Devices {
+                    reply,
+                    _reservation,
+                }) => {
+                    if reply
+                        .send(Err(
+                            "Bitte zuerst die Starteinstellungen wiederherstellen".into()
+                        ))
+                        .is_err()
+                    { /* caller gone */ }
+                }
+                Err(crossbeam_channel::RecvTimeoutError::Timeout) => {}
+                Err(crossbeam_channel::RecvTimeoutError::Disconnected) => {
+                    return Err("Einstellungsdienst beendet".into());
+                }
+            }
+        }
+        Ok(None)
+    }
+    /// Publish the owner before releasing admission, so shutdown either wins
+    /// before construction or observes the newly admitted client's shutdown port.
+    fn install_application(
+        &self,
+        settings: &Settings,
+        create: impl FnOnce() -> Result<AppSupervisor, String>,
+    ) -> Result<Option<AppSupervisor>, String> {
+        let _admission = self
+            .0
+            .admission
+            .lock()
+            .map_err(|_| "Admission lock failed")?;
+        if self.0.closing.load(Ordering::Acquire) {
+            return Ok(None);
+        }
+        let supervisor = create()?;
+        let mut shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+        shared.settings = settings.clone();
+        shared.client = Some(supervisor.client());
+        Ok(Some(supervisor))
+    }
     fn run(&self, app: tauri::AppHandle, receive: Receiver<SettingsCommand>) -> Result<(), String> {
         let mut supervisor = None;
         let mut hotkeys = None;
@@ -675,33 +848,23 @@ impl Desktop {
                 .path()
                 .app_data_dir()
                 .map_err(|error| error.to_string())?;
-            let store = SettingsStore::new(directory);
-            let settings = match store.load().map_err(|error| error.to_string())? {
-                Some(settings) => settings,
-                None => {
-                    let settings = Settings::default();
-                    store.save(&settings).map_err(|error| error.to_string())?;
-                    settings
-                }
+            let mut startup = StartupSettings::load(directory);
+            let Some(settings) =
+                self.await_startup_settings(&mut startup, &receive, |snapshot| {
+                    app.emit(SNAPSHOT_EVENT, snapshot)
+                        .map_err(|error| error.to_string())
+                })?
+            else {
+                return Ok(());
             };
-            supervisor = Some(
+            supervisor = self.install_application(&settings, || {
                 AppSupervisor::for_app(app.clone(), settings.model.definition())
-                    .map_err(|error| error.to_string())?,
-            );
-            let client = supervisor
-                .as_ref()
-                .ok_or("Application owner missing")?
-                .client();
-            self.0
-                .shared
-                .lock()
-                .map_err(|_| "Desktop lock failed")?
-                .settings = settings.clone();
-            self.0
-                .shared
-                .lock()
-                .map_err(|_| "Desktop lock failed")?
-                .client = Some(client.clone());
+                    .map_err(|error| error.to_string())
+            })?;
+            let Some(owner) = supervisor.as_ref() else {
+                return Ok(());
+            };
+            let client = owner.client();
             let preference_store = PreferencesStore::new(
                 app.path()
                     .app_data_dir()
@@ -775,6 +938,7 @@ impl Desktop {
                     error: shared.preferences.error.clone(),
                     refreshing: refreshing_devices,
                     needs_restart: shared.preferences.needs_restart,
+                    recovery_required: shared.preferences.recovery_required,
                     languages: crate::preferences::SUPPORTED_LANGUAGES.to_vec(),
                 };
                 next.settings_busy |= changing_settings || shared.preferences.needs_restart;
@@ -975,6 +1139,7 @@ fn initial() -> view::Snapshot {
             error: None,
             refreshing: false,
             needs_restart: false,
+            recovery_required: false,
             languages: crate::preferences::SUPPORTED_LANGUAGES.to_vec(),
         },
         error: None,
@@ -1570,6 +1735,294 @@ mod tests {
             );
         }
         supervisor.join()?;
+        Ok(())
+    }
+
+    fn recovery_desktop(capacity: usize) -> Result<(Desktop, Receiver<SettingsCommand>), String> {
+        let mut desktop = unstarted_desktop();
+        let (requests, receive) = bounded(capacity);
+        Arc::get_mut(&mut desktop.0)
+            .ok_or("fixture unexpectedly shared")?
+            .requests = requests;
+        Ok((desktop, receive))
+    }
+
+    #[test]
+    fn healthy_startup_rejects_reset_without_queuing_or_reserving()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (desktop, requests) = recovery_desktop(8)?;
+        let directory = tempfile::tempdir()?;
+        let mut startup = StartupSettings::load(directory.path());
+        let ready = desktop.await_startup_settings(&mut startup, &requests, |_| {
+            Err("healthy startup must not publish recovery".into())
+        })?;
+        assert_eq!(ready, Some(Settings::default()));
+        assert!(
+            matches!(desktop.enqueue_reset(), Err(message) if message.contains("nur bei nicht lesbaren Starteinstellungen"))
+        );
+        assert!(requests.is_empty());
+        assert!(
+            !desktop
+                .0
+                .admission
+                .lock()
+                .map_err(|_| "admission lock")?
+                .changing_settings
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn recovery_allows_one_reset_and_caller_drop_does_not_release_its_reservation()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (desktop, requests) = recovery_desktop(8)?;
+        desktop
+            .0
+            .shared
+            .lock()
+            .map_err(|_| "desktop lock")?
+            .preferences
+            .recovery_required = true;
+        let caller = desktop.enqueue_reset()?;
+        drop(caller);
+        assert!(
+            matches!(desktop.enqueue_reset(), Err(message) if message == "Eine Einstellungsanfrage läuft bereits")
+        );
+        assert_eq!(requests.len(), 1);
+        let command = requests.recv_timeout(Duration::from_secs(1))?;
+        assert!(
+            desktop
+                .0
+                .admission
+                .lock()
+                .map_err(|_| "admission lock")?
+                .changing_settings
+        );
+        let SettingsCommand::Reset {
+            reply,
+            _reservation,
+        } = command
+        else {
+            return Err("expected Reset".into());
+        };
+        assert!(reply.send(Ok(())).is_err());
+        assert!(
+            desktop
+                .0
+                .admission
+                .lock()
+                .map_err(|_| "admission lock")?
+                .changing_settings
+        );
+        drop(_reservation);
+        assert!(
+            !desktop
+                .0
+                .admission
+                .lock()
+                .map_err(|_| "admission lock")?
+                .changing_settings
+        );
+        let next = desktop.enqueue_reset()?;
+        drop(requests.recv_timeout(Duration::from_secs(1))?);
+        assert!(tauri::async_runtime::block_on(next).is_err());
+        assert!(
+            !desktop
+                .0
+                .admission
+                .lock()
+                .map_err(|_| "admission lock")?
+                .changing_settings
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn failed_reset_enqueue_releases_admission_for_full_and_disconnected_queues()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for disconnected in [false, true] {
+            // A zero-capacity connected channel deterministically exercises Full;
+            // no waiting owner exists. Drop its receiver to exercise Disconnected.
+            let (desktop, receiver) = recovery_desktop(0)?;
+            let receiver = (!disconnected).then_some(receiver);
+            desktop
+                .0
+                .shared
+                .lock()
+                .map_err(|_| "desktop lock")?
+                .preferences
+                .recovery_required = true;
+            for _ in 0..2 {
+                assert!(
+                    matches!(desktop.enqueue_reset(), Err(message) if message == "Zurücksetzen konnte nicht angefragt werden")
+                );
+                assert!(
+                    !desktop
+                        .0
+                        .admission
+                        .lock()
+                        .map_err(|_| "admission lock")?
+                        .changing_settings
+                );
+            }
+            drop(receiver);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn shutdown_rejects_recovery_reset_without_reserving_or_queuing()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (desktop, requests) = recovery_desktop(8)?;
+        desktop
+            .0
+            .shared
+            .lock()
+            .map_err(|_| "desktop lock")?
+            .preferences
+            .recovery_required = true;
+        desktop.shutdown();
+        assert!(
+            matches!(desktop.enqueue_reset(), Err(message) if message == "Anwendung wird beendet")
+        );
+        assert!(requests.is_empty());
+        assert!(
+            !desktop
+                .0
+                .admission
+                .lock()
+                .map_err(|_| "admission lock")?
+                .changing_settings
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn startup_waitloop_recovers_only_after_explicit_reset_without_restart()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (desktop, requests) = recovery_desktop(8)?;
+        struct ShutdownOnDrop(Desktop);
+        impl Drop for ShutdownOnDrop {
+            fn drop(&mut self) {
+                self.0.shutdown();
+            }
+        }
+        let _shutdown = ShutdownOnDrop(desktop.clone());
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("settings.json");
+        let invalid = b"invalid settings, preserve until reset";
+        std::fs::write(&path, invalid)?;
+        let mut startup = StartupSettings::load(directory.path());
+        let owner = desktop.clone();
+        let (published, snapshots) = bounded(2);
+        let worker = thread::spawn(move || {
+            owner.await_startup_settings(&mut startup, &requests, |snapshot| {
+                published
+                    .try_send(snapshot.clone())
+                    .map_err(|_| "snapshot receiver unavailable".into())
+            })
+        });
+        let recovery = snapshots.recv_timeout(Duration::from_secs(2))?;
+        assert!(recovery.preferences.recovery_required);
+        assert!(recovery.preferences.error.is_some());
+        assert_eq!(recovery.setup.phase, view::SetupPhase::Failed);
+        assert!(
+            desktop
+                .0
+                .shared
+                .lock()
+                .map_err(|_| "desktop lock")?
+                .client
+                .is_none()
+        );
+        assert_eq!(std::fs::read(&path)?, invalid);
+        let result = tauri::async_runtime::block_on(desktop.enqueue_reset()?)?;
+        assert_eq!(result, Ok(()));
+        let ready = snapshots.recv_timeout(Duration::from_secs(2))?;
+        assert!(!ready.preferences.recovery_required);
+        assert_eq!(ready.preferences.error, None);
+        assert_eq!(ready.setup.phase, view::SetupPhase::Checking);
+        assert_eq!(
+            worker.join().map_err(|_| "startup owner panicked")??,
+            Some(Settings::default())
+        );
+        assert_eq!(
+            crate::settings::SettingsStore::new(directory.path()).load()?,
+            Some(Settings::default())
+        );
+        assert!(
+            !desktop
+                .0
+                .admission
+                .lock()
+                .map_err(|_| "admission lock")?
+                .changing_settings
+        );
+        assert!(desktop.enqueue_reset().is_err());
+        Ok(())
+    }
+    #[test]
+    fn shutdown_during_recovery_publication_does_not_resume_startup()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (desktop, requests) = recovery_desktop(8)?;
+        let directory = tempfile::tempdir()?;
+        std::fs::write(directory.path().join("settings.json"), b"broken")?;
+        let mut startup = StartupSettings::load(directory.path());
+        desktop
+            .0
+            .shared
+            .lock()
+            .map_err(|_| "desktop lock")?
+            .preferences
+            .recovery_required = true;
+        let reply = desktop.enqueue_reset()?;
+        let ready = desktop.await_startup_settings(&mut startup, &requests, |snapshot| {
+            if !snapshot.preferences.recovery_required {
+                // Simulate shutdown winning while publication still owns the shared lock.
+                desktop.0.closing.store(true, Ordering::Release);
+            }
+            Ok(())
+        })?;
+        assert!(ready.is_none(), "shutdown must prevent resumed startup");
+        assert!(
+            startup.ready().is_some(),
+            "explicit reset itself may complete"
+        );
+        assert_eq!(tauri::async_runtime::block_on(reply)?, Ok(()));
+        Ok(())
+    }
+
+    #[test]
+    fn shutdown_before_application_handoff_never_constructs_services()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let desktop = unstarted_desktop();
+        assert!(desktop.begin_shutdown());
+        assert!(!desktop.begin_shutdown());
+        let result = desktop.install_application(&Settings::default(), || {
+            Err("factory must not execute after shutdown".into())
+        })?;
+        assert!(result.is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn shutdown_after_application_admission_observes_its_published_client()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let desktop = unstarted_desktop();
+        let directory = tempfile::tempdir()?;
+        let owner = desktop
+            .install_application(&Settings::default(), || {
+                AppSupervisor::spawn(
+                    directory.path().to_path_buf(),
+                    crate::model::REFERENCE,
+                    |_| Err("no model in fixture".into()),
+                )
+                .map_err(|error| error.to_string())
+            })?
+            .ok_or("owner not admitted")?;
+        desktop.shutdown();
+        assert!(owner.client().snapshot()?.closing);
+        owner.join()?;
         Ok(())
     }
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AppView } from "./features/app/AppView";
 import { command, connect, sessionCommand, saveSettings } from "./ipc";
 import { SettingsView } from "./features/settings/SettingsView";
+import { RecoveryView } from "./features/settings/RecoveryView";
 import type { Snapshot } from "./ipc";
 export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
@@ -56,6 +57,15 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
         </p>
         {error && <p role="alert">{error}</p>}
       </main>
+    );
+  if (snapshot.preferences.recoveryRequired)
+    return (
+      <RecoveryView
+        reason={snapshot.preferences.error}
+        pending={pending > 0}
+        {...(error ? { error } : {})}
+        onReset={() => run(() => command("settings_reset"))}
+      />
     );
   const sessionAction = (name: "recording_stop" | "recording_cancel") => {
     if (snapshot.session.id !== null)

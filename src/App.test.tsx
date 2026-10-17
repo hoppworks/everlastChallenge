@@ -40,6 +40,7 @@ function snapshot(): Snapshot {
       error: null,
       refreshing: false,
       needsRestart: false,
+      recoveryRequired: false,
       languages: ["german"],
     },
     error: null,
@@ -463,4 +464,68 @@ test("native elapsed time and input level reach the recording readout", async ()
     (screen.getByRole("meter", { name: "Mikrofonpegel" }) as HTMLMeterElement)
       .value,
   ).toBe(0.42);
+});
+
+test("invalid startup settings expose only explicit recovery and wait for native success", async () => {
+  const value = snapshot();
+  value.preferences.recoveryRequired = true;
+  value.preferences.error = "Konfiguration konnte nicht gelesen werden";
+  value.settingsRequest = 5;
+  const view = connected(value);
+  expect(
+    await screen.findByRole("heading", {
+      name: "Einstellungen können nicht geladen werden",
+    }),
+  ).toBe(document.activeElement);
+  expect(screen.queryByRole("button", { name: "Aufnehmen" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Modell laden" })).toBeNull();
+  expect(screen.queryByRole("region", { name: "Einstellungen" })).toBeNull();
+  expect(ipc.command).not.toHaveBeenCalled();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Einstellungen zurücksetzen" }),
+  );
+  expect(ipc.command).not.toHaveBeenCalled();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Zurücksetzen bestätigen" }),
+  );
+  await waitFor(() =>
+    expect(ipc.command).toHaveBeenCalledWith("settings_reset"),
+  );
+  expect(screen.queryByRole("button", { name: "Aufnehmen" })).toBeNull();
+  view.publish(snapshot());
+  expect(screen.getByRole("button", { name: "Aufnehmen" })).toBeDefined();
+});
+
+test("failed explicit settings recovery can be retried without enabling recording", async () => {
+  const value = snapshot();
+  value.preferences.recoveryRequired = true;
+  connected(value);
+  let reject: ((reason: Error) => void) | undefined;
+  ipc.command.mockImplementationOnce(
+    () =>
+      new Promise((_, fail) => {
+        reject = fail;
+      }),
+  );
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Einstellungen zurücksetzen" }),
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Zurücksetzen bestätigen" }),
+  );
+  expect(screen.getByRole("status").textContent).toContain(
+    "werden zurückgesetzt",
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Zurücksetzen bestätigen" }),
+  );
+  expect(ipc.command).toHaveBeenCalledOnce();
+  await act(async () => reject?.(new Error("Datenträger voll")));
+  expect(screen.getByRole("alert").textContent).toContain("Datenträger voll");
+  expect(screen.queryByRole("button", { name: "Aufnehmen" })).toBeNull();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Zurücksetzen bestätigen" }),
+  );
+  await waitFor(() => expect(ipc.command).toHaveBeenCalledTimes(2));
+  expect(ipc.command).toHaveBeenLastCalledWith("settings_reset");
 });

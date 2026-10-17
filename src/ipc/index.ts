@@ -66,6 +66,7 @@ function preferences(value: unknown): boolean {
       "error",
       "refreshing",
       "needsRestart",
+      "recoveryRequired",
       "languages",
     ])
   )
@@ -83,6 +84,7 @@ function preferences(value: unknown): boolean {
     optionalText(value.error) &&
     typeof value.refreshing === "boolean" &&
     typeof value.needsRestart === "boolean" &&
+    typeof value.recoveryRequired === "boolean" &&
     Array.isArray(value.languages) &&
     value.languages.length > 0 &&
     value.languages.length <= 2 &&
@@ -248,7 +250,8 @@ export function command(
     | "transcript_copy"
     | "microphone_request"
     | "accessibility_request"
-    | "devices_refresh",
+    | "devices_refresh"
+    | "settings_reset",
 ): Promise<void> {
   return invoke(name);
 }

@@ -22,6 +22,7 @@ function props(): SettingsViewProps {
       error: null,
       refreshing: false,
       needsRestart: false,
+      recoveryRequired: false,
       languages: ["german"],
     },
     setup: {

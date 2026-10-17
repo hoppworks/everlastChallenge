@@ -20,6 +20,7 @@
     "allow-microphone-request",
     "allow-accessibility-request",
     "allow-settings-save",
+    "allow-settings-reset",
     "allow-devices-refresh"
   ]
 }

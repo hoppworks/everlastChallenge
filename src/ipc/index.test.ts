@@ -43,6 +43,7 @@ function snapshot(): Snapshot {
       error: null,
       refreshing: false,
       needsRestart: false,
+      recoveryRequired: false,
       languages: ["german"],
     },
     error: null,
@@ -489,4 +490,20 @@ test("saves only a validated preferences draft using the settings command", asyn
   expect(native.invoke).toHaveBeenCalledTimes(1);
   await command("devices_refresh");
   expect(native.invoke).toHaveBeenLastCalledWith("devices_refresh");
+});
+
+test("accepts explicit startup recovery state and its dedicated reset command", async () => {
+  const value = snapshot();
+  value.preferences.recoveryRequired = true;
+  value.preferences.error = "Einstellungen können nicht gelesen werden";
+  expect(decodeSnapshot(value).preferences.recoveryRequired).toBe(true);
+  expect(() =>
+    decodeSnapshot({
+      ...value,
+      preferences: { ...value.preferences, recoveryRequired: 1 },
+    }),
+  ).toThrow("Ungültiger Anwendungsstatus");
+  native.invoke.mockResolvedValue(undefined);
+  await command("settings_reset");
+  expect(native.invoke).toHaveBeenCalledWith("settings_reset");
 });

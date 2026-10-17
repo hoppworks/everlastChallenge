@@ -9,5 +9,6 @@ export type Preferences = {
   error: string | null;
   refreshing: boolean;
   needsRestart: boolean;
+  recoveryRequired: boolean;
   languages: Array<SettingsLanguage>;
 };

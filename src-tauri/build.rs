@@ -14,6 +14,7 @@ fn main() {
             "microphone_request",
             "accessibility_request",
             "settings_save",
+            "settings_reset",
             "devices_refresh",
         ]));
     if let Err(error) = tauri_build::try_build(attributes) {

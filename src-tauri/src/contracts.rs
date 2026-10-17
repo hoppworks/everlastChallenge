@@ -92,6 +92,7 @@ pub struct Preferences {
     pub error: Option<String>,
     pub refreshing: bool,
     pub needs_restart: bool,
+    pub recovery_required: bool,
     pub languages: Vec<crate::settings::SettingsLanguage>,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]

@@ -24,6 +24,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             ipc::microphone_request,
             ipc::accessibility_request,
             ipc::settings_save,
+            ipc::settings_reset,
             ipc::devices_refresh
         ])
         .setup(|app| {

@@ -16,6 +16,7 @@ pub mod preferences;
 pub mod runtime;
 pub mod settings;
 pub mod setup;
+pub mod startup_settings;
 pub mod transcription;
 
 pub mod application;

@@ -159,6 +159,14 @@ pub async fn accessibility_request(
 }
 
 #[tauri::command]
+pub async fn settings_reset(
+    window: WebviewWindow,
+    desktop: State<'_, Desktop>,
+) -> Result<(), String> {
+    authorize(&window)?;
+    desktop.reset_settings().await
+}
+#[tauri::command]
 pub async fn settings_save(
     window: WebviewWindow,
     desktop: State<'_, Desktop>,
@@ -205,6 +213,7 @@ mod tests {
             "microphone_request",
             "accessibility_request",
             "settings_save",
+            "settings_reset",
             "devices_refresh",
         ] {
             assert!(
