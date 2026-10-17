@@ -1,0 +1,57 @@
+{
+  "build": {
+    "architecture": "aarch64",
+    "debugAssertions": false,
+    "os": "macos"
+  },
+  "channels": 1,
+  "chunkMillis": 20,
+  "configurationId": "publisher-scheduling-relative-sleep-v1",
+  "failurePolicy": "retain timing-only invalid mode and continue only after verified owner cleanup; OS/setup/join/observer/audio failure makes following mode unavailable",
+  "feed": "same frozen relative-sleep clockfeed in both modes; no MachWaiter, no policy fallback, all publications retained",
+  "finalSpinNanos": 250000,
+  "finishBudgetNanos": 10000000000,
+  "inputFrames": 480000,
+  "jitterToleranceNanos": 10000000,
+  "maximumOutlierSnapshotsPerMode": 1500,
+  "maximumSleepNanos": 1000000,
+  "modes": [
+    "userInteractive",
+    "timeConstrained"
+  ],
+  "noModel": true,
+  "policyClassification": "timeConstrained requires requested policy and every observed configured/beforeFeed/afterFeed/outlier/post snapshot to match its ticks, defaultPolicy=false and basicPolicy=2; deviations are retained failures after feed, never hidden or interrupted; initial pre-policy/baseline snapshots excluded",
+  "policyObservations": "raw before/configured/after and before/after feed; point-in-time outlier snapshot after each invalid publication; not continuous demotion evidence",
+  "qualified": false,
+  "readyBudgetNanos": 10000000000,
+  "sampleFormat": "PCM16",
+  "sampleRate": 16000,
+  "schemaVersion": 1,
+  "sourceHashes": {
+    "capture": "30649268bfb85918ed7971f4707af793cc81882bcbe6e60115670058b70f91f9",
+    "cargoConfig": "867049e39a2c207bba21bf98eb9858aef44b4e93adc5f766d2866748fe207b8b",
+    "cargoLock": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089",
+    "clock": "c5cb28a620b0222a01f6b658665199eae94f8df2117466964eeff9164599c17b",
+    "coreManifest": "2df1f66443970922b1bb5d96441d3c30fd86e4f221c2a442438488cff3f0d489",
+    "dsp": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46",
+    "hostManifest": "7696f89d6e3ece66139610e369d96242c070b6865e5faa9acc23c671fcd7e585",
+    "input": "91143edc2a8202bae0f015dfa55f8142ca576ed98051c6b5b0d53829b17c32e9",
+    "nativeLibrary": "0d55b5e246ea6d2510c3868670a57288e983a8762fe128b18533884fd5521b9e",
+    "nativeManifest": "14be4d5bc3c6528b345b5631459329d4b851385967fa6fb7eacd9a5d3c60f8b9",
+    "probe": "e158d85405dd78036bb4faf790e74f5dd90bba34cf8fca346b027da266f9fe5e",
+    "qos": "09308c2d9280aed0f61e98b124fa42501514abb3befe47a6669bd8009a160772",
+    "realtime": "ab04deb53f86b8821e73097acacfa07da566bb4f609fcc7f80511b34ed5708fc",
+    "replay": "d4ddcb96f91ec766fd2afdc94b05f72a8a7e7ec03413dd08d5d18d1bedad0d8a",
+    "runner": "26b4ac794233a777b6dd526d3ee6223f151a6a3e63a7391a87ff1284855d2c2f",
+    "schedule": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b",
+    "scheduling": "de35b6dd3afff0bbfc925ebb9b41b81a0dd8fe111c82a5661de8a98323fcf51b",
+    "workspaceManifest": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230"
+  },
+  "threadOwnership": "policy only in newly owned child; Ready ACK precedes normal-parent capture/DSP startup; parent observes audio only after publisher join",
+  "timeConstraint": {
+    "computationNanos": 500000,
+    "constraintNanos": 1000000,
+    "periodNanos": 20000000,
+    "preemptible": true
+  }
+}

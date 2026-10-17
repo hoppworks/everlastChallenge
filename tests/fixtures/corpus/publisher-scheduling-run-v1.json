@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "kind": "prospective-model-free-publisher-scheduling-comparison",
+  "qualified": false,
+  "sourceRevision": "1d4308acfa635fa9f9cb4fac3c58b296bf43b16f",
+  "createdBeforePolicyWorkUtc": "2026-10-17T19:07:05.533560+00:00",
+  "binary": {
+    "path": "target/release/examples/paced_audio_probe",
+    "sha256": "0ab7a40ab43b41eab7e9b7e99043080d3dcfcd3b353e1bfd35d88d9ef0f9bc54",
+    "bytes": 1882432,
+    "mode": "0o755"
+  },
+  "parameters": {
+    "path": "tests/fixtures/corpus/publisher-scheduling-parameters-v1.json",
+    "sha256": "57bc72f78999306ebae42cad7bb69caf4a4e4045a5762306e7a5282730eef2db",
+    "bytes": 3257,
+    "mode": "0o644"
+  },
+  "sources": [
+    {
+      "key": "probe",
+      "path": "src-tauri/examples/paced_audio_probe.rs",
+      "sha256": "e158d85405dd78036bb4faf790e74f5dd90bba34cf8fca346b027da266f9fe5e",
+      "bytes": 5852,
+      "mode": "0o644"
+    },
+    {
+      "key": "runner",
+      "path": "src-tauri/examples/paced_audio_probe/runner.rs",
+      "sha256": "26b4ac794233a777b6dd526d3ee6223f151a6a3e63a7391a87ff1284855d2c2f",
+      "bytes": 9909,
+      "mode": "0o644"
+    },
+    {
+      "key": "scheduling",
+      "path": "src-tauri/examples/paced_audio_probe/scheduled.rs",
+      "sha256": "de35b6dd3afff0bbfc925ebb9b41b81a0dd8fe111c82a5661de8a98323fcf51b",
+      "bytes": 35108,
+      "mode": "0o644"
+    },
+    {
+      "key": "input",
+      "path": "src-tauri/examples/corpus_probe/input.rs",
+      "sha256": "91143edc2a8202bae0f015dfa55f8142ca576ed98051c6b5b0d53829b17c32e9",
+      "bytes": 11803,
+      "mode": "0o644"
+    },
+    {
+      "key": "capture",
+      "path": "src-tauri/src/audio.rs",
+      "sha256": "30649268bfb85918ed7971f4707af793cc81882bcbe6e60115670058b70f91f9",
+      "bytes": 34524,
+      "mode": "0o644"
+    },
+    {
+      "key": "replay",
+      "path": "src-tauri/src/audio/replay.rs",
+      "sha256": "d4ddcb96f91ec766fd2afdc94b05f72a8a7e7ec03413dd08d5d18d1bedad0d8a",
+      "bytes": 23298,
+      "mode": "0o644"
+    },
+    {
+      "key": "clock",
+      "path": "src-tauri/src/audio/replay/clock.rs",
+      "sha256": "c5cb28a620b0222a01f6b658665199eae94f8df2117466964eeff9164599c17b",
+      "bytes": 25281,
+      "mode": "0o644"
+    },
+    {
+      "key": "schedule",
+      "path": "src-tauri/src/audio/replay/schedule.rs",
+      "sha256": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b",
+      "bytes": 12357,
+      "mode": "0o644"
+    },
+    {
+      "key": "dsp",
+      "path": "crates/dictation-core/src/audio.rs",
+      "sha256": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46",
+      "bytes": 7074,
+      "mode": "0o644"
+    },
+    {
+      "key": "coreManifest",
+      "path": "crates/dictation-core/Cargo.toml",
+      "sha256": "2df1f66443970922b1bb5d96441d3c30fd86e4f221c2a442438488cff3f0d489",
+      "bytes": 306,
+      "mode": "0o644"
+    },
+    {
+      "key": "realtime",
+      "path": "crates/macos-integration/src/realtime.rs",
+      "sha256": "ab04deb53f86b8821e73097acacfa07da566bb4f609fcc7f80511b34ed5708fc",
+      "bytes": 27469,
+      "mode": "0o644"
+    },
+    {
+      "key": "qos",
+      "path": "crates/macos-integration/src/qos.rs",
+      "sha256": "09308c2d9280aed0f61e98b124fa42501514abb3befe47a6669bd8009a160772",
+      "bytes": 6255,
+      "mode": "0o644"
+    },
+    {
+      "key": "nativeLibrary",
+      "path": "crates/macos-integration/src/lib.rs",
+      "sha256": "0d55b5e246ea6d2510c3868670a57288e983a8762fe128b18533884fd5521b9e",
+      "bytes": 497,
+      "mode": "0o644"
+    },
+    {
+      "key": "nativeManifest",
+      "path": "crates/macos-integration/Cargo.toml",
+      "sha256": "14be4d5bc3c6528b345b5631459329d4b851385967fa6fb7eacd9a5d3c60f8b9",
+      "bytes": 945,
+      "mode": "0o644"
+    },
+    {
+      "key": "hostManifest",
+      "path": "src-tauri/Cargo.toml",
+      "sha256": "7696f89d6e3ece66139610e369d96242c070b6865e5faa9acc23c671fcd7e585",
+      "bytes": 1698,
+      "mode": "0o644"
+    },
+    {
+      "key": "workspaceManifest",
+      "path": "Cargo.toml",
+      "sha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230",
+      "bytes": 1104,
+      "mode": "0o644"
+    },
+    {
+      "key": "cargoLock",
+      "path": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089",
+      "bytes": 129670,
+      "mode": "0o644"
+    },
+    {
+      "key": "cargoConfig",
+      "path": ".cargo/config.toml",
+      "sha256": "867049e39a2c207bba21bf98eb9858aef44b4e93adc5f766d2866748fe207b8b",
+      "bytes": 40,
+      "mode": "0o644"
+    }
+  ],
+  "fixture": {
+    "path": "artifacts/corpus/audio/fleurs-de-test-1732-thirty-second-v1.wav",
+    "sha256": "045f4e0c1534e2d4240a10a2dbda1fad22c8ae9ca83809b2cd34e0a2a7510a2e",
+    "bytes": 960044,
+    "mode": "0o600"
+  },
+  "fixtureManifest": {
+    "path": "tests/fixtures/corpus/native-timestamps-supplement-v1.json",
+    "sha256": "67f5ea1c457d4ec230b4ffc3bb032284badf0ee29f4721492a25b597140e34f0",
+    "bytes": 8797,
+    "mode": "0o644"
+  },
+  "command": [
+    "target/release/examples/paced_audio_probe",
+    "artifacts/corpus/audio/fleurs-de-test-1732-thirty-second-v1.wav",
+    "tests/fixtures/corpus/publisher-scheduling-parameters-v1.json",
+    "artifacts/publisher-scheduling/v1/results.json"
+  ],
+  "environment": {
+    "EVERLAST_BENCHMARK_REVISION": "1d4308acfa635fa9f9cb4fac3c58b296bf43b16f"
+  },
+  "log": "artifacts/publisher-scheduling/v1/command.log",
+  "completion": "artifacts/publisher-scheduling/v1/completion.json",
+  "expected": {
+    "modes": [
+      "userInteractive",
+      "timeConstrained"
+    ],
+    "durationSecondsPerMode": 30,
+    "inputFramesPerMode": 480000,
+    "publicationsPerMode": 1500,
+    "chunkMillis": 20,
+    "jitterToleranceNanos": 10000000,
+    "maximumSleepNanos": 1000000,
+    "finalSpinNanos": 250000,
+    "timeConstraint": {
+      "periodNanos": 20000000,
+      "computationNanos": 500000,
+      "constraintNanos": 1000000,
+      "preemptible": true
+    },
+    "sameLoadedPcmBothModes": true,
+    "normalParentCaptureAfterReady": true,
+    "stopAndPortDropBeforeAfterFeedSnapshot": true,
+    "threadPolicyLifetimeEndsAtJoinedThreadExit": true,
+    "preserveAllPublicationsAndRawPolicySnapshots": true,
+    "noModel": true,
+    "noMicrophone": true
+  },
+  "host": {
+    "swVers": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+    "cpu": "Apple M5",
+    "memoryBytes": 34359738368,
+    "power": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23461987)\t82%; AC attached; not charging present: true\n",
+    "rustc": "rustc 1.93.0 (254b59607 2026-01-19)"
+  },
+  "policy": {
+    "runs": 1,
+    "noConcurrentBuildTestsModels": true,
+    "noRetryUnchanged": true,
+    "preserveFailureAndUnavailable": true,
+    "continueAfterTimingOnlyFailureWithVerifiedCleanup": true,
+    "policySetupReadbackOwnerJoinFailureMakesFollowingUnavailable": true
+  },
+  "limits": [
+    "Fixed UI-then-TC order, one short trial per mode; no general performance or causal claim.",
+    "Sequential policy/CPU snapshots are neither atomic nor continuous demotion evidence; basic2 is only compatible.",
+    "No replay default, wait algorithm, jitter threshold, microphone, model, L, app bundle or DMG change."
+  ]
+}
