@@ -11,13 +11,14 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "format": "cargo fmt --all && prettier --write src scripts config *.json *.ts index.html",
-    "check": "cargo fmt --all -- --check && cargo clippy --workspace --all-targets --locked -- -D warnings && tsc --noEmit && oxlint --deny-warnings --report-unused-disable-directives-severity error src scripts vite.config.ts vitest.config.ts && node scripts/guardrails.mjs",
+    "check": "cargo fmt --all -- --check && cargo clippy --workspace --all-targets --locked -- -D warnings && tsc --noEmit && oxlint --deny-warnings --report-unused-disable-directives-severity error src scripts vite.config.ts vitest.config.ts && node scripts/guardrails.mjs && node scripts/check-contracts.mjs",
     "test": "cargo test --workspace --locked && vitest run --passWithNoTests && node --test scripts/*.test.mjs",
     "verify": "npm run check && npm run test && npm run coverage && npm run test:guardrails && node scripts/secrets.mjs && cargo deny check && npm audit --audit-level=high",
     "test:guardrails": "node scripts/prove-guardrails.mjs",
     "coverage": "node scripts/coverage.mjs",
     "tauri": "tauri",
-    "release": "MACOSX_DEPLOYMENT_TARGET=27.0 tauri build --target aarch64-apple-darwin"
+    "release": "MACOSX_DEPLOYMENT_TARGET=27.0 tauri build --target aarch64-apple-darwin",
+    "check:contracts": "node scripts/check-contracts.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.12.4",

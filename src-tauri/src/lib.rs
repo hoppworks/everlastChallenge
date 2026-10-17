@@ -2,6 +2,7 @@
 //! Native application services. GUI entry and test/measurement tools share them.
 
 pub mod audio;
+pub mod contracts;
 pub mod control;
 pub mod controller;
 pub mod hotkeys;
