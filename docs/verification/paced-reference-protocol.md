@@ -2,7 +2,7 @@
 
 Stand: 17.10.2026. `paced_reference_probe` ergänzt die bisherige Einzelfallprobe
 um den vollständigen zentralen Vergleich aus §13. Hier wird das Messwerkzeug
-beschrieben, noch kein ausgeführter Latenzvergleich oder P05-Abschluss.
+beschrieben, noch kein abgeschlossener Latenzvergleich oder P05-Abschluss.
 
 ## Feste Eingaben und Reihenfolge
 
@@ -53,7 +53,7 @@ mit Modus 0600 publiziert; vorhandene Belege werden nicht ersetzt. Das Paar
 ist keine dateiübergreifende Transaktion. Ein Fehler der zweiten Publikation
 wird gemeldet; die bereits publizierte erste Datei bleibt als Beleg erhalten.
 
-## Geplanter Aufruf nach Werkzeugprüfung und Parameterfreeze
+## Aufrufvertrag und Parameterfreeze
 
 Release-Build ausschließlich des Entwicklerwerkzeugs:
 
@@ -70,3 +70,25 @@ Danach lautet die explizite CLI:
 ```text
 paced_reference_probe MODEL_PATH reference|small SIX_CASE_MANIFEST PARAMETERS_JSON NEW_OUTPUT_JSON
 ```
+
+## Tatsächlicher Release-/Freeze- und Startnachweis
+
+Werkzeugcommit `b62f86f`; Release-Build offline/locked erfolgreich in 3,18 s.
+Binary SHA-256 `a7468fbd2005b5a78ec4cae8674d9630082e299d3ee88d62deaa4ebe2d0f5749`.
+[Templatefreeze](../../tests/fixtures/corpus/paced-six-reference-parameters-v1.json)
+SHA-256 `882314f2b0e13a3dff8b648ec3c549f86f8537364ab7f48b556f4a92944a66ba`;
+[Aufruf-/Hostfreeze](../../tests/fixtures/corpus/paced-six-reference-run-v1.json)
+SHA-256 `1d0b9d0d5339b32b69a5f877d73432bb8559163fc93f3e91f60d9d60a952878f`.
+Beide vor Modellarbeit lokal als `1f1aa44` committed. Der unabhängige Readback
+bestätigte das tatsächliche Release-Template, 39 Sourceeinträge, sechs WAVs,
+ASR-/VAD-Modelle, Host-/AC-/Energiebeobachtungen und den exakten Aufruf.
+
+Der einmalige eingefrorene Referenzlauf startete am 17.10.2026 um
+14:39:57.579991 UTC mit `EVERLAST_BENCHMARK_REVISION=b62f86f`. Beim Start
+gehörte ihm PID 79998; Prozessfortschritt und Betriebssystemzustand wurden
+anschließend bestätigt. Private Fortschrittslogs liegen unter
+`artifacts/paced-six/v1/reference.command.log`. Der Launcher wartet auf genau
+diesen Prozess und schreibt erst nach dessen Ende einen Completionbeleg mit
+Exitstatus und Rohhashes. Dieser Startbeleg ist kein abgeschlossener Messbericht;
+L, vollständige 181 Zeilen, absolute Grenzen und Cleanup sind noch zu prüfen.
+Ein Timeout der Beobachtung ist kein Grund zum Neustart.
