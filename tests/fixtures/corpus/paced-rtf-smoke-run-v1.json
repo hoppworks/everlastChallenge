@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "kind": "prospective-native-engine-rtf-and-empty-smoke",
+  "qualified": false,
+  "sourceRevision": "c394d9e458f7380de21695d368009761588dda44",
+  "createdBeforeModelWorkUtc": "2026-10-17T17:58:41.632647+00:00",
+  "binary": {
+    "path": "target/release/examples/paced_runtime_probe",
+    "sha256": "f813174bcacb22dbd4096d62678cb4680abba31434303c2a8cec56f9a707f33e",
+    "bytes": 4444048,
+    "mode": "0o755"
+  },
+  "parameters": {
+    "path": "tests/fixtures/corpus/paced-rtf-parameters-v1.json",
+    "sha256": "69d87384a2541e9205362929410277bb1587e7ece5c7bca55a5e50649d052f47",
+    "bytes": 10432,
+    "mode": "0o644"
+  },
+  "model": {
+    "path": "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+    "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+    "bytes": 574041195,
+    "mode": "0o644"
+  },
+  "vad": {
+    "path": "artifacts/models/ggml-silero-v5.1.2.bin",
+    "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+    "bytes": 885098,
+    "mode": "0o600"
+  },
+  "privateBaselineProvenance": {
+    "path": "artifacts/replay/runtime-resource-v2/baseline-comparison.json",
+    "sha256": "3cd94942aa1c6289e8edca8be61599b2ce8d46cab6ac32aa998a78abe46d23fa",
+    "bytes": 588,
+    "mode": "0o600"
+  },
+  "runs": [
+    {
+      "id": "local",
+      "expectedOutcome": "Local",
+      "fixture": {
+        "path": "artifacts/replay/neue-aufnahme.wav",
+        "sha256": "9a108246c7b1196e8203ee22ebacabe7927d18f7a37a5f2e7647437db7df069c",
+        "bytes": 262222,
+        "mode": "0o600",
+        "frames": 131072,
+        "sampleRate": 16000,
+        "channels": 1
+      },
+      "reference": {
+        "path": "artifacts/replay/neue-aufnahme-baseline.txt",
+        "sha256": "6e0700c02c1f08629895d05206fbeeb924afaea30fa6d3e49e3356136622cc67",
+        "bytes": 56,
+        "mode": "0o600"
+      },
+      "command": [
+        "target/release/examples/paced_runtime_probe",
+        "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "reference",
+        "artifacts/replay/neue-aufnahme.wav",
+        "de",
+        "tests/fixtures/corpus/paced-rtf-parameters-v1.json",
+        "artifacts/paced-rtf/smoke-v1/local-results.json",
+        "1",
+        "artifacts/replay/neue-aufnahme-baseline.txt"
+      ],
+      "log": "artifacts/paced-rtf/smoke-v1/local.command.log",
+      "expectedRows": 2,
+      "warmupRows": 1,
+      "measuredRows": 1
+    },
+    {
+      "id": "empty",
+      "expectedOutcome": "Empty",
+      "fixture": {
+        "path": "artifacts/corpus/audio/calibration-de-zero-5s.wav",
+        "sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec",
+        "bytes": 160044,
+        "mode": "0o600",
+        "frames": 80000,
+        "sampleRate": 16000,
+        "channels": 1
+      },
+      "reference": null,
+      "command": [
+        "target/release/examples/paced_runtime_probe",
+        "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "reference",
+        "artifacts/corpus/audio/calibration-de-zero-5s.wav",
+        "de",
+        "tests/fixtures/corpus/paced-rtf-parameters-v1.json",
+        "artifacts/paced-rtf/smoke-v1/empty-results.json",
+        "1",
+        "--expect-empty"
+      ],
+      "log": "artifacts/paced-rtf/smoke-v1/empty.command.log",
+      "expectedRows": 2,
+      "warmupRows": 1,
+      "measuredRows": 1
+    }
+  ],
+  "environment": {
+    "EVERLAST_BENCHMARK_REVISION": "c394d9e458f7380de21695d368009761588dda44"
+  },
+  "host": {
+    "os": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+    "cpu": "Apple M5",
+    "memoryBytes": 34359738368,
+    "powerSource": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23461987)\t82%; AC attached; not charging present: true"
+  },
+  "policy": {
+    "serial": true,
+    "noConcurrentBuildTestsOrModels": true,
+    "retainFailures": true,
+    "retryUnchanged": false
+  },
+  "limits": [
+    "Two explicit smoke cases only; no6case L, tenrun RTF distribution or general P05/P06 qualification.",
+    "Local expected text is prior private ASR repeatability baseline, not independent transcript truth.",
+    "Synthetic zero input is not natural room noise.",
+    "Empty must retain t_text/L/stopToText asnull and have separate t_terminal; Engine-RTF covers actual Enginecall.",
+    "No bundle rebuild, microphone, hotkey or native paste."
+  ]
+}
