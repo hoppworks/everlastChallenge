@@ -32,11 +32,20 @@ struct Priority {
     shutdown: AtomicBool,
 }
 
-#[derive(Clone)]
 pub struct ControlTx<T> {
     requests: Sender<T>,
     wake: Sender<()>,
     priority: Arc<Priority>,
+}
+
+impl<T> Clone for ControlTx<T> {
+    fn clone(&self) -> Self {
+        Self {
+            requests: self.requests.clone(),
+            wake: self.wake.clone(),
+            priority: Arc::clone(&self.priority),
+        }
+    }
 }
 
 pub struct ControlRx<T> {
