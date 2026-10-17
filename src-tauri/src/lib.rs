@@ -8,4 +8,5 @@ pub mod inference_service;
 pub mod model;
 pub mod native_service;
 pub mod runtime;
+pub mod settings;
 pub mod transcription;
