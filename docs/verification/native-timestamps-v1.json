@@ -1,0 +1,333 @@
+{
+  "schemaVersion": 1,
+  "kind": "same-binary-native-timestamps-paired-diagnostic",
+  "qualified": false,
+  "L": null,
+  "parameterSha256": "8e964b8e396732516d0dcca165e6780aa633768850be519c6d61f90de8a16a67",
+  "completion": {
+    "parameterSha256": "8e964b8e396732516d0dcca165e6780aa633768850be519c6d61f90de8a16a67",
+    "runs": [
+      {
+        "variant": "suppressed-baseline",
+        "startUtc": "2026-10-17T16:51:45.804668+00:00",
+        "pid": 99634,
+        "inferenceExit": 0,
+        "inferenceEndUtc": "2026-10-17T16:52:02.125197+00:00",
+        "evaluationExit": 0,
+        "endUtc": "2026-10-17T16:52:02.201348+00:00"
+      },
+      {
+        "variant": "enabled-candidate",
+        "startUtc": "2026-10-17T16:52:02.201404+00:00",
+        "pid": 99677,
+        "inferenceExit": 0,
+        "inferenceEndUtc": "2026-10-17T16:52:21.071210+00:00",
+        "evaluationExit": 0,
+        "endUtc": "2026-10-17T16:52:21.151876+00:00"
+      }
+    ],
+    "endUtc": "2026-10-17T16:52:21.152054+00:00"
+  },
+  "baselineMatchesAllHistoricalResultRows": true,
+  "runs": [
+    {
+      "variant": "baseline",
+      "noTimestamps": true,
+      "qualityCases": [
+        {
+          "id": "diagnostic-de1662-original",
+          "split": "acceptance",
+          "language": "de",
+          "class": "clean",
+          "status": "ok",
+          "edits": 0,
+          "refWords": 21,
+          "hypWords": 21,
+          "wer": 0.0,
+          "unwantedText": false
+        },
+        {
+          "id": "diagnostic-de1662-weak-mask-isolated",
+          "split": "acceptance",
+          "language": "de",
+          "class": "challenging",
+          "status": "ok",
+          "edits": 21,
+          "refWords": 21,
+          "hypWords": 42,
+          "wer": 1.0,
+          "unwantedText": false
+        },
+        {
+          "id": "diagnostic-de-controlled-300s",
+          "split": "acceptance",
+          "language": "de",
+          "class": "challenging",
+          "status": "ok",
+          "edits": 147,
+          "refWords": 463,
+          "hypWords": 335,
+          "wer": 0.3174946004319654,
+          "unwantedText": false
+        }
+      ],
+      "cases": [
+        {
+          "id": "diagnostic-de1662-original",
+          "status": "ok",
+          "inputFrames": 375360,
+          "selectedRange": {
+            "end": 375360,
+            "start": 0
+          },
+          "asrInputFrames": 375360,
+          "paddedFrames": 0,
+          "segmentCount": 1,
+          "nativeConcatTrimMatchesFinal": true
+        },
+        {
+          "id": "diagnostic-de1662-weak-mask-isolated",
+          "status": "ok",
+          "inputFrames": 375360,
+          "selectedRange": {
+            "end": 375360,
+            "start": 0
+          },
+          "asrInputFrames": 375360,
+          "paddedFrames": 0,
+          "segmentCount": 1,
+          "nativeConcatTrimMatchesFinal": true
+        },
+        {
+          "id": "diagnostic-de-controlled-300s",
+          "status": "ok",
+          "inputFrames": 4800000,
+          "selectedRange": {
+            "end": 4800000,
+            "start": 0
+          },
+          "asrInputFrames": 4800000,
+          "paddedFrames": 0,
+          "segmentCount": 10,
+          "nativeConcatTrimMatchesFinal": true
+        }
+      ]
+    },
+    {
+      "variant": "candidate",
+      "noTimestamps": false,
+      "qualityCases": [
+        {
+          "id": "diagnostic-de1662-original",
+          "split": "acceptance",
+          "language": "de",
+          "class": "clean",
+          "status": "ok",
+          "edits": 0,
+          "refWords": 21,
+          "hypWords": 21,
+          "wer": 0.0,
+          "unwantedText": false
+        },
+        {
+          "id": "diagnostic-de1662-weak-mask-isolated",
+          "split": "acceptance",
+          "language": "de",
+          "class": "challenging",
+          "status": "ok",
+          "edits": 1,
+          "refWords": 21,
+          "hypWords": 22,
+          "wer": 0.047619047619047616,
+          "unwantedText": false
+        },
+        {
+          "id": "diagnostic-de-controlled-300s",
+          "split": "acceptance",
+          "language": "de",
+          "class": "challenging",
+          "status": "ok",
+          "edits": 28,
+          "refWords": 463,
+          "hypWords": 467,
+          "wer": 0.06047516198704104,
+          "unwantedText": false
+        }
+      ],
+      "cases": [
+        {
+          "id": "diagnostic-de1662-original",
+          "status": "ok",
+          "inputFrames": 375360,
+          "selectedRange": {
+            "end": 375360,
+            "start": 0
+          },
+          "asrInputFrames": 375360,
+          "paddedFrames": 0,
+          "segmentCount": 2,
+          "nativeConcatTrimMatchesFinal": true
+        },
+        {
+          "id": "diagnostic-de1662-weak-mask-isolated",
+          "status": "ok",
+          "inputFrames": 375360,
+          "selectedRange": {
+            "end": 375360,
+            "start": 0
+          },
+          "asrInputFrames": 375360,
+          "paddedFrames": 0,
+          "segmentCount": 3,
+          "nativeConcatTrimMatchesFinal": true
+        },
+        {
+          "id": "diagnostic-de-controlled-300s",
+          "status": "ok",
+          "inputFrames": 4800000,
+          "selectedRange": {
+            "end": 4800000,
+            "start": 0
+          },
+          "asrInputFrames": 4800000,
+          "paddedFrames": 0,
+          "segmentCount": 35,
+          "nativeConcatTrimMatchesFinal": true
+        }
+      ]
+    }
+  ],
+  "semanticSummary": {
+    "candidateRecognizableWholeSourceBlocks": 21,
+    "candidateWhollyAbsentSourceBlocks": 0,
+    "candidateFullSourceBlockDuplicationObserved": false,
+    "candidateFullContentFidelity": "NOT_PASSED: recognizable block presence does not establish exact instruction/word/entity fidelity",
+    "baselineWhollyAbsentBlockIds": [
+      1662,
+      1670,
+      1673,
+      1674
+    ],
+    "baselinePartiallyAbsentBlockIds": [
+      1671
+    ],
+    "candidateRestoredBlockIds": [
+      1662,
+      1670,
+      1671,
+      1673,
+      1674
+    ],
+    "candidateLongQuality": {
+      "edits": 28,
+      "referenceWords": 463,
+      "hypothesisWords": 467
+    },
+    "baselineLongQuality": {
+      "edits": 147,
+      "referenceWords": 463,
+      "hypothesisWords": 335
+    },
+    "candidateWeakShortExtra": "additional initial sourceword",
+    "candidateLongExtra": "terminal music stage direction"
+  },
+  "privateSemanticReview": {
+    "path": "artifacts/diagnostic-speech/native-timestamps-v1/semantic-review-v2.json",
+    "sha256": "7a99045e9494986a6edc9bdc580f5326ff5e5d59d205b2793173f3cdee9d538d",
+    "bytes": 44107,
+    "mode": "0o600"
+  },
+  "limits": [
+    "Diagnostic exposedsources, no newblindquality orP05/P06/L qualification",
+    "Flag change implicated in target textbehavior; exact seek/EOT/prompt/fallbackmechanism andacousticalignment unobserved",
+    "Remaining extra words/instruction/name errors preserved, not postprocessed",
+    "Productconfiguration unchanged; fullcalibration/acceptance recheck needed before activation"
+  ],
+  "rawFiles": [
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/baseline-quality.json",
+      "sha256": "7829d81427e6736aa99d07762c265ff744af1db31932d5f7a5de616630fe7fbb",
+      "bytes": 1779,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/baseline-results.json",
+      "sha256": "f3458e789fd852a662788c31ae3d9f5510aec5f24f892662619e8b6229c001df",
+      "bytes": 3073,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/baseline-results.json.metadata.json",
+      "sha256": "5db07c4625359a41590dc963f1e0cc5c030be812dd0f4fe4c2f2fe2284fb315d",
+      "bytes": 11453,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/baseline.command.log",
+      "sha256": "1ad270e49ed9d8fd199da37da2d1fda84583a6582f9ce122ff1ca342d8cbd1df",
+      "bytes": 41,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/baseline.quality.log",
+      "sha256": "dad7131c280d7b3ab06f61c0be539d953d93509a24a204d05233ce49c89427f9",
+      "bytes": 85,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/candidate-quality.json",
+      "sha256": "a8f2d010b6a9e03fb8de237aacaea01943f28ccceab9ab37b3abdf71ec6b90e5",
+      "bytes": 1794,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/candidate-results.json",
+      "sha256": "16bd6e0587f996f9d1e079cf384ef0e5028bf61a5552a412bf37bb7ebd6edc06",
+      "bytes": 3819,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/candidate-results.json.metadata.json",
+      "sha256": "529a9812f47cd7fefe33ccdec1151db45c94f9bede5e5fed5e3a55955c8e516b",
+      "bytes": 20146,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/candidate.command.log",
+      "sha256": "1ad270e49ed9d8fd199da37da2d1fda84583a6582f9ce122ff1ca342d8cbd1df",
+      "bytes": 41,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/candidate.quality.log",
+      "sha256": "dad7131c280d7b3ab06f61c0be539d953d93509a24a204d05233ce49c89427f9",
+      "bytes": 85,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/completion.json",
+      "sha256": "ef0f977e25833d5c5f16fe40510b8203658864d8c1d875add83e971cf78e86ba",
+      "bytes": 738,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/manifest.json",
+      "sha256": "4cb95bc8b735d5c780b60c6be1fd800272818e7c1f88982ecc26c93040201ede",
+      "bytes": 14308,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/semantic-review-v1.json",
+      "sha256": "bf9fc2d08cbe44979fe7323e513c887c0438f222714ec8d5b568ecd903d8bc8f",
+      "bytes": 43482,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/native-timestamps-v1/semantic-review-v2.json",
+      "sha256": "7a99045e9494986a6edc9bdc580f5326ff5e5d59d205b2793173f3cdee9d538d",
+      "bytes": 44107,
+      "mode": "0o600"
+    }
+  ],
+  "reviewRevision": "Originalprivatev1 preserved; v2 narrows oneDE1671baseline note: financing beginning present, laterFBI-ten-agent clause absent; judgments/counts unchanged"
+}
