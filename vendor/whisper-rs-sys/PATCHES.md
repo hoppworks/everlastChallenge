@@ -1,4 +1,4 @@
-# Local patch: whisper-rs-sys 0.15.0 — initial SOT no-speech logits
+# Local patches: whisper-rs-sys 0.15.0 — SOT logits and VAD failure status
 
 ## Provenance and retained source
 
@@ -22,7 +22,7 @@ The source audit and upstream-reference evidence are recorded in
 `whisper.cpp/src/whisper.cpp` SHA256:
 
 - Original: `d1e041704c12e20b8eb9596632db3b3b31046348dbb0e493f8a5ab8edd5f4376`.
-- Patched: `f369a8ba8e4180642967e373334781a49a253d59a7b0f4b9a03f85b4040dfecc`.
+- SOT-only patch (historical v3 measurement): `f369a8ba8e4180642967e373334781a49a253d59a7b0f4b9a03f85b4040dfecc`.
 
 ## Licenses
 
@@ -152,3 +152,20 @@ See [calibration-v3.md](../../docs/verification/calibration-v3.md) for exact
 criteria, artifact hashes, commands and limitations. Small/Metal retains two
 strict singleton-oracle mismatches out of eight; its unchanged repeat is
 identical. No tolerance was relaxed and no P05 qualification is claimed.
+
+## Additional VAD failure-status patch (2026-10-17)
+
+Current combined C++ SHA256: `fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e`.
+The SOT-only hash above remains the immutable v3 measurement source, not the
+current combined file. In `whisper_vad_detect_speech`, compute failure now
+propagates false after common scheduler cleanup and clears partial/stale
+probabilities. Graph-allocation failure also clears probabilities and resets
+the scheduler. Successful numerical computation and all ABI/header declarations
+are unchanged. The actual scheduler reset tolerates the compute helper having
+already reset it.
+
+See [vad-failure-fix.md](../../docs/verification/vad-failure-fix.md) for actual-
+function fault-injection RED/GREEN, unchanged 42-case score vectors per variant,
+build-source hashes and limits. Only the same C++ file differs from the original
+published package; original license/source files are still untouched. Neither
+this patch nor the developer VAD experiment enables a product gate.

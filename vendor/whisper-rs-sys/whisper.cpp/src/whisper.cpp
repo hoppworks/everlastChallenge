@@ -5109,6 +5109,8 @@ bool whisper_vad_detect_speech(
 
     if (!ggml_backend_sched_alloc_graph(sched, gf)) {
         WHISPER_LOG_ERROR("%s: failed to allocate the compute buffer\n", __func__);
+        vctx->probs.clear();
+        ggml_backend_sched_reset(sched);
         return false;
     }
 
@@ -5117,6 +5119,7 @@ bool whisper_vad_detect_speech(
 
     // we are going to reuse the graph multiple times for each chunk
     const int64_t t_start_vad_us = ggml_time_us();
+    bool success = true;
 
     for (int i = 0; i < n_chunks; i++) {
         const int idx_start = i * vctx->n_window;
@@ -5148,6 +5151,7 @@ bool whisper_vad_detect_speech(
         // do not reset the scheduler - we will reuse the graph in the next chunk
         if (!ggml_graph_compute_helper(sched, gf, vctx->n_threads, false)) {
             WHISPER_LOG_ERROR("%s: failed to compute VAD graph\n", __func__);
+            success = false;
             break;
         }
 
@@ -5162,7 +5166,10 @@ bool whisper_vad_detect_speech(
 
     ggml_backend_sched_reset(sched);
 
-    return true;
+    if (!success) {
+        vctx->probs.clear();
+    }
+    return success;
 }
 
 int whisper_vad_segments_n_segments(struct whisper_vad_segments * segments) {
