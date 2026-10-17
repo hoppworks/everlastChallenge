@@ -8,5 +8,6 @@
 pub mod clipboard;
 pub mod delivery;
 pub mod keyboard;
+pub mod main_delivery;
 pub mod paste;
 pub mod target;

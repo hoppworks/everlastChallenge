@@ -112,6 +112,11 @@ impl PreparedPaste {
 }
 
 impl ReadyPaste {
+    /// Explicitly undo an installed but unsent clipboard lease on cancellation.
+    pub fn discard(self, main: MainThreadMarker) -> Result<RestoreOutcome, ClipboardError> {
+        self.clipboard.restore(main)
+    }
+
     /// Call only with a new AX receipt acquired after clipboard installation.
     /// No fallback event or retry exists after the token's one-way commit.
     pub fn send(

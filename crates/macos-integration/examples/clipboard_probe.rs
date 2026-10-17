@@ -4,6 +4,7 @@ use macos_integration::{
         ClipboardError, PreparedClipboard, RestoreOutcome, capture_bounded, snapshot_helper_main,
     },
     delivery::DeliveryToken,
+    main_delivery::{Command, MainError, Reply, dispatch},
 };
 use objc2::{MainThreadMarker, runtime::ProtocolObject};
 use objc2_app_kit::{NSPasteboard, NSPasteboardItem, NSPasteboardWriting};
@@ -44,6 +45,54 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         || backup.data(0, "public.html") != Some(b"<b>fixture text</b>".as_slice())
     {
         return Err("private snapshot lost an item or representation".into());
+    }
+    let stage_backup = capture_bounded(&helper, &pasteboard.name().to_string(), &token)?;
+    let before_prepare = pasteboard.changeCount();
+    if !matches!(
+        dispatch(Command::Prepare {
+            session: token.session(),
+            name: pasteboard.name().to_string(),
+            backup: stage_backup,
+            text: "never inserted".into(),
+            token: token.clone(),
+        })?,
+        Reply::Prepared
+    ) {
+        return Err("main-thread preparation did not complete".into());
+    }
+    if pasteboard.changeCount() != before_prepare {
+        return Err("preparation changed private clipboard".into());
+    }
+    let stale_session = NonZeroU64::new(99).ok_or("invalid stale id")?;
+    if !matches!(
+        dispatch(Command::Cleanup {
+            session: stale_session
+        })?,
+        Reply::Cleaned(None)
+    ) {
+        return Err("stale cleanup was not ignored".into());
+    }
+    let another_backup = capture_bounded(&helper, &pasteboard.name().to_string(), &token)?;
+    if !matches!(
+        dispatch(Command::Prepare {
+            session: token.session(),
+            name: pasteboard.name().to_string(),
+            backup: another_backup,
+            text: "duplicate".into(),
+            token: token.clone(),
+        }),
+        Err(MainError::Busy)
+    ) {
+        return Err("stale cleanup removed the current preparation".into());
+    }
+    if !matches!(
+        dispatch(Command::Cleanup {
+            session: token.session()
+        })?,
+        Reply::Cleaned(None)
+    ) || pasteboard.changeCount() != before_prepare
+    {
+        return Err("uninstalled preparation cleanup changed clipboard".into());
     }
     let prepared = PreparedClipboard::new(
         &pasteboard.name().to_string(),
@@ -147,7 +196,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     pasteboard.clearContents();
     println!(
-        "Private pasteboard: text/HTML restored; foreign change and pre-write cancellation preserved; general clipboard untouched"
+        "Private pasteboard: main-thread preparation/busy/stale cleanup verified; text/HTML restored; foreign change and pre-write cancellation preserved; general clipboard untouched"
     );
     Ok(())
 }
