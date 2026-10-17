@@ -7,7 +7,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
+mod cache;
 mod storage;
+use cache::CacheGuard;
 use storage::VerifiedFile;
 pub const MODEL_REVISION: &str = "5359861c739e955e79d9a303bcbc70fb988958b1";
 
@@ -64,6 +66,8 @@ impl ModelDefinition {
 
 #[derive(Debug, thiserror::Error)]
 pub enum ModelError {
+    #[error("Model cache is already in use by another setup attempt")]
+    Busy,
     #[error("Model file I/O failed: {0}")]
     Io(#[from] std::io::Error),
     #[error("Model download has an unexpected byte count")]
@@ -106,6 +110,7 @@ pub fn download_model(
     if cancel.is_cancelled() {
         return Err(ModelError::Cancelled);
     }
+    let _cache = prepare_cache(directory, definition, cancel)?;
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()?;
@@ -183,6 +188,43 @@ fn hex_digest(digest: impl AsRef<[u8]>) -> String {
         .iter()
         .map(|byte| format!("{byte:02x}"))
         .collect()
+}
+
+fn prepare_cache(
+    directory: &Path,
+    definition: ModelDefinition,
+    cancel: &tokio_util::sync::CancellationToken,
+) -> Result<CacheGuard, ModelError> {
+    let cache = CacheGuard::acquire(directory, definition, cancel)?;
+    cache.cleanup_parts(cancel)?;
+    Ok(cache)
+}
+
+/// Inspect the application's model directory under the same cross-process
+/// setup lock used by downloads. Orphan cleanup never opens a model for writing.
+pub fn inspect_cache(
+    directory: &Path,
+    definition: ModelDefinition,
+    cancel: &tokio_util::sync::CancellationToken,
+) -> Result<Option<PathBuf>, ModelError> {
+    if cancel.is_cancelled() {
+        return Err(ModelError::Cancelled);
+    }
+    match std::fs::symlink_metadata(directory) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+        Err(error) => return Err(error.into()),
+        Ok(_) => {}
+    }
+    let _cache = prepare_cache(directory, definition, cancel)?;
+    let path = directory.join(definition.file_name());
+    match std::fs::metadata(&path) {
+        Ok(_) => {
+            verify_file_cancellable(&path, definition, cancel)?;
+            Ok(Some(path))
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(error.into()),
+    }
 }
 
 pub fn verify_file(path: &Path, definition: ModelDefinition) -> Result<(), ModelError> {
@@ -343,6 +385,76 @@ mod tests {
             verify_file_cancellable(&directory.path().join("absent.bin"), fixture(), &cancel),
             Err(ModelError::Cancelled)
         ));
+        Ok(())
+    }
+    #[test]
+    fn startup_cache_inspection_cleans_only_dead_own_parts_and_never_downloads()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        assert_eq!(
+            inspect_cache(
+                directory.path(),
+                fixture(),
+                &tokio_util::sync::CancellationToken::new()
+            )?,
+            None
+        );
+        let target = directory.path().join("fixture.bin");
+        std::fs::write(&target, b"abc")?;
+        let stale = directory
+            .path()
+            .join(format!("everlast-fixture-{}-1.part", i32::MAX));
+        assert!(macos_integration::process::definitely_absent(
+            i32::MAX as u32
+        ));
+        std::fs::write(&stale, b"interrupted transfer")?;
+        let active = directory
+            .path()
+            .join(format!("everlast-fixture-{}-2.part", std::process::id()));
+        std::fs::write(&active, b"active legacy writer")?;
+        let foreign = directory.path().join("foreign.part");
+        std::fs::write(&foreign, b"foreign")?;
+        assert_eq!(
+            inspect_cache(
+                directory.path(),
+                fixture(),
+                &tokio_util::sync::CancellationToken::new()
+            )?,
+            Some(target.clone())
+        );
+        assert!(!stale.exists());
+        assert_eq!(std::fs::read(&active)?, b"active legacy writer");
+        assert_eq!(std::fs::read(&foreign)?, b"foreign");
+        assert_eq!(std::fs::read(&target)?, b"abc");
+        std::fs::write(&target, b"abd")?;
+        assert!(matches!(
+            inspect_cache(
+                directory.path(),
+                fixture(),
+                &tokio_util::sync::CancellationToken::new()
+            ),
+            Err(ModelError::Hash)
+        ));
+        assert_eq!(std::fs::read(&target)?, b"abd");
+        Ok(())
+    }
+
+    #[test]
+    fn cache_preparation_is_busy_until_the_other_setup_owner_releases_it()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let cancel = tokio_util::sync::CancellationToken::new();
+        let owner = prepare_cache(directory.path(), fixture(), &cancel)?;
+        assert!(matches!(
+            prepare_cache(directory.path(), fixture(), &cancel),
+            Err(ModelError::Busy)
+        ));
+        assert!(matches!(
+            inspect_cache(directory.path(), fixture(), &cancel),
+            Err(ModelError::Busy)
+        ));
+        drop(owner);
+        assert_eq!(inspect_cache(directory.path(), fixture(), &cancel)?, None);
         Ok(())
     }
 }

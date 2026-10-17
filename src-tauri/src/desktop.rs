@@ -1181,6 +1181,7 @@ fn project(
     );
     result.setup.error = application.setup.failure.as_ref().map(|failure| {
         match failure {
+            setup::Failure::Busy => "Das Modell wird bereits von einer anderen Einrichtung verwendet. Bitte warte und versuche es erneut.",
             setup::Failure::Permission => "Das Modellverzeichnis ist nicht zugänglich. Bitte prüfe die Dateirechte.",
             setup::Failure::DiskFull => "Es ist nicht genügend Speicherplatz für das Modell frei.",
             setup::Failure::Io => "Die Modelldatei konnte nicht gelesen oder gespeichert werden.",

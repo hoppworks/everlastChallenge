@@ -13,5 +13,6 @@ pub mod keyboard;
 pub mod main_delivery;
 pub mod paste;
 pub mod power;
+pub mod process;
 pub mod target;
 pub mod ui_services;

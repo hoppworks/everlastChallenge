@@ -26,6 +26,7 @@ pub enum Phase {
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
 #[serde(tag = "code", rename_all = "snake_case")]
 pub enum Failure {
+    Busy,
     Permission,
     DiskFull,
     Io,
@@ -102,19 +103,9 @@ impl Backend for NativeBackend {
         definition: ModelDefinition,
         cancel: &CancellationToken,
     ) -> Result<Option<PathBuf>, ModelError> {
-        if cancel.is_cancelled() {
-            return Err(ModelError::Cancelled);
-        }
-        let path = directory.join(definition.file_name());
-        match std::fs::metadata(&path) {
-            Ok(_) => {
-                model::verify_file_cancellable(&path, definition, cancel)?;
-                Ok(Some(path))
-            }
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
-            Err(error) => Err(error.into()),
-        }
+        model::inspect_cache(directory, definition, cancel)
     }
+
     fn download(
         &self,
         directory: &Path,
@@ -304,6 +295,7 @@ impl Drop for SetupService {
 
 fn failure(error: ModelError) -> Failure {
     match error {
+        ModelError::Busy => Failure::Busy,
         ModelError::Io(error) => match error.kind() {
             std::io::ErrorKind::PermissionDenied => Failure::Permission,
             std::io::ErrorKind::StorageFull => Failure::DiskFull,
@@ -783,6 +775,7 @@ mod tests {
                 (ModelError::Hash, Failure::Hash),
                 (ModelError::Timeout, Failure::Timeout),
                 (ModelError::Redirect, Failure::Redirect),
+                (ModelError::Busy, Failure::Busy),
                 (ModelError::Network, Failure::NetworkOrTls),
                 (ModelError::Http(503), Failure::Http { status: 503 }),
             ] {
