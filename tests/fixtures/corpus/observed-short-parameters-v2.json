@@ -1,0 +1,372 @@
+{
+  "schemaVersion": 1,
+  "configurationId": "observed-native-short-numeric-errors-and-compatible-export-v2",
+  "sourceRevision": "6042cad73a32636e9a77e5fb91a21286cc817166",
+  "frozenBeforeModelWorkUtc": "2026-10-17T16:40:29.261710+00:00",
+  "qualified": false,
+  "purpose": "New bounded observation after typederrorandexportfix; identicalinputs/decoderparameters, retainfailedv1",
+  "manifest": {
+    "path": "artifacts/diagnostic-speech/observed-short-v1/manifest.json",
+    "sha256": "0007353d221d0b9b3e097063435d3b9df300a72ee94429c220be176169347f16",
+    "caseCount": 2
+  },
+  "binary": {
+    "path": "target/release/examples/observed_corpus_probe",
+    "sha256": "d79b26f703affdb8e8118b827a6215e4b32cfd4a520996f632680f416bb296f2",
+    "build": "release offline locked features=measurement;6042cad"
+  },
+  "models": [
+    {
+      "id": "large-v3-turbo-q5_0",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+    }
+  ],
+  "decoderConfiguration": {
+    "runtime": {
+      "whisperRs": "0.16.0",
+      "whisperRsSys": "0.15.0",
+      "whisperRsSysSourceRevision": "7558e1b72f54f2f22a53589afb77e65681834c36",
+      "context": {
+        "use_gpu": true,
+        "flash_attn": false,
+        "gpu_device": 0,
+        "dtw": "disabled"
+      },
+      "fullParams": {
+        "strategy": "greedy",
+        "greedy_best_of": 1,
+        "beam_size": -1,
+        "beam_patience": -1.0,
+        "n_threads": 4,
+        "n_max_text_ctx": 16384,
+        "offset_ms": 0,
+        "duration_ms": 0,
+        "translate": false,
+        "no_context": true,
+        "no_timestamps": true,
+        "single_segment": false,
+        "print_special": false,
+        "print_progress": false,
+        "print_realtime": false,
+        "print_timestamps": false,
+        "token_timestamps": false,
+        "thold_pt": 0.01,
+        "thold_ptsum": 0.01,
+        "max_len": 0,
+        "split_on_word": false,
+        "max_tokens": 0,
+        "debug_mode": false,
+        "audio_ctx": 0,
+        "tdrz_enable": false,
+        "suppress_regex": null,
+        "initial_prompt": null,
+        "carry_initial_prompt": false,
+        "prompt_tokens": null,
+        "prompt_n_tokens": 0,
+        "language": "explicit per case: de or en",
+        "detect_language": false,
+        "suppress_blank": true,
+        "suppress_nst": false,
+        "temperature": 0.0,
+        "max_initial_ts": 1.0,
+        "length_penalty": -1.0,
+        "temperature_inc": 0.2,
+        "entropy_thold": 2.4,
+        "logprob_thold": -1.0,
+        "no_speech_thold": 0.6,
+        "callbacks": "all disabled/null",
+        "grammar_rules": null,
+        "n_grammar_rules": 0,
+        "i_start_rule": 0,
+        "grammar_penalty": 100.0,
+        "vad": false,
+        "vad_model_path": null,
+        "vad_params": "upstream defaults inactive because vad=false; exact source hash below"
+      },
+      "whisperCppSourceRevision": "2eeeba56e9edd762b4b38467bab96c2517163158",
+      "whisperRsSysLocalPatch": {
+        "path": "vendor/whisper-rs-sys",
+        "id": "initial-sot-no-speech-row-v1+vad-failure-status-v1",
+        "notes": "vendor/whisper-rs-sys/PATCHES.md"
+      },
+      "speechGate": {
+        "model": {
+          "id": "silero-v5.1.2",
+          "file": "ggml-silero-v5.1.2.bin",
+          "bytes": 885098,
+          "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+          "sourceRevision": "9ffd54a1e1ee413ddf265af9913beaf518d1639b"
+        },
+        "useGpu": false,
+        "threads": 1,
+        "windowSamples": 512,
+        "input": "entire original recording in normalized scratch only; never alters ASR input",
+        "normalization": {
+          "peakTarget": 0.95,
+          "gain": "0.95 / whole-recording absolute peak; zero peak has gain=1",
+          "clip": false,
+          "trim": false
+        },
+        "positiveThreshold": 0.5,
+        "aggregation": "at least one finite probability >= threshold, after validating all values and exact ceil(samples/512) count",
+        "maximumScratchSamples": 4800000,
+        "warmContext": true,
+        "nativeStateResetEachCall": true,
+        "failurePolicy": "distinct error; never blank text as fallback",
+        "cancelCallback": false
+      }
+    },
+    "preprocessing": {
+      "mode": "finite/bounds, energy-empty guard, whole-recording VAD on separate normalized scratch, then unchanged outer energy range and minimum padding for ASR",
+      "sampleRate": 16000,
+      "channels": 1,
+      "startRms": 5e-05,
+      "endRms": 2.5e-05,
+      "frameSamples": 320,
+      "prerollSamples": 2400,
+      "tailSamples": 3200,
+      "backendPaddingMinimumSamples": 16000,
+      "paddingSampleValue": 0.0,
+      "maximumSamples": 4800000
+    },
+    "state": {
+      "oneWarmModelContext": true,
+      "freshWhisperStateEachJob": true,
+      "serialInference": true,
+      "abortCallback": false
+    }
+  },
+  "sourceHashes": {
+    "capture": {
+      "filename": "src-tauri/src/audio.rs",
+      "sha256": "30649268bfb85918ed7971f4707af793cc81882bcbe6e60115670058b70f91f9"
+    },
+    "cargoLock": {
+      "filename": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089"
+    },
+    "clock": {
+      "filename": "src-tauri/src/audio/replay/clock.rs",
+      "sha256": "c719ece5ec6bd47211a989c28228dd8087e4f1ad2c123c7345bbe9283468056d"
+    },
+    "cpp": {
+      "filename": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+      "sha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e"
+    },
+    "energy": {
+      "filename": "crates/dictation-core/src/audio.rs",
+      "sha256": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46"
+    },
+    "engine": {
+      "filename": "src-tauri/src/transcription.rs",
+      "sha256": "4fb38fbb9f3f434fa3c9f00ab5464e7861af566247d3cae75c6e3bd13af2f2a3"
+    },
+    "inference": {
+      "filename": "src-tauri/src/inference_service.rs",
+      "sha256": "3e5963b6a8374f450142f5a6ad2983c8f6ad21f9217435473779c2694d351d13"
+    },
+    "manifest": {
+      "filename": "src-tauri/Cargo.toml",
+      "sha256": "7696f89d6e3ece66139610e369d96242c070b6865e5faa9acc23c671fcd7e585"
+    },
+    "measurement": {
+      "filename": "src-tauri/src/runtime/measurement.rs",
+      "sha256": "4d41e04d9e409fc02114335e86384a0173d23180c8e4c872177b795dbd192f47"
+    },
+    "models": {
+      "filename": "src-tauri/src/model.rs",
+      "sha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2"
+    },
+    "options": {
+      "filename": "src-tauri/examples/paced_runtime_probe/options.rs",
+      "sha256": "e092b69cd51c5b490c37a0c89ba9cf454d674560f8eb1c820fdc3be3b920ac68"
+    },
+    "parameters": {
+      "filename": "src-tauri/examples/paced_runtime_probe/parameters.rs",
+      "sha256": "2aa1d91da87c7511ff1e3b7c27727502d5a61e417e676a6996170c8ed82f057e"
+    },
+    "paramsWrapper": {
+      "filename": "vendor/whisper-rs/src/whisper_params.rs",
+      "sha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8"
+    },
+    "probe": {
+      "filename": "src-tauri/examples/paced_runtime_probe.rs",
+      "sha256": "e70a4fd5be9e23b9b0f369d6444b27eed3f2127fa1428a21cc7899175abaeabc"
+    },
+    "replay": {
+      "filename": "src-tauri/src/audio/replay.rs",
+      "sha256": "d4ddcb96f91ec766fd2afdc94b05f72a8a7e7ec03413dd08d5d18d1bedad0d8a"
+    },
+    "runner": {
+      "filename": "src-tauri/examples/paced_runtime_probe/runner.rs",
+      "sha256": "97bf204a0e79f0352a92933674980a8055e9ca31ddba3352bf6e85ffcb1d3543"
+    },
+    "runtime": {
+      "filename": "src-tauri/src/runtime.rs",
+      "sha256": "234bafd197e031c55b3d03a0fef09f281d307e064c5ce1a362a9cf79c98ae18b"
+    },
+    "schedule": {
+      "filename": "src-tauri/src/audio/replay/schedule.rs",
+      "sha256": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b"
+    },
+    "speechGate": {
+      "filename": "src-tauri/src/transcription/speech_gate.rs",
+      "sha256": "4e6964540cbe78217cf6c5f6924c859d5240bd2ec9603f857113dea272da7f1f"
+    },
+    "statistics": {
+      "filename": "src-tauri/examples/paced_runtime_probe/statistics.rs",
+      "sha256": "c7c4d986deba4386afac48305616651570f5e59ce6f76ab5c7a7cac75c562ae7"
+    },
+    "vadWrapper": {
+      "filename": "vendor/whisper-rs/src/whisper_vad.rs",
+      "sha256": "a4e481fac0b423ab532e3f4b8e3348a23e3134a10e4581ea3f383d6a81e6438d"
+    },
+    "workspaceManifest": {
+      "filename": "Cargo.toml",
+      "sha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230"
+    },
+    "corpusProbe": {
+      "filename": "src-tauri/examples/corpus_probe.rs",
+      "sha256": "010b17489d94ea9832d1693b86977c28d90014d882e9142a9e575a679b70c209"
+    },
+    "corpusInput": {
+      "filename": "src-tauri/examples/corpus_probe/input.rs",
+      "sha256": "91143edc2a8202bae0f015dfa55f8142ca576ed98051c6b5b0d53829b17c32e9"
+    },
+    "qualityEvaluator": {
+      "filename": "scripts/quality.py",
+      "sha256": "0b9a37959d2fedfacd2c70643b134ce548a4e4cf6a281e1a4d95bec89aa6be5c"
+    },
+    "corpusBuilder": {
+      "filename": "scripts/corpus.py",
+      "sha256": "2ec69cfbd00b183caf8defb53450ab5da5711f5fac0fe7e64463cfbb3d6ca5d6"
+    },
+    "shortCorpusBuilder": {
+      "filename": "scripts/short_corpus.py",
+      "sha256": "b5adbc5d64a408d1bdd23799120bc21196fc6df03c151263021dd74184575b0d"
+    },
+    "hostHelper": {
+      "filename": "scripts/run-runtime-resource.py",
+      "sha256": "ee87df6f5976ef6a43cfc97430b9f6ba4ac3b62c7c78ad80e2c09410b5ef8d54"
+    },
+    "observation": {
+      "filename": "src-tauri/src/transcription/observation.rs",
+      "sha256": "d66d3a52eb8ba01e531416a9c987eec08ce0c2460490881a4735f510de47a623"
+    },
+    "observedProbe": {
+      "filename": "src-tauri/examples/observed_corpus_probe.rs",
+      "sha256": "3afb44ad5fa40090d2d292648ed4f2aee5480eb9cdac21f8364fa0e3047d0f34"
+    }
+  },
+  "evaluator": {
+    "path": "scripts/quality.py",
+    "sha256": "0b9a37959d2fedfacd2c70643b134ce548a4e4cf6a281e1a4d95bec89aa6be5c",
+    "interpreter": "/usr/bin/python3",
+    "pythonVersion": "3.9.6",
+    "unicodeVersion": "13.0.0",
+    "limits": "existing frozen bounded WER protocol; no new normalization"
+  },
+  "host": {
+    "cpu": {
+      "value": "Apple M5",
+      "error": null
+    },
+    "memoryBytes": {
+      "value": "34359738368",
+      "error": null
+    },
+    "macOS": {
+      "value": "27.0.1",
+      "error": null
+    },
+    "macOSBuild": {
+      "value": "26A434",
+      "error": null
+    },
+    "rustc": {
+      "value": "rustc 1.93.0 (254b59607 2026-01-19)",
+      "error": null
+    },
+    "powerSource": {
+      "value": "AC Power",
+      "error": null
+    }
+  },
+  "runs": [
+    {
+      "model": "reference",
+      "inferenceCommand": [
+        "target/release/examples/observed_corpus_probe",
+        "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "reference",
+        "artifacts/diagnostic-speech/observed-short-v1/manifest.json",
+        "artifacts/diagnostic-speech/observed-short-v2/results.json"
+      ],
+      "evaluationCommand": [
+        "/usr/bin/python3",
+        "scripts/quality.py",
+        "artifacts/diagnostic-speech/observed-short-v1/manifest.json",
+        "artifacts/diagnostic-speech/observed-short-v2/results.json",
+        "--output",
+        "artifacts/diagnostic-speech/observed-short-v2/quality.json"
+      ],
+      "log": "artifacts/diagnostic-speech/observed-short-v2/command.log",
+      "qualityLog": "artifacts/diagnostic-speech/observed-short-v2/quality.log"
+    }
+  ],
+  "failurePolicy": "retain every failed/missing case and incomplete group; never delete or replace hypotheses to improve WER",
+  "qualityThreshold": {
+    "cleanPerLanguage": 0.1,
+    "anchorFidelity": "separate original-content check, not implied by WER"
+  },
+  "limits": [
+    "Acceptedsegments only, not discardedencoderwindows/seek/EOT/prompt/temperature orPCM digest",
+    "DirectserialEngine not InferenceService/controller/lifecycle/L",
+    "Observationaddsmetadatareadsafterfull; no decoderparameterschanged",
+    "No oldsource/output rewritten, no P05/P06qualification"
+  ],
+  "parameterChangesFromAcceptanceV1": "suppress_nst true to false; preprocessing description corrected only; all other runtime numerical parameters unchanged. Source and binary pins refreshed.",
+  "currentHostObservations": {
+    "swVers": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+    "machine": "arm64",
+    "python": "Python 3.9.6",
+    "unicode": "13.0.0",
+    "cpu": "Apple M5",
+    "memoryBytes": "34359738368",
+    "powerSource": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23461987)\t82%; AC attached; not charging present: true"
+  },
+  "diagnosticQuestions": [
+    "Does observedtext match frozen previous productionEngine outputs for each exactinput?",
+    "Does weakmask duplication occur within or across acceptednative segment text?",
+    "Are actualselectedASRframes/range and native concatenation consistent with input and finaltext?",
+    "If rejected, what actualnumericmetadata or distinctobservationbounderror is returned?"
+  ],
+  "expectedInterpretation": {
+    "rawNativeDuplication": "Doubledcontentalreadyinnativesegments; no Rust-assemblydedupfixjustified",
+    "rawNativeOnceButFinalTwice": "Investigate sharedtextassembly",
+    "differentText": "Preserve newobservation and investigatereproducibility; cannotclaimunchangedoutput"
+  },
+  "diagnosisBinding": {
+    "path": "artifacts/acceptance/v2/long-recording-diagnosis-v1.json",
+    "sha256": "349c306d15d31c70d766f0dc77514adec4961b4bedf9133dd115aaee598fbd2a"
+  },
+  "selectionReason": "Reuse exact original and weakmask fixtures to observe existingparagraphduplication in acceptednativeoutput",
+  "selectionFreezeBase": "6042cad",
+  "comparisonBindings": [
+    {
+      "path": "artifacts/diagnostic-speech/long-context-v1/results.json",
+      "sha256": "d834080218ee82856bbe4f8acd30e5db1589c2d29647ebb6d0c0268c7621c071",
+      "bytes": 321
+    },
+    {
+      "path": "artifacts/diagnostic-speech/weak-slice-v1/results.json",
+      "sha256": "f2b9f76a47b301de6a1999af0bf536959b6040bcdf74461fadd9049c384c7c29",
+      "bytes": 371
+    },
+    {
+      "path": "tests/fixtures/corpus/weak-slice-parameters-v1.json",
+      "sha256": "9b298b31a5b17ae8bd02d6acb74e29861dd0bbf5b6c160343df6614b14c90dba",
+      "bytes": 13755
+    }
+  ]
+}
