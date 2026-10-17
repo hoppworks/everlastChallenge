@@ -51,3 +51,12 @@ bleibt separat erhalten. Anschließend typisierte numerische Metadatenfehler
 hinzugefügt, ohne Grenzen/Validatoren zu lockern; kompatible Dreifeldresultate
 und vollständige Sidecar-Diagnose getrennt. Tatsächliches RED→GREEN, 15 Engine-
 und sechs Beispieltests, strikte integrierte Prüfungen und unabhängiger Review.
+
+Der zweite tatsächliche Lauf lokalisierte den Abbruch: native Rohstartzeit
+−100730 Zentisekunden trotz unverändertem no_timestamps=true. Die Messschnittstelle
+bewahrt deshalb jetzt auch negative oder umgekehrte signed Zeiten unverändert.
+nonnegativeOrderedTimestamps prüft ausschließlich start >= 0 und end >= start;
+selbst true garantiert keine tatsächliche Audio-/Wortausrichtung. Diese Werte
+werden weder normalisiert noch zum Verwerfen des Texts benutzt. Index-/NSP-
+Validierung und Segment-/Textgrenzen bleiben erhalten. Reales Regression-RED mit
+den beobachteten Zahlen, danach 17 Tests erfolgreich. Kein Decoderverhalten geändert.

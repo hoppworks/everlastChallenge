@@ -72,12 +72,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .into_iter()
                     .map(|segment| {
                         json!({
-                            "index": segment.index,
-                            "startCentiseconds": segment.start_centiseconds,
-                            "endCentiseconds": segment.end_centiseconds,
-                            "noSpeechProbability": segment.no_speech_probability,
-                            "text": segment.text,
-                        })
+                                "index": segment.index,
+                                "startCentiseconds": segment.start_centiseconds,
+                                "endCentiseconds": segment.end_centiseconds,
+                        "nonnegativeOrderedTimestamps":segment.nonnegative_ordered_timestamps,
+                                "noSpeechProbability": segment.no_speech_probability,
+                                "text": segment.text,
+                            })
                     })
                     .collect::<Vec<_>>();
                 json!({"id":case.id,"status":"ok","text":result.text,"error":null,

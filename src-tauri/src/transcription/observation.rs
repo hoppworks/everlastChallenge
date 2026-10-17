@@ -1,5 +1,7 @@
 //! Developer-only accepted native segments; missing/dropped encoder windows remain unknown.
-//! Native times under the unchanged no-timestamps configuration are not word alignment.
+//! Native times under the unchanged no-timestamps configuration can be negative
+//! or reversed and are not usable as alignment. Preserve them verbatim; this is
+//! observation metadata, not a production transcription failure.
 //! At most 4096 records and 256 KiB of raw segment text are retained, in addition
 //! to the normal bounded joined transcript. No audio samples are retained here.
 use super::InferenceError;
@@ -10,9 +12,12 @@ pub const MAX_TEXT_BYTES: usize = 256 * 1024;
 #[derive(Debug, PartialEq)]
 pub struct Segment {
     pub index: i32,
-    /// Native timestamps in centiseconds, relative to the selected ASR input.
+    /// Signed native timestamp in centiseconds. With no_timestamps=true this
+    /// may be unusable; it is neither repaired nor guaranteed relative alignment.
     pub start_centiseconds: i64,
     pub end_centiseconds: i64,
+    /// Only start >= 0 && end >= start; true does not establish audio alignment.
+    pub nonnegative_ordered_timestamps: bool,
     pub no_speech_probability: f32,
     pub text: String,
 }
@@ -49,8 +54,6 @@ impl Observation {
         }
         if index < 0
             || index as usize != self.segments.len()
-            || start < 0
-            || end < start
             || !probability.is_finite()
             || !(0.0..=1.0).contains(&probability)
         {
@@ -73,6 +76,7 @@ impl Observation {
             index,
             start_centiseconds: start,
             end_centiseconds: end,
+            nonnegative_ordered_timestamps: start >= 0 && end >= start,
             no_speech_probability: probability,
             text: owned,
         });
@@ -144,8 +148,6 @@ mod tests {
         for (index, start, end, probability) in [
             (-1, 0, 1, 0.0),
             (1, 0, 1, 0.0),
-            (0, -1, 1, 0.0),
-            (0, 2, 1, 0.0),
             (0, 0, 1, f32::NAN),
             (0, 0, 1, f32::INFINITY),
             (0, 0, 1, -0.01),
@@ -191,9 +193,9 @@ mod tests {
     fn invalid_native_metadata_retains_actual_numbers_without_segment_text()
     -> Result<(), Box<dyn std::error::Error>> {
         let mut observation = Observation::default();
-        let result = observation.record(0, -17, 2346, 0.125, "private text must not escape");
+        let result = observation.record(7, -17, 2346, 0.125, "private text must not escape");
         let display = result.as_ref().err().ok_or("expected failure")?.to_string();
-        assert!(display.contains("index=0, start=-17, end=2346, probability=0.125"));
+        assert!(display.contains("index=7, start=-17, end=2346, probability=0.125"));
         assert!(!display.contains("private text"));
         match result {
             Err(InferenceError::ObservationMetadata {
@@ -202,7 +204,7 @@ mod tests {
                 end,
                 probability,
             }) => {
-                assert_eq!(index, 0);
+                assert_eq!(index, 7);
                 assert_eq!(start, -17);
                 assert_eq!(end, 2346);
                 assert_eq!(probability, 0.125);
@@ -215,6 +217,43 @@ mod tests {
         assert!(
             matches!(result, Err(InferenceError::ObservationMetadata { index: 0, start: 0, end: 1, probability }) if probability.is_nan())
         );
+        Ok(())
+    }
+    #[test]
+    fn no_timestamps_native_negative_start_is_preserved_not_repaired() -> Result<(), InferenceError>
+    {
+        let mut observation = Observation::default();
+        observation.record(0, -100730, 3000, 7e-12, " exact raw text ")?;
+        let segment = &observation.segments[0];
+        assert_eq!(segment.start_centiseconds, -100730);
+        assert_eq!(segment.end_centiseconds, 3000);
+        assert_eq!(segment.text, " exact raw text ");
+        assert!(!segment.nonnegative_ordered_timestamps);
+        Ok(())
+    }
+
+    #[test]
+    fn timestamp_flag_is_only_arithmetic_and_keeps_reversed_raw_times() -> Result<(), InferenceError>
+    {
+        let mut observation = Observation::default();
+        for (index, (start, end, expected)) in [
+            (0, 0, true),
+            (10, 20, true),
+            (20, 10, false),
+            (-2, -1, false),
+            (i64::MIN, i64::MAX, false),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            observation.record(index as i32, start, end, 0.0, "")?;
+            let segment = &observation.segments[index];
+            assert_eq!(
+                (segment.start_centiseconds, segment.end_centiseconds),
+                (start, end)
+            );
+            assert_eq!(segment.nonnegative_ordered_timestamps, expected);
+        }
         Ok(())
     }
 }
