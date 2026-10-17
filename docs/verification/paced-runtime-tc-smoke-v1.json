@@ -1,0 +1,832 @@
+{
+  "schemaVersion": 1,
+  "kind": "owned-tc-runtime-local-empty-smoke-readback",
+  "qualified": false,
+  "sourceRevision": "80261d31aedcecd58e3cc3e1a95735c98e56259e",
+  "freeze": {
+    "path": "tests/fixtures/corpus/paced-runtime-tc-smoke-run-v1.json",
+    "sha256": "93b62657464f49c180748b77cd34d78d8002d5bb57b063bdcf7418859e89f165",
+    "bytes": 11547,
+    "mode": "0o644"
+  },
+  "parameters": {
+    "path": "tests/fixtures/corpus/paced-runtime-tc-parameters-v1.json",
+    "sha256": "3ff7364edee948401aac6aa86327e65adb632eb8e43305ef5fc02f17aba8a2f5",
+    "bytes": 12046,
+    "mode": "0o644"
+  },
+  "rawFiles": [
+    {
+      "path": "artifacts/paced-runtime-tc/smoke-v1/local-results.json",
+      "sha256": "706082fb1c70d55d722db8b74b0cc95feedd649498377fcd71fb2e776e739bed",
+      "bytes": 289,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/paced-runtime-tc/smoke-v1/local-results.json.metadata.json",
+      "sha256": "df7e3163e6339bb557e289af072812b1d24bd594229e2004ed027a0858063740",
+      "bytes": 259969,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/paced-runtime-tc/smoke-v1/local.command.log",
+      "sha256": "d41d7558ca18545c1efbdae9c411a7e74986d03c2b289360c644920ca745db75",
+      "bytes": 66,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/paced-runtime-tc/smoke-v1/empty-results.json",
+      "sha256": "8e5c4da478fc423a52c36bded4bfd27ab1935e077086246cc2c807ade47a2928",
+      "bytes": 177,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/paced-runtime-tc/smoke-v1/empty-results.json.metadata.json",
+      "sha256": "2d240ccc6dc196437bdfb3fa67aba7402ce2a08c843d75904f066ff9268a0c03",
+      "bytes": 166648,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/paced-runtime-tc/smoke-v1/empty.command.log",
+      "sha256": "d41d7558ca18545c1efbdae9c411a7e74986d03c2b289360c644920ca745db75",
+      "bytes": 66,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/paced-runtime-tc/smoke-v1/completion.json",
+      "sha256": "4c1c50a4fe2115508435a42e889e00839a6d1edf94a3c742a83e2bec91e67cc3",
+      "bytes": 1662,
+      "mode": "0o600"
+    }
+  ],
+  "originalToolHandle": 16938,
+  "completion": {
+    "schemaVersion": 1,
+    "startedUtc": "2026-10-17T19:29:58.408976+00:00",
+    "finishedUtc": "2026-10-17T19:30:30.144107+00:00",
+    "freezeSha256": "93b62657464f49c180748b77cd34d78d8002d5bb57b063bdcf7418859e89f165",
+    "sourceRevision": "80261d31aedcecd58e3cc3e1a95735c98e56259e",
+    "runs": [
+      {
+        "id": "local",
+        "status": "completed",
+        "pid": 23128,
+        "startedUtc": "2026-10-17T19:29:58.409090+00:00",
+        "finishedUtc": "2026-10-17T19:30:18.337681+00:00",
+        "exitCode": 0,
+        "preliminaryReportValid": true,
+        "command": [
+          "target/release/examples/paced_runtime_probe",
+          "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+          "reference",
+          "artifacts/replay/neue-aufnahme.wav",
+          "de",
+          "tests/fixtures/corpus/paced-runtime-tc-parameters-v1.json",
+          "artifacts/paced-runtime-tc/smoke-v1/local-results.json",
+          "1",
+          "artifacts/replay/neue-aufnahme-baseline.txt"
+        ]
+      },
+      {
+        "id": "empty",
+        "status": "completed",
+        "pid": 23190,
+        "startedUtc": "2026-10-17T19:30:18.339778+00:00",
+        "finishedUtc": "2026-10-17T19:30:30.142498+00:00",
+        "exitCode": 0,
+        "preliminaryReportValid": true,
+        "command": [
+          "target/release/examples/paced_runtime_probe",
+          "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+          "reference",
+          "artifacts/corpus/audio/calibration-de-zero-5s.wav",
+          "de",
+          "tests/fixtures/corpus/paced-runtime-tc-parameters-v1.json",
+          "artifacts/paced-runtime-tc/smoke-v1/empty-results.json",
+          "1",
+          "--expect-empty"
+        ]
+      }
+    ],
+    "effectiveExitCode": 0
+  },
+  "cases": [
+    {
+      "id": "local",
+      "expectedOutcome": "Local",
+      "pid": 23128,
+      "rows": [
+        {
+          "controllerClockMatchesCapture": true,
+          "engineElapsedNanos": 1016943625,
+          "engineInputFrames": 131072,
+          "engineRtf": 0.1241386260986328,
+          "engineRtfUnavailableReason": null,
+          "error": null,
+          "expectedOutcome": "Local",
+          "id": "warmup",
+          "publisher": {
+            "after": {
+              "basicPolicy": 2,
+              "cpu": {
+                "systemNanos": 71564000,
+                "userNanos": 115534000
+              },
+              "defaultPolicy": false,
+              "timeConstraint": {
+                "computationTicks": 12000,
+                "constraintTicks": 24000,
+                "periodTicks": 480000,
+                "preemptible": true
+              }
+            },
+            "afterFeed": {
+              "error": null,
+              "snapshot": {
+                "basicPolicy": 2,
+                "cpu": {
+                  "systemNanos": 71554000,
+                  "userNanos": 115522000
+                },
+                "defaultPolicy": false,
+                "timeConstraint": {
+                  "computationTicks": 12000,
+                  "constraintTicks": 24000,
+                  "periodTicks": 480000,
+                  "preemptible": true
+                }
+              }
+            },
+            "before": {
+              "basicPolicy": 1,
+              "cpu": {
+                "systemNanos": 7000,
+                "userNanos": 3000
+              },
+              "defaultPolicy": true,
+              "timeConstraint": {
+                "computationTicks": 120000,
+                "constraintTicks": 240000,
+                "periodTicks": 0,
+                "preemptible": true
+              }
+            },
+            "beforeFeed": {
+              "error": null,
+              "snapshot": {
+                "basicPolicy": 2,
+                "cpu": {
+                  "systemNanos": 17000,
+                  "userNanos": 8000
+                },
+                "defaultPolicy": false,
+                "timeConstraint": {
+                  "computationTicks": 12000,
+                  "constraintTicks": 24000,
+                  "periodTicks": 480000,
+                  "preemptible": true
+                }
+              }
+            },
+            "configured": {
+              "basicPolicy": 2,
+              "cpu": {
+                "systemNanos": 10000,
+                "userNanos": 4000
+              },
+              "defaultPolicy": false,
+              "timeConstraint": {
+                "computationTicks": 12000,
+                "constraintTicks": 24000,
+                "periodTicks": 480000,
+                "preemptible": true
+              }
+            },
+            "finishError": null,
+            "outliers": [],
+            "policy": "timeConstrained",
+            "postError": null,
+            "requested": {
+              "computationTicks": 12000,
+              "constraintTicks": 24000,
+              "periodTicks": 480000,
+              "preemptible": true
+            },
+            "setupError": null
+          },
+          "publisherJoined": true,
+          "qosEntered": false,
+          "qosError": null,
+          "qosFinished": false,
+          "referenceMatch": true,
+          "session": 1,
+          "status": "ok",
+          "stopToTerminalNanos": 1038353125,
+          "stopToTextNanos": 1038353125,
+          "tStopOffsetNanos": 8192002250,
+          "tTerminalOffsetNanos": 9230355375,
+          "tTextOffsetNanos": 9230355375,
+          "terminal": "Local",
+          "warmup": true,
+          "feed": {
+            "plannedStopOffset": {
+              "nanos": 192000000,
+              "secs": 8
+            },
+            "timingValid": true,
+            "waitSummary": {
+              "detailedPublications": 0,
+              "maxReserveNanos": 2625,
+              "maxSleepOvershootNanos": 70375,
+              "maxSpinClockGapNanos": 3125,
+              "maxWaitExitToPublishNanos": 12666,
+              "observedPublications": 410
+            }
+          },
+          "publicationSummary": {
+            "count": 410,
+            "canonicalSha256": "e4f89b4438386e59a7dc86bae50b9dda1c5182ead17c633f2d30a981b7aa3c9f",
+            "maxDeviationNanos": 29208,
+            "earlyCount": 0,
+            "aboveToleranceCount": 0,
+            "first": {
+              "afterPublishNanos": 20002833,
+              "beforePublishNanos": 20000041,
+              "deviationNanos": 2833,
+              "endFrame": 320,
+              "plannedNanos": 20000000,
+              "startFrame": 0,
+              "timing": "onBudget"
+            },
+            "last": {
+              "afterPublishNanos": 8192001208,
+              "beforePublishNanos": 8192000250,
+              "deviationNanos": 1208,
+              "endFrame": 131072,
+              "plannedNanos": 8192000000,
+              "startFrame": 130880,
+              "timing": "onBudget"
+            }
+          },
+          "stopDeviationNanos": 2250
+        },
+        {
+          "controllerClockMatchesCapture": true,
+          "engineElapsedNanos": 1004785459,
+          "engineInputFrames": 131072,
+          "engineRtf": 0.12265447497558594,
+          "engineRtfUnavailableReason": null,
+          "error": null,
+          "expectedOutcome": "Local",
+          "id": "measured-001",
+          "publisher": {
+            "after": {
+              "basicPolicy": 2,
+              "cpu": {
+                "systemNanos": 63290000,
+                "userNanos": 113745000
+              },
+              "defaultPolicy": false,
+              "timeConstraint": {
+                "computationTicks": 12000,
+                "constraintTicks": 24000,
+                "periodTicks": 480000,
+                "preemptible": true
+              }
+            },
+            "afterFeed": {
+              "error": null,
+              "snapshot": {
+                "basicPolicy": 2,
+                "cpu": {
+                  "systemNanos": 63279000,
+                  "userNanos": 113732000
+                },
+                "defaultPolicy": false,
+                "timeConstraint": {
+                  "computationTicks": 12000,
+                  "constraintTicks": 24000,
+                  "periodTicks": 480000,
+                  "preemptible": true
+                }
+              }
+            },
+            "before": {
+              "basicPolicy": 1,
+              "cpu": {
+                "systemNanos": 13000,
+                "userNanos": 8000
+              },
+              "defaultPolicy": true,
+              "timeConstraint": {
+                "computationTicks": 120000,
+                "constraintTicks": 240000,
+                "periodTicks": 0,
+                "preemptible": true
+              }
+            },
+            "beforeFeed": {
+              "error": null,
+              "snapshot": {
+                "basicPolicy": 2,
+                "cpu": {
+                  "systemNanos": 38000,
+                  "userNanos": 15000
+                },
+                "defaultPolicy": false,
+                "timeConstraint": {
+                  "computationTicks": 12000,
+                  "constraintTicks": 24000,
+                  "periodTicks": 480000,
+                  "preemptible": true
+                }
+              }
+            },
+            "configured": {
+              "basicPolicy": 2,
+              "cpu": {
+                "systemNanos": 16000,
+                "userNanos": 9000
+              },
+              "defaultPolicy": false,
+              "timeConstraint": {
+                "computationTicks": 12000,
+                "constraintTicks": 24000,
+                "periodTicks": 480000,
+                "preemptible": true
+              }
+            },
+            "finishError": null,
+            "outliers": [],
+            "policy": "timeConstrained",
+            "postError": null,
+            "requested": {
+              "computationTicks": 12000,
+              "constraintTicks": 24000,
+              "periodTicks": 480000,
+              "preemptible": true
+            },
+            "setupError": null
+          },
+          "publisherJoined": true,
+          "qosEntered": false,
+          "qosError": null,
+          "qosFinished": false,
+          "referenceMatch": true,
+          "session": 2,
+          "status": "ok",
+          "stopToTerminalNanos": 1030190250,
+          "stopToTextNanos": 1030190250,
+          "tStopOffsetNanos": 8192003125,
+          "tTerminalOffsetNanos": 9222193375,
+          "tTextOffsetNanos": 9222193375,
+          "terminal": "Local",
+          "warmup": false,
+          "feed": {
+            "plannedStopOffset": {
+              "nanos": 192000000,
+              "secs": 8
+            },
+            "timingValid": true,
+            "waitSummary": {
+              "detailedPublications": 0,
+              "maxReserveNanos": 9542,
+              "maxSleepOvershootNanos": 72250,
+              "maxSpinClockGapNanos": 18209,
+              "maxWaitExitToPublishNanos": 10875,
+              "observedPublications": 410
+            }
+          },
+          "publicationSummary": {
+            "count": 410,
+            "canonicalSha256": "892e772141d4e374f3d5ba930de7c8d9807f2761022a8817a1dc998f3bda5e3e",
+            "maxDeviationNanos": 17500,
+            "earlyCount": 0,
+            "aboveToleranceCount": 0,
+            "first": {
+              "afterPublishNanos": 20000834,
+              "beforePublishNanos": 20000000,
+              "deviationNanos": 834,
+              "endFrame": 320,
+              "plannedNanos": 20000000,
+              "startFrame": 0,
+              "timing": "onBudget"
+            },
+            "last": {
+              "afterPublishNanos": 8192001792,
+              "beforePublishNanos": 8192000334,
+              "deviationNanos": 1792,
+              "endFrame": 131072,
+              "plannedNanos": 8192000000,
+              "startFrame": 130880,
+              "timing": "onBudget"
+            }
+          },
+          "stopDeviationNanos": 3125
+        }
+      ],
+      "cleanup": {
+        "elapsedMicros": 3258,
+        "error": null,
+        "joined": true
+      },
+      "summary": {
+        "count": 1,
+        "maxNanos": 1030190250,
+        "medianNanos": 1030190250.0,
+        "minNanos": 1030190250,
+        "p95Nanos": 1030190250,
+        "rangeNanos": 0
+      },
+      "terminalSummary": {
+        "count": 1,
+        "maxNanos": 1030190250,
+        "medianNanos": 1030190250.0,
+        "minNanos": 1030190250,
+        "p95Nanos": 1030190250,
+        "rangeNanos": 0
+      },
+      "engineElapsedSummary": {
+        "count": 1,
+        "maxNanos": 1004785459,
+        "medianNanos": 1004785459.0,
+        "minNanos": 1004785459,
+        "p95Nanos": 1004785459,
+        "rangeNanos": 0
+      },
+      "engineRtfSummary": {
+        "count": 1,
+        "max": 0.12265447497558593,
+        "median": 0.12265447497558593,
+        "min": 0.12265447497558593,
+        "range": 0.0
+      },
+      "engineTimingCoverage": {
+        "measuredRuns": 1,
+        "withActualEngineTiming": 1
+      }
+    },
+    {
+      "id": "empty",
+      "expectedOutcome": "Empty",
+      "pid": 23190,
+      "rows": [
+        {
+          "controllerClockMatchesCapture": true,
+          "engineElapsedNanos": 277458,
+          "engineInputFrames": 80000,
+          "engineRtf": 5.549160000000001e-05,
+          "engineRtfUnavailableReason": null,
+          "error": null,
+          "expectedOutcome": "Empty",
+          "id": "warmup",
+          "publisher": {
+            "after": {
+              "basicPolicy": 2,
+              "cpu": {
+                "systemNanos": 45200000,
+                "userNanos": 70256000
+              },
+              "defaultPolicy": false,
+              "timeConstraint": {
+                "computationTicks": 12000,
+                "constraintTicks": 24000,
+                "periodTicks": 480000,
+                "preemptible": true
+              }
+            },
+            "afterFeed": {
+              "error": null,
+              "snapshot": {
+                "basicPolicy": 2,
+                "cpu": {
+                  "systemNanos": 45192000,
+                  "userNanos": 70247000
+                },
+                "defaultPolicy": false,
+                "timeConstraint": {
+                  "computationTicks": 12000,
+                  "constraintTicks": 24000,
+                  "periodTicks": 480000,
+                  "preemptible": true
+                }
+              }
+            },
+            "before": {
+              "basicPolicy": 1,
+              "cpu": {
+                "systemNanos": 14000,
+                "userNanos": 20000
+              },
+              "defaultPolicy": true,
+              "timeConstraint": {
+                "computationTicks": 120000,
+                "constraintTicks": 240000,
+                "periodTicks": 0,
+                "preemptible": true
+              }
+            },
+            "beforeFeed": {
+              "error": null,
+              "snapshot": {
+                "basicPolicy": 2,
+                "cpu": {
+                  "systemNanos": 28000,
+                  "userNanos": 28000
+                },
+                "defaultPolicy": false,
+                "timeConstraint": {
+                  "computationTicks": 12000,
+                  "constraintTicks": 24000,
+                  "periodTicks": 480000,
+                  "preemptible": true
+                }
+              }
+            },
+            "configured": {
+              "basicPolicy": 2,
+              "cpu": {
+                "systemNanos": 17000,
+                "userNanos": 21000
+              },
+              "defaultPolicy": false,
+              "timeConstraint": {
+                "computationTicks": 12000,
+                "constraintTicks": 24000,
+                "periodTicks": 480000,
+                "preemptible": true
+              }
+            },
+            "finishError": null,
+            "outliers": [],
+            "policy": "timeConstrained",
+            "postError": null,
+            "requested": {
+              "computationTicks": 12000,
+              "constraintTicks": 24000,
+              "periodTicks": 480000,
+              "preemptible": true
+            },
+            "setupError": null
+          },
+          "publisherJoined": true,
+          "qosEntered": false,
+          "qosError": null,
+          "qosFinished": false,
+          "referenceMatch": null,
+          "session": 1,
+          "status": "ok",
+          "stopToTerminalNanos": 27311667,
+          "stopToTextNanos": null,
+          "tStopOffsetNanos": 5000017250,
+          "tTerminalOffsetNanos": 5027328917,
+          "tTextOffsetNanos": null,
+          "terminal": "Empty",
+          "warmup": true,
+          "feed": {
+            "plannedStopOffset": {
+              "nanos": 0,
+              "secs": 5
+            },
+            "timingValid": true,
+            "waitSummary": {
+              "detailedPublications": 0,
+              "maxReserveNanos": 2125,
+              "maxSleepOvershootNanos": 43917,
+              "maxSpinClockGapNanos": 333,
+              "maxWaitExitToPublishNanos": 10708,
+              "observedPublications": 250
+            }
+          },
+          "publicationSummary": {
+            "count": 250,
+            "canonicalSha256": "c1b455764101028e908f0cc59c1059f19ce9302307399a8d8b075bd50247cb8d",
+            "maxDeviationNanos": 28000,
+            "earlyCount": 0,
+            "aboveToleranceCount": 0,
+            "first": {
+              "afterPublishNanos": 20002875,
+              "beforePublishNanos": 20000167,
+              "deviationNanos": 2875,
+              "endFrame": 320,
+              "plannedNanos": 20000000,
+              "startFrame": 0,
+              "timing": "onBudget"
+            },
+            "last": {
+              "afterPublishNanos": 5000016125,
+              "beforePublishNanos": 5000000250,
+              "deviationNanos": 16125,
+              "endFrame": 80000,
+              "plannedNanos": 5000000000,
+              "startFrame": 79680,
+              "timing": "onBudget"
+            }
+          },
+          "stopDeviationNanos": 17250
+        },
+        {
+          "controllerClockMatchesCapture": true,
+          "engineElapsedNanos": 277583,
+          "engineInputFrames": 80000,
+          "engineRtf": 5.5516599999999996e-05,
+          "engineRtfUnavailableReason": null,
+          "error": null,
+          "expectedOutcome": "Empty",
+          "id": "measured-001",
+          "publisher": {
+            "after": {
+              "basicPolicy": 2,
+              "cpu": {
+                "systemNanos": 45120000,
+                "userNanos": 70596000
+              },
+              "defaultPolicy": false,
+              "timeConstraint": {
+                "computationTicks": 12000,
+                "constraintTicks": 24000,
+                "periodTicks": 480000,
+                "preemptible": true
+              }
+            },
+            "afterFeed": {
+              "error": null,
+              "snapshot": {
+                "basicPolicy": 2,
+                "cpu": {
+                  "systemNanos": 45113000,
+                  "userNanos": 70588000
+                },
+                "defaultPolicy": false,
+                "timeConstraint": {
+                  "computationTicks": 12000,
+                  "constraintTicks": 24000,
+                  "periodTicks": 480000,
+                  "preemptible": true
+                }
+              }
+            },
+            "before": {
+              "basicPolicy": 1,
+              "cpu": {
+                "systemNanos": 33000,
+                "userNanos": 15000
+              },
+              "defaultPolicy": true,
+              "timeConstraint": {
+                "computationTicks": 120000,
+                "constraintTicks": 240000,
+                "periodTicks": 0,
+                "preemptible": true
+              }
+            },
+            "beforeFeed": {
+              "error": null,
+              "snapshot": {
+                "basicPolicy": 2,
+                "cpu": {
+                  "systemNanos": 67000,
+                  "userNanos": 33000
+                },
+                "defaultPolicy": false,
+                "timeConstraint": {
+                  "computationTicks": 12000,
+                  "constraintTicks": 24000,
+                  "periodTicks": 480000,
+                  "preemptible": true
+                }
+              }
+            },
+            "configured": {
+              "basicPolicy": 2,
+              "cpu": {
+                "systemNanos": 43000,
+                "userNanos": 18000
+              },
+              "defaultPolicy": false,
+              "timeConstraint": {
+                "computationTicks": 12000,
+                "constraintTicks": 24000,
+                "periodTicks": 480000,
+                "preemptible": true
+              }
+            },
+            "finishError": null,
+            "outliers": [],
+            "policy": "timeConstrained",
+            "postError": null,
+            "requested": {
+              "computationTicks": 12000,
+              "constraintTicks": 24000,
+              "periodTicks": 480000,
+              "preemptible": true
+            },
+            "setupError": null
+          },
+          "publisherJoined": true,
+          "qosEntered": false,
+          "qosError": null,
+          "qosFinished": false,
+          "referenceMatch": null,
+          "session": 2,
+          "status": "ok",
+          "stopToTerminalNanos": 30250625,
+          "stopToTextNanos": null,
+          "tStopOffsetNanos": 5000003083,
+          "tTerminalOffsetNanos": 5030253708,
+          "tTextOffsetNanos": null,
+          "terminal": "Empty",
+          "warmup": false,
+          "feed": {
+            "plannedStopOffset": {
+              "nanos": 0,
+              "secs": 5
+            },
+            "timingValid": true,
+            "waitSummary": {
+              "detailedPublications": 0,
+              "maxReserveNanos": 2417,
+              "maxSleepOvershootNanos": 34333,
+              "maxSpinClockGapNanos": 333,
+              "maxWaitExitToPublishNanos": 6917,
+              "observedPublications": 250
+            }
+          },
+          "publicationSummary": {
+            "count": 250,
+            "canonicalSha256": "d1faae2d77ab488eb52ab62a6ba1c16b24aa59cae656e3ca7cb919fe2677da28",
+            "maxDeviationNanos": 26625,
+            "earlyCount": 0,
+            "aboveToleranceCount": 0,
+            "first": {
+              "afterPublishNanos": 20022917,
+              "beforePublishNanos": 20000458,
+              "deviationNanos": 22917,
+              "endFrame": 320,
+              "plannedNanos": 20000000,
+              "startFrame": 0,
+              "timing": "onBudget"
+            },
+            "last": {
+              "afterPublishNanos": 5000001875,
+              "beforePublishNanos": 5000000250,
+              "deviationNanos": 1875,
+              "endFrame": 80000,
+              "plannedNanos": 5000000000,
+              "startFrame": 79680,
+              "timing": "onBudget"
+            }
+          },
+          "stopDeviationNanos": 3083
+        }
+      ],
+      "cleanup": {
+        "elapsedMicros": 12721,
+        "error": null,
+        "joined": true
+      },
+      "summary": null,
+      "terminalSummary": {
+        "count": 1,
+        "maxNanos": 30250625,
+        "medianNanos": 30250625.0,
+        "minNanos": 30250625,
+        "p95Nanos": 30250625,
+        "rangeNanos": 0
+      },
+      "engineElapsedSummary": {
+        "count": 1,
+        "maxNanos": 277583,
+        "medianNanos": 277583.0,
+        "minNanos": 277583,
+        "p95Nanos": 277583,
+        "rangeNanos": 0
+      },
+      "engineRtfSummary": {
+        "count": 1,
+        "max": 5.55166e-05,
+        "median": 5.55166e-05,
+        "min": 5.55166e-05,
+        "range": 0.0
+      },
+      "engineTimingCoverage": {
+        "measuredRuns": 1,
+        "withActualEngineTiming": 1
+      }
+    }
+  ],
+  "allPublicationsValidated": 1320,
+  "privateBaselineByteExact": true,
+  "privateBaselineIsIndependentTruth": false,
+  "L": null,
+  "p05Qualified": false,
+  "limits": [
+    "Two explicit smoke cases only; no6case L, tenrun RTF distribution or general P05/P06 qualification.",
+    "Local expected text is prior private ASR repeatability baseline, not independent transcript truth.",
+    "Synthetic zero input is not natural room noise.",
+    "Empty must retain t_text/L/stopToText asnull and have separate t_terminal; Engine-RTF covers actual Enginecall.",
+    "No bundle rebuild, microphone, hotkey or native paste.",
+    "Point-in-time sequential policy/CPU observations are not continuous RT or per-period CPU-budget proof.",
+    "Actual processId in metadata must match the launched runtime child, not an observer PID."
+  ]
+}
