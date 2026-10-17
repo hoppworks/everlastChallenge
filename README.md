@@ -31,3 +31,11 @@ Beim Start wird nur der eigene Modellcache geprüft. Mit **Modell laden** lässt
 **Einstellungen** bietet im aktuellen Quellstand Mikrofonwahl, ein physisches Tastenkürzel mit mindestens Option, Command oder Control sowie den Modellstatus. Änderungen werden ausdrücklich gespeichert und sind während eines Diktats gesperrt. Nicht eindeutige Mikrofonnamen bleiben gesperrt; bei Registrierungs- oder Speicherfehlern wird der vorherige Zustand wiederhergestellt. Deutsch ist wählbar, Englisch folgt erst nach seiner Qualitätsabnahme. Außerdem enthält die Ansicht die ausdrücklichen Aktionen für Mikrofon und Bedienungshilfen. macOS verwaltet diese Freigaben. Mikrofonzugriff ist für Aufnahmen nötig; Bedienungshilfen werden für die automatische Übergabe an eine andere App benötigt. Die App bestätigt keine Freigabe stellvertretend. Nach Änderungen in den Systemeinstellungen die App wieder in den Vordergrund holen, damit sie den aktuellen Status liest.
 
 Der implementierte Bedienweg ist **Aufnehmen → Stoppen** im Fenster oder die physische Tastenkombination **⌥D** im Zielprogramm. **Escape** bricht eine aktive Sitzung ab. Ein im Fenster gestartetes Diktat bleibt lokal; ein Hotkey-Diktat versucht die Übergabe ausschließlich an das zuvor geprüfte Ziel. Bei unsicherem Ziel bleibt der Text in der App zum bewussten Kopieren erhalten. „Einfügebefehl gesendet“ bestätigt nur den Versand des Tastaturereignisses, nicht den Inhalt im Zielprogramm. Diese Aufnahme- und Übergabewege benötigen noch ihre reale installierte Abnahme.
+
+Die lokale Whisper-SDK-Korrektur und ihr numerischer Regressionsnachweis sind
+in [Kalibrierung v3](docs/verification/calibration-v3.md) dokumentiert.
+Bei Änderungen an vendertem C++ zuerst das betroffene sys-Buildprofil reinigen
+und den aktiven OUT_DIR-Quellhash prüfen; Details in
+[PATCHES.md](vendor/whisper-rs-sys/PATCHES.md). Die CPU-/Metal-Diagnose ist von
+Qualitäts- und Echtzeitabnahme getrennt; Small-Metal zeigt noch eine dokumentierte
+numerische Oracle-Abweichung.
