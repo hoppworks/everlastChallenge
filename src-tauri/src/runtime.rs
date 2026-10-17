@@ -162,6 +162,19 @@ pub enum RuntimeError {
     AdmissionExhausted,
 }
 
+fn control_targets_current(shared: &Shared, session: u64) -> Result<bool, MailboxError> {
+    if shared.closing {
+        return Err(MailboxError::Closed);
+    }
+    if session == 0 || session > (u64::MAX >> 2) {
+        return Err(MailboxError::InvalidSession);
+    }
+    Ok(shared
+        .cancellation
+        .as_ref()
+        .is_some_and(|(active, _, _)| *active == session))
+}
+
 #[derive(Clone)]
 pub struct Client {
     control: ControlTx<Request>,
@@ -203,7 +216,18 @@ impl Client {
         Ok(receive)
     }
     pub fn stop(&self, session: u64) -> Result<(), MailboxError> {
-        self.control.stop(session)
+        let admission = self
+            .shared
+            .lock()
+            .map_err(|_| MailboxError::Synchronization)?;
+        if !control_targets_current(&admission, session)? {
+            return Ok(());
+        }
+        // Keep identity validation and latch publication ordered against the
+        // actor publishing a new session. Foreign future IDs cannot poison it.
+        let result = self.control.stop(session);
+        drop(admission);
+        result
     }
     pub fn cancel(&self, session: u64) -> Result<(), RuntimeError> {
         // Revoke before scheduling: native send cannot outrun a queued cancel.
@@ -211,14 +235,16 @@ impl Client {
             .shared
             .lock()
             .map_err(|_| RuntimeError::Synchronization)?;
-        if let Some((active, delivery, work)) = &shared.cancellation
-            && *active == session
-        {
+        if !control_targets_current(&shared, session)? {
+            return Ok(());
+        }
+        if let Some((_, delivery, work)) = &shared.cancellation {
             delivery.cancel();
             work.cancel();
         }
+        let result = self.control.cancel(session).map_err(RuntimeError::from);
         drop(shared);
-        self.control.cancel(session).map_err(RuntimeError::from)
+        result
     }
     /// Invalidate queued starts and active work immediately. Audio ownership is
     /// released by the controller; this notification callback never joins a worker.
@@ -977,12 +1003,17 @@ mod tests {
         }
     }
     fn accepted(
-        mut reply: oneshot::Receiver<Result<(), String>>,
+        reply: oneshot::Receiver<Result<(), String>>,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        acknowledged(reply)?.map_err(Into::into)
+    }
+    fn acknowledged(
+        mut reply: oneshot::Receiver<Result<(), String>>,
+    ) -> Result<Result<(), String>, Box<dyn std::error::Error>> {
         let deadline = Instant::now() + Duration::from_secs(2);
         loop {
             match reply.try_recv() {
-                Ok(result) => return result.map_err(Into::into),
+                Ok(result) => return Ok(result),
                 Err(oneshot::error::TryRecvError::Empty) if Instant::now() < deadline => {
                     thread::sleep(Duration::from_millis(1))
                 }
@@ -1087,6 +1118,164 @@ mod tests {
                 _ => Err("delivery missing".into()),
             }
         }
+    }
+
+    #[test]
+    fn full_normal_queue_preserves_active_stop_against_foreign_session_controls()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for foreign_first in [false, true] {
+            let fixture = LifecycleFixture::new()?;
+            fixture.record()?;
+            let client = fixture.runtime.client();
+            fixture.pause()?;
+            let mut replies = Vec::new();
+            for _ in 0..16 {
+                replies.push(client.clear_text()?);
+            }
+            assert!(matches!(
+                client.start(settings(), None, false, false),
+                Err(MailboxError::Full)
+            ));
+            if foreign_first {
+                client.stop(2)?;
+                client.cancel(3)?;
+            }
+            client.stop(1)?;
+            if !foreign_first {
+                client.stop(2)?;
+                client.cancel(3)?;
+            }
+            fixture.proceed()?;
+            // Each ordinary acknowledgement fences the independently pending control;
+            // the actor cannot consume a normal request while its priority is occupied.
+            for reply in replies {
+                accepted(reply)?;
+            }
+            let stopped = fixture.stops.try_recv();
+            let phase = client.snapshot()?.session.phase;
+            fixture.runtime.join()?;
+            assert!(
+                matches!(stopped, Ok(1)),
+                "foreign session control displaced the current stop: {stopped:?}"
+            );
+            assert_eq!(phase, Phase::Finalizing);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn full_normal_queue_cannot_displace_cancel_or_lose_the_last_request()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        let token = fixture.record()?;
+        let client = fixture.runtime.client();
+        fixture.pause()?;
+        let mut replies = Vec::new();
+        for _ in 0..15 {
+            replies.push(client.clear_text()?);
+        }
+        let last = client.start(settings(), None, false, false)?;
+        assert!(matches!(client.clear_text(), Err(MailboxError::Full)));
+        client.cancel(99)?;
+        assert!(
+            token.is_pending(),
+            "foreign cancel revoked the current delivery"
+        );
+        client.cancel(1)?;
+        client.stop(1)?;
+        assert!(
+            !token.is_pending(),
+            "current cancel must revoke before actor progress"
+        );
+        fixture.proceed()?;
+        for reply in replies {
+            accepted(reply)?;
+        }
+        assert!(
+            acknowledged(last)?.is_err(),
+            "last accepted start must return busy during cancellation"
+        );
+        assert_eq!(fixture.stops.try_recv()?, 1);
+        assert_eq!(client.snapshot()?.session.phase, Phase::Cancelling);
+        fixture.audio.send(CaptureEvent::Finished {
+            session: 1,
+            result: Ok(vec![0.1; 800]),
+            maximum: false,
+        })?;
+        wait_for(&client, |snapshot| {
+            snapshot.session.phase == Phase::Idle
+                && snapshot.session.outcome == Some(Outcome::Cancelled)
+        })?;
+        accepted(client.start(settings(), None, false, false)?)?;
+        assert_eq!(fixture.starts.recv_timeout(Duration::from_secs(1))?, 2);
+        fixture.runtime.join()?;
+        Ok(())
+    }
+
+    #[test]
+    fn stale_controls_racing_a_session_change_cannot_cancel_the_new_recording()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        fixture.record()?;
+        let client = fixture.runtime.client();
+        client.cancel(1)?;
+        assert_eq!(fixture.stops.recv_timeout(Duration::from_secs(1))?, 1);
+        wait_for(&client, |snapshot| {
+            snapshot.session.phase == Phase::Cancelling
+        })?;
+        fixture.pause()?;
+        fixture.audio.send(CaptureEvent::Finished {
+            session: 1,
+            result: Ok(vec![0.1; 800]),
+            maximum: false,
+        })?;
+        let next = client.start(settings(), None, false, false)?;
+        let (race, racing) = bounded(1);
+        let old_client = client.clone();
+        let old_controls = thread::spawn(move || -> Result<(), RuntimeError> {
+            racing
+                .recv_timeout(Duration::from_secs(1))
+                .map_err(service_error)?;
+            for _ in 0..8 {
+                old_client.stop(1)?;
+                old_client.cancel(1)?;
+            }
+            Ok(())
+        });
+        race.send(())?;
+        fixture.proceed()?;
+        accepted(next)?;
+        old_controls
+            .join()
+            .map_err(|_| "old control sender panicked")??;
+        assert_eq!(fixture.starts.recv_timeout(Duration::from_secs(1))?, 2);
+        fixture.audio.send(CaptureEvent::Started {
+            session: 2,
+            format: AudioFormat {
+                sample_rate: 16_000,
+                channels: 1,
+            },
+            started: Instant::now(),
+        })?;
+        wait_for(&client, |snapshot| {
+            snapshot.session.session == Some(2) && snapshot.session.phase == Phase::Recording
+        })?;
+        fixture.pause()?;
+        let mut replies = Vec::new();
+        for _ in 0..16 {
+            replies.push(client.clear_text()?);
+        }
+        client.stop(2)?;
+        client.cancel(1)?;
+        client.stop(1)?;
+        fixture.proceed()?;
+        for reply in replies {
+            accepted(reply)?;
+        }
+        assert_eq!(fixture.stops.try_recv()?, 2);
+        assert_eq!(client.snapshot()?.session.phase, Phase::Finalizing);
+        fixture.runtime.join()?;
+        Ok(())
     }
 
     #[test]
