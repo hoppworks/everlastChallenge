@@ -17,7 +17,8 @@
     "test:guardrails": "node scripts/prove-guardrails.mjs",
     "coverage": "node scripts/coverage.mjs",
     "tauri": "tauri",
-    "release": "MACOSX_DEPLOYMENT_TARGET=27.0 tauri build --target aarch64-apple-darwin",
+    "release": "MACOSX_DEPLOYMENT_TARGET=27.0 tauri build --target aarch64-apple-darwin && node scripts/verify-bundle.mjs",
+    "verify:bundle": "node scripts/verify-bundle.mjs",
     "check:contracts": "node scripts/check-contracts.mjs"
   },
   "dependencies": {
