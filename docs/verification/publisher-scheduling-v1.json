@@ -1,0 +1,380 @@
+{
+  "schemaVersion": 1,
+  "kind": "model-free-publisher-scheduling-readback",
+  "qualified": false,
+  "sourceRevision": "1d4308acfa635fa9f9cb4fac3c58b296bf43b16f",
+  "freeze": {
+    "path": "tests/fixtures/corpus/publisher-scheduling-run-v1.json",
+    "sha256": "f5c939d38452d41c497e26ff59437bb3331f5b50f571c1a084d808838fef4892",
+    "bytes": 7233,
+    "mode": "0o644"
+  },
+  "parameters": {
+    "path": "tests/fixtures/corpus/publisher-scheduling-parameters-v1.json",
+    "sha256": "57bc72f78999306ebae42cad7bb69caf4a4e4045a5762306e7a5282730eef2db",
+    "bytes": 3257,
+    "mode": "0o644"
+  },
+  "binary": {
+    "path": "target/release/examples/paced_audio_probe",
+    "sha256": "0ab7a40ab43b41eab7e9b7e99043080d3dcfcd3b353e1bfd35d88d9ef0f9bc54",
+    "bytes": 1882432,
+    "mode": "0o755"
+  },
+  "fixture": {
+    "path": "artifacts/corpus/audio/fleurs-de-test-1732-thirty-second-v1.wav",
+    "sha256": "045f4e0c1534e2d4240a10a2dbda1fad22c8ae9ca83809b2cd34e0a2a7510a2e",
+    "bytes": 960044,
+    "mode": "0o600"
+  },
+  "rawFiles": [
+    {
+      "path": "artifacts/publisher-scheduling/v1/results.json",
+      "sha256": "89875fed000a9641611e029831f9e9f59a4fdcf1ea43732ee85e4f60d0bc7352",
+      "bytes": 890179,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/publisher-scheduling/v1/command.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/publisher-scheduling/v1/completion.json",
+      "sha256": "7e89d55f4767a77f4745fb2cbaa10e8fec6203cbea226aa53f39d271b7a6b68d",
+      "bytes": 511,
+      "mode": "0o600"
+    }
+  ],
+  "originalToolHandle": 44458,
+  "completion": {
+    "schemaVersion": 1,
+    "startedUtc": "2026-10-17T19:07:49.174892+00:00",
+    "finishedUtc": "2026-10-17T19:08:49.616634+00:00",
+    "pid": 20310,
+    "exitCode": 0,
+    "freezeSha256": "f5c939d38452d41c497e26ff59437bb3331f5b50f571c1a084d808838fef4892",
+    "command": [
+      "target/release/examples/paced_audio_probe",
+      "artifacts/corpus/audio/fleurs-de-test-1732-thirty-second-v1.wav",
+      "tests/fixtures/corpus/publisher-scheduling-parameters-v1.json",
+      "artifacts/publisher-scheduling/v1/results.json"
+    ]
+  },
+  "completed": true,
+  "allPublicationsValidated": 3000,
+  "modes": [
+    {
+      "afterFeed": {
+        "error": null,
+        "snapshot": {
+          "basicPolicy": 1,
+          "cpu": {
+            "systemNanos": 200456000,
+            "userNanos": 265199000
+          },
+          "defaultPolicy": true,
+          "timeConstraint": {
+            "computationTicks": 120000,
+            "constraintTicks": 240000,
+            "periodTicks": 0,
+            "preemptible": true
+          }
+        }
+      },
+      "beforeFeed": {
+        "error": null,
+        "snapshot": {
+          "basicPolicy": 1,
+          "cpu": {
+            "systemNanos": 11000,
+            "userNanos": 7000
+          },
+          "defaultPolicy": true,
+          "timeConstraint": {
+            "computationTicks": 120000,
+            "constraintTicks": 240000,
+            "periodTicks": 0,
+            "preemptible": true
+          }
+        }
+      },
+      "errors": [],
+      "mode": "userInteractive",
+      "outlierPolicy": [],
+      "policy": {
+        "after": {
+          "basicPolicy": 1,
+          "cpu": {
+            "systemNanos": 200505000,
+            "userNanos": 265221000
+          },
+          "defaultPolicy": true,
+          "timeConstraint": {
+            "computationTicks": 120000,
+            "constraintTicks": 240000,
+            "periodTicks": 0,
+            "preemptible": true
+          }
+        },
+        "before": {
+          "basicPolicy": 1,
+          "cpu": {
+            "systemNanos": 5000,
+            "userNanos": 2000
+          },
+          "defaultPolicy": true,
+          "timeConstraint": {
+            "computationTicks": 120000,
+            "constraintTicks": 240000,
+            "periodTicks": 0,
+            "preemptible": true
+          }
+        },
+        "configured": {
+          "basicPolicy": 1,
+          "cpu": {
+            "systemNanos": 7000,
+            "userNanos": 3000
+          },
+          "defaultPolicy": true,
+          "timeConstraint": {
+            "computationTicks": 120000,
+            "constraintTicks": 240000,
+            "periodTicks": 0,
+            "preemptible": true
+          }
+        },
+        "finishError": null,
+        "policy": "userInteractive",
+        "postError": null,
+        "requested": null,
+        "setupError": null
+      },
+      "publisherJoined": true,
+      "status": "completed",
+      "audio": {
+        "audioFailure": null,
+        "audioFinishedObservedOffsetNanos": 30003394834,
+        "audioOwnerStopRequestOffsetNanos": 30000025959,
+        "finishedEvents": 1,
+        "inputOutputSamplesEqual": true,
+        "joinFailure": null,
+        "joinUnverified": false,
+        "joined": true,
+        "observationFailure": null,
+        "passed": true,
+        "plannedStopOffsetNanos": 30000000000,
+        "startedClockVerified": true,
+        "startedEvents": 1,
+        "stopRequests": 1,
+        "timingValid": true,
+        "waitSummary": {
+          "detailedPublications": 0,
+          "maxReserveNanos": 1916,
+          "maxSleepOvershootNanos": 873500,
+          "maxSpinClockGapNanos": 102208,
+          "maxWaitExitToPublishNanos": 13542,
+          "observedPublications": 1500
+        }
+      },
+      "publicationSummary": {
+        "count": 1500,
+        "first": {
+          "afterPublishNanos": 20001959,
+          "beforePublishNanos": 20000084,
+          "deviationNanos": 1959,
+          "endFrame": 320,
+          "plannedNanos": 20000000,
+          "startFrame": 0,
+          "timing": "onBudget"
+        },
+        "last": {
+          "afterPublishNanos": 30000015667,
+          "beforePublishNanos": 30000000334,
+          "deviationNanos": 15667,
+          "endFrame": 480000,
+          "plannedNanos": 30000000000,
+          "startFrame": 479680,
+          "timing": "onBudget"
+        },
+        "earlyCount": 0,
+        "aboveToleranceCount": 0,
+        "maxDeviationNanos": 267042,
+        "maxPublishNanos": 29250,
+        "canonicalSha256": "4f455f37a1685a09cee9d251ae892296ca844b6cd4f095ffc5d0d5e9f38ec595"
+      },
+      "feedCpuDelta": {
+        "userNanos": 265192000,
+        "systemNanos": 200445000,
+        "totalNanos": 465637000
+      },
+      "stopDeviationNanos": 25959
+    },
+    {
+      "afterFeed": {
+        "error": null,
+        "snapshot": {
+          "basicPolicy": 2,
+          "cpu": {
+            "systemNanos": 276165000,
+            "userNanos": 425876000
+          },
+          "defaultPolicy": false,
+          "timeConstraint": {
+            "computationTicks": 12000,
+            "constraintTicks": 24000,
+            "periodTicks": 480000,
+            "preemptible": true
+          }
+        }
+      },
+      "beforeFeed": {
+        "error": null,
+        "snapshot": {
+          "basicPolicy": 2,
+          "cpu": {
+            "systemNanos": 68000,
+            "userNanos": 34000
+          },
+          "defaultPolicy": false,
+          "timeConstraint": {
+            "computationTicks": 12000,
+            "constraintTicks": 24000,
+            "periodTicks": 480000,
+            "preemptible": true
+          }
+        }
+      },
+      "errors": [],
+      "mode": "timeConstrained",
+      "outlierPolicy": [],
+      "policy": {
+        "after": {
+          "basicPolicy": 2,
+          "cpu": {
+            "systemNanos": 276172000,
+            "userNanos": 425886000
+          },
+          "defaultPolicy": false,
+          "timeConstraint": {
+            "computationTicks": 12000,
+            "constraintTicks": 24000,
+            "periodTicks": 480000,
+            "preemptible": true
+          }
+        },
+        "before": {
+          "basicPolicy": 1,
+          "cpu": {
+            "systemNanos": 34000,
+            "userNanos": 13000
+          },
+          "defaultPolicy": true,
+          "timeConstraint": {
+            "computationTicks": 120000,
+            "constraintTicks": 240000,
+            "periodTicks": 0,
+            "preemptible": true
+          }
+        },
+        "configured": {
+          "basicPolicy": 2,
+          "cpu": {
+            "systemNanos": 44000,
+            "userNanos": 18000
+          },
+          "defaultPolicy": false,
+          "timeConstraint": {
+            "computationTicks": 12000,
+            "constraintTicks": 24000,
+            "periodTicks": 480000,
+            "preemptible": true
+          }
+        },
+        "finishError": null,
+        "policy": "timeConstrained",
+        "postError": null,
+        "requested": {
+          "computationTicks": 12000,
+          "constraintTicks": 24000,
+          "periodTicks": 480000,
+          "preemptible": true
+        },
+        "setupError": null
+      },
+      "publisherJoined": true,
+      "status": "completed",
+      "audio": {
+        "audioFailure": null,
+        "audioFinishedObservedOffsetNanos": 30001754625,
+        "audioOwnerStopRequestOffsetNanos": 30000025792,
+        "finishedEvents": 1,
+        "inputOutputSamplesEqual": true,
+        "joinFailure": null,
+        "joinUnverified": false,
+        "joined": true,
+        "observationFailure": null,
+        "passed": true,
+        "plannedStopOffsetNanos": 30000000000,
+        "startedClockVerified": true,
+        "startedEvents": 1,
+        "stopRequests": 1,
+        "timingValid": true,
+        "waitSummary": {
+          "detailedPublications": 0,
+          "maxReserveNanos": 2292,
+          "maxSleepOvershootNanos": 94125,
+          "maxSpinClockGapNanos": 4792,
+          "maxWaitExitToPublishNanos": 13500,
+          "observedPublications": 1500
+        }
+      },
+      "publicationSummary": {
+        "count": 1500,
+        "first": {
+          "afterPublishNanos": 20021417,
+          "beforePublishNanos": 20000333,
+          "deviationNanos": 21417,
+          "endFrame": 320,
+          "plannedNanos": 20000000,
+          "startFrame": 0,
+          "timing": "onBudget"
+        },
+        "last": {
+          "afterPublishNanos": 30000014667,
+          "beforePublishNanos": 30000000333,
+          "deviationNanos": 14667,
+          "endFrame": 480000,
+          "plannedNanos": 30000000000,
+          "startFrame": 479680,
+          "timing": "onBudget"
+        },
+        "earlyCount": 0,
+        "aboveToleranceCount": 0,
+        "maxDeviationNanos": 28000,
+        "maxPublishNanos": 27792,
+        "canonicalSha256": "24ce0d0f65d619d29b7000f5fc4e5d5b9f5f2dafce86c3ff2044adb258fb3d8b"
+      },
+      "feedCpuDelta": {
+        "userNanos": 425842000,
+        "systemNanos": 276097000,
+        "totalNanos": 701939000
+      },
+      "stopDeviationNanos": 25792
+    }
+  ],
+  "L": null,
+  "p05Qualified": false,
+  "causeEstablished": false,
+  "improvementEstablished": false,
+  "limits": [
+    "Fixed userInteractive-then-timeConstrained order, one30s trial per mode, no causal or realtime guarantee.",
+    "Policy mutation applies only to the newly owned publisher thread, which exits before parent audio observation.",
+    "Point-in-time raw policy/CPU observations do not prove continuous absence of demotion; outlier observation overhead remains in later timing.",
+    "Model-free ring/DSP validation; no microphone, ASR, L, installed-app or corpus qualification; replay defaults unchanged.",
+    "Thread CPU deltas are feed-window totals, not per-period maxima or proof of meeting the requested computation budget.",
+    "No invalid publications occurred, hence no outlier snapshots; this does not prove continuous absence of demotion."
+  ]
+}
