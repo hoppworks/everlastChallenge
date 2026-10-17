@@ -119,6 +119,9 @@ impl Controller {
         })?;
         self.actions(effects)
     }
+    pub fn clear_text(&mut self) {
+        self.core.clear_text();
+    }
     pub fn snapshot(&self) -> SessionSnapshot {
         SessionSnapshot {
             phase: self.core.phase(),

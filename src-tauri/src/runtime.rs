@@ -61,7 +61,12 @@ pub fn native_mailbox() -> (NativePort, NativeEndpoint) {
     )
 }
 
-struct Request {
+enum Request {
+    Start(StartRequest),
+    Clear(oneshot::Sender<Result<(), String>>),
+}
+
+struct StartRequest {
     settings: SessionSettings,
     process: Option<ProcessIdentity>,
     delivery: bool,
@@ -128,14 +133,19 @@ impl Client {
         toggle: bool,
     ) -> Result<oneshot::Receiver<Result<(), String>>, MailboxError> {
         let (reply, receiver) = oneshot::channel();
-        self.control.request(Request {
+        self.control.request(Request::Start(StartRequest {
             settings,
             process,
             delivery,
             toggle,
             reply,
-        })?;
+        }))?;
         Ok(receiver)
+    }
+    pub fn clear_text(&self) -> Result<oneshot::Receiver<Result<(), String>>, MailboxError> {
+        let (reply, receive) = oneshot::channel();
+        self.control.request(Request::Clear(reply))?;
+        Ok(receive)
     }
     pub fn stop(&self, session: u64) -> Result<(), MailboxError> {
         self.control.stop(session)
@@ -339,7 +349,12 @@ impl Runtime {
                             Ok(actions) => actor.execute(actions)?,
                             Err(error) => actor.error = Some(error.to_string()),
                         },
-                        Some(Control::Request(request)) => {
+                        Some(Control::Request(Request::Clear(reply))) => {
+                            actor.controller.clear_text();
+                            actor.publish()?;
+                            if reply.send(Ok(())).is_err() { /* requester no longer waiting */ }
+                        }
+                        Some(Control::Request(Request::Start(request))) => {
                             let actions = actor.start_request(
                                 request.settings, request.process, request.delivery, request.toggle,
                             );
@@ -908,6 +923,12 @@ mod tests {
             state.session.phase == Phase::Idle && state.session.outcome == Some(Outcome::Sent)
         })?;
         assert_eq!(finished.session.text.as_deref(), Some("fixture words"));
+        accepted(client.clear_text()?)?;
+        let cleared = client.snapshot()?;
+        assert!(cleared.revision > finished.revision);
+        assert_eq!(cleared.session.text, None);
+        assert_eq!(cleared.session.phase, Phase::Idle);
+        assert_eq!(cleared.session.outcome, Some(Outcome::Sent));
         runtime.join()?;
         assert!(closed.load(Ordering::Acquire));
         assert!(!client.snapshot()?.running);

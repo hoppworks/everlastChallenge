@@ -148,3 +148,25 @@ fn recording_finalizes_after_release_and_keeps_the_window_result()
     assert_eq!(machine.outcome(), Some(&Outcome::Local));
     Ok(())
 }
+
+#[test]
+fn clearing_retained_text_does_not_cancel_a_new_recording() -> Result<(), Box<dyn std::error::Error>>
+{
+    let mut machine = Machine::default();
+    machine.start(true, false)?;
+    machine.accept(Fact::AudioStarted(1))?;
+    machine.stop(1)?;
+    machine.accept(Fact::AudioReleased(1))?;
+    machine.accept(Fact::Transcript {
+        id: 1,
+        text: "previous words".into(),
+    })?;
+    machine.start(true, false)?;
+    machine.clear_text();
+    assert_eq!(machine.last_text(), None);
+    assert_eq!(machine.phase(), Phase::Starting);
+    assert_eq!(machine.session_id(), Some(2));
+    machine.accept(Fact::AudioStarted(2))?;
+    assert_eq!(machine.phase(), Phase::Recording);
+    Ok(())
+}

@@ -80,6 +80,9 @@ impl Machine {
     pub fn session_id(&self) -> Option<u64> {
         self.session_id
     }
+    pub fn clear_text(&mut self) {
+        self.last_text = None;
+    }
     pub fn last_text(&self) -> Option<&str> {
         self.last_text.as_deref()
     }
