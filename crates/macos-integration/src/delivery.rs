@@ -46,7 +46,12 @@ impl DeliveryToken {
         self.state.load(Ordering::Acquire) == PENDING
     }
 
-    pub(crate) fn same_work(&self, other: &Self) -> bool {
+    pub fn is_committed(&self) -> bool {
+        self.state.load(Ordering::Acquire) == COMMITTED
+    }
+
+    /// Exact shared work identity, including the token instance, not just its session ID.
+    pub fn same_work(&self, other: &Self) -> bool {
         self.session == other.session && Arc::ptr_eq(&self.state, &other.state)
     }
 
