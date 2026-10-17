@@ -53,3 +53,45 @@ deterministisch erzwingbar. Ausreißerfreiheit wäre deshalb keine Bestätigung
 der Ursache oder des vollständigen Echtzeitaufbaus. Es gibt hier weder
 Audioeingang noch20ms-Publikationen oder250µs-Finalspin; diese unveränderten
 Pipelinegrenzen brauchen später ihre eigene vollständige Prüfung.
+
+## Nächster begrenzter Versuch: Schedulingklasse des Audio-Publishers
+
+Der [vollständige kurze Wartevergleich](deadline-wait-v1.md) reproduziert den
+seltenen Ausreißer nicht. Er belegt keinen Vorteil eines API-Wechsels. Deshalb
+bleibt im nächsten Versuch der vorhandene relative Schlafpfad unverändert.
+Verglichen werden dieselben 480.000 PCM16-Monoframes bei 16 kHz, zuerst mit
+USER_INTERACTIVE-QoS, danach mit THREAD_TIME_CONSTRAINT_POLICY. Je Mode gibt es
+einen eigenen Publisherthread und genau einen 30-Sekunden-Durchlauf. Die
+20-ms-Publikationen, 10-ms-Toleranz, maximal 1 ms Schlaf und 250 µs Finalspin
+bleiben gleich; kein Modell und kein Mikrofon werden verwendet.
+
+Die feste TC-Anforderung beträgt 20 ms Periode, 500 µs Rechenbudget und 1 ms
+Constraint, preemptible. Der sichere Adapter rechnet die öffentlichen Tickfelder
+mit geprüfter Aufrundung um. Er setzt die Policy ausschließlich im neu erzeugten
+Childthread und liest sie zurück. Der normale Parent startet Capture/DSP erst
+nach dessen Ready-Bestätigung; diese Worker sollen die Publisherpolicy nicht
+erben. Das Threadende mit beobachtetem Join begrenzt die Policy-Lebensdauer;
+ein Wiederherstellen einer unbekannten ursprünglichen QoS wird nicht versucht.
+
+Gespeicherte TC-Felder allein beweisen keine aktive Schedulingklasse. Deshalb
+werden zusätzlich der rohe THREAD_BASIC_INFO-Policywert und Thread-CPU-Zeiten
+vor/nach Einrichtung, vor/nach Feed und unmittelbar nach jeder ungültigen
+Publikation erfasst. Die Readbacks bestehen aus mehreren aufeinanderfolgenden
+OS-Abfragen und sind keine atomare oder kontinuierliche Demotionsbeobachtung.
+Ein Basicwert von 2 ist nur mit der angeforderten Klasse vereinbar, kein eigener
+RT-Beweis; ein beobachteter Timesharewert, eine Defaultpolicy oder abweichende
+TC-Felder macht den entsprechenden TC-Versuchsaufbau ungültig. Die Baseline
+wird nach beendetem QoS nicht gegen eine TC-Anforderung geprüft.
+
+Alle Publikationen, Fehler, Stop-Zeitpunkte, Policy-/CPU-Readbacks und
+Aufräumergebnisse bleiben erhalten. Beobachtungsaufwand bei Ausreißern darf
+folgende Publikationen beeinflussen und wird nicht aus der Zeitachse entfernt.
+Stop und Portfreigabe erfolgen im Publisher vor der Nach-Feed-Abfrage; der
+Parent prüft anschließend vollständige Samplegleichheit und Audioowner-Join.
+Ein rein zeitlich ungültiger Mode sperrt den zweiten Mode bei bestätigtem
+Aufräumen nicht; OS-, Policy-, Beobachtungs-, Audio- oder Joinfehler schon.
+
+Releasebinary, kompilierte Parameter, WAV und vollständige Quellen werden vor
+dem echten Versuch gebunden. Bis dahin sind nur kontrollierte Tests ausgeführt.
+Auch zwei saubere Kurzläufe wären weder eine allgemeine RT-Garantie noch eine
+Qualifikation von P05/P06 oder ein Stop-bis-Text-Messwert.

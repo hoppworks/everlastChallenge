@@ -4,7 +4,8 @@ use dictation_core::audio::AudioFormat;
 use everlast_dictation::audio::{
     CaptureEvent, CaptureHandle,
     replay::{
-        clock::{Publication, WaitSummary, feed},
+        ReplayInput,
+        clock::{Publication, WaitSummary, feed_observed},
         schedule::{JITTER_TOLERANCE, ReplaySchedule},
     },
 };
@@ -34,6 +35,20 @@ pub struct Run {
     pub join_failure: Option<String>,
     pub publications: Vec<Publication>,
     pub wait_summary: Option<WaitSummary>,
+}
+impl Run {
+    pub(super) fn owner_valid(&self) -> bool {
+        self.started_events == 1
+            && self.finished_events == 1
+            && self.started_clock_verified
+            && self.input_output_samples_equal
+            && self.stop_requests == 1
+            && self.joined
+            && !self.join_unverified
+            && self.audio_failure.is_none()
+            && self.join_failure.is_none()
+            && self.observation_failure.is_none()
+    }
 }
 
 fn drain_events(
@@ -106,7 +121,7 @@ pub fn run(samples: &[f32], finish_budget: Duration) -> Run {
             return run;
         }
     };
-    let mut source = match input_ready.recv_timeout(Duration::from_secs(10)) {
+    let source = match input_ready.recv_timeout(Duration::from_secs(10)) {
         Ok(source) => source,
         Err(error) => {
             run.observation_failure = Some(format!("replay readiness observation failed: {error}"));
@@ -116,11 +131,30 @@ pub fn run(samples: &[f32], finish_budget: Duration) -> Run {
             return run;
         }
     };
-    run.timing_valid = source.format == format;
+    let (mut run, started) = publish(source, &handle, samples, |_| {});
+    finish(handle, &mut run, started, samples, finish_budget);
+    run
+}
+
+/// Runs only the feed, immediate Stop and port release. No drain/join/report IO.
+pub(super) fn publish(
+    mut source: ReplayInput,
+    handle: &CaptureHandle,
+    samples: &[f32],
+    on_invalid: impl FnMut(&Publication),
+) -> (Run, Instant) {
+    let format = AudioFormat {
+        sample_rate: 16_000,
+        channels: 1,
+    };
+    let mut run = Run {
+        timing_valid: source.format == format,
+        ..Run::default()
+    };
     if source.format != format {
         run.observation_failure = Some("replay source format changed".into());
     } else {
-        match feed(&mut source, samples) {
+        match feed_observed(&mut source, samples, on_invalid) {
             Ok(evidence) => {
                 // Stop must be timestamped immediately after feed returns,
                 // before report processing or any DSP/event observation.
@@ -147,6 +181,21 @@ pub fn run(samples: &[f32], finish_budget: Duration) -> Run {
         run.stop_requests += 1;
     }
     drop(source.port);
+    (run, source.started)
+}
+
+/// Called on the ordinary parent only after publisher termination is observed.
+pub(super) fn finish(
+    handle: CaptureHandle,
+    run: &mut Run,
+    started: Instant,
+    samples: &[f32],
+    finish_budget: Duration,
+) {
+    let format = AudioFormat {
+        sample_rate: 16_000,
+        channels: 1,
+    };
     let deadline = Instant::now() + finish_budget;
     loop {
         if Instant::now() >= deadline {
@@ -154,25 +203,16 @@ pub fn run(samples: &[f32], finish_budget: Duration) -> Run {
                 .get_or_insert_with(|| "audio-owner finish observation timed out".into());
             break;
         }
-        drain_events(&handle, &mut run, source.started, samples, format);
+        drain_events(&handle, run, started, samples, format);
         if handle.is_finished() {
             // Close the last-event/is_finished race before joining.
-            drain_events(&handle, &mut run, source.started, samples, format);
+            drain_events(&handle, run, started, samples, format);
             break;
         }
         thread::sleep(Duration::from_millis(1));
     }
-    join_if_finished(handle, &mut run);
-    run.passed = run.timing_valid
-        && run.started_events == 1
-        && run.finished_events == 1
-        && run.started_clock_verified
-        && run.input_output_samples_equal
-        && run.joined
-        && run.audio_failure.is_none()
-        && run.join_failure.is_none()
-        && run.observation_failure.is_none();
-    run
+    join_if_finished(handle, run);
+    run.passed = run.timing_valid && run.owner_valid();
 }
 
 #[cfg(test)]

@@ -215,10 +215,28 @@ fn wait_until(target: Instant, origin: Instant, clock: &mut impl WaitBackend) ->
 pub fn feed(source: &mut ReplayInput, samples: &[f32]) -> Result<FeedEvidence, FeedError> {
     feed_with_clock(source, samples, &mut SystemClock)
 }
+/// Collects an extra bounded diagnostic only after an invalid publication.
+/// The callback runs after the publication timestamps; its cost may affect later
+/// chunks and must remain visible in their timing. Ordinary feed uses no observer.
+pub fn feed_observed(
+    source: &mut ReplayInput,
+    samples: &[f32],
+    mut on_invalid: impl FnMut(&Publication),
+) -> Result<FeedEvidence, FeedError> {
+    feed_with_clock_observer(source, samples, &mut SystemClock, &mut on_invalid)
+}
 fn feed_with_clock(
     source: &mut ReplayInput,
     samples: &[f32],
     clock: &mut impl WaitBackend,
+) -> Result<FeedEvidence, FeedError> {
+    feed_with_clock_observer(source, samples, clock, &mut |_| {})
+}
+fn feed_with_clock_observer(
+    source: &mut ReplayInput,
+    samples: &[f32],
+    clock: &mut impl WaitBackend,
+    on_invalid: &mut impl FnMut(&Publication),
 ) -> Result<FeedEvidence, FeedError> {
     ReplaySchedule::new(source.format, 1).map_err(FeedError::Schedule)?;
     let channels = usize::from(source.format.channels);
@@ -276,7 +294,7 @@ fn feed_with_clock(
         evidence
             .wait_summary
             .record(&detail, before.as_nanos(), !valid);
-        evidence.publications.push(Publication {
+        let publication = Publication {
             start_frame: plan.start_frame,
             end_frame: plan.end_frame,
             planned_nanos: plan.planned_offset.as_nanos(),
@@ -289,7 +307,11 @@ fn feed_with_clock(
                 PublicationTiming::OnBudget => "onBudget",
                 PublicationTiming::Late => "late",
             },
-        });
+        };
+        if !valid {
+            on_invalid(&publication);
+        }
+        evidence.publications.push(publication);
     }
     Ok(evidence)
 }
@@ -620,6 +642,44 @@ mod tests {
             super::super::schedule::JITTER_TOLERANCE,
             Duration::from_millis(10)
         );
+        Ok(())
+    }
+
+    #[test]
+    fn invalid_publication_observer_runs_after_publish_and_never_hides_following_chunks()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (mut source, mut reader) = source(AudioFormat {
+            sample_rate: 16000,
+            channels: 1,
+        })?;
+        let mut clock = ControlledClock {
+            base: source.started,
+            offset: Duration::ZERO,
+            gap: Gap::Sleep,
+            injected: false,
+        };
+        let mut observed = Vec::new();
+        let evidence = feed_with_clock_observer(
+            &mut source,
+            &[0.125; 641],
+            &mut clock,
+            &mut |row: &Publication| {
+                observed.push((
+                    row.end_frame,
+                    row.timing,
+                    reader.read().map(<[f32]>::to_vec),
+                ));
+            },
+        )?;
+        assert!(!evidence.timing_valid);
+        assert_eq!(evidence.publications.len(), 3);
+        assert_eq!(observed.len(), 1);
+        let (end, timing, published) = observed.pop().ok_or("missing invalid publication")?;
+        assert_eq!((end, timing), (320, "late"));
+        assert_eq!(published?, vec![0.125; 320]);
+        assert_eq!(reader.read()?, vec![0.125; 321]);
+        assert_eq!(evidence.publications[2].end_frame, 641);
+        assert_eq!(evidence.wait_summary.observed_publications, 3);
         Ok(())
     }
 }

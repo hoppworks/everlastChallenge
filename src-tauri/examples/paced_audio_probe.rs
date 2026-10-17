@@ -8,18 +8,69 @@
 mod input;
 #[path = "paced_audio_probe/runner.rs"]
 mod runner;
+#[path = "paced_audio_probe/scheduled.rs"]
+mod scheduled;
 
 use std::{io::Cursor, path::Path, time::Duration};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let arguments = std::env::args_os().skip(1).take(2).collect::<Vec<_>>();
-    if arguments.len() != 1
-        || arguments[0].is_empty()
-        || arguments[0].as_encoded_bytes().len() > 4096
-    {
-        return Err("usage: paced_audio_probe PCM16_MONO_16K_WAV".into());
+#[derive(Debug, PartialEq, Eq)]
+enum Options {
+    Legacy(std::path::PathBuf),
+    PrintScheduling,
+    Scheduling {
+        wav: std::path::PathBuf,
+        parameters: std::path::PathBuf,
+        output: std::path::PathBuf,
+    },
+}
+fn parse(arguments: &[std::ffi::OsString]) -> Result<Options, &'static str> {
+    if arguments.len() == 1 && arguments[0] == "--print-scheduling-parameters" {
+        return Ok(Options::PrintScheduling);
     }
-    let bytes = input::bounded_read(Path::new(&arguments[0]), input::MAX_AUDIO)?;
+    if arguments.len() == 1
+        && !arguments[0].is_empty()
+        && arguments[0].as_encoded_bytes().len() <= 4096
+    {
+        return Ok(Options::Legacy(arguments[0].clone().into()));
+    }
+    if arguments.iter().all(|a| {
+        !a.is_empty()
+            && a.as_encoded_bytes().len() <= 4096
+            && !a.as_encoded_bytes().starts_with(b"--")
+    }) && arguments.len() == 3
+        && arguments[0] != arguments[2]
+        && arguments[1] != arguments[2]
+    {
+        return Ok(Options::Scheduling {
+            wav: arguments[0].clone().into(),
+            parameters: arguments[1].clone().into(),
+            output: arguments[2].clone().into(),
+        });
+    }
+    Err(
+        "usage: paced_audio_probe WAV | --print-scheduling-parameters | WAV PARAMETERS_JSON NEW_OUTPUT_JSON",
+    )
+}
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let arguments = std::env::args_os().skip(1).take(5).collect::<Vec<_>>();
+    match parse(&arguments)? {
+        Options::Legacy(wav) => legacy(&wav),
+        Options::PrintScheduling => {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&scheduled::parameters())?
+            );
+            Ok(())
+        }
+        Options::Scheduling {
+            wav,
+            parameters,
+            output,
+        } => scheduled::run(&wav, &parameters, &output),
+    }
+}
+fn legacy(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    let bytes = input::bounded_read(path, input::MAX_AUDIO)?;
     let wav = hound::WavReader::new(Cursor::new(&bytes))?;
     let declared = input::Audio {
         path: "authorized-local-fixture.wav".into(),
@@ -60,4 +111,36 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Err("paced audio-owner probe failed; see complete timing evidence".into());
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod cli_tests {
+    use super::*;
+    #[test]
+    fn legacy_remains_explicit_and_new_scheduling_requires_all_three_paths()
+    -> Result<(), &'static str> {
+        assert_eq!(parse(&["a.wav".into()])?, Options::Legacy("a.wav".into()));
+        assert_eq!(
+            parse(&["--print-scheduling-parameters".into()])?,
+            Options::PrintScheduling
+        );
+        assert_eq!(
+            parse(&["a.wav".into(), "params.json".into(), "out.json".into()])?,
+            Options::Scheduling {
+                wav: "a.wav".into(),
+                parameters: "params.json".into(),
+                output: "out.json".into()
+            }
+        );
+        for args in [
+            vec![],
+            vec!["a".into(), "b".into()],
+            vec!["a".into(), "b".into(), "a".into()],
+            vec!["--unknown".into(), "params".into(), "out".into()],
+        ] {
+            assert!(parse(&args).is_err());
+        }
+        assert!(parse(&["x".repeat(4097).into()]).is_err());
+        Ok(())
+    }
 }

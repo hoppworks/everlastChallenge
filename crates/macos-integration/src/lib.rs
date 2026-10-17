@@ -16,6 +16,7 @@ pub mod paste;
 pub mod power;
 pub mod process;
 pub mod qos;
+pub mod realtime;
 pub mod target;
 pub mod ui_services;
 
