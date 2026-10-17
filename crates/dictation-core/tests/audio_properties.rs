@@ -69,6 +69,43 @@ fn filtering_rejects_downsample_aliases_and_upsample_images()
 }
 
 #[test]
+fn isolated_impulses_preserve_time_polarity_and_downmix_gain()
+-> Result<(), Box<dyn std::error::Error>> {
+    // At 100 ms, every supported input rate maps to output sample 1600.
+    // A unit impulse's DC area scales by the output/input sample-rate ratio.
+    // Only one of eight channels carries the impulse: averaging adds a 1/8 gain.
+    for rate in [8_000, 16_000, 24_000, 32_000, 44_100, 48_000] {
+        for polarity in [-1.0_f32, 1.0] {
+            let mut input = vec![0.0; rate as usize / 5 * 8];
+            input[rate as usize / 10 * 8 + 7] = polarity;
+            let mut processor = AudioProcessor::new(AudioFormat {
+                sample_rate: rate,
+                channels: 8,
+            })?;
+            for chunk in input.chunks(73 * 8) {
+                processor.push_interleaved(chunk)?;
+            }
+            let output = processor.finish()?;
+            assert_eq!(output.len(), 3_200);
+            let peak = output
+                .iter()
+                .enumerate()
+                .max_by(|(_, a), (_, b)| a.abs().total_cmp(&b.abs()))
+                .map(|(index, _)| index);
+            assert_eq!(peak, Some(1_600), "impulse time at {rate}");
+            assert_eq!(output[1_600].signum(), polarity);
+            let area: f64 = output.iter().map(|sample| f64::from(*sample)).sum();
+            let expected = f64::from(polarity) * 2_000.0 / f64::from(rate);
+            assert!(
+                (area - expected).abs() < expected.abs() * 0.01,
+                "impulse area at {rate}: {area}, expected {expected}"
+            );
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn invalid_formats_and_samples_fail_without_manufactured_audio()
 -> Result<(), Box<dyn std::error::Error>> {
     use dictation_core::audio::AudioError;

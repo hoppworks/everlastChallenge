@@ -476,6 +476,103 @@ mod tests {
     use super::*;
 
     #[test]
+    fn every_supported_ring_holds_exactly_one_second_of_complete_frames()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for sample_rate in [8_000, 16_000, 24_000, 32_000, 44_100, 48_000] {
+            for channels in [1, 2, 8] {
+                let format = AudioFormat {
+                    sample_rate,
+                    channels,
+                };
+                let second = vec![0.25_f32; sample_rate as usize * usize::from(channels)];
+                let (mut port, mut reader) = capture_buffer(format)?;
+                port.publish(&second);
+                reader.close();
+                let mut accepted = 0;
+                loop {
+                    let chunk = reader.read()?;
+                    if chunk.is_empty() {
+                        break;
+                    }
+                    assert!(chunk.len().is_multiple_of(usize::from(channels)));
+                    assert!(chunk.iter().all(|sample| *sample == 0.25));
+                    accepted += chunk.len();
+                }
+                assert_eq!(accepted, second.len());
+
+                let (mut port, mut reader) = capture_buffer(format)?;
+                port.publish(&second);
+                port.publish(&vec![0.5_f32; usize::from(channels)]);
+                assert!(matches!(reader.read(), Err(CaptureError::Overflow)));
+            }
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn one_hundred_short_capture_lifetimes_drain_or_discard_without_cross_session_audio()
+    -> Result<(), Box<dyn std::error::Error>> {
+        // Exercise the real ring/DSP ownership boundary without opening a device.
+        // Keep at most one previous result, as an in-flight decoder may do.
+        // This checks payload capacities and isolation, not process RSS or CPAL cleanup.
+        let mut previous: Option<Vec<f32>> = None;
+        let rates = [8_000, 16_000, 24_000, 32_000, 44_100, 48_000];
+        for session in 0..100 {
+            let rate = rates[session % rates.len()];
+            let channels = [1, 2, 8][(session / rates.len()) % 3];
+            let format = AudioFormat {
+                sample_rate: rate,
+                channels,
+            };
+            let (mut port, mut reader) = capture_buffer(format)?;
+            let mut processor = AudioProcessor::new(format)?;
+            let amplitude = if session % 2 == 0 { 0.25 } else { -0.5 };
+            let frames = rate as usize / 10 + 7;
+            let input = vec![amplitude; frames * usize::from(channels)];
+            for chunk in input.chunks(137 * usize::from(channels)) {
+                port.publish(chunk);
+                // Deliberately leave the last publication for the Stop drain.
+                if chunk.len() == 137 * usize::from(channels) {
+                    processor.push_interleaved(reader.read()?)?;
+                }
+            }
+            reader.close();
+            assert!(reader.publication_finished());
+            if session % 3 == 0 {
+                // Cancel discards both accepted ring data and partially processed data.
+                drop(processor);
+                continue;
+            }
+            loop {
+                let chunk = reader.read()?;
+                if chunk.is_empty() {
+                    break;
+                }
+                processor.push_interleaved(chunk)?;
+            }
+            let output = processor.finish()?;
+            assert_eq!(
+                output.len(),
+                (frames * 16_000 + rate as usize / 2) / rate as usize
+            );
+            assert!(
+                output[600..1_000]
+                    .iter()
+                    .all(|sample| (*sample - amplitude).abs() < 0.001),
+                "stale audio or filter state in session {session}, rate {rate}"
+            );
+            // Vec capacity is observable on the transferred journal, not inferred
+            // from its short length. No geometrically growing history is retained.
+            assert_eq!(output.capacity(), 4_800_000);
+            if let Some(old) = &previous {
+                assert_eq!(old.capacity(), 4_800_000);
+            }
+            previous = Some(output);
+        }
+        Ok(())
+    }
+
+    #[test]
     fn a_saturated_event_consumer_cannot_block_the_microphone_owner()
     -> Result<(), Box<dyn std::error::Error>> {
         let (sender, _receiver) = crossbeam_channel::bounded(1);
