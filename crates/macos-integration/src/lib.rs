@@ -6,6 +6,7 @@
 )]
 
 pub mod clipboard;
+pub mod deadline;
 pub mod delivery;
 pub mod glass;
 pub mod glass_header;
