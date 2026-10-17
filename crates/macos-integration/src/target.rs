@@ -1,5 +1,7 @@
 //! Read-only target validation; no activation, clipboard mutation or typing.
 
+pub mod worker;
+
 use core_foundation::{
     base::{CFType, CFTypeRef, TCFType},
     boolean::CFBoolean,
@@ -41,7 +43,7 @@ unsafe extern "C" {
     fn IsSecureEventInputEnabled() -> u8;
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum TargetError {
     #[error("Accessibility permission is missing")]
     Permission,
@@ -59,6 +61,8 @@ pub enum TargetError {
     Field(HoldReason),
     #[error("Target verification is stale or belongs to another session")]
     StaleApproval,
+    #[error("Target work was cancelled")]
+    Cancelled,
 }
 
 /// PID plus kernel start timestamp; never identifies a process by PID alone.

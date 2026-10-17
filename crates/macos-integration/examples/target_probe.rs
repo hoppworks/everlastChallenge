@@ -1,8 +1,29 @@
 //! Read-only developer check: no TCC prompt, activation, text or clipboard IO.
-use macos_integration::target::{
-    Target, TargetError, accessibility_trusted, frontmost_process, secure_input_active,
+use macos_integration::{
+    delivery::DeliveryToken,
+    target::{
+        accessibility_trusted, frontmost_process, secure_input_active,
+        worker::{TargetEvent, TargetWorker},
+    },
 };
 use objc2::MainThreadMarker;
+use std::{
+    num::NonZeroU64,
+    time::{Duration, Instant},
+};
+
+fn response(worker: &TargetWorker) -> Result<TargetEvent, Box<dyn std::error::Error>> {
+    let deadline = Instant::now() + Duration::from_secs(3);
+    loop {
+        if let Some(event) = worker.next_event()? {
+            return Ok(event);
+        }
+        if Instant::now() >= deadline {
+            return Err("native response timed out".into());
+        }
+        std::thread::sleep(Duration::from_millis(1));
+    }
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let main_thread = MainThreadMarker::new().ok_or("not on the main thread")?;
@@ -11,29 +32,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         accessibility_trusted(),
         secure_input_active()
     );
-    if !accessibility_trusted() {
-        println!("Target inspection skipped: permission missing; no prompt requested");
-        return Ok(());
-    }
     let process = frontmost_process(main_thread)?;
-    let (captured, capture_ready) = std::sync::mpsc::sync_channel(0);
-    let (send_frontmost, receive_frontmost) = std::sync::mpsc::sync_channel(0);
-    let worker = std::thread::spawn(move || {
-        let session = std::num::NonZeroU64::new(1).ok_or(TargetError::Process)?;
-        let target = Target::capture(session, process)?;
-        captured.send(()).map_err(|_| TargetError::Process)?;
-        let frontmost = receive_frontmost
-            .recv()
-            .map_err(|_| TargetError::Process)??;
-        target.verify(frontmost)
-    });
-    if capture_ready.recv().is_ok() {
-        send_frontmost.send(frontmost_process(main_thread))?;
+    let worker = TargetWorker::start()?;
+    let session = NonZeroU64::new(1).ok_or("invalid session")?;
+    worker.capture(session, process, DeliveryToken::new(session))?;
+    match response(&worker)? {
+        TargetEvent::Captured {
+            result: Err(error), ..
+        } => println!("Target held by worker: {error}"),
+        TargetEvent::Captured { result: Ok(()), .. } => {
+            worker.approve(session, session, frontmost_process(main_thread)?)?;
+            match response(&worker)? {
+                TargetEvent::Approved {
+                    result: Ok(receipt),
+                    ..
+                } => {
+                    receipt.validate(session, frontmost_process(main_thread)?)?;
+                    println!("Worker captured and revalidated the initial field");
+                }
+                TargetEvent::Approved {
+                    result: Err(error), ..
+                } => println!("Target held by worker: {error}"),
+                _ => return Err("unexpected native event".into()),
+            }
+        }
+        _ => return Err("unexpected native event".into()),
     }
-    let result = worker.join().map_err(|_| "target worker failed")?;
-    match result {
-        Ok(()) => println!("Initial field captured and immediately revalidated"),
-        Err(error) => println!("Target held: {error}"),
-    }
+    worker.shutdown()?;
     Ok(())
 }
