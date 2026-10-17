@@ -13,11 +13,29 @@ use std::{
 };
 const WAIT: Duration = Duration::from_secs(120);
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum ExpectedOutcome {
+    Local,
+    Empty,
+}
+
+struct Expectation<'a> {
+    outcome: ExpectedOutcome,
+    reference: Option<&'a str>,
+}
+
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Observation {
     pub id: String,
     pub warmup: bool,
+    pub expected_outcome: ExpectedOutcome,
+    pub t_terminal_offset_nanos: Option<u128>,
+    pub stop_to_terminal_nanos: Option<u128>,
+    pub engine_elapsed_nanos: Option<u128>,
+    pub engine_input_frames: Option<usize>,
+    pub engine_rtf: Option<f64>,
+    pub engine_rtf_unavailable_reason: Option<String>,
     pub status: &'static str,
     pub error: Option<String>,
     pub session: Option<u64>,
@@ -40,6 +58,13 @@ fn observation(id: String, warmup: bool) -> Observation {
     Observation {
         id,
         warmup,
+        expected_outcome: ExpectedOutcome::Local,
+        t_terminal_offset_nanos: None,
+        stop_to_terminal_nanos: None,
+        engine_elapsed_nanos: None,
+        engine_input_frames: None,
+        engine_rtf: None,
+        engine_rtf_unavailable_reason: Some("no accepted decoder timing".into()),
         status: "failed",
         error: None,
         session: None,
@@ -98,7 +123,42 @@ fn offsets(row: &mut Observation, timing: TimingSnapshot, t0: Instant) {
         .zip(timing.t_stop)
         .and_then(|(text, stop)| text.checked_duration_since(stop))
         .map(|d| d.as_nanos());
+    row.t_terminal_offset_nanos = timing
+        .t_terminal
+        .and_then(|at| at.checked_duration_since(t0))
+        .map(|d| d.as_nanos());
+    row.stop_to_terminal_nanos = timing
+        .t_terminal
+        .zip(timing.t_stop)
+        .and_then(|(end, stop)| end.checked_duration_since(stop))
+        .map(|d| d.as_nanos());
+    row.engine_elapsed_nanos = timing.decode_timing.map(|value| value.elapsed.as_nanos());
+    row.engine_input_frames = timing.decode_timing.map(|value| value.input_frames);
+    row.engine_rtf = timing.decode_timing.and_then(|value| value.rtf());
+    row.engine_rtf_unavailable_reason = match timing.decode_timing {
+        None => Some("no accepted decoder timing; no RTF inferred from Empty".into()),
+        Some(value) if value.input_frames == 0 => {
+            Some("decoder received zero frames; RTF denominator is zero".into())
+        }
+        Some(_) => None,
+    };
     row.terminal = timing.terminal.map(|value| format!("{value:?}"));
+}
+
+fn validate_engine_timing(
+    timing: Option<everlast_dictation::inference_service::DecodeTiming>,
+    frames: usize,
+    expected: ExpectedOutcome,
+) -> Result<(), &'static str> {
+    match timing {
+        Some(value) if value.input_frames != frames => {
+            Err("accepted Engine input frame count differs from complete fixture")
+        }
+        None if expected == ExpectedOutcome::Local => {
+            Err("accepted Local result lacks actual Engine timing")
+        }
+        _ => Ok(()),
+    }
 }
 
 trait PublisherScope {
@@ -119,9 +179,38 @@ pub fn one(
     warmup: bool,
     reference: Option<&str>,
 ) -> Output {
-    one_scoped(runtime, samples, language, id, warmup, reference, || {
-        macos_integration::qos::PublisherQos::enter().map_err(|error| error.to_string())
-    })
+    one_expected(
+        runtime,
+        samples,
+        language,
+        id,
+        warmup,
+        reference,
+        ExpectedOutcome::Local,
+    )
+}
+
+pub fn one_expected(
+    runtime: &MeasuredRuntime,
+    samples: &[f32],
+    language: Language,
+    id: String,
+    warmup: bool,
+    reference: Option<&str>,
+    expected: ExpectedOutcome,
+) -> Output {
+    one_scoped(
+        runtime,
+        samples,
+        language,
+        id,
+        warmup,
+        Expectation {
+            outcome: expected,
+            reference,
+        },
+        || macos_integration::qos::PublisherQos::enter().map_err(|error| error.to_string()),
+    )
 }
 
 fn one_scoped<Q: PublisherScope>(
@@ -130,10 +219,18 @@ fn one_scoped<Q: PublisherScope>(
     language: Language,
     id: String,
     warmup: bool,
-    reference: Option<&str>,
+    expectation: Expectation<'_>,
     enter: impl FnOnce() -> Result<Q, String>,
 ) -> Output {
     let mut row = observation(id, warmup);
+    row.expected_outcome = expectation.outcome;
+    if expectation.outcome == ExpectedOutcome::Empty && expectation.reference.is_some() {
+        row.error = Some("Empty expectation cannot have a text reference".into());
+        return Output {
+            observation: row,
+            text: None,
+        };
+    }
     let mut qos = match enter() {
         Ok(scope) => {
             row.qos_entered = true;
@@ -207,6 +304,19 @@ fn one_scoped<Q: PublisherScope>(
         if timing.t_stop != Some(stopped) || !row.controller_clock_matches_capture {
             return Err("host/controller/capture monotone clock identity mismatch".into());
         }
+        if row.stop_to_terminal_nanos.is_none() {
+            return Err("accepted terminal timestamp precedes stop or is missing".into());
+        }
+        validate_engine_timing(timing.decode_timing, samples.len(), expectation.outcome)?;
+        if expectation.outcome == ExpectedOutcome::Empty {
+            if timing.terminal != Some(MeasuredTerminal::Empty) || timing.t_text.is_some() {
+                return Err("run did not end with explicitly expected Empty outcome".into());
+            }
+            if runtime.snapshot()?.session.text.is_some() {
+                return Err("Empty outcome retained unexpected session text".into());
+            }
+            return Ok(String::new());
+        }
         if timing.terminal != Some(MeasuredTerminal::Local) || timing.t_text.is_none() {
             return Err("run ended without accepted nonempty final controller text".into());
         }
@@ -232,7 +342,9 @@ fn one_scoped<Q: PublisherScope>(
     }
     match result {
         Ok(text) => {
-            row.reference_match = reference.map(|expected| text.trim() == expected.trim());
+            row.reference_match = expectation
+                .reference
+                .map(|expected| text.trim() == expected.trim());
             let stop_valid =
                 row.feed
                     .as_ref()
@@ -249,7 +361,9 @@ fn one_scoped<Q: PublisherScope>(
             } else if row.reference_match == Some(false) {
                 row.status = "reference_mismatch";
                 row.error = Some("transcript differs from the supplied reference".into());
-            } else if row.stop_to_text_nanos.is_none() {
+            } else if expectation.outcome == ExpectedOutcome::Local
+                && row.stop_to_text_nanos.is_none()
+            {
                 row.error = Some("final text timestamp precedes stop or is missing".into());
             } else {
                 row.status = "ok";
@@ -399,7 +513,10 @@ mod tests {
             Language::German,
             "enter-failed".into(),
             false,
-            None,
+            Expectation {
+                outcome: ExpectedOutcome::Local,
+                reference: None,
+            },
             || Err("controlled QoS enter failure".into()),
         );
         let ended = cleanup(measured);
@@ -427,7 +544,10 @@ mod tests {
             Language::German,
             "finish-failed".into(),
             false,
-            None,
+            Expectation {
+                outcome: ExpectedOutcome::Local,
+                reference: None,
+            },
             || {
                 Ok(FakeScope {
                     ends: std::rc::Rc::clone(&ends),
@@ -462,7 +582,10 @@ mod tests {
             Language::German,
             "feed-and-finish-failed".into(),
             false,
-            None,
+            Expectation {
+                outcome: ExpectedOutcome::Local,
+                reference: None,
+            },
             || {
                 Ok(FakeScope {
                     ends: std::rc::Rc::clone(&ends),
@@ -504,7 +627,10 @@ mod tests {
             Language::German,
             "controlled".into(),
             false,
-            Some("controlled words"),
+            Expectation {
+                outcome: ExpectedOutcome::Local,
+                reference: Some("controlled words"),
+            },
             || {
                 Ok(FakeScope {
                     ends: std::rc::Rc::clone(&ends),
@@ -522,6 +648,117 @@ mod tests {
         assert!(output.observation.stop_to_text_nanos.is_some());
         // Scheduling errors remain invalid rather than relaxing a fixed budget.
         assert!(matches!(output.observation.status, "ok" | "invalid_setup"));
+        Ok(())
+    }
+    #[test]
+    fn explicitly_expected_empty_completes_without_a_text_latency()
+    -> Result<(), Box<dyn std::error::Error>> {
+        struct Empty;
+        impl Decoder for Empty {
+            fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+                Ok(String::new())
+            }
+        }
+        let measured = MeasuredRuntime::spawn(
+            InferenceService::with_decoder(Empty)?,
+            1,
+            AudioFormat {
+                sample_rate: 16000,
+                channels: 1,
+            },
+        )?;
+        wait_ready(&measured)?;
+        let output = one_scoped(
+            &measured,
+            &[0.125; 320],
+            Language::German,
+            "expected-empty".into(),
+            false,
+            Expectation {
+                outcome: ExpectedOutcome::Empty,
+                reference: None,
+            },
+            || {
+                Ok(FakeScope {
+                    ends: std::rc::Rc::new(std::cell::Cell::new(0)),
+                    failure: None,
+                })
+            },
+        );
+        let ended = cleanup(measured);
+        assert!(ended.joined);
+        assert_eq!(output.text.as_deref(), Some(""));
+        assert_eq!(output.observation.terminal.as_deref(), Some("Empty"));
+        assert_eq!(output.observation.stop_to_text_nanos, None);
+        assert_eq!(output.observation.t_text_offset_nanos, None);
+        assert!(output.observation.t_terminal_offset_nanos.is_some());
+        assert!(output.observation.stop_to_terminal_nanos.is_some());
+        assert_eq!(output.observation.engine_input_frames, Some(320));
+        assert!(output.observation.engine_elapsed_nanos.is_some());
+        assert!(output.observation.engine_rtf.is_some());
+        assert!(matches!(output.observation.status, "ok" | "invalid_setup"));
+        Ok(())
+    }
+
+    #[test]
+    fn missing_or_wrong_frame_engine_measurement_cannot_qualify_local() {
+        use everlast_dictation::inference_service::DecodeTiming;
+        assert!(validate_engine_timing(None, 320, ExpectedOutcome::Local).is_err());
+        assert!(validate_engine_timing(None, 320, ExpectedOutcome::Empty).is_ok());
+        let measured = Some(DecodeTiming {
+            elapsed: Duration::from_millis(10),
+            input_frames: 319,
+        });
+        assert!(validate_engine_timing(measured, 320, ExpectedOutcome::Local).is_err());
+        assert!(validate_engine_timing(measured, 320, ExpectedOutcome::Empty).is_err());
+    }
+
+    #[test]
+    fn default_local_rejects_an_empty_result() -> Result<(), Box<dyn std::error::Error>> {
+        struct Empty;
+        impl Decoder for Empty {
+            fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+                Ok(String::new())
+            }
+        }
+        let measured = MeasuredRuntime::spawn(
+            InferenceService::with_decoder(Empty)?,
+            1,
+            AudioFormat {
+                sample_rate: 16000,
+                channels: 1,
+            },
+        )?;
+        wait_ready(&measured)?;
+        let output = one_scoped(
+            &measured,
+            &[0.125; 320],
+            Language::German,
+            "unexpected-empty".into(),
+            false,
+            Expectation {
+                outcome: ExpectedOutcome::Local,
+                reference: None,
+            },
+            || {
+                Ok(FakeScope {
+                    ends: std::rc::Rc::new(std::cell::Cell::new(0)),
+                    failure: None,
+                })
+            },
+        );
+        assert!(cleanup(measured).joined);
+        assert_eq!(output.observation.status, "failed");
+        assert_eq!(output.observation.terminal.as_deref(), Some("Empty"));
+        assert_eq!(output.text, None);
+        assert_eq!(output.observation.stop_to_text_nanos, None);
+        assert!(
+            output
+                .observation
+                .error
+                .as_deref()
+                .is_some_and(|value| value.contains("nonempty"))
+        );
         Ok(())
     }
 }

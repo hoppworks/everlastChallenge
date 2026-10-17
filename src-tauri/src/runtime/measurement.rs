@@ -17,6 +17,8 @@ pub struct TimingSnapshot {
     pub t0: Option<Instant>,
     pub t_stop: Option<Instant>,
     pub t_text: Option<Instant>,
+    pub t_terminal: Option<Instant>,
+    pub decode_timing: Option<crate::inference_service::DecodeTiming>,
     pub terminal: Option<MeasuredTerminal>,
 }
 pub(super) struct Trace {
@@ -60,24 +62,30 @@ impl Trace {
         next: &SessionSnapshot,
         candidate: bool,
         at: Instant,
+        decode_timing: Option<crate::inference_service::DecodeTiming>,
     ) -> Result<(), RuntimeError> {
         if candidate
             && previous.phase == Phase::Finalizing
             && next.phase == Phase::Idle
-            && next.outcome == Some(Outcome::Local)
+            && matches!(next.outcome, Some(Outcome::Local | Outcome::Empty))
         {
             let mut trace = self
                 .value
                 .lock()
                 .map_err(|_| RuntimeError::Synchronization)?;
-            if trace.session == previous.session && trace.t_text.is_none() {
-                trace.t_text = Some(at);
+            if trace.session == previous.session && trace.t_terminal.is_none() {
+                trace.t_terminal = Some(at);
+                trace.decode_timing = decode_timing;
+                if next.outcome == Some(Outcome::Local) {
+                    trace.t_text = Some(at);
+                }
                 #[cfg(test)]
-                if let Some(sender) = self
-                    .on_text
-                    .lock()
-                    .map_err(|_| RuntimeError::Synchronization)?
-                    .as_ref()
+                if next.outcome == Some(Outcome::Local)
+                    && let Some(sender) = self
+                        .on_text
+                        .lock()
+                        .map_err(|_| RuntimeError::Synchronization)?
+                        .as_ref()
                     && sender.try_send(at).is_err()
                 { /* test observer no longer waiting */
                 }
@@ -437,6 +445,8 @@ mod tests {
         assert_eq!(runtime.timing()?.session, Some(id));
         assert_eq!(runtime.timing()?.t_stop, None);
         assert_eq!(runtime.timing()?.t_text, None);
+        assert_eq!(runtime.timing()?.t_terminal, None);
+        assert_eq!(runtime.timing()?.decode_timing, None);
         assert_eq!(runtime.snapshot()?.session.text, None);
         let mut input = runtime.take_input(Duration::from_secs(2))?;
         input.port.publish(&[0.1f32; 3200]);
@@ -486,6 +496,14 @@ mod tests {
         assert_eq!(times.t0, Some(input.started));
         assert_eq!(times.t_stop, Some(stop));
         assert_eq!(times.t_text, Some(adopted));
+        assert_eq!(times.t_terminal, Some(adopted));
+        assert_eq!(
+            times
+                .decode_timing
+                .ok_or("missing accepted timing")?
+                .input_frames,
+            3200
+        );
         assert_eq!(times.terminal, Some(MeasuredTerminal::Local));
         assert!(
             times
@@ -523,8 +541,25 @@ mod tests {
         let failed = finish(&runtime)?;
         assert_eq!(first.terminal, Some(MeasuredTerminal::Local));
         assert!(first.t_text.is_some());
+        assert_eq!(
+            first
+                .decode_timing
+                .ok_or("accepted Engine timing missing")?
+                .input_frames,
+            3200
+        );
+        assert_eq!(
+            empty
+                .decode_timing
+                .ok_or("accepted empty Engine timing missing")?
+                .input_frames,
+            3200
+        );
+        assert_eq!(failed.decode_timing, None);
         assert_eq!(empty.terminal, Some(MeasuredTerminal::Empty));
         assert_eq!(empty.t_text, None);
+        assert!(empty.t_terminal.is_some());
+        assert_eq!(failed.t_terminal, None);
         assert_eq!(failed.terminal, Some(MeasuredTerminal::Failed));
         assert_eq!(failed.t_text, None);
         assert!(first.session < empty.session && empty.session < failed.session);
@@ -671,6 +706,8 @@ mod tests {
         let cancelled = runtime.timing()?;
         assert_eq!(cancelled.terminal, Some(MeasuredTerminal::Cancelled));
         assert_eq!(cancelled.t_text, None);
+        assert_eq!(cancelled.t_terminal, None);
+        assert_eq!(cancelled.decode_timing, None);
         let rejected = await_value(runtime.start(settings())?)?;
         assert!(rejected.is_err_and(|message| message.contains("busy")));
         assert_eq!(
@@ -794,33 +831,87 @@ mod tests {
             (1, 1, 2, job.sample_range.clone()),
             (1, 1, 1, 1..3200),
         ] {
-            actor.accept(Event::InferenceFinished {
-                session,
-                generation,
-                job_id,
-                sample_range,
-                result: Ok("untrusted completion".into()),
-            })?;
+            actor.accept_with_timing(
+                Event::InferenceFinished {
+                    session,
+                    generation,
+                    job_id,
+                    sample_range,
+                    result: Ok("untrusted completion".into()),
+                },
+                Some(crate::inference_service::DecodeTiming {
+                    elapsed: Duration::from_millis(50),
+                    input_frames: 3200,
+                }),
+            )?;
             assert_eq!(actor.controller.snapshot().phase, Phase::Finalizing);
             assert_eq!(trace.snapshot()?.t_text, None);
+            assert_eq!(trace.snapshot()?.t_terminal, None);
+            assert_eq!(trace.snapshot()?.decode_timing, None);
         }
-        actor.accept(Event::InferenceFinished {
-            session: 1,
-            generation: 1,
-            job_id: 1,
-            sample_range: job.sample_range,
-            result: Ok("accepted completion".into()),
-        })?;
+        actor.accept_with_timing(
+            Event::InferenceFinished {
+                session: 1,
+                generation: 1,
+                job_id: 1,
+                sample_range: job.sample_range,
+                result: Ok("accepted completion".into()),
+            },
+            Some(crate::inference_service::DecodeTiming {
+                elapsed: Duration::from_millis(50),
+                input_frames: 3200,
+            }),
+        )?;
         assert_eq!(actor.controller.snapshot().outcome, Some(Outcome::Local));
         let adopted = trace.snapshot()?.t_text.ok_or("missing adoption time")?;
-        actor.accept(Event::InferenceFinished {
-            session: 1,
-            generation: 1,
-            job_id: 1,
-            sample_range: 0..3200,
-            result: Ok("duplicate completion".into()),
-        })?;
+        // Deliberate acceptance/publication gap: observers must not see a
+        // terminal enum until the shared controller snapshot is published.
+        assert_eq!(trace.snapshot()?.terminal, None);
+        assert_eq!(
+            actor
+                .shared
+                .lock()
+                .map_err(|_| "poisoned")?
+                .snapshot
+                .session
+                .phase,
+            Phase::Finalizing
+        );
+        actor.publish()?;
+        assert_eq!(trace.snapshot()?.terminal, Some(MeasuredTerminal::Local));
+        assert_eq!(
+            actor
+                .shared
+                .lock()
+                .map_err(|_| "poisoned")?
+                .snapshot
+                .session
+                .text
+                .as_deref(),
+            Some("accepted completion")
+        );
+        actor.accept_with_timing(
+            Event::InferenceFinished {
+                session: 1,
+                generation: 1,
+                job_id: 1,
+                sample_range: 0..3200,
+                result: Ok("duplicate completion".into()),
+            },
+            Some(crate::inference_service::DecodeTiming {
+                elapsed: Duration::from_millis(999),
+                input_frames: 3200,
+            }),
+        )?;
         assert_eq!(trace.snapshot()?.t_text, Some(adopted));
+        assert_eq!(trace.snapshot()?.t_terminal, Some(adopted));
+        assert_eq!(
+            trace.snapshot()?.decode_timing,
+            Some(crate::inference_service::DecodeTiming {
+                elapsed: Duration::from_millis(50),
+                input_frames: 3200
+            })
+        );
         Ok(())
     }
 }

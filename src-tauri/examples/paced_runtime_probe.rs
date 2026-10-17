@@ -85,20 +85,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
             format!("measured-{index:03}")
         };
-        let output = if let Some(error) = &unavailable {
+        let mut output = if let Some(error) = &unavailable {
             runner::unavailable(id, index == 0, error.clone())
         } else if let Some(measured) = &runtime {
-            runner::one(
-                measured,
-                &samples,
-                options.language,
-                id,
-                index == 0,
-                reference,
-            )
+            match options.expected_outcome {
+                runner::ExpectedOutcome::Local => runner::one(
+                    measured,
+                    &samples,
+                    options.language,
+                    id,
+                    index == 0,
+                    reference,
+                ),
+                runner::ExpectedOutcome::Empty => runner::one_expected(
+                    measured,
+                    &samples,
+                    options.language,
+                    id,
+                    index == 0,
+                    None,
+                    options.expected_outcome,
+                ),
+            }
         } else {
             runner::unavailable(id, index == 0, "runtime was not initialized".into())
         };
+        output.observation.expected_outcome = options.expected_outcome;
         if output.observation.status != "ok" && unavailable.is_none() {
             unavailable = Some(
                 output
@@ -127,11 +139,55 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .collect::<Vec<_>>();
     let cleanup = runtime.map(runner::cleanup);
     let passed = unavailable.is_none() && cleanup.as_ref().is_some_and(|value| value.joined);
-    let summary = if passed {
+    let summary = if passed && options.expected_outcome == runner::ExpectedOutcome::Local {
         statistics::summarize(&latencies)
     } else {
         None
     };
+    let measured_rows = observations
+        .iter()
+        .filter(|row| !row.warmup)
+        .collect::<Vec<_>>();
+    let terminal_values = measured_rows
+        .iter()
+        .map(|row| {
+            if row.status == "ok" {
+                row.stop_to_terminal_nanos
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+    let terminal_summary = if passed {
+        statistics::summarize(&terminal_values)
+    } else {
+        None
+    };
+    let engine_values = measured_rows
+        .iter()
+        .map(|row| {
+            if row.status == "ok" {
+                row.engine_elapsed_nanos
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+    let engine_summary = if passed {
+        statistics::summarize(&engine_values)
+    } else {
+        None
+    };
+    let engine_rtf_summary =
+        engine_summary
+            .as_ref()
+            .filter(|_| !samples.is_empty())
+            .map(|summary| {
+                let factor = 16000.0 / samples.len() as f64 / 1_000_000_000.0;
+                serde_json::json!({"count":summary.count,"median":summary.median_nanos*factor,
+            "min":summary.min_nanos as f64*factor,"max":summary.max_nanos as f64*factor,
+            "range":summary.range_nanos as f64*factor})
+            });
     let metadata = serde_json::json!({
         "schemaVersion":1,"kind":"paced-runtime-complete-recording","passed":passed,
         "debugAssertions":cfg!(debug_assertions),
@@ -143,7 +199,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "referenceSha256":reference_bytes.as_ref().map(|data| input::digest(data)),
         "referenceComparison":"trimmed exact text only; provenance and independent WER are separate",
         "warmupRuns":1,"measuredRunsRequested":options.runs,"loadMillis":load_millis,"loadError":load_error,
-        "runs":observations,"summary":summary,"cleanup":cleanup,
+        "runs":observations,"summary":summary,"terminalSummary":terminal_summary,
+        "engineElapsedSummary":engine_summary,"engineRtfSummary":engine_rtf_summary,
+        "engineTimingCoverage":{"measuredRuns":measured_rows.len(),"withActualEngineTiming":measured_rows.iter().filter(|row|row.engine_elapsed_nanos.is_some()).count()},
+        "expectedOutcome":options.expected_outcome,
+        "engineRtfDefinition":"actual Decoder::decode duration / (passed 16-kHz frames / 16000); production Engine includes energy/VAD/preparation/fresh ASR state; not pure ASR or stop-to-text",
+        "cleanup":cleanup,
         "thirtyMeasuredRunsCompleted":options.runs==30&&passed,
         "L":null,"notAggregateL":true,"qualified":false,
         "limits":["single explicitly selected fixture; no six-case aggregate L",

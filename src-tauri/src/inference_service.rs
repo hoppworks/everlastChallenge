@@ -52,12 +52,30 @@ pub struct Job {
     pub token: WorkToken,
 }
 
+/// Entire actual Decoder::decode call, including Engine preprocessing/VAD/ASR.
+/// Exists only for developer measurements; never queue or stop-to-text time.
+#[cfg(feature = "measurement")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DecodeTiming {
+    pub elapsed: std::time::Duration,
+    pub input_frames: usize,
+}
+#[cfg(feature = "measurement")]
+impl DecodeTiming {
+    pub fn rtf(self) -> Option<f64> {
+        (self.input_frames != 0)
+            .then(|| self.elapsed.as_secs_f64() * 16000.0 / self.input_frames as f64)
+    }
+}
+
 pub struct Completed {
     pub session: u64,
     pub generation: u64,
     pub job_id: u64,
     pub sample_range: Range<usize>,
     pub result: Result<String, InferenceError>,
+    #[cfg(feature = "measurement")]
+    pub decode_timing: Option<DecodeTiming>,
     token: WorkToken,
 }
 
@@ -310,8 +328,22 @@ fn inference_loop(
             wake.recv().map_err(|_| ServiceError::Stopped)?;
             continue;
         };
+        #[cfg(feature = "measurement")]
+        let mut decode_timing = None;
         let result = if job.token.is_valid() {
-            decoder.decode(&job.audio[job.sample_range.clone()], job.language)
+            let input = &job.audio[job.sample_range.clone()];
+            #[cfg(feature = "measurement")]
+            {
+                let started = std::time::Instant::now();
+                let result = decoder.decode(input, job.language);
+                decode_timing = Some(DecodeTiming {
+                    elapsed: started.elapsed(),
+                    input_frames: input.len(),
+                });
+                result
+            }
+            #[cfg(not(feature = "measurement"))]
+            decoder.decode(input, job.language)
         } else {
             Ok(String::new())
         };
@@ -331,6 +363,8 @@ fn inference_loop(
                 job_id: job.job_id,
                 sample_range: job.sample_range,
                 result,
+                #[cfg(feature = "measurement")]
+                decode_timing,
                 token: job.token,
             });
         }
@@ -415,6 +449,14 @@ mod tests {
             (7, 9, 42)
         );
         assert_eq!(completed.sample_range, 1..3);
+        #[cfg(feature = "measurement")]
+        assert_eq!(
+            completed
+                .decode_timing
+                .ok_or("actual decode timing missing")?
+                .input_frames,
+            2
+        );
         assert_eq!(completed.result?, "selected samples");
         assert!(matches!(
             service.submit(Job {
@@ -629,6 +671,68 @@ mod tests {
         }
         assert!(service.take_result()?.is_none());
         service.shutdown()?;
+        Ok(())
+    }
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn actual_decode_timing_spans_the_controlled_call_and_selected_slice()
+    -> Result<(), Box<dyn std::error::Error>> {
+        struct Held {
+            entered: crossbeam_channel::Sender<Instant>,
+            release: crossbeam_channel::Receiver<()>,
+        }
+        impl Decoder for Held {
+            fn decode(&mut self, samples: &[f32], _: Language) -> Result<String, InferenceError> {
+                if samples != [0.2, 0.3] {
+                    return Err(InferenceError::InvalidAudio);
+                }
+                self.entered
+                    .send(Instant::now())
+                    .map_err(|_| InferenceError::Decode)?;
+                self.release
+                    .recv_timeout(Duration::from_secs(2))
+                    .map_err(|_| InferenceError::Decode)?;
+                Ok("measured".into())
+            }
+        }
+        let (entered, entry) = crossbeam_channel::bounded(1);
+        let (release, resume) = crossbeam_channel::bounded(1);
+        let service = InferenceService::with_decoder(Held {
+            entered,
+            release: resume,
+        })?;
+        wait_ready(&service)?;
+        service.submit(Job {
+            audio: Arc::new(vec![0.1, 0.2, 0.3, 0.4]),
+            sample_range: 1..3,
+            ..job(7, 9)
+        })?;
+        let entered_at = entry.recv_timeout(Duration::from_secs(2))?;
+        let released_at = Instant::now();
+        release.send(())?;
+        wait_idle(&service)?;
+        let result = service.take_result()?.ok_or("missing completed call")?;
+        let timing = result.decode_timing.ok_or("missing actual timing")?;
+        assert_eq!(timing.input_frames, 2);
+        assert!(timing.elapsed >= released_at.duration_since(entered_at));
+        assert!(!timing.elapsed.is_zero());
+        service.shutdown()?;
+        assert_eq!(
+            DecodeTiming {
+                elapsed: Duration::from_millis(250),
+                input_frames: 16000
+            }
+            .rtf(),
+            Some(0.25)
+        );
+        assert_eq!(
+            DecodeTiming {
+                elapsed: Duration::from_secs(1),
+                input_frames: 0
+            }
+            .rtf(),
+            None
+        );
         Ok(())
     }
 }

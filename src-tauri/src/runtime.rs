@@ -741,6 +741,20 @@ impl<A: AudioDriver> Actor<A> {
     }
 
     fn accept(&mut self, event: Event) -> Result<Vec<Action>, crate::controller::ControllerError> {
+        self.accept_with_timing(
+            event,
+            #[cfg(feature = "measurement")]
+            None,
+        )
+    }
+
+    fn accept_with_timing(
+        &mut self,
+        event: Event,
+        #[cfg(feature = "measurement")] decode_timing: Option<
+            crate::inference_service::DecodeTiming,
+        >,
+    ) -> Result<Vec<Action>, crate::controller::ControllerError> {
         // Result adoption and immediate revocation have a single ordering point.
         // The lock covers only state mutation, never inference or device I/O.
         let shared = Arc::clone(&self.shared);
@@ -750,8 +764,11 @@ impl<A: AudioDriver> Actor<A> {
         #[cfg(feature = "measurement")]
         let previous = self.controller.snapshot();
         #[cfg(feature = "measurement")]
-        let candidate = matches!(&event, Event::InferenceFinished { session, generation, job_id, result: Ok(text), .. }
-            if previous.session == Some(*session) && *generation == self.generation && *job_id == *session && !text.is_empty());
+        let candidate = matches!(&event, Event::InferenceFinished { session, generation, job_id, result: Ok(_), .. }
+            if previous.session == Some(*session) && *generation == self.generation && *job_id == *session);
+        #[cfg(feature = "measurement")]
+        let decode_timing = decode_timing.filter(|timing| matches!(&event,
+            Event::InferenceFinished { sample_range, .. } if timing.input_frames == sample_range.len()));
         let actions = self.controller.accept(event)?;
         #[cfg(feature = "measurement")]
         {
@@ -760,7 +777,13 @@ impl<A: AudioDriver> Actor<A> {
             let adopted = Instant::now();
             if let Some(trace) = &_admission.timing {
                 trace
-                    .accepted(&previous, &self.controller.snapshot(), candidate, adopted)
+                    .accepted(
+                        &previous,
+                        &self.controller.snapshot(),
+                        candidate,
+                        adopted,
+                        decode_timing,
+                    )
                     .map_err(|_| crate::controller::ControllerError::Resource)?;
             }
         }
@@ -954,13 +977,17 @@ impl<A: AudioDriver> Actor<A> {
             && let Some(done) = service.take_result().map_err(service_error)?
         {
             let actions = self
-                .accept(Event::InferenceFinished {
-                    session: done.session,
-                    generation: done.generation,
-                    job_id: done.job_id,
-                    sample_range: done.sample_range,
-                    result: done.result.map_err(|error| error.to_string()),
-                })
+                .accept_with_timing(
+                    Event::InferenceFinished {
+                        session: done.session,
+                        generation: done.generation,
+                        job_id: done.job_id,
+                        sample_range: done.sample_range,
+                        result: done.result.map_err(|error| error.to_string()),
+                    },
+                    #[cfg(feature = "measurement")]
+                    done.decode_timing,
+                )
                 .map_err(service_error)?;
             self.execute(actions)?;
         }

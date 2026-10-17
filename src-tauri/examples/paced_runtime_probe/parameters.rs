@@ -11,7 +11,7 @@ pub fn template() -> Result<Value, serde_json::Error> {
         "../../../tests/fixtures/corpus/reference-parameters-v4.json"
     ))?;
     value["schemaVersion"] = json!(2);
-    value["configurationId"] = json!("paced-full-recording-native-timestamps-qos-v4");
+    value["configurationId"] = json!("paced-full-recording-native-timestamps-rtf-empty-qos-v5");
     // Preserve the v4 baseline except diagnosed punctuation suppression and
     // native-timestamp suppression; both correctness corrections are explicit.
     // Source pins below bind the actual decoder and probe implementation.
@@ -62,6 +62,9 @@ pub fn template() -> Result<Value, serde_json::Error> {
             "scope":"current publisher only; after worker startup, before runtime start through feed, stop and source drop; ended before observer polling",
             "cleanupFailure":"invalid setup; retain failure and mark following runs unavailable",
             "guarantee":"best effort scheduling; no realtime or jitter guarantee"},
+        "expectedOutcome":"explicit Local default or --expect-empty; never inferred from input",
+        "engineRtf":"actual Decoder::decode elapsed / (passed 16-kHz frames / 16000); absent timing is not zero; not pure ASR",
+        "terminalTimestamp":"accepted Local/Empty controller completion; Empty has no text timestamp or L",
         "warmupRuns":1,"measuredRuns":"explicit CLI count 1..30",
         "stopTimestamp":"host entry before controller queue/lock",
         "textTimestamp":"directly after accepted final nonempty controller text",

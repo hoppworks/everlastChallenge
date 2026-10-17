@@ -1,5 +1,6 @@
 //! Explicit bounded developer CLI; no legacy/default-language invocation.
 
+use crate::runner::ExpectedOutcome;
 use everlast_dictation::{
     model::{ModelDefinition, REFERENCE, SMALL},
     transcription::Language,
@@ -16,6 +17,7 @@ pub struct Options {
     pub output: PathBuf,
     pub runs: u32,
     pub reference: Option<PathBuf>,
+    pub expected_outcome: ExpectedOutcome,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -25,15 +27,17 @@ pub enum OptionsError {
     Model,
     Language,
     Runs,
+    Expectation,
 }
 impl std::fmt::Display for OptionsError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         formatter.write_str(match self {
-            Self::ArgumentCount => "usage: paced_runtime_probe MODEL_PATH reference|small WAV de|en PARAMETERS_JSON OUTPUT_JSON RUNS [REFERENCE_UTF8]",
+            Self::ArgumentCount => "usage: paced_runtime_probe MODEL_PATH reference|small WAV de|en PARAMETERS_JSON OUTPUT_JSON RUNS [REFERENCE_UTF8|--expect-empty]",
             Self::ArgumentLength => "Each argument must contain 1 to 4096 bytes",
             Self::Model => "Model selection must be reference or small",
             Self::Language => "Language must be de or en",
             Self::Runs => "RUNS must be an integer from 1 to 30",
+            Self::Expectation => "Optional argument must be a reference path or --expect-empty; both cannot be combined",
         })
     }
 }
@@ -66,6 +70,19 @@ impl Options {
             .and_then(|text| text.parse::<u32>().ok())
             .filter(|runs| (1..=30).contains(runs))
             .ok_or(OptionsError::Runs)?;
+        let expected_outcome = if arguments
+            .get(7)
+            .is_some_and(|value| value == "--expect-empty")
+        {
+            ExpectedOutcome::Empty
+        } else {
+            ExpectedOutcome::Local
+        };
+        if arguments.get(7).is_some_and(|value| {
+            value.as_encoded_bytes().starts_with(b"--") && value != "--expect-empty"
+        }) {
+            return Err(OptionsError::Expectation);
+        }
         Ok(Self {
             model: PathBuf::from(&arguments[0]),
             definition,
@@ -74,7 +91,12 @@ impl Options {
             parameters: PathBuf::from(&arguments[4]),
             output: PathBuf::from(&arguments[5]),
             runs,
-            reference: arguments.get(7).map(PathBuf::from),
+            reference: if expected_outcome == ExpectedOutcome::Local {
+                arguments.get(7).map(PathBuf::from)
+            } else {
+                None
+            },
+            expected_outcome,
         })
     }
 }
@@ -202,6 +224,16 @@ mod tests {
             invalid[index] = non_utf8.clone();
             assert!(matches!(Options::parse(&invalid), Err(error) if error == expected));
         }
+        Ok(())
+    }
+    #[test]
+    fn empty_expectation_requires_explicit_cli_mode_without_a_reference()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let mut args = arguments();
+        args.push("--expect-empty".into());
+        let options = Options::parse(&args)?;
+        assert_eq!(options.expected_outcome, ExpectedOutcome::Empty);
+        assert_eq!(options.reference, None);
         Ok(())
     }
 }
