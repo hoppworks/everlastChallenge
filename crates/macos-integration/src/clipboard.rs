@@ -66,6 +66,7 @@ type Writers = NSArray<ProtocolObject<dyn NSPasteboardWriting>>;
 /// Construct all replacement/restore objects before the last native guards.
 /// This value and its resulting lease stay on the main thread.
 pub struct PreparedClipboard {
+    token: DeliveryToken,
     pasteboard: Retained<NSPasteboard>,
     expected_count: i64,
     original: Retained<Writers>,
@@ -91,6 +92,7 @@ impl PreparedClipboard {
         name: &str,
         backup: Snapshot,
         text: &str,
+        token: &DeliveryToken,
         _main_thread: MainThreadMarker,
     ) -> Result<Self, ClipboardError> {
         backup.validate()?;
@@ -121,6 +123,7 @@ impl PreparedClipboard {
             },
         ]])?;
         Ok(Self {
+            token: token.clone(),
             pasteboard: NSPasteboard::pasteboardWithName(&NSString::from_str(name)),
             expected_count: backup.change_count,
             original,
@@ -131,11 +134,8 @@ impl PreparedClipboard {
 
     /// Caller first validates target/layout/modifiers. Token is rechecked here
     /// at mutation; the returned lease must survive until delayed cleanup.
-    pub fn install(
-        self,
-        token: &DeliveryToken,
-        main_thread: MainThreadMarker,
-    ) -> Result<ClipboardLease, ClipboardError> {
+    pub fn install(self, main_thread: MainThreadMarker) -> Result<ClipboardLease, ClipboardError> {
+        let token = self.token.clone();
         if !token.is_pending() {
             return Err(ClipboardError::Cancelled);
         }
@@ -168,6 +168,10 @@ impl PreparedClipboard {
             return Err(ClipboardError::Cancelled);
         }
         Ok(lease)
+    }
+
+    pub(crate) fn belongs_to(&self, token: &DeliveryToken) -> bool {
+        self.token.same_work(token)
     }
 }
 

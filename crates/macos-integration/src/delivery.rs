@@ -46,6 +46,10 @@ impl DeliveryToken {
         self.state.load(Ordering::Acquire) == PENDING
     }
 
+    pub(crate) fn same_work(&self, other: &Self) -> bool {
+        self.session == other.session && Arc::ptr_eq(&self.state, &other.state)
+    }
+
     /// Invoke only after final native checks and event construction. Success
     /// authorizes exactly one send attempt; failure never authorizes a retry.
     pub fn try_commit(&self) -> Result<(), CommitError> {
@@ -74,6 +78,21 @@ impl DeliveryToken {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_fresh_token_with_the_same_session_cannot_revive_cancelled_work()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let session = NonZeroU64::new(7).ok_or("invalid fixture id")?;
+        let original = DeliveryToken::new(session);
+        let installed = original.clone();
+        original.cancel();
+        let replacement = DeliveryToken::new(session);
+        assert!(!installed.same_work(&replacement));
+        assert!(installed.same_work(&original));
+        assert_eq!(installed.try_commit(), Err(CommitError::Cancelled));
+        assert!(replacement.is_pending());
+        Ok(())
+    }
 
     #[test]
     fn cancel_before_send_prevents_all_clones_from_committing()

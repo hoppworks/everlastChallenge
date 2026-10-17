@@ -7,7 +7,14 @@ use core_foundation::{
 };
 use objc2::MainThreadMarker;
 use objc2_app_kit::NSWorkspace;
-use std::{ffi::c_void, marker::PhantomData, mem::MaybeUninit, rc::Rc};
+use std::{
+    ffi::c_void,
+    marker::PhantomData,
+    mem::MaybeUninit,
+    num::NonZeroU64,
+    rc::Rc,
+    time::{Duration, Instant},
+};
 
 // Types and ownership follow the pinned SDK's HIServices/AXUIElement.h.
 #[link(name = "ApplicationServices", kind = "framework")]
@@ -50,6 +57,8 @@ pub enum TargetError {
     Value,
     #[error("Target field is not eligible: {0:?}")]
     Field(HoldReason),
+    #[error("Target verification is stale or belongs to another session")]
+    StaleApproval,
 }
 
 /// PID plus kernel start timestamp; never identifies a process by PID alone.
@@ -244,13 +253,14 @@ fn ax_result(status: i32) -> Result<(), TargetError> {
 /// require_sync::<macos_integration::target::Target>();
 /// ```
 pub struct Target {
+    session: NonZeroU64,
     process: ProcessIdentity,
     application: Element,
     field: Element,
 }
 
 impl Target {
-    pub fn capture(process: ProcessIdentity) -> Result<Self, TargetError> {
+    pub fn capture(session: NonZeroU64, process: ProcessIdentity) -> Result<Self, TargetError> {
         check_environment()?;
         if ProcessIdentity::read(process.pid)? != process {
             return Err(TargetError::Changed);
@@ -265,6 +275,7 @@ impl Target {
             .eligibility()
             .map_err(TargetError::Field)?;
         Ok(Self {
+            session,
             process,
             application,
             field,
@@ -286,6 +297,47 @@ impl Target {
             .evidence()?
             .eligibility()
             .map_err(TargetError::Field)
+    }
+
+    /// The receipt is single-use and carries no native references. It may cross
+    /// to the main thread for one mutation or send check, within 250 ms of the
+    /// start of this verification (including AX messaging time).
+    pub fn approve(&self, frontmost: ProcessIdentity) -> Result<TargetApproval, TargetError> {
+        let checked_at = Instant::now();
+        self.verify(frontmost)?;
+        Ok(TargetApproval {
+            session: self.session,
+            process: self.process,
+            checked_at,
+        })
+    }
+}
+
+/// A single-use receipt: a second delivery stage needs a new AX verification.
+/// ```compile_fail
+/// fn require_clone<T: Clone>() {}
+/// require_clone::<macos_integration::target::TargetApproval>();
+/// ```
+pub struct TargetApproval {
+    session: NonZeroU64,
+    process: ProcessIdentity,
+    checked_at: Instant,
+}
+
+impl TargetApproval {
+    /// Consumes this receipt. Native references remain on their owner worker.
+    pub fn validate(
+        self,
+        session: NonZeroU64,
+        frontmost: ProcessIdentity,
+    ) -> Result<(), TargetError> {
+        if self.session != session || self.checked_at.elapsed() > Duration::from_millis(250) {
+            return Err(TargetError::StaleApproval);
+        }
+        if self.process != frontmost {
+            return Err(TargetError::Changed);
+        }
+        Ok(())
     }
 }
 
@@ -341,6 +393,48 @@ impl FieldEvidence {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn approvals_reject_old_checks_wrong_sessions_and_reused_process_ids()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let session = NonZeroU64::new(1).ok_or("invalid id")?;
+        let other_session = NonZeroU64::new(2).ok_or("invalid id")?;
+        let process = ProcessIdentity {
+            pid: 123,
+            start_seconds: 10,
+            start_microseconds: 20,
+        };
+        let receipt = || TargetApproval {
+            session,
+            process,
+            checked_at: Instant::now(),
+        };
+        receipt().validate(session, process)?;
+        assert!(matches!(
+            receipt().validate(other_session, process),
+            Err(TargetError::StaleApproval)
+        ));
+        let reused_pid = ProcessIdentity {
+            start_seconds: 30,
+            ..process
+        };
+        assert!(matches!(
+            receipt().validate(session, reused_pid),
+            Err(TargetError::Changed)
+        ));
+        let old = TargetApproval {
+            session,
+            process,
+            checked_at: Instant::now()
+                .checked_sub(Duration::from_secs(1))
+                .ok_or("clock fixture failed")?,
+        };
+        assert!(matches!(
+            old.validate(session, process),
+            Err(TargetError::StaleApproval)
+        ));
+        Ok(())
+    }
 
     #[test]
     fn kernel_process_identity_is_stable_and_rejects_invalid_pids()

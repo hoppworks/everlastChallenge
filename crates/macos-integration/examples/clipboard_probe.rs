@@ -49,9 +49,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &pasteboard.name().to_string(),
         backup,
         "dictated fixture",
+        &token,
         main,
     )?;
-    let lease = prepared.install(&token, main)?;
+    let lease = prepared.install(main)?;
     if !lease.is_current() {
         return Err("lease lost immediately".into());
     }
@@ -81,8 +82,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let name = pasteboard.name().to_string();
     let backup = capture_bounded(&helper, &name, &token)?;
-    let lease = PreparedClipboard::new(&name, backup, "another dictated fixture", main)?
-        .install(&token, main)?;
+    let lease = PreparedClipboard::new(&name, backup, "another dictated fixture", &token, main)?
+        .install(main)?;
     pasteboard.clearContents();
     let foreign = NSPasteboardItem::new();
     if !foreign.setString_forType(
@@ -112,12 +113,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Err("foreign content was not preserved".into());
     }
     let backup = capture_bounded(&helper, &name, &token)?;
-    let prepared = PreparedClipboard::new(&name, backup, "cancelled text", main)?;
+    let prepared = PreparedClipboard::new(&name, backup, "cancelled text", &token, main)?;
     token.cancel();
-    if !matches!(
-        prepared.install(&token, main),
-        Err(ClipboardError::Cancelled)
-    ) || pasteboard.changeCount() != changed_count
+    if !matches!(prepared.install(main), Err(ClipboardError::Cancelled))
+        || pasteboard.changeCount() != changed_count
     {
         return Err("cancelled install changed pasteboard".into());
     }

@@ -1,5 +1,6 @@
 //! Only resolves the active layout; does not select layouts or post input.
 use macos_integration::keyboard::{PasteKey, modifiers_held};
+use macos_integration::paste::PreparedPaste;
 use objc2::MainThreadMarker;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -16,5 +17,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "Layout recheck passed; physical modifier held: {}",
         modifiers_held()
     );
+    let _events = PreparedPaste::new(key, main)?;
+    println!("Both Command+V events prepared without posting");
     Ok(())
 }

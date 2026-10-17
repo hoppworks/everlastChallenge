@@ -19,7 +19,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (captured, capture_ready) = std::sync::mpsc::sync_channel(0);
     let (send_frontmost, receive_frontmost) = std::sync::mpsc::sync_channel(0);
     let worker = std::thread::spawn(move || {
-        let target = Target::capture(process)?;
+        let session = std::num::NonZeroU64::new(1).ok_or(TargetError::Process)?;
+        let target = Target::capture(session, process)?;
         captured.send(()).map_err(|_| TargetError::Process)?;
         let frontmost = receive_frontmost
             .recv()
