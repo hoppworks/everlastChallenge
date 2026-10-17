@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 1,
+  "configurationId": "complete-recording-vad-without-non-speech-token-mask-v5",
+  "status": "calibration candidate: restore legitimate punctuation tokens; not P05 qualification",
+  "unicodeVersion": "13.0.0",
+  "models": [
+    {
+      "id": "large-v3-turbo-q5_0",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+    },
+    {
+      "id": "small-q5_1",
+      "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb"
+    }
+  ],
+  "runtime": {
+    "whisperRs": "0.16.0",
+    "whisperRsSys": "0.15.0",
+    "whisperRsSysSourceRevision": "7558e1b72f54f2f22a53589afb77e65681834c36",
+    "context": {
+      "use_gpu": true,
+      "flash_attn": false,
+      "gpu_device": 0,
+      "dtw": "disabled"
+    },
+    "fullParams": {
+      "strategy": "greedy",
+      "greedy_best_of": 1,
+      "beam_size": -1,
+      "beam_patience": -1.0,
+      "n_threads": 4,
+      "n_max_text_ctx": 16384,
+      "offset_ms": 0,
+      "duration_ms": 0,
+      "translate": false,
+      "no_context": true,
+      "no_timestamps": true,
+      "single_segment": false,
+      "print_special": false,
+      "print_progress": false,
+      "print_realtime": false,
+      "print_timestamps": false,
+      "token_timestamps": false,
+      "thold_pt": 0.01,
+      "thold_ptsum": 0.01,
+      "max_len": 0,
+      "split_on_word": false,
+      "max_tokens": 0,
+      "debug_mode": false,
+      "audio_ctx": 0,
+      "tdrz_enable": false,
+      "suppress_regex": null,
+      "initial_prompt": null,
+      "carry_initial_prompt": false,
+      "prompt_tokens": null,
+      "prompt_n_tokens": 0,
+      "language": "explicit per case: de or en",
+      "detect_language": false,
+      "suppress_blank": true,
+      "suppress_nst": false,
+      "temperature": 0.0,
+      "max_initial_ts": 1.0,
+      "length_penalty": -1.0,
+      "temperature_inc": 0.2,
+      "entropy_thold": 2.4,
+      "logprob_thold": -1.0,
+      "no_speech_thold": 0.6,
+      "callbacks": "all disabled/null",
+      "grammar_rules": null,
+      "n_grammar_rules": 0,
+      "i_start_rule": 0,
+      "grammar_penalty": 100.0,
+      "vad": false,
+      "vad_model_path": null,
+      "vad_params": "upstream defaults inactive because vad=false; exact source hash below"
+    },
+    "whisperCppSourceRevision": "2eeeba56e9edd762b4b38467bab96c2517163158",
+    "whisperRsSysLocalPatch": {
+      "path": "vendor/whisper-rs-sys",
+      "id": "initial-sot-no-speech-row-v1+vad-failure-status-v1",
+      "notes": "vendor/whisper-rs-sys/PATCHES.md"
+    },
+    "speechGate": {
+      "model": {
+        "id": "silero-v5.1.2",
+        "file": "ggml-silero-v5.1.2.bin",
+        "bytes": 885098,
+        "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+        "sourceRevision": "9ffd54a1e1ee413ddf265af9913beaf518d1639b"
+      },
+      "useGpu": false,
+      "threads": 1,
+      "windowSamples": 512,
+      "input": "entire original recording in normalized scratch only; never alters ASR input",
+      "normalization": {
+        "peakTarget": 0.95,
+        "gain": "0.95 / whole-recording absolute peak; zero peak has gain=1",
+        "clip": false,
+        "trim": false
+      },
+      "positiveThreshold": 0.5,
+      "aggregation": "at least one finite probability >= threshold, after validating all values and exact ceil(samples/512) count",
+      "maximumScratchSamples": 4800000,
+      "warmContext": true,
+      "nativeStateResetEachCall": true,
+      "failurePolicy": "distinct error; never blank text as fallback",
+      "cancelCallback": false
+    }
+  },
+  "preprocessing": {
+    "mode": "finite/bounds, energy-empty guard, whole-recording VAD on separate normalized scratch, then unchanged outer energy range and minimum padding for ASR",
+    "sampleRate": 16000,
+    "channels": 1,
+    "startRms": 5e-05,
+    "endRms": 2.5e-05,
+    "frameSamples": 320,
+    "prerollSamples": 2400,
+    "tailSamples": 3200,
+    "backendPaddingMinimumSamples": 16000,
+    "paddingSampleValue": 0.0,
+    "maximumSamples": 4800000
+  },
+  "state": {
+    "oneWarmModelContext": true,
+    "freshWhisperStateEachJob": true,
+    "serialInference": true,
+    "abortCallback": false
+  },
+  "sourceHashes": {
+    "engine": {
+      "filename": "src-tauri/src/transcription.rs",
+      "sha256": "38d2db8a8d481f8359d820b3a025f9d212d07c68ca005fe25daae77148d17cc8"
+    },
+    "energy": {
+      "filename": "crates/dictation-core/src/audio.rs",
+      "sha256": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46"
+    },
+    "whisperCppDefaults": {
+      "filename": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+      "sha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e"
+    },
+    "whisperParamsWrapper": {
+      "filename": "vendor/whisper-rs/src/whisper_params.rs",
+      "sha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8"
+    },
+    "cargoLock": {
+      "filename": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089"
+    },
+    "speechGate": {
+      "filename": "src-tauri/src/transcription/speech_gate.rs",
+      "sha256": "4e6964540cbe78217cf6c5f6924c859d5240bd2ec9603f857113dea272da7f1f"
+    },
+    "models": {
+      "filename": "src-tauri/src/model.rs",
+      "sha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2"
+    },
+    "setup": {
+      "filename": "src-tauri/src/setup.rs",
+      "sha256": "d9c5fdb935c333f8640e4b709e9f3076671e80c596b6c565cef3a94e0440c548"
+    },
+    "corpusProbe": {
+      "filename": "src-tauri/examples/corpus_probe.rs",
+      "sha256": "010b17489d94ea9832d1693b86977c28d90014d882e9142a9e575a679b70c209"
+    },
+    "inferenceService": {
+      "filename": "src-tauri/src/inference_service.rs",
+      "sha256": "3e5963b6a8374f450142f5a6ad2983c8f6ad21f9217435473779c2694d351d13"
+    }
+  },
+  "limits": {
+    "fileBackendOnly": true,
+    "notRealtimeL": true,
+    "notMicrophoneAcceptance": true,
+    "notFullP05Qualification": true
+  },
+  "measurementHost": {
+    "observedDate": "2026-10-17",
+    "hardware": "Apple M5",
+    "architecture": "aarch64",
+    "memoryBytes": 34359738368,
+    "macOS": "27.0.1",
+    "macOSBuild": "26A434",
+    "powerSource": "AC Power",
+    "rustc": "1.93.0 (254b59607 2026-01-19)",
+    "cargo": "1.93.0 (083ac5135 2025-12-15)",
+    "xcode": "27.1 (27A9275)",
+    "python": "3.9.6",
+    "unicodeVersion": "13.0.0",
+    "ffmpeg": "9.0.2",
+    "scope": "host observation before calibration; not resource or latency acceptance"
+  },
+  "changeFromV4": "Only runtime decoder change: suppress_nst true to false. Fixed broad token list also masks exact slash tokens used in valid fractions. Whole-recording VAD, energy policy and every other decoder parameter unchanged; no transcript rewrite or WER normalization change.",
+  "recordedBeforeCalibrationUtc": "2026-10-17T15:58:16.273247+00:00",
+  "calibrationManifest": {
+    "path": "tests/fixtures/corpus/calibration-v2.json",
+    "sha256": "514befba28e7ea14882cd13a71f971e5fb6c6131f914491b697741a027611a49",
+    "cases": 42
+  },
+  "sourceBase": "a31c109 plus uncommitted two-line NST diagnostic candidate",
+  "executionBinding": {
+    "binary": "target/release/examples/corpus_probe",
+    "binarySha256": "f6069363bce4869777f87c14a53513565e541dd9a835c148459078cf27feb510",
+    "modelsInOrder": [
+      "reference",
+      "small"
+    ],
+    "outputs": [
+      "artifacts/corpus/calibration-reference-v5-results.json",
+      "artifacts/corpus/calibration-small-v5-results.json"
+    ],
+    "comparisonScope": "whole 42-case unchanged calibration; not a new heldout result"
+  },
+  "historicalMeasurementHostOrigin": "Inherited unchanged v4 host description; current observations below are separate.",
+  "currentHostObservations": {
+    "cpu": {
+      "command": [
+        "/usr/sbin/sysctl",
+        "-n",
+        "machdep.cpu.brand_string",
+        "hw.memsize"
+      ],
+      "stdout": "Apple M5\n34359738368\n",
+      "exitCode": 0
+    },
+    "os": {
+      "command": [
+        "/usr/bin/sw_vers"
+      ],
+      "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+      "exitCode": 0
+    },
+    "power": {
+      "command": [
+        "/usr/bin/pmset",
+        "-g",
+        "batt"
+      ],
+      "stdout": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23461987)\t82%; AC attached; not charging present: true\n",
+      "exitCode": 0
+    }
+  }
+}

@@ -141,7 +141,7 @@ fn decode(
     parameters.set_print_progress(false);
     parameters.set_print_realtime(false);
     parameters.set_print_timestamps(false);
-    parameters.set_suppress_nst(true);
+    parameters.set_suppress_nst(false);
     parameters.set_no_speech_thold(0.6);
     parameters.set_logprob_thold(-1.0);
     parameters.set_entropy_thold(2.4);

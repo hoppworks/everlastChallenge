@@ -1,0 +1,312 @@
+{
+  "schemaVersion": 1,
+  "kind": "non-speech-token-mask-diagnosis-and-calibration",
+  "qualified": false,
+  "sourceBase": "a31c109",
+  "sourceState": "uncommitted NST-off diagnostic candidate",
+  "decoderParameterChange": {
+    "suppress_nst": [
+      true,
+      false
+    ],
+    "otherDecoderParametersChanged": false,
+    "transcriptPostprocessingAdded": false
+  },
+  "mechanism": {
+    "path": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+    "listLine": 6102,
+    "maskLine": 6243,
+    "scope": "exact slash and space-plus-slash vocabulary entries are masked if present; no claim that every slash-containing token is blocked"
+  },
+  "diagnostic": {
+    "caseId": "fleurs-en-test-1682",
+    "originalBaselineBinarySha256": "bdc85a31790792ed7a0390ea0cc16fa9ae3d9282e93e351fe1164b6cf36ba723",
+    "candidateBinarySha256": "f6069363bce4869777f87c14a53513565e541dd9a835c148459078cf27feb510",
+    "baselineRegressionExitCode": 1,
+    "boundCandidateRegressionExitCode": 0,
+    "baselineFirstDimensionUnambiguous": false,
+    "candidateBothDimensionsUnambiguous": true,
+    "inferenceExitCodes": [
+      0,
+      0
+    ],
+    "calibrationOrHeldoutPass": false,
+    "exploratoryRunLimitation": "First off-run launched after a parameter-helper KeyError because the shell continued; preserved as exploratory, excluded from completely pre-bound diagnostic evidence. Fresh off-v2 followed a successful parameter freeze.",
+    "model": {
+      "id": "large-v3-turbo-q5_0",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+    }
+  },
+  "calibration": {
+    "manifestPath": "tests/fixtures/corpus/calibration-v2.json",
+    "manifestSha256": "514befba28e7ea14882cd13a71f971e5fb6c6131f914491b697741a027611a49",
+    "parameterPath": "tests/fixtures/corpus/reference-parameters-v5.json",
+    "parameterSha256": "633ecf4f2c4b4d95bc306c277862cb47bcdcffd36c7aa4f9acabe12c43556f3a",
+    "runs": [
+      {
+        "model": "reference",
+        "caseCount": 42,
+        "inferenceExitCode": 0,
+        "evaluationExitCode": 0,
+        "allTranscriptsByteIdenticalToV4": true,
+        "groupsIdenticalToV4": true,
+        "unwantedEmptyControlOutputs": 0,
+        "groups": [
+          {
+            "split": "calibration",
+            "language": "de",
+            "class": "challenging",
+            "caseCount": 9,
+            "scoredCount": 6,
+            "failedCount": 0,
+            "missingCount": 0,
+            "silenceCount": 3,
+            "silenceFailedCount": 0,
+            "unwantedTextCount": 0,
+            "expectedRefWords": 147,
+            "refWords": 147,
+            "edits": 3,
+            "complete": true,
+            "observedWer": 0.02040816326530612,
+            "wer": 0.02040816326530612
+          },
+          {
+            "split": "calibration",
+            "language": "de",
+            "class": "clean",
+            "caseCount": 12,
+            "scoredCount": 12,
+            "failedCount": 0,
+            "missingCount": 0,
+            "silenceCount": 0,
+            "silenceFailedCount": 0,
+            "unwantedTextCount": 0,
+            "expectedRefWords": 218,
+            "refWords": 218,
+            "edits": 8,
+            "complete": true,
+            "observedWer": 0.03669724770642202,
+            "wer": 0.03669724770642202
+          },
+          {
+            "split": "calibration",
+            "language": "en",
+            "class": "challenging",
+            "caseCount": 9,
+            "scoredCount": 6,
+            "failedCount": 0,
+            "missingCount": 0,
+            "silenceCount": 3,
+            "silenceFailedCount": 0,
+            "unwantedTextCount": 0,
+            "expectedRefWords": 135,
+            "refWords": 135,
+            "edits": 4,
+            "complete": true,
+            "observedWer": 0.02962962962962963,
+            "wer": 0.02962962962962963
+          },
+          {
+            "split": "calibration",
+            "language": "en",
+            "class": "clean",
+            "caseCount": 12,
+            "scoredCount": 12,
+            "failedCount": 0,
+            "missingCount": 0,
+            "silenceCount": 0,
+            "silenceFailedCount": 0,
+            "unwantedTextCount": 0,
+            "expectedRefWords": 207,
+            "refWords": 207,
+            "edits": 5,
+            "complete": true,
+            "observedWer": 0.024154589371980676,
+            "wer": 0.024154589371980676
+          }
+        ],
+        "loadError": null,
+        "serviceError": null,
+        "cleanupError": null
+      },
+      {
+        "model": "small",
+        "caseCount": 42,
+        "inferenceExitCode": 0,
+        "evaluationExitCode": 0,
+        "allTranscriptsByteIdenticalToV4": true,
+        "groupsIdenticalToV4": true,
+        "unwantedEmptyControlOutputs": 0,
+        "groups": [
+          {
+            "split": "calibration",
+            "language": "de",
+            "class": "challenging",
+            "caseCount": 9,
+            "scoredCount": 6,
+            "failedCount": 0,
+            "missingCount": 0,
+            "silenceCount": 3,
+            "silenceFailedCount": 0,
+            "unwantedTextCount": 0,
+            "expectedRefWords": 147,
+            "refWords": 147,
+            "edits": 9,
+            "complete": true,
+            "observedWer": 0.061224489795918366,
+            "wer": 0.061224489795918366
+          },
+          {
+            "split": "calibration",
+            "language": "de",
+            "class": "clean",
+            "caseCount": 12,
+            "scoredCount": 12,
+            "failedCount": 0,
+            "missingCount": 0,
+            "silenceCount": 0,
+            "silenceFailedCount": 0,
+            "unwantedTextCount": 0,
+            "expectedRefWords": 218,
+            "refWords": 218,
+            "edits": 18,
+            "complete": true,
+            "observedWer": 0.08256880733944955,
+            "wer": 0.08256880733944955
+          },
+          {
+            "split": "calibration",
+            "language": "en",
+            "class": "challenging",
+            "caseCount": 9,
+            "scoredCount": 6,
+            "failedCount": 0,
+            "missingCount": 0,
+            "silenceCount": 3,
+            "silenceFailedCount": 0,
+            "unwantedTextCount": 0,
+            "expectedRefWords": 135,
+            "refWords": 135,
+            "edits": 5,
+            "complete": true,
+            "observedWer": 0.037037037037037035,
+            "wer": 0.037037037037037035
+          },
+          {
+            "split": "calibration",
+            "language": "en",
+            "class": "clean",
+            "caseCount": 12,
+            "scoredCount": 12,
+            "failedCount": 0,
+            "missingCount": 0,
+            "silenceCount": 0,
+            "silenceFailedCount": 0,
+            "unwantedTextCount": 0,
+            "expectedRefWords": 207,
+            "refWords": 207,
+            "edits": 9,
+            "complete": true,
+            "observedWer": 0.043478260869565216,
+            "wer": 0.043478260869565216
+          }
+        ],
+        "loadError": null,
+        "serviceError": null,
+        "cleanupError": null
+      }
+    ]
+  },
+  "rawFiles": [
+    {
+      "path": "artifacts/diagnostic-speech/fraction-manifest-v1.json",
+      "sha256": "5fb78deaf72d1f5273c2acf5bc3834376b3fba40b258cd27c46839eadede52f3",
+      "bytes": 6046,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/fraction-nst-off-parameters-v2.json",
+      "sha256": "5f1bd76e10bf8d6b568e0a8a67371e87aa923c8dfcdd74306b78160fd099913d",
+      "bytes": 6251,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/check-fraction-regression-v1.py",
+      "sha256": "0afd8a5107dd35c96635216b51841a32dd6750c74eed3ef0ff9b1f9f410b8ec5",
+      "bytes": 883,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/fraction-suppress-nst-on-v1.json",
+      "sha256": "abe5ae66447b4f36c582f2724b6ba5d443e5124494781e688d8b5e054e50b14c",
+      "bytes": 267,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/fraction-suppress-nst-on-v1.json.metadata.json",
+      "sha256": "12b427ea503d51e1938d87b443cc429f3ec091a0d7939324f23db864dc2ab9f9",
+      "bytes": 1965,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/fraction-suppress-nst-off-v1.json",
+      "sha256": "9517d063df3cdf410a64ca5fd14d5144f09707e8f625568f287d26e1fd171405",
+      "bytes": 260,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/fraction-suppress-nst-off-v1.json.metadata.json",
+      "sha256": "26d2db439de720035925d675240a92ead2f9a908a87d0224980b298a5e077e93",
+      "bytes": 1985,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/fraction-suppress-nst-off-v2.json",
+      "sha256": "9517d063df3cdf410a64ca5fd14d5144f09707e8f625568f287d26e1fd171405",
+      "bytes": 260,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/fraction-suppress-nst-off-v2.json.metadata.json",
+      "sha256": "e7568ccb33d61c7fc352e5934d1731bfd71bd8c5c4170c7c37399ec5070b8f69",
+      "bytes": 1985,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-reference-v5-results.json",
+      "sha256": "5fc2de718bebdb12ae7c073c68d55be9a94a72a8efc73c56254357e96243951d",
+      "bytes": 7799,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-reference-v5-results.json.metadata.json",
+      "sha256": "2c92d2bab04d5414e74e2a2b08576b335afa39e2d2bde12de0e2106e8623b35c",
+      "bytes": 6769,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-reference-v5-report.json",
+      "sha256": "1d55298ccf8b6051cad6f743cc5ce01f390f61e647b96685775f47d6edc48ce4",
+      "bytes": 12983,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-small-v5-results.json",
+      "sha256": "601409dd3a30358757618dbe477a11780b809d6566f0f7dd965b78fce25b3b8c",
+      "bytes": 7763,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-small-v5-results.json.metadata.json",
+      "sha256": "80d2c3c449377efaf92383ec08013e3c37ac5f23bc6be7132bf7bdeecad6f66c",
+      "bytes": 6747,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-small-v5-report.json",
+      "sha256": "70c8a497734701d2f0bfeecffbc517e56d35976c609fa2052207a7286ab0c52d",
+      "bytes": 13101,
+      "mode": "0o600"
+    }
+  ]
+}
