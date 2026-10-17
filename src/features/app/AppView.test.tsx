@@ -434,3 +434,45 @@ test("a ready model without microphone permission is not presented as ready to d
     "Text wurde zurückgehalten",
   );
 });
+
+test("maximum-stop notice survives processing and a sent result without claiming delivery acceptance", () => {
+  const props = fixture();
+  const view = render(
+    <AppView
+      {...props}
+      session={{ phase: "Finalizing", text: "", maximumReached: true }}
+    />,
+  );
+  expect(
+    screen.getByText("Die Aufnahme wurde an der 5-Minuten-Grenze beendet."),
+  ).toBeDefined();
+  view.rerender(
+    <AppView
+      {...props}
+      nativeHeader
+      session={{
+        phase: "Idle",
+        text: "Fertig",
+        outcome: { kind: "sent" },
+        maximumReached: true,
+      }}
+    />,
+  );
+  expect(
+    screen
+      .getByText("Die Aufnahme wurde an der 5-Minuten-Grenze beendet.")
+      .getAttribute("aria-live"),
+  ).toBe("off");
+  expect(
+    screen.getByRole("heading", { name: "Einfügebefehl gesendet" }),
+  ).toBeDefined();
+  view.rerender(
+    <AppView
+      {...props}
+      session={{ phase: "Recording", text: "Fertig", maximumReached: false }}
+    />,
+  );
+  expect(
+    screen.queryByText("Die Aufnahme wurde an der 5-Minuten-Grenze beendet."),
+  ).toBeNull();
+});

@@ -372,6 +372,7 @@ impl<A: AudioDriver> Actor<A> {
         drop(admission);
         self.error = None;
         self.maximum_warning = false;
+        self.maximum_reached = false;
         self.progress = None;
         self.execute(actions)?;
         Ok(id)
@@ -764,6 +765,7 @@ mod tests {
                 model_ready: true,
                 session: controller.snapshot(),
                 maximum_warning: false,
+                maximum_reached: false,
                 elapsed_millis: 0,
                 level_permille: 0,
                 error: None,
@@ -780,6 +782,7 @@ mod tests {
             native,
             shared,
             maximum_warning: false,
+            maximum_reached: false,
             progress: None,
             error: None,
             capture_pending: None,

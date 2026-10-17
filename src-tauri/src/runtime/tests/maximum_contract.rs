@@ -76,10 +76,13 @@ fn automatic_maximum_finalizes_once_without_a_user_stop_and_ignores_duplicate_fi
         Some("maximum recording words")
     );
     assert!(finished.error.is_none());
+    assert!(finished.maximum_reached);
+    assert!(finished.maximum_warning);
 
     // This acknowledged request crosses another actor poll after the duplicate
     // and late Stop, so empty queues are not merely an early observation.
     accepted(client.clear_text()?)?;
+    assert!(client.snapshot()?.maximum_reached);
     assert_eq!(calls.load(Ordering::Acquire), 1);
     assert!(matches!(
         fixture.native.requests.try_recv(),

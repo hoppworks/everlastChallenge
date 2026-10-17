@@ -17,3 +17,5 @@ pub mod process;
 pub mod qos;
 pub mod target;
 pub mod ui_services;
+
+pub mod feedback;

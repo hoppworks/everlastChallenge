@@ -8,6 +8,8 @@ export type Session = {
   text: string;
   outcome: SessionOutcome | null;
   maximumWarning: boolean;
+  maximumReached: boolean;
+  lastHeldSession: number | null;
   elapsedMillis: number;
   levelPermille: number;
 };

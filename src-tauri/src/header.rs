@@ -59,7 +59,11 @@ pub fn project(snapshot: &Snapshot) -> HeaderState {
         },
     };
     HeaderState {
-        status: status.into(),
+        status: if snapshot.session.maximum_reached {
+            format!("5-Minuten-Grenze erreicht · {status}")
+        } else {
+            status.into()
+        },
         primary,
         cancel: (!idle && snapshot.session.phase != SessionPhase::Cancelling)
             .then_some(session)

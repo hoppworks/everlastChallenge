@@ -91,6 +91,7 @@ pub struct RuntimeSnapshot {
     pub model_ready: bool,
     pub session: SessionSnapshot,
     pub maximum_warning: bool,
+    pub maximum_reached: bool,
     pub elapsed_millis: u64,
     pub level_permille: u16,
     pub error: Option<String>,
@@ -206,6 +207,32 @@ pub struct Client {
 }
 
 impl Client {
+    /// Runs a bounded feedback action only while capture admission is idle.
+    /// The callback must not block or re-enter Runtime. Its lock also gates
+    /// accepted starts and native audio dispatch, so feedback cannot race them.
+    pub fn with_idle_feedback<R>(
+        &self,
+        held_session: u64,
+        action: impl FnOnce() -> R,
+    ) -> Result<Option<R>, RuntimeError> {
+        let shared = self
+            .shared
+            .lock()
+            .map_err(|_| RuntimeError::Synchronization)?;
+        if shared.closing
+            || shared.suspended
+            || shared.cancellation.is_some()
+            || shared.snapshot.session.phase != Phase::Idle
+            || shared.snapshot.session.last_held_session != Some(held_session)
+        {
+            return Ok(None);
+        }
+        // Retain admission through the effect; a new start can only proceed
+        // after it returns. Snapshot alone could still describe an older idle.
+        let result = action();
+        drop(shared);
+        Ok(Some(result))
+    }
     pub fn start(
         &self,
         settings: SessionSettings,
@@ -490,6 +517,7 @@ impl Runtime {
                 model_ready: false,
                 session: controller.snapshot(),
                 maximum_warning: false,
+                maximum_reached: false,
                 elapsed_millis: 0,
                 level_permille: 0,
                 error: None,
@@ -515,6 +543,7 @@ impl Runtime {
                     native,
                     shared,
                     maximum_warning: false,
+                maximum_reached: false,
                     progress: None,
                     error: None,
                     capture_pending: None,
@@ -566,7 +595,6 @@ impl Runtime {
                             let result = match actions {
                                 Ok(actions) => {
                                     actor.error = None;
-                                    actor.maximum_warning = false;
                                     actor.execute(actions).map_err(|error| error.to_string())
                                 }
                                 Err(error) => Err(error.to_string()),
@@ -644,6 +672,7 @@ struct Actor<A: AudioDriver> {
     native: NativePort,
     shared: Arc<Mutex<Shared>>,
     maximum_warning: bool,
+    maximum_reached: bool,
     progress: Option<CaptureProgress>,
     error: Option<String>,
     capture_pending: Option<(u64, Instant)>,
@@ -680,6 +709,10 @@ impl<A: AudioDriver> Actor<A> {
             self.controller.start(settings, process, ready, delivery)
         }
         .map_err(service_error)?;
+        if self.controller.snapshot().session != snapshot.session {
+            self.maximum_warning = false;
+            self.maximum_reached = false;
+        }
         // Register before dispatch: cancellation and shutdown can see a session
         // even while its first native command is being sent.
         admission.cancellation = self.controller.cancellation_handles();
@@ -882,11 +915,18 @@ impl<A: AudioDriver> Actor<A> {
             let event = match event {
                 CaptureEvent::Started { session, .. } => Event::AudioStarted(session),
                 CaptureEvent::Finished {
-                    session, result, ..
-                } => Event::AudioFinished {
                     session,
-                    result: result.map_err(|error| error.to_string()),
-                },
+                    result,
+                    maximum,
+                } => {
+                    if self.controller.audio_is_unreleased(session) && maximum {
+                        self.maximum_reached = true;
+                    }
+                    Event::AudioFinished {
+                        session,
+                        result: result.map_err(|error| error.to_string()),
+                    }
+                }
                 CaptureEvent::MaximumWarning { session } => {
                     if self.controller.snapshot().session == Some(session) {
                         self.maximum_warning = true;
@@ -1025,6 +1065,7 @@ impl<A: AudioDriver> Actor<A> {
             model_ready: self.inference.as_ref().is_some_and(InferenceService::ready),
             session,
             maximum_warning: self.maximum_warning,
+            maximum_reached: self.maximum_reached,
             elapsed_millis: progress.map_or(0, |value| value.elapsed_millis),
             level_permille: progress.map_or(0, |value| value.level_permille),
             error: self.error.clone(),
@@ -1237,6 +1278,104 @@ mod tests {
                 _ => Err("delivery missing".into()),
             }
         }
+    }
+
+    #[test]
+    fn duplicate_finish_cannot_turn_a_manual_stop_into_a_maximum_stop()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        fixture.record()?;
+        let client = fixture.runtime.client();
+        client.stop(1)?;
+        assert_eq!(fixture.stops.recv_timeout(Duration::from_secs(1))?, 1);
+        fixture.pause()?;
+        for maximum in [false, true] {
+            fixture.audio.send(CaptureEvent::Finished {
+                session: 1,
+                result: Ok(vec![0.1; 800]),
+                maximum,
+            })?;
+        }
+        fixture.proceed()?;
+        let state = wait_for(&client, |state| state.session.phase == Phase::Delivering)?;
+        assert!(!state.maximum_reached);
+        fixture.runtime.join()?;
+        Ok(())
+    }
+
+    #[test]
+    fn held_feedback_is_authorized_only_for_the_latest_held_idle_session()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use std::cell::Cell;
+        let fixture = LifecycleFixture::new()?;
+        fixture.deliver()?;
+        let client = fixture.runtime.client();
+        let calls = Cell::new(0);
+        assert_eq!(client.with_idle_feedback(1, || calls.set(1))?, None);
+        fixture.native.responses.send(NativeResult::Delivered {
+            session: 1,
+            result: DeliveryResult::Held("target changed".into()),
+        })?;
+        wait_for(&client, |state| state.session.phase == Phase::Idle)?;
+        assert_eq!(client.with_idle_feedback(2, || calls.set(99))?, None);
+        assert_eq!(
+            client.with_idle_feedback(1, || {
+                calls.set(calls.get() + 1);
+                42
+            })?,
+            Some(42)
+        );
+        assert_eq!(calls.get(), 1);
+        accepted(client.start(settings(), None, false, false)?)?;
+        assert_eq!(client.with_idle_feedback(1, || calls.set(99))?, None);
+        client.shutdown()?;
+        assert_eq!(client.with_idle_feedback(1, || calls.set(99))?, None);
+        assert_eq!(calls.get(), 1);
+        fixture.runtime.join()?;
+        Ok(())
+    }
+
+    #[test]
+    fn maximum_feedback_survives_toggle_stop_and_resets_only_for_a_new_session()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        fixture.record()?;
+        let client = fixture.runtime.client();
+        fixture
+            .audio
+            .send(CaptureEvent::MaximumWarning { session: 1 })?;
+        wait_for(&client, |state| state.maximum_warning)?;
+        accepted(client.start(settings(), None, true, true)?)?;
+        assert_eq!(fixture.stops.recv_timeout(Duration::from_secs(1))?, 1);
+        assert!(client.snapshot()?.maximum_warning);
+        fixture.audio.send(CaptureEvent::Finished {
+            session: 1,
+            result: Ok(vec![0.1; 800]),
+            maximum: true,
+        })?;
+        let state = wait_for(&client, |state| state.session.phase == Phase::Delivering)?;
+        assert!(state.maximum_reached);
+        fixture.native.responses.send(NativeResult::Delivered {
+            session: 1,
+            result: DeliveryResult::Held("target changed".into()),
+        })?;
+        let state = wait_for(&client, |state| state.session.phase == Phase::Idle)?;
+        assert!(state.maximum_reached);
+        assert_eq!(state.session.last_held_session, Some(1));
+        accepted(client.start(settings(), None, false, false)?)?;
+        assert!(!client.snapshot()?.maximum_warning);
+        assert!(!client.snapshot()?.maximum_reached);
+        fixture.audio.send(CaptureEvent::Finished {
+            session: 1,
+            result: Ok(vec![]),
+            maximum: true,
+        })?;
+        // An acknowledgement forces publication after the stale event poll.
+        accepted(client.clear_text()?)?;
+        assert!(!client.snapshot()?.maximum_reached);
+        client.shutdown()?;
+        fixture.runtime.join()?;
+        Ok(())
     }
 
     #[test]

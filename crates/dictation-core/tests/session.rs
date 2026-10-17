@@ -1,6 +1,46 @@
 use dictation_core::session::{Effect, Fact, Machine, Outcome, Phase};
 
 #[test]
+fn held_feedback_survives_clear_and_restart_without_deduplicating_equal_text()
+-> Result<(), Box<dyn std::error::Error>> {
+    use dictation_core::session::DeliveryResult;
+    let mut machine = Machine::default();
+    assert_eq!(machine.last_held_session(), None);
+    for id in 1..=2 {
+        machine.start(true, true)?;
+        assert_eq!(machine.last_held_session(), (id > 1).then_some(1));
+        machine.accept(Fact::AudioStarted(id))?;
+        machine.stop(id)?;
+        machine.accept(Fact::AudioReleased(id))?;
+        machine.accept(Fact::Transcript {
+            id,
+            text: "derselbe Text".into(),
+        })?;
+        machine.accept(Fact::Delivered {
+            id,
+            result: DeliveryResult::Held("Fokus gewechselt".into()),
+        })?;
+        assert_eq!(machine.last_held_session(), Some(id));
+        machine.clear_text();
+        assert_eq!(machine.last_held_session(), Some(id));
+    }
+    machine.start(true, false)?;
+    machine.accept(Fact::AudioStarted(3))?;
+    machine.stop(3)?;
+    machine.accept(Fact::AudioReleased(3))?;
+    machine.accept(Fact::Transcript {
+        id: 3,
+        text: "lokal".into(),
+    })?;
+    machine.accept(Fact::Delivered {
+        id: 1,
+        result: DeliveryResult::Held("veraltet".into()),
+    })?;
+    assert_eq!(machine.last_held_session(), Some(2));
+    Ok(())
+}
+
+#[test]
 fn failures_wait_for_release_and_allow_a_new_session_after_cleanup()
 -> Result<(), Box<dyn std::error::Error>> {
     use dictation_core::session::SessionError;

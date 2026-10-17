@@ -169,6 +169,30 @@ impl Desktop {
         Ok((revision != Some(shared.view.revision))
             .then(|| (shared.view.revision, crate::header::project(&shared.view))))
     }
+    /// A bounded projection: no transcript clone crosses into native feedback.
+    pub fn native_feedback_after(
+        &self,
+        revision: Option<u64>,
+    ) -> Result<Option<(u64, crate::feedback::FeedbackState)>, String> {
+        let shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+        Ok((revision != Some(shared.view.revision))
+            .then(|| (shared.view.revision, crate::feedback::project(&shared.view))))
+    }
+    /// Main-thread-only sound request, gated against actual Runtime admission.
+    /// Desktop/App locks have been released by runtime() before entering it.
+    pub fn held_feedback_tone(&self, session: u64) -> Result<bool, String> {
+        if self.0.closing.load(Ordering::Acquire) {
+            return Ok(false);
+        }
+        let runtime = self.runtime()?;
+        match runtime
+            .with_idle_feedback(session, macos_integration::feedback::held_tone)
+            .map_err(|error| error.to_string())?
+        {
+            Some(result) => result.map(|()| true).map_err(|error| error.to_string()),
+            None => Ok(false),
+        }
+    }
     pub fn native_action(&self, action: macos_integration::glass_header::HeaderAction) {
         use macos_integration::glass_header::HeaderAction;
         if let Ok(mut shared) = self.0.shared.lock() {
@@ -1160,6 +1184,8 @@ fn initial() -> view::Snapshot {
             text: String::new(),
             outcome: None,
             maximum_warning: false,
+            maximum_reached: false,
+            last_held_session: None,
             elapsed_millis: 0,
             level_permille: 0,
         },
@@ -1267,6 +1293,8 @@ fn project(
         result.session.id = runtime.session.session;
         result.session.text = runtime.session.text.clone().unwrap_or_default();
         result.session.maximum_warning = runtime.maximum_warning;
+        result.session.maximum_reached = runtime.maximum_reached;
+        result.session.last_held_session = runtime.session.last_held_session;
         result.session.elapsed_millis = runtime.elapsed_millis;
         result.session.level_permille = runtime.level_permille;
         result.session.outcome = runtime
@@ -1494,7 +1522,9 @@ mod tests {
                 session: Some(7),
                 text: Some("previous words".into()),
                 outcome: None,
+                last_held_session: None,
             },
+            maximum_reached: false,
             maximum_warning: true,
             elapsed_millis: 0,
             level_permille: 0,
@@ -1524,7 +1554,9 @@ mod tests {
                 session: None,
                 text: Some("retained words".into()),
                 outcome: Some(Outcome::Held("Original field changed".into())),
+                last_held_session: Some(7),
             },
+            maximum_reached: false,
             maximum_warning: false,
             elapsed_millis: 0,
             level_permille: 0,
@@ -1540,6 +1572,7 @@ mod tests {
         assert!(matches!(result.session.outcome,
             Some(view::SessionOutcome::Held { message }) if message == "Original field changed"));
         assert!(!result.settings_busy);
+        assert_eq!(result.session.last_held_session, Some(7));
     }
     #[test]
     fn ipc_session_ids_are_positive_exact_javascript_integers() {
@@ -2102,6 +2135,71 @@ mod tests {
         assert_eq!(fallback.labels.hotkey, "⌥⌘[physisch K; Layout unbekannt]");
         desktop.shutdown();
         assert!(desktop.update_hotkey_labels(Default::default())?.is_none());
+        Ok(())
+    }
+    #[test]
+    fn maximum_notice_survives_finalization_and_sent_without_replacing_the_result() {
+        let mut value = initial();
+        value.setup.phase = view::SetupPhase::Ready;
+        value.session.maximum_reached = true;
+        value.session.phase = view::SessionPhase::Finalizing;
+        assert_eq!(
+            crate::header::project(&value).status,
+            "5-Minuten-Grenze erreicht · Diktat wird verarbeitet"
+        );
+        value.session.phase = view::SessionPhase::Idle;
+        value.session.outcome = Some(view::SessionOutcome::Sent);
+        assert_eq!(
+            crate::header::project(&value).status,
+            "5-Minuten-Grenze erreicht · Einfügebefehl gesendet"
+        );
+    }
+
+    #[test]
+    fn native_feedback_is_bounded_text_free_and_observes_sticky_held_after_another_start()
+    -> Result<(), String> {
+        let desktop = unstarted_desktop();
+        {
+            let mut shared = desktop.0.shared.lock().map_err(|_| "lock failed")?;
+            shared.view.setup.phase = view::SetupPhase::Ready;
+            shared.view.session.phase = view::SessionPhase::Idle;
+            shared.view.session.last_held_session = Some(7);
+            shared.view.session.text = "PRIVATE TRANSCRIPT MUST NOT CROSS FEEDBACK".repeat(1000);
+            shared.view.session.outcome = Some(view::SessionOutcome::Held {
+                message: "界".repeat(1000),
+            });
+            shared.view.error = Some("Sichere Eingabe aktiv".into());
+        }
+        let (revision, state) = desktop
+            .native_feedback_after(None)?
+            .ok_or("missing feedback")?;
+        assert!(state.status.len() <= 512);
+        assert!(state.status.contains("Sichere Eingabe aktiv"));
+        assert!(!format!("{state:?}").contains("PRIVATE TRANSCRIPT"));
+        assert_eq!(state.held_session, Some(7));
+        assert!(desktop.native_feedback_after(Some(revision))?.is_none());
+        {
+            let mut shared = desktop.0.shared.lock().map_err(|_| "lock failed")?;
+            shared.view.session.phase = view::SessionPhase::Recording;
+            shared.view.session.outcome = None;
+            shared.view.session.maximum_warning = true;
+            shared.view.revision += 1;
+        }
+        let (_, changed) = desktop
+            .native_feedback_after(Some(revision))?
+            .ok_or("missing change")?;
+        assert_eq!(changed.held_session, Some(7));
+        assert!(!changed.idle);
+        assert!(changed.attention);
+        assert_eq!(changed.status, "Aufnahme endet bei 5 Minuten");
+        // A manual stop after the warning does not become a maximum-stop hint.
+        let mut view = desktop.snapshot()?;
+        view.session.phase = view::SessionPhase::Idle;
+        view.session.maximum_reached = false;
+        view.session.outcome = Some(view::SessionOutcome::Sent);
+        let stopped = crate::feedback::project(&view);
+        assert!(!stopped.attention);
+        assert_eq!(stopped.status, "Einfügebefehl gesendet");
         Ok(())
     }
 }

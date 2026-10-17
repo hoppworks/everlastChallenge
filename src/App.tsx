@@ -87,6 +87,7 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
           phase: snapshot.session.phase,
           text: snapshot.session.text,
           maximumWarning: snapshot.session.maximumWarning,
+          maximumReached: snapshot.session.maximumReached,
           elapsedSeconds: snapshot.session.elapsedMillis / 1000,
           level: snapshot.session.levelPermille / 1000,
           ...(snapshot.session.outcome

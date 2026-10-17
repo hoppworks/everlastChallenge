@@ -43,6 +43,7 @@ export interface AppViewProps {
     elapsedSeconds?: number;
     level?: number;
     maximumWarning?: boolean;
+    maximumReached?: boolean;
   };
   permissions: {
     microphone: PermissionStatus;
@@ -146,6 +147,11 @@ export function AppView(props: AppViewProps) {
         <div role="status" aria-live="polite" aria-atomic="true">
           <h2 id="dictation-status-title">{title}</h2>
         </div>
+        {session.maximumReached && (
+          <p role="status" aria-live={props.nativeHeader ? "off" : "polite"}>
+            Die Aufnahme wurde an der 5-Minuten-Grenze beendet.
+          </p>
+        )}
         {active ? (
           <>
             {session.phase === "Starting" && (

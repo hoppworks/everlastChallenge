@@ -68,6 +68,8 @@ function snapshot(): Snapshot {
       text: "",
       outcome: null,
       maximumWarning: false,
+      maximumReached: false,
+      lastHeldSession: null,
       elapsedMillis: 0,
       levelPermille: 0,
     },
@@ -533,4 +535,22 @@ test("failed explicit settings recovery can be retried without enabling recordin
   );
   await waitFor(() => expect(ipc.command).toHaveBeenCalledTimes(2));
   expect(ipc.command).toHaveBeenLastCalledWith("settings_reset");
+});
+
+test("renders the authoritative maximum-stop fact without dispatching another action", async () => {
+  const value = snapshot();
+  value.session.maximumReached = true;
+  value.session.lastHeldSession = 7;
+  value.session.outcome = { kind: "sent" };
+  connected(value, true);
+  expect(
+    await screen.findByText(
+      "Die Aufnahme wurde an der 5-Minuten-Grenze beendet.",
+    ),
+  ).toBeDefined();
+  expect(
+    screen.getByRole("heading", { name: "Einfügebefehl gesendet" }),
+  ).toBeDefined();
+  expect(ipc.command).not.toHaveBeenCalled();
+  expect(ipc.sessionCommand).not.toHaveBeenCalled();
 });

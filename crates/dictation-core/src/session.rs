@@ -71,6 +71,7 @@ pub struct Machine {
     delivery: bool,
     last_text: Option<String>,
     outcome: Option<Outcome>,
+    last_held_session: Option<u64>,
 }
 
 impl Machine {
@@ -79,6 +80,10 @@ impl Machine {
     }
     pub fn session_id(&self) -> Option<u64> {
         self.session_id
+    }
+    /// Most recent held result, retained across starts and transcript clearing.
+    pub fn last_held_session(&self) -> Option<u64> {
+        self.last_held_session
     }
     pub fn clear_text(&mut self) {
         self.last_text = None;
@@ -221,6 +226,9 @@ impl Machine {
     }
 
     fn finish(&mut self, outcome: Outcome) {
+        if matches!(outcome, Outcome::Held(_)) {
+            self.last_held_session = self.session_id;
+        }
         self.phase = Phase::Idle;
         self.session_id = None;
         self.outcome = Some(outcome);

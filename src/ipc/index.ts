@@ -187,6 +187,8 @@ export function decodeSnapshot(value: unknown): Snapshot {
       "text",
       "outcome",
       "maximumWarning",
+      "maximumReached",
+      "lastHeldSession",
       "elapsedMillis",
       "levelPermille",
     ]) ||
@@ -194,6 +196,11 @@ export function decodeSnapshot(value: unknown): Snapshot {
     !(session.id === null || (number(session.id) && session.id > 0)) ||
     !text(session.text, 262144) ||
     typeof session.maximumWarning !== "boolean" ||
+    typeof session.maximumReached !== "boolean" ||
+    !(
+      session.lastHeldSession === null ||
+      (number(session.lastHeldSession) && session.lastHeldSession > 0)
+    ) ||
     !number(session.elapsedMillis) ||
     session.elapsedMillis > 300_000 ||
     !number(session.levelPermille) ||

@@ -67,6 +67,9 @@ pub struct Session {
     pub text: String,
     pub outcome: Option<SessionOutcome>,
     pub maximum_warning: bool,
+    pub maximum_reached: bool,
+    #[ts(type = "number | null")]
+    pub last_held_session: Option<u64>,
     #[ts(type = "number")]
     pub elapsed_millis: u64,
     pub level_permille: u16,

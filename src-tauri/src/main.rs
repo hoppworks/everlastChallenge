@@ -1,5 +1,9 @@
 #![forbid(unsafe_code)]
-use everlast_dictation::{desktop::Desktop, ipc};
+use everlast_dictation::{
+    desktop::Desktop,
+    feedback::{Feedback, FeedbackState, TrayPresentation},
+    ipc,
+};
 use macos_integration::{
     glass_header::GlassHeader,
     keyboard::LayoutObserver,
@@ -10,6 +14,24 @@ use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
 };
+#[derive(Clone)]
+struct NativeTray {
+    tray: tauri::tray::TrayIcon<tauri::Wry>,
+    status: MenuItem<tauri::Wry>,
+}
+impl NativeTray {
+    fn update(&self, state: &TrayPresentation) -> Result<(), String> {
+        self.status
+            .set_text(state.text.replace('&', "&&"))
+            .map_err(|error| error.to_string())?;
+        self.tray
+            .set_tooltip(Some(format!("Everlast Dictation · {}", state.text)))
+            .map_err(|error| error.to_string())?;
+        self.tray
+            .set_title(Some(state.title))
+            .map_err(|error| error.to_string())
+    }
+}
 fn refresh_hotkey_labels(desktop: &Desktop, app: &tauri::AppHandle) -> Result<(), String> {
     let labels = macos_integration::keyboard::KeyLabels::read_current()
         .map_err(|error| error.to_string())?;
@@ -43,7 +65,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let open =
                 MenuItem::with_id(app, "open", "Everlast Dictation öffnen", true, None::<&str>)?;
             let quit = MenuItem::with_id(app, "quit", "Beenden", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&open, &quit])?;
+            let status =
+                MenuItem::with_id(app, "status", "Status wird geladen", false, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&status, &open, &quit])?;
             let mut tray = TrayIconBuilder::new()
                 .tooltip("Everlast Dictation")
                 .menu(&menu)
@@ -62,7 +86,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             if let Some(icon) = app.default_window_icon() {
                 tray = tray.icon(icon.clone());
             }
-            tray.build(app)?;
+            let tray = tray.build(app)?;
+            app.manage(NativeTray { tray, status });
             Ok(())
         })
         .on_window_event(|window, event| match event {
@@ -94,6 +119,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         actions.native_action(action);
     })?);
     let mut header_revision = None;
+    let native_tray = app.state::<NativeTray>().inner().clone();
+    let mut feedback = Feedback::default();
+    let mut feedback_revision = None;
+    let mut feedback_state: Option<FeedbackState> = None;
     if let Some((revision, state)) = native_desktop.native_header_after(None)? {
         if let Some(header) = &mut header {
             header.update(state)?;
@@ -148,6 +177,31 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 });
             if let Err(error) = updated {
                 eprintln!("Native window update failed: {error}");
+                app.exit(1);
+            }
+        }
+        if matches!(
+            event,
+            tauri::RunEvent::Ready | tauri::RunEvent::MainEventsCleared
+        ) {
+            let updated = (|| {
+                if let Some((revision, state)) =
+                    native_desktop.native_feedback_after(feedback_revision)?
+                {
+                    feedback_revision = Some(revision);
+                    feedback_state = Some(state);
+                }
+                if let Some(state) = &feedback_state {
+                    feedback.update(
+                        state,
+                        |presentation| native_tray.update(presentation),
+                        |session| native_desktop.held_feedback_tone(session),
+                    )?;
+                }
+                Ok::<(), String>(())
+            })();
+            if let Err(error) = updated {
+                eprintln!("Native feedback failed: {error}");
                 app.exit(1);
             }
         }

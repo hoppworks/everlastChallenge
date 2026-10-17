@@ -71,6 +71,8 @@ function snapshot(): Snapshot {
       text: "",
       outcome: null,
       maximumWarning: false,
+      maximumReached: false,
+      lastHeldSession: null,
       elapsedMillis: 0,
       levelPermille: 0,
     },
@@ -550,3 +552,21 @@ test.each(["", "x".repeat(129), "bad\nlabel"])(
     ).toThrow("Ungültiger Anwendungsstatus");
   },
 );
+
+test("accepts a persistent Held session and maximum-stop fact, rejecting malformed identities", () => {
+  const value = snapshot();
+  const session = {
+    ...value.session,
+    lastHeldSession: 7,
+    maximumReached: true,
+  };
+  expect(decodeSnapshot({ ...value, session }).session).toEqual(session);
+  for (const lastHeldSession of [0, -1, 0.5, 9_007_199_254_740_992, "7"]) {
+    expect(() =>
+      decodeSnapshot({ ...value, session: { ...session, lastHeldSession } }),
+    ).toThrow("Ungültiger Anwendungsstatus");
+  }
+  expect(() =>
+    decodeSnapshot({ ...value, session: { ...session, maximumReached: 1 } }),
+  ).toThrow("Ungültiger Anwendungsstatus");
+});

@@ -22,4 +22,5 @@ pub mod transcription;
 pub mod application;
 pub mod devices;
 
+pub mod feedback;
 pub mod hotkey_labels;

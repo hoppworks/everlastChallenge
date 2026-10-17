@@ -71,6 +71,7 @@ pub enum ControllerError {
 pub struct SessionSnapshot {
     pub phase: Phase,
     pub session: Option<u64>,
+    pub last_held_session: Option<u64>,
     pub text: Option<String>,
     pub outcome: Option<Outcome>,
 }
@@ -93,6 +94,10 @@ pub struct Controller {
 }
 
 impl Controller {
+    pub(crate) fn audio_is_unreleased(&self, session: u64) -> bool {
+        self.core.session_id() == Some(session)
+            && self.active.as_ref().is_some_and(|active| !active.released)
+    }
     pub(crate) fn cancellation_handles(&self) -> Option<(u64, DeliveryToken, WorkToken)> {
         let active = self.active.as_ref()?;
         Some((
@@ -126,6 +131,7 @@ impl Controller {
         SessionSnapshot {
             phase: self.core.phase(),
             session: self.core.session_id(),
+            last_held_session: self.core.last_held_session(),
             text: self.core.last_text().map(str::to_owned),
             outcome: self.core.outcome().cloned(),
         }
