@@ -21,6 +21,9 @@ use std::{
 
 const CLOSED: usize = 1 << (usize::BITS - 1);
 
+#[cfg(feature = "measurement")]
+pub mod replay;
+
 #[derive(Debug, thiserror::Error)]
 pub enum CaptureError {
     #[error(transparent)]
@@ -307,9 +310,47 @@ pub struct CaptureHandle {
 
 impl CaptureHandle {
     pub fn start(session: u64, device_name: Option<String>) -> Result<Self, CaptureError> {
+        Self::spawn(session, move |events, stop, maximum, progress| {
+            record(
+                session,
+                device_name.as_deref(),
+                events,
+                stop,
+                maximum,
+                progress,
+            )
+        })
+    }
+
+    /// Developer-only source: no device selection, permission request or pacing.
+    /// The caller must provide a bounded readiness channel with available room.
+    #[cfg(feature = "measurement")]
+    pub fn start_replay(
+        session: u64,
+        format: AudioFormat,
+        ready: Sender<replay::ReplayInput>,
+    ) -> Result<Self, CaptureError> {
+        if ready.capacity().is_none() {
+            return Err(CaptureError::EventOverflow);
+        }
+        Self::spawn(session, move |events, stop, maximum, progress| {
+            replay::record(session, format, ready, events, stop, maximum, progress)
+        })
+    }
+
+    fn spawn(
+        session: u64,
+        run: impl FnOnce(
+            &Sender<CaptureEvent>,
+            &AtomicBool,
+            &mut bool,
+            &ProgressSlot,
+        ) -> Result<Vec<f32>, CaptureError>
+        + Send
+        + 'static,
+    ) -> Result<Self, CaptureError> {
         // Exactly one Started, at most one Warning, exactly one Finished.
-        // This reserved channel holds the complete lifecycle even if the
-        // controller has not read any event yet; progress cannot occupy it.
+        // Progress and replay readiness never occupy these three reserved slots.
         let (events, incoming) = crossbeam_channel::bounded(3);
         let stop = Arc::new(AtomicBool::new(false));
         let requested = Arc::clone(&stop);
@@ -319,14 +360,7 @@ impl CaptureHandle {
             .name("microphone-dsp".into())
             .spawn(move || {
                 let mut maximum = false;
-                let result = record(
-                    session,
-                    device_name.as_deref(),
-                    &events,
-                    &requested,
-                    &mut maximum,
-                    &published,
-                );
+                let result = run(&events, &requested, &mut maximum, &published);
                 send_event(
                     &events,
                     CaptureEvent::Finished {
@@ -482,70 +516,124 @@ fn record(
         sample_rate: config.sample_rate().0,
         channels: config.channels(),
     };
-    let mut processor = AudioProcessor::new(format)?;
-    let (port, mut reader) = capture_buffer(format)?;
+    let processor = AudioProcessor::new(format)?;
+    let (port, reader) = capture_buffer(format)?;
     let stream = OwnedStream {
         stream: Some(build_stream(&device, &config, port)?),
         gate: Arc::clone(&reader.gate),
     };
     stream.play()?;
     let started = Instant::now();
-    if let Err(error) = send_event(
+    RecordingOwner {
+        session,
         events,
-        CaptureEvent::Started {
-            session,
-            format,
-            started,
-        },
-    ) {
-        reader.close();
-        drop(stream);
-        return Err(error);
+        stop,
+        maximum,
+        progress,
     }
-    let mut limits = RecordingLimits::default();
-    let mut next_progress = Duration::from_millis(50);
-    let processing = (|| -> Result<(), CaptureError> {
-        loop {
-            match limits.advance(started.elapsed(), reader.maximum_reached()) {
-                LimitDecision::Continue => {}
-                LimitDecision::Warn => {
-                    send_event(events, CaptureEvent::MaximumWarning { session })?
+    .run(processor, reader, stream, started, || Ok(()))
+}
+
+struct RecordingOwner<'a> {
+    session: u64,
+    events: &'a Sender<CaptureEvent>,
+    stop: &'a AtomicBool,
+    maximum: &'a mut bool,
+    progress: &'a ProgressSlot,
+}
+
+/// Keeps publication admission and source lifetime paired even during unwind.
+/// Native OwnedStream retains its independent setup-time RAII protection.
+struct RecordingSource<S> {
+    source: Option<S>,
+    gate: Arc<Gate>,
+}
+
+impl<S> Drop for RecordingSource<S> {
+    fn drop(&mut self) {
+        self.gate.publications.fetch_or(CLOSED, Ordering::AcqRel);
+        drop(self.source.take());
+        while self.gate.publications.load(Ordering::Acquire) != CLOSED {
+            thread::sleep(Duration::from_millis(1));
+        }
+    }
+}
+
+impl RecordingOwner<'_> {
+    fn run<S>(
+        self,
+        mut processor: AudioProcessor,
+        mut reader: CaptureReader,
+        source: S,
+        started: Instant,
+        activate: impl FnOnce() -> Result<(), CaptureError>,
+    ) -> Result<Vec<f32>, CaptureError> {
+        let source = RecordingSource {
+            source: Some(source),
+            gate: Arc::clone(&reader.gate),
+        };
+        let Self {
+            session,
+            events,
+            stop,
+            maximum,
+            progress,
+        } = self;
+        let mut limits = RecordingLimits::default();
+        let mut next_progress = Duration::from_millis(50);
+        let processing = (|| -> Result<(), CaptureError> {
+            send_event(
+                events,
+                CaptureEvent::Started {
+                    session,
+                    format: reader.format(),
+                    started,
+                },
+            )?;
+            activate()?;
+            loop {
+                match limits.advance(started.elapsed(), reader.maximum_reached()) {
+                    LimitDecision::Continue => {}
+                    LimitDecision::Warn => {
+                        send_event(events, CaptureEvent::MaximumWarning { session })?
+                    }
+                    LimitDecision::Stop => {
+                        *maximum = true;
+                        break;
+                    }
                 }
-                LimitDecision::Stop => {
-                    *maximum = true;
+                if stop.load(Ordering::Acquire) {
                     break;
                 }
+                let chunk = reader.read()?;
+                if chunk.is_empty() {
+                    thread::sleep(Duration::from_millis(2));
+                } else {
+                    processor.push_interleaved(chunk)?;
+                }
+                let elapsed = started.elapsed();
+                if elapsed >= next_progress {
+                    progress.publish(reader.progress(session, elapsed));
+                    next_progress = elapsed + Duration::from_millis(50);
+                }
             }
-            if stop.load(Ordering::Acquire) {
-                break;
-            }
+            Ok(())
+        })();
+        reader.close();
+        drop(source);
+        // Close admission, close the source, then await every publication. Native
+        // OwnedStream retains its own RAII barrier, also during setup failures.
+        // Replay closes admission even if its external producer keeps its port.
+        processing?;
+        loop {
             let chunk = reader.read()?;
             if chunk.is_empty() {
-                thread::sleep(Duration::from_millis(2));
-            } else {
-                processor.push_interleaved(chunk)?;
+                break;
             }
-            let elapsed = started.elapsed();
-            if elapsed >= next_progress {
-                progress.publish(reader.progress(session, elapsed));
-                next_progress = elapsed + Duration::from_millis(50);
-            }
+            processor.push_interleaved(chunk)?;
         }
-        Ok(())
-    })();
-    reader.close();
-    drop(stream);
-    // OwnedStream's destructor closed admission and awaited all publications,
-    // including error paths. Only now may the final DSP drain begin.
-    processing?;
-    loop {
-        let chunk = reader.read()?;
-        if chunk.is_empty() {
-            break;
-        }
-        processor.push_interleaved(chunk)?;
+        processor.finish().map_err(CaptureError::Audio)
     }
-    processor.finish().map_err(CaptureError::Audio)
 }
 
 #[cfg(test)]
