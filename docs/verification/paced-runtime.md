@@ -1,6 +1,11 @@
 # Zeitgetreue Stop-bis-Text-Messung durch die Runtime
 
 Stand: 17.10.2026; Basis `7cb34a3`, Kandidat `7cb34a3+paced-runtime-v1`.
+Nachtrag: [Die spätere Endpunktkorrektur](replay-maximum-endpoint.md) ändert
+Audio-/Clockquellen. Für neue Runtimevergleiche ist deshalb eine neue
+Parameterdatei erforderlich; die nachfolgenden Pilotdaten bleiben historische
+Nachweise dieses Kandidaten.
+
 Das Entwicklerwerkzeug verbindet die zeitgetreue Quelle mit dem produktiven
 Audioowner, Controller und echten Inferenzdienst. Es ersetzt keine installierte
 Mikrofon-/Hotkey-/Einfügeabnahme. P03/P04/P05 bleiben offen.

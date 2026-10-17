@@ -184,30 +184,83 @@ impl CapturePort {
         let Some(_publication) = self.gate.enter() else {
             return;
         };
-        if !samples.len().is_multiple_of(self.channels) {
-            self.gate.error.store(2, Ordering::Release);
+        Self::publish_admitted(
+            &mut self.producer,
+            self.channels,
+            &self.gate,
+            &mut self.remaining_frames,
+            samples,
+        );
+    }
+
+    /// Enter before the bounded developer-clock wait. A closed gate never
+    /// admits a new reservation; an admitted chunk participates in the exact
+    /// same owner close barrier as a native callback already in progress.
+    #[cfg(feature = "measurement")]
+    fn reserve_replay(&mut self) -> Option<ReplayPublication<'_>> {
+        let publication = self.gate.enter()?;
+        Some(ReplayPublication {
+            producer: &mut self.producer,
+            channels: self.channels,
+            remaining_frames: &mut self.remaining_frames,
+            publication,
+        })
+    }
+
+    fn publish_admitted<T: Sample + Copy>(
+        producer: &mut Producer<f32>,
+        channels: usize,
+        gate: &Gate,
+        remaining_frames: &mut usize,
+        samples: &[T],
+    ) where
+        f32: FromSample<T>,
+    {
+        if !samples.len().is_multiple_of(channels) {
+            gate.error.store(2, Ordering::Release);
             return;
         }
-        let published = samples.len().min(self.remaining_frames * self.channels);
-        let Ok(mut chunk) = self.producer.write_chunk(published) else {
-            self.gate.error.store(1, Ordering::Release);
+        let published = samples.len().min(*remaining_frames * channels);
+        let Ok(mut chunk) = producer.write_chunk(published) else {
+            gate.error.store(1, Ordering::Release);
             return;
         };
         let (first, second) = chunk.as_mut_slices();
         for (out, input) in first.iter_mut().chain(second.iter_mut()).zip(samples) {
             let normalized = input.to_sample::<f32>();
             if !normalized.is_finite() {
-                self.gate.error.store(3, Ordering::Release);
+                gate.error.store(3, Ordering::Release);
                 return;
             }
             *out = normalized;
         }
         chunk.commit_all();
-        self.remaining_frames -= published / self.channels;
-        if self.remaining_frames == 0 {
-            self.gate.maximum.store(true, Ordering::Release);
-            self.gate.publications.fetch_or(CLOSED, Ordering::AcqRel);
+        *remaining_frames -= published / channels;
+        if *remaining_frames == 0 {
+            gate.maximum.store(true, Ordering::Release);
+            gate.publications.fetch_or(CLOSED, Ordering::AcqRel);
         }
+    }
+}
+
+#[cfg(feature = "measurement")]
+struct ReplayPublication<'a> {
+    producer: &'a mut Producer<f32>,
+    channels: usize,
+    remaining_frames: &'a mut usize,
+    publication: Publication<'a>,
+}
+#[cfg(feature = "measurement")]
+impl ReplayPublication<'_> {
+    fn publish(self, samples: &[f32]) {
+        CapturePort::publish_admitted(
+            self.producer,
+            self.channels,
+            self.publication.0,
+            self.remaining_frames,
+            samples,
+        );
+        // Publication's Drop releases the close barrier, including on unwind.
     }
 }
 

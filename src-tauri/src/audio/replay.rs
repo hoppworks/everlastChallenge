@@ -376,4 +376,235 @@ mod tests {
         assert!(matches!(handle.join(), Err(CaptureError::Worker)));
         Ok(())
     }
+
+    /// Only the final 20-ms chunk is represented. The true owner's clock is
+    /// backdated by 300 s; the producer's clock is shifted by 299.980 s so the
+    /// unchanged clockfeed schedules that tail at exactly the owner's deadline.
+    /// No earlier frames are fabricated and the frame maximum is not reached.
+    fn deadline_tail(
+        owner_waits_for_feed: bool,
+    ) -> Result<(Vec<f32>, clock::FeedEvidence), Box<dyn std::error::Error>> {
+        let format = AudioFormat {
+            sample_rate: 16000,
+            channels: 1,
+        };
+        let (ready, receive) = crossbeam_channel::bounded(1);
+        let (fed, after_feed) = crossbeam_channel::bounded(1);
+        let handle = CaptureHandle::spawn(99, move |events, stop, maximum, progress| {
+            let (port, reader) = capture_buffer(format)?;
+            let processor = AudioProcessor::new(format)?;
+            let started = Instant::now() - Duration::from_secs(300);
+            RecordingOwner {
+                session: 99,
+                events,
+                stop,
+                maximum,
+                progress,
+            }
+            .run(processor, reader, (), started, move || {
+                ready
+                    .try_send(ReplayInput {
+                        port,
+                        started: started + Duration::from_millis(299_980),
+                        format,
+                    })
+                    .map_err(|_| CaptureError::ControllerGone)?;
+                if owner_waits_for_feed {
+                    after_feed
+                        .recv_timeout(Duration::from_secs(2))
+                        .map_err(|_| CaptureError::ControllerGone)?;
+                }
+                Ok(())
+            })
+        })?;
+        let mut source = receive.recv_timeout(Duration::from_secs(2))?;
+        // Explicitly control the two orderings instead of relying on thread
+        // scheduling: either publication first, or actual maximum-close first.
+        let before_feed = if owner_waits_for_feed {
+            None
+        } else {
+            Some(terminal(&handle)?)
+        };
+        let evidence = clock::feed(&mut source, &[0.125; 320])?;
+        if owner_waits_for_feed {
+            fed.send(())?;
+        }
+        let ended = match before_feed {
+            Some(event) => event,
+            None => terminal(&handle)?,
+        };
+        handle.join()?;
+        match ended {
+            CaptureEvent::Finished {
+                result: Ok(audio),
+                maximum: true,
+                ..
+            } => Ok((audio, evidence)),
+            _ => Err("expected real 300-second maximum close".into()),
+        }
+    }
+
+    #[test]
+    fn admitted_tail_is_drained_but_publication_after_completed_owner_stays_closed()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (publication_first, _) = deadline_tail(true)?;
+        assert_eq!(
+            publication_first,
+            vec![0.125; 320],
+            "control: unchanged final drain preserves admitted input"
+        );
+        let (closure_first, evidence) = deadline_tail(false)?;
+        assert_eq!(evidence.publications.len(), 1);
+        assert!(
+            closure_first.is_empty(),
+            "an already closed port must never reopen"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn waiting_final_clockfeed_chunk_survives_the_actual_owner_deadline()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let format = AudioFormat {
+            sample_rate: 16000,
+            channels: 1,
+        };
+        let (ready, receive) = crossbeam_channel::bounded(1);
+        let (entered_wait, may_run) = crossbeam_channel::bounded(1);
+        let handle = CaptureHandle::spawn(100, move |events, stop, maximum, progress| {
+            let (port, reader) = capture_buffer(format)?;
+            let processor = AudioProcessor::new(format)?;
+            // Actual 300-s boundary is 20 ms away. Only the final chunk is
+            // supplied; this is a gate/drain regression, not 300-s acceptance.
+            let started = Instant::now() - Duration::from_millis(299_980);
+            RecordingOwner {
+                session: 100,
+                events,
+                stop,
+                maximum,
+                progress,
+            }
+            .run(processor, reader, (), started, move || {
+                ready
+                    .try_send(ReplayInput {
+                        port,
+                        started: started + Duration::from_millis(299_980),
+                        format,
+                    })
+                    .map_err(|_| CaptureError::ControllerGone)?;
+                // Prevent a descheduled test producer from accidentally testing
+                // an already closed source instead of an in-progress wait.
+                may_run
+                    .recv_timeout(Duration::from_secs(2))
+                    .map_err(|_| CaptureError::ControllerGone)
+            })
+        })?;
+        let mut source = receive.recv_timeout(Duration::from_secs(2))?;
+        let gate = std::sync::Arc::clone(&source.port.gate);
+        // Release activation only once the producer has entered clockfeed.
+        // Delay its wait boundary until the owner's actual close is visible.
+        // This synchronizes the race; it does not qualify wall-clock jitter.
+        clock::on_next_wait(move || {
+            assert!(entered_wait.send(()).is_ok(), "owner activation ended");
+            let deadline = Instant::now() + Duration::from_secs(2);
+            while gate.publications.load(Ordering::Acquire) & super::super::CLOSED == 0 {
+                assert!(
+                    Instant::now() < deadline,
+                    "owner did not close at its deadline"
+                );
+                thread::sleep(Duration::from_millis(1));
+            }
+        });
+        let evidence = clock::feed(&mut source, &[0.125; 320])?;
+        let ended = terminal(&handle)?;
+        handle.join()?;
+        assert_eq!(evidence.publications.len(), 1);
+        match ended {
+            CaptureEvent::Finished {
+                result: Ok(audio),
+                maximum: true,
+                ..
+            } => {
+                assert_eq!(
+                    audio.len(),
+                    320,
+                    "waiting final chunk lost at wall-clock close"
+                );
+                assert_eq!(audio, vec![0.125; 320]);
+            }
+            _ => return Err("unexpected owner terminal state".into()),
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn waiting_publication_stop_and_unwind_release_barrier_without_reopening()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for unwind in [false, true] {
+            let format = AudioFormat {
+                sample_rate: 16000,
+                channels: 1,
+            };
+            let (ready, receive) = crossbeam_channel::bounded(1);
+            let handle = CaptureHandle::start_replay(101, format, ready)?;
+            let mut source = receive.recv_timeout(Duration::from_secs(2))?;
+            assert!(matches!(
+                handle.next_event(),
+                Some(CaptureEvent::Started { .. })
+            ));
+            let gate = std::sync::Arc::clone(&source.port.gate);
+            let stop = std::sync::Arc::clone(&handle.stop);
+            let events = handle.events.clone();
+            clock::on_next_wait(move || {
+                stop.store(true, Ordering::Release);
+                let deadline = Instant::now() + Duration::from_secs(2);
+                while gate.publications.load(Ordering::Acquire) & super::super::CLOSED == 0 {
+                    assert!(Instant::now() < deadline, "stop did not close admission");
+                    thread::sleep(Duration::from_millis(1));
+                }
+                assert_eq!(
+                    gate.publications.load(Ordering::Acquire),
+                    super::super::CLOSED + 1
+                );
+                assert!(
+                    events.try_recv().is_err(),
+                    "Finished must wait for the admitted publication"
+                );
+                if unwind {
+                    std::panic::resume_unwind(Box::new("controlled producer wait unwind"));
+                }
+            });
+            let feed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                clock::feed(&mut source, &[0.125; 320])
+            }));
+            assert_eq!(feed.is_err(), unwind);
+            if let Ok(result) = feed {
+                result?;
+            }
+            let ended = terminal(&handle)?;
+            handle.join()?;
+            match ended {
+                CaptureEvent::Finished {
+                    result: Ok(audio),
+                    maximum: false,
+                    ..
+                } => {
+                    assert_eq!(audio.len(), if unwind { 0 } else { 320 });
+                }
+                _ => return Err("unexpected stop terminal state".into()),
+            }
+            assert_eq!(
+                source.port.gate.publications.load(Ordering::Acquire),
+                super::super::CLOSED
+            );
+            // Once the stop barrier has completed, even the real clockfeed
+            // cannot readmit a new chunk or emit a second Finished event.
+            clock::feed(&mut source, &[0.5; 320])?;
+            assert_eq!(
+                source.port.gate.publications.load(Ordering::Acquire),
+                super::super::CLOSED
+            );
+        }
+        Ok(())
+    }
 }

@@ -54,9 +54,25 @@ pub struct FeedEvidence {
     pub planned_stop_offset: Duration,
 }
 
+#[cfg(test)]
+std::thread_local! {
+    static WAIT_HOOK: std::cell::RefCell<Option<Box<dyn FnOnce()>>> = const { std::cell::RefCell::new(None) };
+}
+#[cfg(test)]
+pub(super) fn on_next_wait(hook: impl FnOnce() + 'static) {
+    WAIT_HOOK.with(|slot| *slot.borrow_mut() = Some(Box::new(hook)));
+}
+
 /// Short sleeps avoid relying on one coalescible 20-ms OS timer. The final
 /// spin is bounded by 250 us per chunk; it never waits for a consumer.
 fn wait_until(target: Instant) {
+    #[cfg(test)]
+    WAIT_HOOK.with(|slot| {
+        let hook = slot.borrow_mut().take();
+        if let Some(hook) = hook {
+            hook();
+        }
+    });
     loop {
         let remaining = target.saturating_duration_since(Instant::now());
         if remaining.is_zero() {
@@ -97,11 +113,20 @@ pub fn feed(source: &mut ReplayInput, samples: &[f32]) -> Result<FeedEvidence, F
         planned_stop_offset,
     };
     for plan in schedule.chunks() {
-        wait_until(source.started + plan.planned_offset);
+        let target = source.started + plan.planned_offset;
+        // Even a caller-provided future clock must not hold owner teardown for
+        // more than one scheduled chunk. No audio is written before target.
+        if let Some(window_start) = target.checked_sub(Duration::from_millis(20))
+            && Instant::now() < window_start
+        {
+            wait_until(window_start);
+        }
+        let publication = source.port.reserve_replay();
+        wait_until(target);
         let before = source.started.elapsed();
-        source
-            .port
-            .publish(&samples[plan.start_frame * channels..plan.end_frame * channels]);
+        if let Some(publication) = publication {
+            publication.publish(&samples[plan.start_frame * channels..plan.end_frame * channels]);
+        }
         let after = source.started.elapsed();
         let observation = observe(plan, after);
         evidence.timing_valid &= before >= plan.planned_offset
