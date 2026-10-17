@@ -3,5 +3,6 @@
 
 pub mod audio;
 pub mod control;
+pub mod inference_service;
 pub mod model;
 pub mod transcription;
