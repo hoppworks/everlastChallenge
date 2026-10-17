@@ -39,6 +39,8 @@ struct Inner {
     finished: AtomicBool,
     admissions: Arc<Semaphore>,
     prompts: Arc<Semaphore>,
+    // Serializes a power transition with start admission and runtime handoff.
+    suspended: Mutex<bool>,
 }
 #[derive(Clone)]
 pub struct Desktop(Arc<Inner>);
@@ -57,6 +59,7 @@ impl Desktop {
             finished: AtomicBool::new(false),
             admissions: Arc::new(Semaphore::new(16)),
             prompts: Arc::new(Semaphore::new(1)),
+            suspended: Mutex::new(false),
         }));
         let owner = desktop.clone();
         let worker = thread::Builder::new()
@@ -80,6 +83,39 @@ impl Desktop {
     }
     pub fn refresh_permissions(&self) {
         self.0.refresh.store(true, Ordering::Release);
+    }
+    /// Called by the native notification observer. Never joins workers or resumes recording.
+    pub fn set_suspended(&self, sleeping: bool) -> Result<(), String> {
+        let mut suspended = self.0.suspended.lock().map_err(|_| "Power lock failed")?;
+        *suspended = sleeping;
+        if !*suspended {
+            self.refresh_permissions();
+        }
+        if self.0.closing.load(Ordering::Acquire) {
+            return Ok(());
+        }
+        let client = self
+            .0
+            .shared
+            .lock()
+            .map_err(|_| "Desktop lock failed")?
+            .client
+            .clone();
+        if let Some(client) = client {
+            let runtime = match client.runtime() {
+                Ok(runtime) => runtime,
+                Err(_) if self.0.closing.load(Ordering::Acquire) => return Ok(()),
+                Err(error) => return Err(error.to_string()),
+            };
+            if let Some(runtime) = runtime {
+                if *suspended {
+                    runtime.suspend().map_err(|error| error.to_string())?;
+                } else {
+                    runtime.resume().map_err(|error| error.to_string())?;
+                }
+            }
+        }
+        Ok(())
     }
     fn runtime(&self) -> Result<RuntimeClient, String> {
         if self.0.closing.load(Ordering::Acquire) {
@@ -134,6 +170,10 @@ impl Desktop {
         delivery: bool,
         toggle: bool,
     ) -> Result<oneshot::Receiver<Result<(), String>>, String> {
+        let suspended = self.0.suspended.lock().map_err(|_| "Power lock failed")?;
+        if *suspended {
+            return Err("Aufnahme während des Ruhezustands nicht verfügbar".into());
+        }
         let runtime = self.runtime()?;
         let stopping = toggle
             && matches!(
@@ -335,15 +375,20 @@ impl Desktop {
             }
             while !self.0.closing.load(Ordering::Acquire) {
                 let application = client.snapshot().map_err(|error| error.to_string())?;
+                let suspended = self.0.suspended.lock().map_err(|_| "Power lock failed")?;
                 let runtime = match client.runtime() {
                     Ok(runtime) => runtime,
                     Err(_) if self.0.closing.load(Ordering::Acquire) => break,
                     Err(error) => return Err(error.to_string()),
                 };
+                if *suspended && let Some(runtime) = &runtime {
+                    runtime.suspend().map_err(|error| error.to_string())?;
+                }
                 let runtime = runtime
                     .map(|runtime| runtime.snapshot())
                     .transpose()
                     .map_err(|error| error.to_string())?;
+                drop(suspended);
                 let active = runtime
                     .as_ref()
                     .filter(|runtime| runtime.session.phase != Phase::Idle)
@@ -608,6 +653,50 @@ impl Drop for Finish {
 mod tests {
     use super::*;
     use crate::{controller::SessionSnapshot, model::REFERENCE, runtime::RuntimeSnapshot};
+    fn unstarted_desktop() -> Desktop {
+        Desktop(Arc::new(Inner {
+            shared: Mutex::new(Shared {
+                view: initial(),
+                client: None,
+                settings: Settings::default(),
+                action_error: None,
+            }),
+            closing: AtomicBool::new(false),
+            refresh: AtomicBool::new(false),
+            worker: Mutex::new(None),
+            finished: AtomicBool::new(false),
+            admissions: Arc::new(Semaphore::new(16)),
+            prompts: Arc::new(Semaphore::new(1)),
+            suspended: Mutex::new(false),
+        }))
+    }
+    #[test]
+    fn sleep_before_runtime_handoff_blocks_start_and_wake_only_refreshes() {
+        let desktop = unstarted_desktop();
+        assert!(desktop.set_suspended(true).is_ok());
+        assert!(desktop.set_suspended(true).is_ok());
+        assert!(matches!(desktop.start_request(None, false, false),
+            Err(message) if message.contains("Ruhezustands")));
+        assert!(desktop.set_suspended(false).is_ok());
+        assert!(desktop.0.refresh.load(Ordering::Acquire));
+        assert!(matches!(desktop.start_request(None, false, false),
+            Err(message) if message == "Anwendung wird eingerichtet"));
+        assert!(
+            desktop
+                .0
+                .shared
+                .lock()
+                .is_ok_and(|shared| shared.client.is_none())
+        );
+    }
+    #[test]
+    fn wake_after_shutdown_cannot_reopen_start_admission() {
+        let desktop = unstarted_desktop();
+        desktop.shutdown();
+        assert!(desktop.set_suspended(false).is_ok());
+        assert!(matches!(desktop.start_request(None, false, false),
+            Err(message) if message == "Anwendung wird beendet"));
+    }
     fn application() -> crate::application::Snapshot {
         crate::application::Snapshot {
             revision: 1,

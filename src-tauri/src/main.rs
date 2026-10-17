@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 use everlast_dictation::{desktop::Desktop, ipc};
+use macos_integration::power::{PowerEvent, PowerObserver};
 use tauri::{
     Manager,
     menu::{Menu, MenuItem},
@@ -66,6 +67,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             _ => {}
         })
         .build(tauri::generate_context!())?;
+    // Keep the !Send native observer on this main-thread stack through app.run.
+    let power_desktop = app.state::<Desktop>().inner().clone();
+    let power_app = app.handle().clone();
+    let _power = PowerObserver::new(move |event| {
+        if event == PowerEvent::WillPowerOff {
+            // ExitRequested alone owns shutdown and the eventual join/retry.
+            power_app.exit(0);
+        } else if let Err(error) = power_desktop.set_suspended(event == PowerEvent::WillSleep) {
+            eprintln!("Power transition failed: {error}");
+        }
+    })?;
     app.run(|app, event| {
         if let tauri::RunEvent::ExitRequested { api, .. } = event
             && let Some(desktop) = app.try_state::<Desktop>()
