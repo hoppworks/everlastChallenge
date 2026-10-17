@@ -11,7 +11,7 @@ pub fn template() -> Result<Value, serde_json::Error> {
         "../../../tests/fixtures/corpus/reference-parameters-v4.json"
     ))?;
     value["schemaVersion"] = json!(2);
-    value["configurationId"] = json!("paced-full-recording-reference-v1");
+    value["configurationId"] = json!("paced-full-recording-reference-qos-v2");
     value["status"] = json!("measurement baseline; not a model, quality or latency qualification");
     value["preprocessing"]["mode"] = json!(
         "finite/bounds then energy-empty guard; full-recording VAD; unchanged outer energy-range ASR; no speculative segments"
@@ -52,6 +52,11 @@ pub fn template() -> Result<Value, serde_json::Error> {
         "mode":"paced-complete-recording", "inputFormat":"PCM16 mono 16000 Hz decoded to f32",
         "chunkMillis":20,"jitterToleranceNanos":JITTER_TOLERANCE.as_nanos(),
         "maximumSleepNanos":MAXIMUM_SLEEP.as_nanos(),"finalSpinNanos":FINAL_SPIN.as_nanos(),
+        "publisherQos": {"class":"userInteractive", "relativePriority":0,
+            "baseRequestedQosChanged":false,
+            "scope":"current publisher only; after worker startup, before runtime start through feed, stop and source drop; ended before observer polling",
+            "cleanupFailure":"invalid setup; retain failure and mark following runs unavailable",
+            "guarantee":"best effort scheduling; no realtime or jitter guarantee"},
         "warmupRuns":1,"measuredRuns":"explicit CLI count 1..30",
         "stopTimestamp":"host entry before controller queue/lock",
         "textTimestamp":"directly after accepted final nonempty controller text",
@@ -83,6 +88,9 @@ fn compiled_sources() -> Value {
         };
     }
     json!({
+        "publisherQos":source!("crates/macos-integration/src/qos.rs","../../../crates/macos-integration/src/qos.rs"),
+        "nativeLibrary":source!("crates/macos-integration/src/lib.rs","../../../crates/macos-integration/src/lib.rs"),
+        "nativeManifest":source!("crates/macos-integration/Cargo.toml","../../../crates/macos-integration/Cargo.toml"),
         "engine":source!("src-tauri/src/transcription.rs","../../src/transcription.rs"),
         "energy":source!("crates/dictation-core/src/audio.rs","../../../crates/dictation-core/src/audio.rs"),
         "speechGate":source!("src-tauri/src/transcription/speech_gate.rs","../../src/transcription/speech_gate.rs"),
@@ -111,6 +119,31 @@ fn compiled_sources() -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn publisher_qos_policy_and_native_sources_are_frozen_without_relaxing_deadlines()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let value = template()?;
+        assert_eq!(
+            value["measurement"]["publisherQos"]["class"],
+            "userInteractive"
+        );
+        assert_eq!(value["measurement"]["publisherQos"]["relativePriority"], 0);
+        assert_eq!(
+            value["measurement"]["publisherQos"]["baseRequestedQosChanged"],
+            false
+        );
+        assert_eq!(value["measurement"]["chunkMillis"], 20);
+        assert_eq!(value["measurement"]["jitterToleranceNanos"], 10_000_000);
+        assert_eq!(value["measurement"]["finalSpinNanos"], 250_000);
+        for key in ["publisherQos", "nativeLibrary", "nativeManifest"] {
+            assert!(
+                value["sourceHashes"][key]["sha256"]
+                    .as_str()
+                    .is_some_and(|hash| hash.len() == 64)
+            );
+        }
+        Ok(())
+    }
     #[test]
     fn only_the_exact_compiled_parameter_document_is_accepted()
     -> Result<(), Box<dyn std::error::Error>> {
