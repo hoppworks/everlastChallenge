@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "kind": "fixed-timestamp-reference-short-and30s-supplement",
+  "qualified": false,
+  "parameterFreezeCommit": "162df43",
+  "parameters": {
+    "path": "tests/fixtures/corpus/native-timestamps-supplement-parameters-v1.json",
+    "sha256": "eaad954651b022a3325550f78b239bfcdef9f0746ac5a16ea0976b9665db54b8",
+    "bytes": 13401,
+    "mode": "0o644"
+  },
+  "manifest": {
+    "path": "tests/fixtures/corpus/native-timestamps-supplement-v1.json",
+    "sha256": "67f5ea1c457d4ec230b4ffc3bb032284badf0ee29f4721492a25b597140e34f0",
+    "bytes": 8797,
+    "mode": "0o644"
+  },
+  "completion": {
+    "parameterSha256": "eaad954651b022a3325550f78b239bfcdef9f0746ac5a16ea0976b9665db54b8",
+    "parameterFreezeCommit": "162df43",
+    "runs": [
+      {
+        "model": "reference",
+        "pid": 4274,
+        "startUtc": "2026-10-17T17:23:23.467075+00:00",
+        "inferenceExit": 0,
+        "inferenceEndUtc": "2026-10-17T17:23:31.173585+00:00",
+        "evaluationExit": 0,
+        "endUtc": "2026-10-17T17:23:31.225499+00:00"
+      }
+    ]
+  },
+  "quality": {
+    "schemaVersion": 1,
+    "unicodeVersion": "13.0.0",
+    "cases": [
+      {
+        "id": "synthetic-de-ja",
+        "split": "calibration",
+        "language": "de",
+        "class": "clean",
+        "status": "ok",
+        "edits": 0,
+        "refWords": 1,
+        "hypWords": 1,
+        "wer": 0.0,
+        "unwantedText": false
+      },
+      {
+        "id": "synthetic-de-nein",
+        "split": "calibration",
+        "language": "de",
+        "class": "clean",
+        "status": "ok",
+        "edits": 0,
+        "refWords": 1,
+        "hypWords": 1,
+        "wer": 0.0,
+        "unwantedText": false
+      },
+      {
+        "id": "synthetic-de-thanks",
+        "split": "calibration",
+        "language": "de",
+        "class": "clean",
+        "status": "ok",
+        "edits": 0,
+        "refWords": 4,
+        "hypWords": 4,
+        "wer": 0.0,
+        "unwantedText": false
+      },
+      {
+        "id": "fleurs-de-test-1732-thirty-second-v1",
+        "split": "acceptance",
+        "language": "de",
+        "class": "clean",
+        "status": "ok",
+        "edits": 4,
+        "refWords": 32,
+        "hypWords": 34,
+        "wer": 0.125,
+        "unwantedText": false
+      },
+      {
+        "id": "fleurs-en-test-1670-thirty-second-v1",
+        "split": "acceptance",
+        "language": "en",
+        "class": "clean",
+        "status": "ok",
+        "edits": 4,
+        "refWords": 52,
+        "hypWords": 50,
+        "wer": 0.07692307692307693,
+        "unwantedText": false
+      }
+    ],
+    "groups": [
+      {
+        "split": "acceptance",
+        "language": "de",
+        "class": "clean",
+        "caseCount": 1,
+        "scoredCount": 1,
+        "failedCount": 0,
+        "missingCount": 0,
+        "silenceCount": 0,
+        "silenceFailedCount": 0,
+        "unwantedTextCount": 0,
+        "expectedRefWords": 32,
+        "refWords": 32,
+        "edits": 4,
+        "complete": true,
+        "observedWer": 0.125,
+        "wer": 0.125
+      },
+      {
+        "split": "acceptance",
+        "language": "en",
+        "class": "clean",
+        "caseCount": 1,
+        "scoredCount": 1,
+        "failedCount": 0,
+        "missingCount": 0,
+        "silenceCount": 0,
+        "silenceFailedCount": 0,
+        "unwantedTextCount": 0,
+        "expectedRefWords": 52,
+        "refWords": 52,
+        "edits": 4,
+        "complete": true,
+        "observedWer": 0.07692307692307693,
+        "wer": 0.07692307692307693
+      },
+      {
+        "split": "calibration",
+        "language": "de",
+        "class": "clean",
+        "caseCount": 3,
+        "scoredCount": 3,
+        "failedCount": 0,
+        "missingCount": 0,
+        "silenceCount": 0,
+        "silenceFailedCount": 0,
+        "unwantedTextCount": 0,
+        "expectedRefWords": 6,
+        "refWords": 6,
+        "edits": 0,
+        "complete": true,
+        "observedWer": 0.0,
+        "wer": 0.0
+      }
+    ]
+  },
+  "semanticReview": {
+    "method": "Root manually read every full original reference/raw hypothesis pair; meaning separate from frozen Unicode13 WER.",
+    "originalAudioListened": false,
+    "cases": [
+      {
+        "id": "synthetic-de-ja",
+        "contentPreserved": true,
+        "empty": false
+      },
+      {
+        "id": "synthetic-de-nein",
+        "contentPreserved": true,
+        "empty": false
+      },
+      {
+        "id": "synthetic-de-thanks",
+        "contentPreserved": true,
+        "empty": false
+      },
+      {
+        "id": "fleurs-de-test-1732-thirty-second-v1",
+        "completeTextFidelity": false,
+        "numberValueUnitRelationPreserved": true,
+        "wholeClauseLossOrDuplicationObserved": false,
+        "additionalTerminalConjunction": true,
+        "note": "All historical century numbers and year-range relation retained; expanded date abbreviation/range contributes orthographic WER. Extra terminal conjunction retained as unwanted content; no trailing-silence content pass."
+      },
+      {
+        "id": "fleurs-en-test-1670-thirty-second-v1",
+        "completeTextFidelity": false,
+        "explicitNegationPreserved": true,
+        "wholeClauseLossOrDuplicationObserved": false,
+        "localMeaningError": true,
+        "nameOrthographyDifference": true,
+        "acronymOmission": true,
+        "note": "Opening technical property replaced by a different word; local semantic error retained. Explicit negation and full clause structure present; personal-name spelling differs and parenthetical organization acronym omitted."
+      }
+    ]
+  },
+  "rawFiles": [
+    {
+      "path": "artifacts/acceptance/native-timestamps-supplement-v1/completion.json",
+      "sha256": "c47f46960a043ce0a0bbcec458de5ad478fd8aa5897a8f3f421c27d3e564d3f5",
+      "bytes": 425,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-supplement-v1/reference-quality.json",
+      "sha256": "d03cc26f42acc9cc5cb886483e782131f65ca9163091ceb2ffb5a38f5ac966fc",
+      "bytes": 2667,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-supplement-v1/reference-results.json",
+      "sha256": "6c8242692853333f39c3e07998cdd7ff8da623b674f97332b359664bcf5f564c",
+      "bytes": 992,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-supplement-v1/reference-results.json.metadata.json",
+      "sha256": "3eaf5379a9484602a146fe160ff3348164b3132fc794abe3b95473f3f2fbef48",
+      "bytes": 2849,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-supplement-v1/reference.command.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-supplement-v1/reference.quality.log",
+      "sha256": "9e335668b685b4994d58983bc0e79ac623251b209d82d33e5e5c939a1f5f0bfd",
+      "bytes": 85,
+      "mode": "0o600"
+    }
+  ],
+  "limits": [
+    "No original90er regrouping; supplemental German30s single-case WER12.5% retained, no corpus threshold evasion.",
+    "Same developer diagnostic initialization/observation differences; no production resource/L qualification.",
+    "No full P05/P06, native or perfect fidelity claim.",
+    "No parameter/reference/audio tuning in response to these five outputs."
+  ]
+}
