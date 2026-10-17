@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "kind": "prospective-single-model-free-300s-wait-diagnostic",
+  "createdUtc": "2026-10-17T17:16:09.786208+00:00",
+  "sourceRevision": "83e8b17d93f28af1eef5198a197175d0d1ae5fbb",
+  "binary": {
+    "path": "target/release/examples/paced_audio_probe",
+    "sha256": "9c5d1e1700c391d752c9dd7dfa42201b06ca0094c7ea08ad954c642b6b7ce405"
+  },
+  "sources": {
+    "src-tauri/examples/paced_audio_probe.rs": "3a96d592a268726aa603100f759d6a63a18223665d205fc9b82a6076e42ffe6e",
+    "src-tauri/examples/paced_audio_probe/runner.rs": "088d8428613e8510b00a8958a29411f34d42718afb25afaae6ce5a1bb562ccd8",
+    "src-tauri/src/audio.rs": "30649268bfb85918ed7971f4707af793cc81882bcbe6e60115670058b70f91f9",
+    "src-tauri/src/audio/replay.rs": "d4ddcb96f91ec766fd2afdc94b05f72a8a7e7ec03413dd08d5d18d1bedad0d8a",
+    "src-tauri/src/audio/replay/clock.rs": "c719ece5ec6bd47211a989c28228dd8087e4f1ad2c123c7345bbe9283468056d",
+    "src-tauri/src/audio/replay/schedule.rs": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b"
+  },
+  "input": {
+    "path": "artifacts/diagnostic-speech/long-control-v1/controlled-300s.wav",
+    "sha256": "80b79393de147e78e9b9a86bad3d88998dae4056a9fe10a080ef2468c92dc25b",
+    "frames": 4800000,
+    "sampleRate": 16000,
+    "channels": 1,
+    "sampleBits": 16,
+    "durationSeconds": 300
+  },
+  "configuration": {
+    "qosOverride": false,
+    "inference": false,
+    "microphone": false,
+    "chunkMillis": 20,
+    "jitterToleranceNanos": 10000000,
+    "maximumSleepNanos": 1000000,
+    "finalSpinNanos": 250000,
+    "finishObservationBudgetSecondsAfterFeed": 10
+  },
+  "expected": {
+    "publications": 15000,
+    "lastEndFrame": 4800000,
+    "lastPlannedNanos": 300000000000,
+    "inputOutputSamplesEqual": true,
+    "stopRequests": 1,
+    "startedEvents": 1,
+    "finishedEvents": 1,
+    "joined": true
+  },
+  "execution": {
+    "runs": 1,
+    "command": [
+      "target/release/examples/paced_audio_probe",
+      "artifacts/diagnostic-speech/long-control-v1/controlled-300s.wav"
+    ],
+    "environment": {
+      "EVERLAST_BENCHMARK_REVISION": "83e8b17d93f28af1eef5198a197175d0d1ae5fbb"
+    },
+    "directory": "artifacts/replay/wait-diagnostic-long-v1",
+    "retainAllFailures": true,
+    "retryUnchanged": false,
+    "noConcurrentBuildInferenceOrTests": true
+  },
+  "host": {
+    "os": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+    "machine": "arm64",
+    "chip": "Apple M5",
+    "memoryBytes": 34359738368
+  },
+  "limits": [
+    "Phase observation of a new timing violation only; no retrospective explanation of historical v2 trials.",
+    "No QoS override or model/controller workload; differs from central v2.",
+    "Phase durations include instrumentation, interruptions and descheduling; do not prove a kernel cause.",
+    "No end-to-end latency, ASR completeness, resource or installed native acceptance.",
+    "A successful single run does not establish scheduling stability."
+  ]
+}
