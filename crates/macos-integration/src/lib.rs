@@ -5,6 +5,7 @@
     reason = "Native FFI is confined to this crate; every unsafe operation requires a safety argument."
 )]
 
+pub mod clipboard;
 pub mod delivery;
 pub mod keyboard;
 pub mod target;
