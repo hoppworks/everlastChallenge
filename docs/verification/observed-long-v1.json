@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "kind": "observed-accepted-native-controlled-300s",
+  "qualified": false,
+  "L": null,
+  "parameterSha256": "dcaffa790a142ee5248a18b426231af896b486a9bb3aed7f1be044eb7e1b62e0",
+  "completion": {
+    "startUtc": "2026-10-17T16:46:07.082484+00:00",
+    "parameterSha256": "dcaffa790a142ee5248a18b426231af896b486a9bb3aed7f1be044eb7e1b62e0",
+    "pid": 98677,
+    "inferenceExit": 0,
+    "inferenceEndUtc": "2026-10-17T16:46:20.381979+00:00",
+    "evaluationExit": 0,
+    "endUtc": "2026-10-17T16:46:20.433583+00:00"
+  },
+  "matchesHistoricalResultRows": true,
+  "nativeConcatenationTrimEqualsFinalText": true,
+  "observation": {
+    "asrInputFrames": 4800000,
+    "inputFrames": 4800000,
+    "paddedFrames": 0,
+    "selectedFrames": 4800000,
+    "selectedRange": {
+      "end": 4800000,
+      "start": 0
+    }
+  },
+  "segments": [
+    {
+      "endCentiseconds": 3000,
+      "index": 0,
+      "noSpeechProbability": 3.9738507623399144e-12,
+      "nonnegativeOrderedTimestamps": false,
+      "startCentiseconds": -100730,
+      "textSha256": "4edefdb1ec61ff27353057bcfb3c9ee74da7e1d1867e31a9ffd5e1dbad12d273",
+      "textUtf8Bytes": 272
+    },
+    {
+      "endCentiseconds": 6000,
+      "index": 1,
+      "noSpeechProbability": 9.013748948627498e-12,
+      "nonnegativeOrderedTimestamps": false,
+      "startCentiseconds": -97730,
+      "textSha256": "d0e3ea9761ed7da84e1f6b567d3d85567c9fd51a6237a3318ad7b41a3722411e",
+      "textUtf8Bytes": 268
+    },
+    {
+      "endCentiseconds": 9000,
+      "index": 2,
+      "noSpeechProbability": 1.5993373292388924e-11,
+      "nonnegativeOrderedTimestamps": false,
+      "startCentiseconds": -94730,
+      "textSha256": "c0aeafa5823fef288776ad4eff45394e91d9ed6118b326cbb88b6efafa933b47",
+      "textUtf8Bytes": 324
+    },
+    {
+      "endCentiseconds": 12000,
+      "index": 3,
+      "noSpeechProbability": 4.32464827837542e-11,
+      "nonnegativeOrderedTimestamps": false,
+      "startCentiseconds": -91730,
+      "textSha256": "0835aedb350e89329ede633a869e4912d2aea27130f210f9a9f44f0f07023e18",
+      "textUtf8Bytes": 268
+    },
+    {
+      "endCentiseconds": 15000,
+      "index": 4,
+      "noSpeechProbability": 2.1493992349852498e-11,
+      "nonnegativeOrderedTimestamps": false,
+      "startCentiseconds": -88730,
+      "textSha256": "ea619f723ce586a6449df4907cc012fa6763cb78b0152f9ea63b49bd85f47bd9",
+      "textUtf8Bytes": 240
+    },
+    {
+      "endCentiseconds": 18000,
+      "index": 5,
+      "noSpeechProbability": 1.0030948294215136e-11,
+      "nonnegativeOrderedTimestamps": false,
+      "startCentiseconds": -85730,
+      "textSha256": "8c1f4a316865e53541a415b5c09687938369246b76320559259c7820b52cb39a",
+      "textUtf8Bytes": 89
+    },
+    {
+      "endCentiseconds": 21000,
+      "index": 6,
+      "noSpeechProbability": 9.193632834192389e-12,
+      "nonnegativeOrderedTimestamps": false,
+      "startCentiseconds": -82730,
+      "textSha256": "a9576d63fcedd8ea55cb28853f478492150274ef003040d56e7c774b53ce98c3",
+      "textUtf8Bytes": 134
+    },
+    {
+      "endCentiseconds": 24000,
+      "index": 7,
+      "noSpeechProbability": 1.3178417558601385e-11,
+      "nonnegativeOrderedTimestamps": false,
+      "startCentiseconds": -79730,
+      "textSha256": "cb4840c91aae1c4425387e918213cbeb10bb3d214f0613e9418aee1c9b0680fe",
+      "textUtf8Bytes": 124
+    },
+    {
+      "endCentiseconds": 27000,
+      "index": 8,
+      "noSpeechProbability": 1.5718112575391352e-11,
+      "nonnegativeOrderedTimestamps": false,
+      "startCentiseconds": -76730,
+      "textSha256": "d09b1dd2ae672675f64baaf8e58e8e5d71de1cf330b319c54a7e658c6ec43625",
+      "textUtf8Bytes": 425
+    },
+    {
+      "endCentiseconds": 30000,
+      "index": 9,
+      "noSpeechProbability": 3.2117589837676874e-11,
+      "nonnegativeOrderedTimestamps": false,
+      "startCentiseconds": -73730,
+      "textSha256": "d9bb1a144b87ec4f42f7c6c87d8fd2fddb2ab6eb030a930213f96a270b8bac7c",
+      "textUtf8Bytes": 245
+    }
+  ],
+  "qualityCases": [
+    {
+      "id": "diagnostic-de-controlled-300s",
+      "split": "acceptance",
+      "language": "de",
+      "class": "challenging",
+      "status": "ok",
+      "edits": 147,
+      "refWords": 463,
+      "hypWords": 335,
+      "wer": 0.3174946004319654,
+      "unwantedText": false
+    }
+  ],
+  "interpretation": "Full4.8Minput selected and passed toASR; missingcontent already absent in10acceptednative segment texts, finalassembly is exact. Rawendtimesadvance3000centiseconds; rawnegative starts are not audioalignment. No discardedwindow/seek/EOT/prompt/fallbackcause proven.",
+  "rawFiles": [
+    {
+      "path": "artifacts/diagnostic-speech/observed-long-v1/command.log",
+      "sha256": "2174f0625f0744510349ce169b7063c0cea5a2485acf7ff9bb58d4b2300dd179",
+      "bytes": 41,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-long-v1/completion.json",
+      "sha256": "e304ded965f57319cbf3d3d8d4c72e7daeba209050a4220d88cef4219f1d38c1",
+      "bytes": 308,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-long-v1/quality.json",
+      "sha256": "cc51f8234a9c5547f510158abd09b2f8667a2d2f309b08a82e747b39f8dec9b8",
+      "bytes": 828,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-long-v1/quality.log",
+      "sha256": "1af2e298bbbe09eb199b2970d3d1441b467af606370f5593849eda4700aad6ec",
+      "bytes": 85,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-long-v1/results.json",
+      "sha256": "3c1b31130bfea63fdd7a5036a1f735698751bef19c91fd76d3086b6e0655925d",
+      "bytes": 2483,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-long-v1/results.json.metadata.json",
+      "sha256": "49ae451778ad550151a50b19bc90a03c9559e2be6341407166510524200cd905",
+      "bytes": 9182,
+      "mode": "0o600"
+    }
+  ]
+}
