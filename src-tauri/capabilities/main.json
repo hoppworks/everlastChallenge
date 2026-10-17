@@ -3,6 +3,21 @@
   "identifier": "main",
   "description": "Only the local main window may use the explicitly listed application commands.",
   "local": true,
-  "windows": ["main"],
-  "permissions": ["core:event:allow-listen", "core:event:allow-unlisten"]
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "allow-app-snapshot",
+    "allow-model-download",
+    "allow-model-cancel",
+    "allow-recording-start",
+    "allow-recording-stop",
+    "allow-recording-cancel",
+    "allow-transcript-clear",
+    "allow-transcript-copy",
+    "allow-microphone-request",
+    "allow-accessibility-request"
+  ]
 }

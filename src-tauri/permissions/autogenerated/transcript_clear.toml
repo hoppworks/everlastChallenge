@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-transcript-clear"
+description = "Enables the transcript_clear command without any pre-configured scope."
+commands.allow = ["transcript_clear"]
+
+[[permission]]
+identifier = "deny-transcript-clear"
+description = "Denies the transcript_clear command without any pre-configured scope."
+commands.deny = ["transcript_clear"]

@@ -1,11 +1,4 @@
 import { createRoot } from "react-dom/client";
-
+import { App } from "./App";
 const root = document.getElementById("root");
-if (root) {
-  createRoot(root).render(
-    <main>
-      <h1>Everlast Dictation</h1>
-      <p>Die Diktierfunktion wird eingerichtet.</p>
-    </main>,
-  );
-}
+if (root) createRoot(root).render(<App />);

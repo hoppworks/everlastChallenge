@@ -2,7 +2,18 @@
 
 fn main() {
     let attributes =
-        tauri_build::Attributes::new().app_manifest(tauri_build::AppManifest::new().commands(&[]));
+        tauri_build::Attributes::new().app_manifest(tauri_build::AppManifest::new().commands(&[
+            "app_snapshot",
+            "model_download",
+            "model_cancel",
+            "recording_start",
+            "recording_stop",
+            "recording_cancel",
+            "transcript_clear",
+            "transcript_copy",
+            "microphone_request",
+            "accessibility_request",
+        ]));
     if let Err(error) = tauri_build::try_build(attributes) {
         eprintln!("Tauri build configuration failed: {error}");
         std::process::exit(1);
