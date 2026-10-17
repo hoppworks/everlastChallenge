@@ -30,3 +30,9 @@ ignore_without_reason = "deny"
 lto = "thin"
 codegen-units = 4
 strip = "debuginfo"
+
+# Rust 1.93 / Xcode 27: stripping host proc-macro dylibs produces a LINKEDIT
+# string pool that dyld rejects. Keep build-time libraries loadable; shipped
+# application binaries retain the release stripping policy above.
+[profile.release.build-override]
+strip = "none"
