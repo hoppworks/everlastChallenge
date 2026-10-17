@@ -32,6 +32,7 @@ unsafe extern "C" {
 #[link(name = "CoreGraphics", kind = "framework")]
 unsafe extern "C" {
     fn CGEventSourceFlagsState(state: CGEventSourceStateID) -> u64;
+    fn CGEventSourceKeyState(state: CGEventSourceStateID, key: u16) -> bool;
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -167,4 +168,13 @@ pub fn modifiers_held() -> bool {
             | CGEventFlags::CGEventFlagSecondaryFn
             | CGEventFlags::CGEventFlagHelp,
     )
+}
+
+/// Current physical Escape state, including while no global shortcut is registered.
+/// This read-only Quartz query neither requests permissions nor synthesizes input.
+pub fn escape_key_pressed() -> bool {
+    // SAFETY: CGEventSource.h declares (CGEventSourceStateID, CGKeyCode=u16) -> bool.
+    // Events.h defines layout-independent kVK_Escape=0x35. The query takes no
+    // pointers and reads shared HID state without owning an AppKit object.
+    unsafe { CGEventSourceKeyState(CGEventSourceStateID::HIDSystemState, 0x35) }
 }

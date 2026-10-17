@@ -36,3 +36,6 @@ strip = "debuginfo"
 # application binaries retain the release stripping policy above.
 [profile.release.build-override]
 strip = "none"
+
+[patch.crates-io]
+global-hotkey = { path = "vendor/global-hotkey" }

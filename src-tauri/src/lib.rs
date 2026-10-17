@@ -4,6 +4,7 @@
 pub mod audio;
 pub mod control;
 pub mod controller;
+pub mod hotkeys;
 pub mod inference_service;
 pub mod model;
 pub mod native_service;
