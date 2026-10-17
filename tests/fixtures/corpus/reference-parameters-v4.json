@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "configurationId": "complete-recording-reference-v4",
+  "status": "pre-calibration candidate; not a qualification claim",
+  "unicodeVersion": "13.0.0",
+  "models": [
+    {
+      "id": "large-v3-turbo-q5_0",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+    },
+    {
+      "id": "small-q5_1",
+      "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb"
+    }
+  ],
+  "runtime": {
+    "whisperRs": "0.16.0",
+    "whisperRsSys": "0.15.0",
+    "whisperRsSysSourceRevision": "7558e1b72f54f2f22a53589afb77e65681834c36",
+    "context": {
+      "use_gpu": true,
+      "flash_attn": false,
+      "gpu_device": 0,
+      "dtw": "disabled"
+    },
+    "fullParams": {
+      "strategy": "greedy",
+      "greedy_best_of": 1,
+      "beam_size": -1,
+      "beam_patience": -1.0,
+      "n_threads": 4,
+      "n_max_text_ctx": 16384,
+      "offset_ms": 0,
+      "duration_ms": 0,
+      "translate": false,
+      "no_context": true,
+      "no_timestamps": true,
+      "single_segment": false,
+      "print_special": false,
+      "print_progress": false,
+      "print_realtime": false,
+      "print_timestamps": false,
+      "token_timestamps": false,
+      "thold_pt": 0.01,
+      "thold_ptsum": 0.01,
+      "max_len": 0,
+      "split_on_word": false,
+      "max_tokens": 0,
+      "debug_mode": false,
+      "audio_ctx": 0,
+      "tdrz_enable": false,
+      "suppress_regex": null,
+      "initial_prompt": null,
+      "carry_initial_prompt": false,
+      "prompt_tokens": null,
+      "prompt_n_tokens": 0,
+      "language": "explicit per case: de or en",
+      "detect_language": false,
+      "suppress_blank": true,
+      "suppress_nst": true,
+      "temperature": 0.0,
+      "max_initial_ts": 1.0,
+      "length_penalty": -1.0,
+      "temperature_inc": 0.2,
+      "entropy_thold": 2.4,
+      "logprob_thold": -1.0,
+      "no_speech_thold": 0.6,
+      "callbacks": "all disabled/null",
+      "grammar_rules": null,
+      "n_grammar_rules": 0,
+      "i_start_rule": 0,
+      "grammar_penalty": 100.0,
+      "vad": false,
+      "vad_model_path": null,
+      "vad_params": "upstream defaults inactive because vad=false; exact source hash below"
+    },
+    "whisperCppSourceRevision": "2eeeba56e9edd762b4b38467bab96c2517163158",
+    "whisperRsSysLocalPatch": {
+      "path": "vendor/whisper-rs-sys",
+      "id": "initial-sot-no-speech-row-v1+vad-failure-status-v1",
+      "notes": "vendor/whisper-rs-sys/PATCHES.md"
+    },
+    "speechGate": {
+      "model": {
+        "id": "silero-v5.1.2",
+        "file": "ggml-silero-v5.1.2.bin",
+        "bytes": 885098,
+        "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+        "sourceRevision": "9ffd54a1e1ee413ddf265af9913beaf518d1639b"
+      },
+      "useGpu": false,
+      "threads": 1,
+      "windowSamples": 512,
+      "input": "entire original recording in normalized scratch only; never alters ASR input",
+      "normalization": {
+        "peakTarget": 0.95,
+        "gain": "0.95 / whole-recording absolute peak; zero peak has gain=1",
+        "clip": false,
+        "trim": false
+      },
+      "positiveThreshold": 0.5,
+      "aggregation": "at least one finite probability >= threshold, after validating all values and exact ceil(samples/512) count",
+      "maximumScratchSamples": 4800000,
+      "warmContext": true,
+      "nativeStateResetEachCall": true,
+      "failurePolicy": "distinct error; never blank text as fallback",
+      "cancelCallback": false
+    }
+  },
+  "preprocessing": {
+    "mode": "whole-recording VAD admission then unchanged outer energy range and full ASR; no speculative/segment inference",
+    "sampleRate": 16000,
+    "channels": 1,
+    "startRms": 5e-05,
+    "endRms": 2.5e-05,
+    "frameSamples": 320,
+    "prerollSamples": 2400,
+    "tailSamples": 3200,
+    "backendPaddingMinimumSamples": 16000,
+    "paddingSampleValue": 0.0,
+    "maximumSamples": 4800000
+  },
+  "state": {
+    "oneWarmModelContext": true,
+    "freshWhisperStateEachJob": true,
+    "serialInference": true,
+    "abortCallback": false
+  },
+  "sourceHashes": {
+    "engine": {
+      "filename": "src-tauri/src/transcription.rs",
+      "sha256": "41884c7aba39fb824a7f5170fa40e0f2716822ac71d9d4b85590f8372299052d"
+    },
+    "energy": {
+      "filename": "crates/dictation-core/src/audio.rs",
+      "sha256": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46"
+    },
+    "whisperCppDefaults": {
+      "filename": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+      "sha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e"
+    },
+    "whisperParamsWrapper": {
+      "filename": "whisper_params.rs",
+      "sha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8"
+    },
+    "cargoLock": {
+      "filename": "Cargo.lock",
+      "sha256": "50ea27c39fb6b782444e3f78b71c71c85ba0f7996ef4fac3fec97bf091330ef3"
+    },
+    "speechGate": {
+      "filename": "src-tauri/src/transcription/speech_gate.rs",
+      "sha256": "4e6964540cbe78217cf6c5f6924c859d5240bd2ec9603f857113dea272da7f1f"
+    },
+    "models": {
+      "filename": "src-tauri/src/model.rs",
+      "sha256": "c70efac3bfb77ac6b6cc72ca01a2a396a95580f9ebd3681b25a5f49d34b287dc"
+    },
+    "setup": {
+      "filename": "src-tauri/src/setup.rs",
+      "sha256": "c99c0cd9c09e0db85ec826a809191b874c589c635438d286a79dd7e304ef8205"
+    },
+    "corpusProbe": {
+      "filename": "src-tauri/examples/corpus_probe.rs",
+      "sha256": "30532a8496d89c891259056034599b71b076300c5c2f43aaae49f8495b2627a0"
+    }
+  },
+  "limits": {
+    "fileBackendOnly": true,
+    "notRealtimeL": true,
+    "notMicrophoneAcceptance": true,
+    "notFullP05Qualification": true
+  },
+  "measurementHost": {
+    "observedDate": "2026-10-17",
+    "hardware": "Apple M5",
+    "architecture": "aarch64",
+    "memoryBytes": 34359738368,
+    "macOS": "27.0.1",
+    "macOSBuild": "26A434",
+    "powerSource": "AC Power",
+    "rustc": "1.93.0 (254b59607 2026-01-19)",
+    "cargo": "1.93.0 (083ac5135 2025-12-15)",
+    "xcode": "27.1 (27A9275)",
+    "python": "3.9.6",
+    "unicodeVersion": "13.0.0",
+    "ffmpeg": "9.0.2",
+    "scope": "host observation before calibration; not resource or latency acceptance"
+  },
+  "changeFromV2": "Same energy/decoder parameters; local whisper-rs-sys SOT no-speech row fix only. No qualification claim.",
+  "changeFromV3": "Same ASR energy/decoder configuration; corrected native VAD failure status and positive whole-recording Silero gate on separately normalized scratch; verified VAD asset required before readiness. No qualification claim."
+}

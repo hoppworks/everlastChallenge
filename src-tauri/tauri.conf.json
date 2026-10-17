@@ -19,6 +19,7 @@
   "bundle": {
     "active": true,
     "targets": ["app", "dmg"],
+    "resources": {"../docs/licenses/": "licenses/"},
     "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns"],
     "macOS": {"minimumSystemVersion":"27.0","signingIdentity":"-","infoPlist":"Info.plist","entitlements":"Entitlements.plist"}
   }

@@ -192,7 +192,7 @@ export function AppView(props: AppViewProps) {
                   {setup.model.name} · {bytes(setup.model.downloadBytes)}
                 </p>
                 <p>
-                  Das Modell wird einmalig von{" "}
+                  Das Sprachmodell wird einmalig von{" "}
                   <a
                     href={setup.model.sourceUrl}
                     target="_blank"
@@ -200,7 +200,16 @@ export function AppView(props: AppViewProps) {
                   >
                     Hugging Face
                   </a>{" "}
-                  geladen. Danach werden deine Diktate lokal verarbeitet.
+                  geladen. Dazu kommt der{" "}
+                  <a
+                    href="https://huggingface.co/ggml-org/whisper-vad/tree/9ffd54a1e1ee413ddf265af9913beaf518d1639b"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Silero-Sprachdetektor
+                  </a>{" "}
+                  (0,9 MB). Bereits geprüfte Dateien werden wiederverwendet.
+                  Danach werden deine Diktate lokal verarbeitet.
                 </p>
               </>
             )}

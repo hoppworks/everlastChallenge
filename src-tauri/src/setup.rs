@@ -163,7 +163,7 @@ impl SetupService {
                     phase: Phase::Missing,
                     model: definition,
                     received: 0,
-                    total: definition.bytes(),
+                    total: definition.bytes() + model::VAD.bytes(),
                     failure: None,
                 },
                 cancel: None,
@@ -319,48 +319,65 @@ fn run(
     state: &Mutex<State>,
 ) {
     let result = (|| {
-        let cached = match backend.inspect(directory, definition, cancel) {
-            Ok(path) => path,
-            Err(ModelError::Hash | ModelError::Size) if download => None,
-            Err(error) => return Err(failure(error)),
-        };
-        if cancel.is_cancelled() {
-            return Ok(None);
-        }
-        let path = match cached {
-            Some(path) => path,
-            None if !download => return Ok(None),
-            None => {
-                {
-                    let mut state = state.lock().map_err(|_| Failure::Worker)?;
-                    if cancel.is_cancelled() {
-                        return Ok(None);
-                    }
-                    state.update(Phase::Downloading, 0, None);
-                }
-                backend
-                    .download(directory, definition, cancel, &mut |received| {
-                        if let Ok(mut state) = state.lock()
-                            && !cancel.is_cancelled()
-                        {
-                            state.update(
-                                Phase::Downloading,
-                                received.min(definition.bytes()),
-                                None,
-                            );
-                        }
-                    })
-                    .map_err(failure)?
+        let mut completed = 0;
+        let mut asr_path = None;
+        for asset in [definition, model::VAD] {
+            let cached = match backend.inspect(directory, asset, cancel) {
+                Ok(path) => path,
+                Err(ModelError::Hash | ModelError::Size) if download => None,
+                Err(error) => return Err(failure(error)),
+            };
+            if cancel.is_cancelled() {
+                return Ok(None);
             }
-        };
-        if cancel.is_cancelled() {
-            return Ok(None);
+            let path = match cached {
+                Some(path) => path,
+                None if !download => return Ok(None),
+                None => {
+                    {
+                        let mut shared = state.lock().map_err(|_| Failure::Worker)?;
+                        if cancel.is_cancelled() {
+                            return Ok(None);
+                        }
+                        shared.update(Phase::Downloading, completed, None);
+                    }
+                    backend
+                        .download(directory, asset, cancel, &mut |received| {
+                            if let Ok(mut shared) = state.lock()
+                                && !cancel.is_cancelled()
+                            {
+                                // Cached/finished assets count as verified available
+                                // bytes; callbacks contribute bounded current-file bytes.
+                                let received = (completed + received.min(asset.bytes()))
+                                    .max(shared.snapshot.received);
+                                shared.update(Phase::Downloading, received, None);
+                            }
+                        })
+                        .map_err(failure)?
+                }
+            };
+            if cancel.is_cancelled() {
+                return Ok(None);
+            }
+            // Both inspect and download return only size/hash-verified files.
+            completed += asset.bytes();
+            {
+                let mut shared = state.lock().map_err(|_| Failure::Worker)?;
+                if cancel.is_cancelled() {
+                    return Ok(None);
+                }
+                let phase = shared.snapshot.phase;
+                shared.update(phase, completed, None);
+            }
+            if asr_path.is_none() {
+                asr_path = Some(path);
+            }
         }
+        let path = asr_path.ok_or(Failure::Initialization)?;
         {
-            let mut state = state.lock().map_err(|_| Failure::Worker)?;
+            let mut shared = state.lock().map_err(|_| Failure::Worker)?;
             if !cancel.is_cancelled() {
-                let received = state.snapshot.received;
-                state.update(Phase::Loading, received, None);
+                shared.update(Phase::Loading, completed, None);
             }
         }
         if cancel.is_cancelled() {
@@ -488,7 +505,10 @@ mod tests {
         setup.start(true)?;
         let snapshot = finished(&setup)?;
         assert_eq!(snapshot.phase, Phase::Ready);
-        assert_eq!(snapshot.received, 42);
+        assert_eq!(
+            snapshot.received,
+            model::REFERENCE.bytes() + model::VAD.bytes()
+        );
         let ready = setup.take_ready()?.ok_or("warm service missing")?;
         assert!(ready.ready());
         assert!(setup.take_ready()?.is_none());
@@ -526,11 +546,14 @@ mod tests {
         }
         fn download(
             &self,
-            _: &Path,
-            _: ModelDefinition,
+            directory: &Path,
+            definition: ModelDefinition,
             cancel: &CancellationToken,
             progress: &mut dyn FnMut(u64),
         ) -> Result<PathBuf, ModelError> {
+            if definition.id() == model::VAD.id() {
+                return Fixture.download(directory, definition, cancel, progress);
+            }
             progress(7);
             self.entered.send(()).map_err(|_| ModelError::Closed)?;
             loop {
@@ -800,7 +823,7 @@ mod tests {
                 );
                 assert_eq!(state.failure, Some(expected));
                 assert_eq!(state.received, if in_download { 123 } else { 0 });
-                assert_eq!(state.total, model::REFERENCE.bytes());
+                assert_eq!(state.total, model::REFERENCE.bytes() + model::VAD.bytes());
                 assert!(state.revision > 1);
                 assert!(setup.take_ready()?.is_none());
                 for _ in 0..3 {
@@ -935,9 +958,12 @@ mod tests {
         let ready = finished(&setup)?;
         assert_eq!(ready.phase, Phase::Ready);
         assert_eq!(ready.failure, None);
-        assert_eq!(ready.received, 42);
-        assert_eq!(backend.inspections.load(Ordering::SeqCst), 3);
-        assert_eq!(backend.downloads.load(Ordering::SeqCst), 2);
+        assert_eq!(
+            ready.received,
+            model::REFERENCE.bytes() + model::VAD.bytes()
+        );
+        assert_eq!(backend.inspections.load(Ordering::SeqCst), 4);
+        assert_eq!(backend.downloads.load(Ordering::SeqCst), 3);
         assert_eq!(backend.loads.load(Ordering::SeqCst), 1);
         let service = setup
             .take_ready()?
@@ -945,6 +971,229 @@ mod tests {
         assert!(service.ready());
         assert!(setup.take_ready()?.is_none());
         service.shutdown()?;
+        setup.shutdown()?;
+        Ok(())
+    }
+    struct AssetBackend {
+        vad_cached: bool,
+        vad_corrupt: bool,
+        fail_download: bool,
+        calls: Mutex<Vec<String>>,
+    }
+    impl Backend for AssetBackend {
+        fn inspect(
+            &self,
+            directory: &Path,
+            definition: ModelDefinition,
+            _: &CancellationToken,
+        ) -> Result<Option<PathBuf>, ModelError> {
+            self.calls
+                .lock()
+                .map_err(|_| ModelError::Closed)?
+                .push(format!("inspect:{}", definition.id()));
+            if definition.id() == model::VAD.id() {
+                if self.vad_corrupt {
+                    return Err(ModelError::Hash);
+                }
+                if !self.vad_cached {
+                    return Ok(None);
+                }
+            }
+            Ok(Some(directory.join(definition.file_name())))
+        }
+        fn download(
+            &self,
+            directory: &Path,
+            definition: ModelDefinition,
+            _: &CancellationToken,
+            progress: &mut dyn FnMut(u64),
+        ) -> Result<PathBuf, ModelError> {
+            self.calls
+                .lock()
+                .map_err(|_| ModelError::Closed)?
+                .push(format!("download:{}", definition.id()));
+            progress(17);
+            if self.fail_download {
+                return Err(ModelError::Network);
+            }
+            progress(definition.bytes());
+            Ok(directory.join(definition.file_name()))
+        }
+        fn load(
+            &self,
+            path: PathBuf,
+            definition: ModelDefinition,
+        ) -> Result<InferenceService, Failure> {
+            self.calls
+                .lock()
+                .map_err(|_| Failure::Worker)?
+                .push(format!("load:{}", definition.id()));
+            Fixture.load(path, definition)
+        }
+    }
+    #[test]
+    fn asr_cache_alone_is_not_ready_and_bad_vad_does_not_fall_back()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for corrupt in [false, true] {
+            let backend = Arc::new(AssetBackend {
+                vad_cached: false,
+                vad_corrupt: corrupt,
+                fail_download: false,
+                calls: Mutex::new(Vec::new()),
+            });
+            let setup =
+                SetupService::with_backend(PathBuf::from("assets"), model::SMALL, backend.clone());
+            setup.start(false)?;
+            let snapshot = finished(&setup)?;
+            assert_eq!(
+                snapshot.phase,
+                if corrupt {
+                    Phase::Failed
+                } else {
+                    Phase::Missing
+                }
+            );
+            assert_eq!(snapshot.failure, corrupt.then_some(Failure::Hash));
+            assert_eq!(snapshot.total, model::SMALL.bytes() + model::VAD.bytes());
+            assert_eq!(snapshot.received, model::SMALL.bytes());
+            assert_eq!(snapshot.model.id(), model::SMALL.id());
+            assert!(setup.take_ready()?.is_none());
+            assert_eq!(
+                *backend.calls.lock().map_err(|_| "calls")?,
+                ["inspect:small-q5_1", "inspect:silero-v5.1.2"]
+            );
+            setup.shutdown()?;
+        }
+        Ok(())
+    }
+    #[test]
+    fn both_assets_are_required_and_only_missing_or_corrupt_vad_is_downloaded()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for (cached, corrupt) in [(true, false), (false, false), (true, true)] {
+            let backend = Arc::new(AssetBackend {
+                vad_cached: cached,
+                vad_corrupt: corrupt,
+                fail_download: false,
+                calls: Mutex::new(Vec::new()),
+            });
+            let setup = SetupService::with_backend(
+                PathBuf::from("assets"),
+                model::REFERENCE,
+                backend.clone(),
+            );
+            setup.start(!cached || corrupt)?;
+            let snapshot = finished(&setup)?;
+            assert_eq!(snapshot.phase, Phase::Ready);
+            assert_eq!(
+                snapshot.received,
+                model::REFERENCE.bytes() + model::VAD.bytes()
+            );
+            assert_eq!(snapshot.total, snapshot.received);
+            let mut expected = vec!["inspect:large-v3-turbo-q5_0", "inspect:silero-v5.1.2"];
+            if !cached || corrupt {
+                expected.push("download:silero-v5.1.2");
+            }
+            expected.push("load:large-v3-turbo-q5_0");
+            assert_eq!(*backend.calls.lock().map_err(|_| "calls")?, expected);
+            setup.take_ready()?.ok_or("ready")?.shutdown()?;
+            setup.shutdown()?;
+        }
+        Ok(())
+    }
+    #[test]
+    fn failed_second_asset_keeps_cumulative_bytes_and_never_loads()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let backend = Arc::new(AssetBackend {
+            vad_cached: false,
+            vad_corrupt: false,
+            fail_download: true,
+            calls: Mutex::new(Vec::new()),
+        });
+        let setup =
+            SetupService::with_backend(PathBuf::from("assets"), model::REFERENCE, backend.clone());
+        setup.start(true)?;
+        let snapshot = finished(&setup)?;
+        assert_eq!(snapshot.phase, Phase::Failed);
+        assert_eq!(snapshot.failure, Some(Failure::NetworkOrTls));
+        assert_eq!(snapshot.received, model::REFERENCE.bytes() + 17);
+        assert_eq!(
+            *backend.calls.lock().map_err(|_| "calls")?,
+            [
+                "inspect:large-v3-turbo-q5_0",
+                "inspect:silero-v5.1.2",
+                "download:silero-v5.1.2"
+            ]
+        );
+        assert!(setup.take_ready()?.is_none());
+        setup.shutdown()?;
+        Ok(())
+    }
+
+    struct PendingVad {
+        entered: crossbeam_channel::Sender<()>,
+        loads: Arc<std::sync::atomic::AtomicUsize>,
+    }
+    impl Backend for PendingVad {
+        fn inspect(
+            &self,
+            directory: &Path,
+            definition: ModelDefinition,
+            _: &CancellationToken,
+        ) -> Result<Option<PathBuf>, ModelError> {
+            Ok(
+                (definition.id() != model::VAD.id())
+                    .then(|| directory.join(definition.file_name())),
+            )
+        }
+        fn download(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            cancel: &CancellationToken,
+            progress: &mut dyn FnMut(u64),
+        ) -> Result<PathBuf, ModelError> {
+            progress(17);
+            progress(3); // A regressing callback cannot rewind visible progress.
+            self.entered.send(()).map_err(|_| ModelError::Closed)?;
+            while !cancel.is_cancelled() {
+                thread::sleep(Duration::from_millis(1));
+            }
+            Err(ModelError::Cancelled)
+        }
+        fn load(&self, _: PathBuf, _: ModelDefinition) -> Result<InferenceService, Failure> {
+            self.loads.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            Err(Failure::Initialization)
+        }
+    }
+    #[test]
+    fn pending_vad_reports_monotone_cumulative_progress_and_cancel_never_loads()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (entered, began) = crossbeam_channel::bounded(1);
+        let loads = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let setup = SetupService::with_backend(
+            PathBuf::from("assets"),
+            model::REFERENCE,
+            Arc::new(PendingVad {
+                entered,
+                loads: Arc::clone(&loads),
+            }),
+        );
+        setup.start(true)?;
+        began.recv_timeout(Duration::from_secs(1))?;
+        let snapshot = setup.snapshot()?;
+        assert_eq!(snapshot.phase, Phase::Downloading);
+        assert_eq!(snapshot.received, model::REFERENCE.bytes() + 17);
+        assert_eq!(
+            snapshot.total,
+            model::REFERENCE.bytes() + model::VAD.bytes()
+        );
+        assert!(setup.take_ready()?.is_none());
+        setup.cancel()?;
+        let cancelled = finished(&setup)?;
+        assert_eq!(cancelled.phase, Phase::Cancelled);
+        assert_eq!(cancelled.received, snapshot.received);
+        assert_eq!(loads.load(std::sync::atomic::Ordering::SeqCst), 0);
+        assert!(setup.take_ready()?.is_none());
         setup.shutdown()?;
         Ok(())
     }

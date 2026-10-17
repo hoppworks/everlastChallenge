@@ -36,6 +36,12 @@ pub const REFERENCE: ModelDefinition = ModelDefinition {
     bytes: 574_041_195,
     sha256: "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
 };
+pub const VAD: ModelDefinition = ModelDefinition {
+    id: "silero-v5.1.2",
+    file: "ggml-silero-v5.1.2.bin",
+    bytes: 885_098,
+    sha256: "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+};
 pub const SMALL: ModelDefinition = ModelDefinition {
     id: "small-q5_1",
     file: "ggml-small-q5_1.bin",
@@ -57,6 +63,9 @@ impl ModelDefinition {
         self.sha256
     }
     pub fn url(self) -> String {
+        if self.id == VAD.id {
+            return "https://huggingface.co/ggml-org/whisper-vad/resolve/9ffd54a1e1ee413ddf265af9913beaf518d1639b/ggml-silero-v5.1.2.bin".into();
+        }
         format!(
             "https://huggingface.co/ggerganov/whisper.cpp/resolve/{MODEL_REVISION}/{}",
             self.file
@@ -279,6 +288,30 @@ fn verify(
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn vad_manifest_is_pinned_independently_without_changing_asr_urls() {
+        assert_eq!(VAD.id(), "silero-v5.1.2");
+        assert_eq!(VAD.file_name(), "ggml-silero-v5.1.2.bin");
+        assert_eq!(VAD.bytes(), 885_098);
+        assert_eq!(
+            VAD.sha256(),
+            "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf"
+        );
+        assert_eq!(
+            VAD.url(),
+            "https://huggingface.co/ggml-org/whisper-vad/resolve/9ffd54a1e1ee413ddf265af9913beaf518d1639b/ggml-silero-v5.1.2.bin"
+        );
+        for definition in [REFERENCE, SMALL] {
+            assert_eq!(
+                definition.url(),
+                format!(
+                    "https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/{}",
+                    definition.file_name()
+                )
+            );
+        }
+    }
+
     use super::*;
     use std::fs;
 

@@ -3,7 +3,7 @@
 mod input;
 use everlast_dictation::{
     inference_service::{InferenceService, Job, WorkToken},
-    model::{REFERENCE, SMALL},
+    model::{REFERENCE, SMALL, VAD},
     transcription::Language,
 };
 use serde::Serialize;
@@ -127,6 +127,10 @@ fn main() -> Result<(), Error> {
         .and_then(|worker| worker.shutdown().err())
         .map(|error| error.to_string());
     let cleanup_millis = cleanup_started.elapsed().as_millis();
+    let gate_metadata = serde_json::json!({"modelId":VAD.id(),"modelSha256":VAD.sha256(),"modelBytes":VAD.bytes(),"useGpu":false,"threads":1,
+                "windowSamples":512,"mode":"whole-recording-admission; ASR PCM unchanged","peakTarget":0.95,"zeroPeakGain":1.0,
+                "positiveThreshold":0.5,"aggregation":"any finite window >= threshold; all windows validated first",
+                "maximumScratchSamples":4800000,"failurePolicy":"error; never silence"});
     let metadata = serde_json::json!({
         "schemaVersion": 1, "referenceKind": "file-backend-only", "corpusFileSha256": corpus_hash,
         "sourceRevision": std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
@@ -138,7 +142,8 @@ fn main() -> Result<(), Error> {
             "utteranceMode":"complete-recording", "freshStatePerJob":true,
             "inputSegmentation":"energy-range", "energyStartRms":0.00005, "energyEndRms":0.000025,
             "energyFrameSamples":320, "prerollMillis":150, "tailMillis":200, "minimumBackendSamples":16000, "noContext":true, "translate":false, "detectLanguage":false,
-            "noTimestamps":true, "printSpecial":false, "printProgress":false, "printRealtime":false, "printTimestamps":false },
+            "noTimestamps":true, "printSpecial":false, "printProgress":false, "printRealtime":false, "printTimestamps":false,
+            "speechGate":gate_metadata },
         "cases": observations,
     });
     input::write_reports(
