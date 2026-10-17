@@ -1,0 +1,43 @@
+{
+  "allocation": "reserve all 30001 call slots before each mode enters QoS; no loop IO",
+  "build": {
+    "architecture": "aarch64",
+    "debugAssertions": false,
+    "os": "macos"
+  },
+  "clock": "std::time::Instant offsets per mode; requested Mach duration uses mach_absolute_time",
+  "configurationId": "wait-mechanisms-1ms-relative-then-mach-qos-v1",
+  "failurePolicy": "retain every collected row and mode error; no retry; following mode unavailable",
+  "maximumCallsPerMode": 30001,
+  "modeDurationNanos": 30000000000,
+  "modeEnd": "before each request: finish once mode elapsed >= 30s; last request may finish later",
+  "modes": [
+    "relative",
+    "mach"
+  ],
+  "noAudio": true,
+  "noModel": true,
+  "noRealtimeGuarantee": true,
+  "noSpin": true,
+  "overshootThresholdNanos": 10000000,
+  "publisherQos": {
+    "baseRequestedQosChanged": false,
+    "class": "userInteractive",
+    "relativePriority": 0,
+    "scope": "same current thread per mode, after allocation and mechanism init, through loop; finish before summary/report"
+  },
+  "requestNanos": 1000000,
+  "schemaVersion": 1,
+  "sourceHashes": {
+    "cargoLock": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089",
+    "deadline": "e899821ff150ab6b31b2317414c64fdf828972e04ca57f34eed9cc7cfb96187d",
+    "hostCargo": "7696f89d6e3ece66139610e369d96242c070b6865e5faa9acc23c671fcd7e585",
+    "nativeCargo": "14be4d5bc3c6528b345b5631459329d4b851385967fa6fb7eacd9a5d3c60f8b9",
+    "nativeLibrary": "5032137be2976d7647014d7228cb6ddaabc32237eb0dad21fa08b323e3522e10",
+    "probe": "d3f611744af08518e6c637106e951662e81b38792778650869a4f48adc6b6edf",
+    "qos": "09308c2d9280aed0f61e98b124fa42501514abb3befe47a6669bd8009a160772",
+    "workspaceCargo": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230"
+  },
+  "statistics": "all rows retained including failed calls; successful-call summary explicitly scoped; no corpus jitter or L claim",
+  "thresholdComparison": "strict greater-than; diagnostic only, continue the whole planned mode"
+}

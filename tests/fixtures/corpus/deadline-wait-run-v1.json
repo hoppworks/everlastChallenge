@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "kind": "prospective-relative-then-mach-wait-only-diagnostic",
+  "qualified": false,
+  "sourceRevision": "e1290318fff7de104d45fd0b8463ddb0a43c5330",
+  "createdBeforeWaitWorkUtc": "2026-10-17T18:44:48.627892+00:00",
+  "binary": {
+    "path": "target/release/examples/deadline_probe",
+    "sha256": "00b8e84aa1c3548fdba98100c02f1f627e6fdfdece667894c1ddb5d56297a1c9",
+    "bytes": 808896,
+    "mode": "0o755"
+  },
+  "parameters": {
+    "path": "tests/fixtures/corpus/deadline-wait-parameters-v1.json",
+    "sha256": "bf804936f54f83a7d1bca30b29e7f72ff7d2fe4f8feb98c947f725d50ddfeb83",
+    "bytes": 2028,
+    "mode": "0o644"
+  },
+  "sources": [
+    {
+      "path": "crates/macos-integration/src/deadline.rs",
+      "sha256": "e899821ff150ab6b31b2317414c64fdf828972e04ca57f34eed9cc7cfb96187d",
+      "bytes": 8008,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/src/qos.rs",
+      "sha256": "09308c2d9280aed0f61e98b124fa42501514abb3befe47a6669bd8009a160772",
+      "bytes": 6255,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/src/lib.rs",
+      "sha256": "5032137be2976d7647014d7228cb6ddaabc32237eb0dad21fa08b323e3522e10",
+      "bytes": 479,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/deadline_probe.rs",
+      "sha256": "d3f611744af08518e6c637106e951662e81b38792778650869a4f48adc6b6edf",
+      "bytes": 22662,
+      "mode": "0o644"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089",
+      "bytes": 129670,
+      "mode": "0o644"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230",
+      "bytes": 1104,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/Cargo.toml",
+      "sha256": "7696f89d6e3ece66139610e369d96242c070b6865e5faa9acc23c671fcd7e585",
+      "bytes": 1698,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/Cargo.toml",
+      "sha256": "14be4d5bc3c6528b345b5631459329d4b851385967fa6fb7eacd9a5d3c60f8b9",
+      "bytes": 945,
+      "mode": "0o644"
+    }
+  ],
+  "command": [
+    "target/release/examples/deadline_probe",
+    "tests/fixtures/corpus/deadline-wait-parameters-v1.json",
+    "artifacts/deadline-wait/v1/results.json"
+  ],
+  "environment": {
+    "EVERLAST_BENCHMARK_REVISION": "e1290318fff7de104d45fd0b8463ddb0a43c5330"
+  },
+  "log": "artifacts/deadline-wait/v1/command.log",
+  "completion": "artifacts/deadline-wait/v1/completion.json",
+  "expected": {
+    "modes": [
+      "relative",
+      "mach"
+    ],
+    "durationSecondsPerMode": 30,
+    "requestNanos": 1000000,
+    "overshootThresholdNanos": 10000000,
+    "maximumCallsPerMode": 30001,
+    "identicalPublicPublisherQos": true,
+    "noSpin": true,
+    "noAudio": true,
+    "noModel": true,
+    "retainEveryCall": true
+  },
+  "host": {
+    "swVers": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+    "cpu": "Apple M5",
+    "memoryBytes": 34359738368,
+    "power": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23461987)\t82%; AC attached; not charging present: true\n",
+    "rustc": "rustc 1.93.0 (254b59607 2026-01-19)"
+  },
+  "policy": {
+    "runs": 1,
+    "noConcurrentBuildTestsModels": true,
+    "noRetryUnchanged": true,
+    "preserveFailureAndUnavailable": true
+  },
+  "limits": [
+    "Fixed relative-then-Mach order; all timers ultimately use kernel scheduling, no causal OS claim.",
+    "Mach deadline is per call now plus duration; no audio-timeline anchoring.",
+    "10ms overshoot is a diagnostic condition, no corpus publication jitter or L measurement.",
+    "No replay default, spin, audio, model, realtime thread policy, app or DMG change."
+  ]
+}
