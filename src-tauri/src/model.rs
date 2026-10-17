@@ -89,7 +89,9 @@ pub enum ModelError {
     Cancelled,
     #[error("Model download exceeded its connection, inactivity or overall timeout")]
     Timeout,
-    #[error("Model network or TLS request failed")]
+    #[error("Model TLS negotiation or certificate verification failed")]
+    Tls,
+    #[error("Model network request failed")]
     Network,
     #[error("Model source redirected outside the verified HTTPS publisher/CDN policy")]
     Redirect,
@@ -97,11 +99,32 @@ pub enum ModelError {
     Http(u16),
 }
 
+/// Rustls protocol/certificate errors survive inside one or more I/O wrappers.
+/// `io::Error::source()` can skip its immediate inner error, so inspect get_ref
+/// first. A transport EOF/reset without a typed Rustls cause stays Network;
+/// neither message text nor is_connect() identifies TLS reliably.
+fn has_rustls_cause(error: &(dyn std::error::Error + 'static)) -> bool {
+    let mut current = Some(error);
+    while let Some(cause) = current {
+        if cause.is::<rustls::Error>() {
+            return true;
+        }
+        current = cause
+            .downcast_ref::<std::io::Error>()
+            .and_then(std::io::Error::get_ref)
+            .map(|inner| inner as &(dyn std::error::Error + 'static))
+            .or_else(|| cause.source());
+    }
+    false
+}
+
 fn network_error(error: reqwest::Error) -> ModelError {
     if error.is_timeout() {
         ModelError::Timeout
     } else if error.is_redirect() {
         ModelError::Redirect
+    } else if has_rustls_cause(&error) {
+        ModelError::Tls
     } else {
         ModelError::Network
     }

@@ -32,7 +32,8 @@ pub enum Failure {
     Io,
     Size,
     Hash,
-    NetworkOrTls,
+    Network,
+    Tls,
     Timeout,
     Redirect,
     Http { status: u16 },
@@ -305,7 +306,8 @@ fn failure(error: ModelError) -> Failure {
         ModelError::Hash => Failure::Hash,
         ModelError::Timeout => Failure::Timeout,
         ModelError::Redirect => Failure::Redirect,
-        ModelError::Network => Failure::NetworkOrTls,
+        ModelError::Network => Failure::Network,
+        ModelError::Tls => Failure::Tls,
         ModelError::Http(status) => Failure::Http { status },
         ModelError::Closed | ModelError::Cancelled => Failure::Io,
     }
@@ -799,7 +801,8 @@ mod tests {
                 (ModelError::Timeout, Failure::Timeout),
                 (ModelError::Redirect, Failure::Redirect),
                 (ModelError::Busy, Failure::Busy),
-                (ModelError::Network, Failure::NetworkOrTls),
+                (ModelError::Network, Failure::Network),
+                (ModelError::Tls, Failure::Tls),
                 (ModelError::Http(503), Failure::Http { status: 503 }),
             ] {
                 let backend = Arc::new(FailingBackend {
@@ -1114,7 +1117,7 @@ mod tests {
         setup.start(true)?;
         let snapshot = finished(&setup)?;
         assert_eq!(snapshot.phase, Phase::Failed);
-        assert_eq!(snapshot.failure, Some(Failure::NetworkOrTls));
+        assert_eq!(snapshot.failure, Some(Failure::Network));
         assert_eq!(snapshot.received, model::REFERENCE.bytes() + 17);
         assert_eq!(
             *backend.calls.lock().map_err(|_| "calls")?,

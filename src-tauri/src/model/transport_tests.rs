@@ -338,8 +338,8 @@ fn untrusted_tls_is_rejected_and_explicit_test_trust_is_a_positive_control() -> 
             assert_eq!(fs::read(result?)?, b"abc");
         } else {
             assert!(
-                matches!(result, Err(ModelError::Network)),
-                "product client must reject the untrusted certificate: {result:?}"
+                matches!(result, Err(ModelError::Tls)),
+                "product client must classify the untrusted certificate as TLS: {result:?}"
             );
         }
         assert_old_model_and_no_own_part(directory.path())?;
@@ -389,4 +389,54 @@ fn external_cancel_interrupts_an_outstanding_body_read() -> TestResult {
     assert!(matches!(outcome, Err(ModelError::Cancelled)));
     assert_old_model_and_no_own_part(directory.path())?;
     server.finish()
+}
+
+#[test]
+fn connection_refused_stays_network_and_preserves_old_model_and_foreign_part() -> TestResult {
+    // Reserve a kernel-chosen loopback port, then close its listener. There is
+    // no TLS peer: refusal must not be mislabeled as a certificate failure.
+    let listener = TcpListener::bind("127.0.0.1:0")?;
+    let address = listener.local_addr()?;
+    drop(listener);
+    let directory = tempfile::tempdir()?;
+    old_model(directory.path())?;
+    let client = download_client_builder()
+        .no_proxy()
+        .connect_timeout(Duration::from_millis(200))
+        .timeout(Duration::from_secs(1))
+        .build()?;
+    let result = run(
+        directory.path(),
+        &format!("https://{address}/model"),
+        &client,
+        &CancellationToken::new(),
+        |_| {},
+    );
+    assert!(
+        matches!(result, Err(ModelError::Network)),
+        "refused TCP connection: {result:?}"
+    );
+    assert_old_model_and_no_own_part(directory.path())
+}
+
+#[test]
+fn typed_tls_cause_survives_nested_io_wrappers_without_message_classification() {
+    let certificate = rustls::Error::InvalidCertificate(rustls::CertificateError::UnknownIssuer);
+    let nested = std::io::Error::other(std::io::Error::new(
+        std::io::ErrorKind::InvalidData,
+        certificate,
+    ));
+    assert!(has_rustls_cause(&nested));
+    let alert = rustls::Error::AlertReceived(rustls::AlertDescription::HandshakeFailure);
+    assert!(has_rustls_cause(&std::io::Error::other(alert)));
+    assert!(!has_rustls_cause(&std::io::Error::from(
+        std::io::ErrorKind::ConnectionRefused
+    )));
+    assert!(!has_rustls_cause(&std::io::Error::new(
+        std::io::ErrorKind::UnexpectedEof,
+        "tls handshake eof"
+    )));
+    assert!(!has_rustls_cause(&std::io::Error::other(
+        "rustls: invalid certificate"
+    )));
 }
