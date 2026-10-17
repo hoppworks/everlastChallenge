@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "kind": "successful-bounded-native-segment-observation",
+  "qualified": false,
+  "L": null,
+  "parameterSha256": "a916d7ee5a43926b39cbaa2a95bef2c897ac77972cb0489e56f8eb28e13efc71",
+  "completion": {
+    "startUtc": "2026-10-17T16:43:28.843976+00:00",
+    "parameterSha256": "a916d7ee5a43926b39cbaa2a95bef2c897ac77972cb0489e56f8eb28e13efc71",
+    "pid": 98183,
+    "inferenceExit": 0,
+    "inferenceEndUtc": "2026-10-17T16:43:32.897681+00:00",
+    "evaluationExit": 0,
+    "endUtc": "2026-10-17T16:43:32.953963+00:00"
+  },
+  "cases": [
+    {
+      "id": "diagnostic-de1662-original",
+      "status": "ok",
+      "matchesHistoricalResultRow": true,
+      "nativeConcatenationTrimEqualsFinalText": true,
+      "observation": {
+        "asrInputFrames": 375360,
+        "inputFrames": 375360,
+        "paddedFrames": 0,
+        "selectedFrames": 375360,
+        "selectedRange": {
+          "end": 375360,
+          "start": 0
+        }
+      },
+      "segments": [
+        {
+          "endCentiseconds": 3000,
+          "index": 0,
+          "noSpeechProbability": 7.016032720075227e-12,
+          "nonnegativeOrderedTimestamps": false,
+          "startCentiseconds": -100730,
+          "textSha256": "16f53eaf29ef35e852452a78770dcd2ee7406aae760b5f7ff7ab219c24948021",
+          "textUtf8Bytes": 138
+        }
+      ]
+    },
+    {
+      "id": "diagnostic-de1662-weak-mask-isolated",
+      "status": "ok",
+      "matchesHistoricalResultRow": true,
+      "nativeConcatenationTrimEqualsFinalText": true,
+      "observation": {
+        "asrInputFrames": 375360,
+        "inputFrames": 375360,
+        "paddedFrames": 0,
+        "selectedFrames": 375360,
+        "selectedRange": {
+          "end": 375360,
+          "start": 0
+        }
+      },
+      "segments": [
+        {
+          "endCentiseconds": 3000,
+          "index": 0,
+          "noSpeechProbability": 6.739522568494083e-12,
+          "nonnegativeOrderedTimestamps": false,
+          "startCentiseconds": -100730,
+          "textSha256": "5137d4da1cd3644ee542455a01c3a364bcde5c6d53bdc4f33503066ca7bd6d99",
+          "textUtf8Bytes": 276
+        }
+      ]
+    }
+  ],
+  "qualityCases": [
+    {
+      "id": "diagnostic-de1662-original",
+      "split": "acceptance",
+      "language": "de",
+      "class": "clean",
+      "status": "ok",
+      "edits": 0,
+      "refWords": 21,
+      "hypWords": 21,
+      "wer": 0.0,
+      "unwantedText": false
+    },
+    {
+      "id": "diagnostic-de1662-weak-mask-isolated",
+      "split": "acceptance",
+      "language": "de",
+      "class": "challenging",
+      "status": "ok",
+      "edits": 21,
+      "refWords": 21,
+      "hypWords": 42,
+      "wer": 1.0,
+      "unwantedText": false
+    }
+  ],
+  "conclusion": "Weakmask wholeparagraphduplication already inside one acceptednative segment before Rust text concatenation; bothfinaltexts byte-identical to historicalEngineoutputs. No decoderinternalmechanism or all300s-cause proven.",
+  "rawFiles": [
+    {
+      "path": "artifacts/diagnostic-speech/observed-short-v3/command.log",
+      "sha256": "edb518a7188e246159dc904fc8cf83734ed0cffb266a5b15588e4b06a1fafa40",
+      "bytes": 41,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-short-v3/completion.json",
+      "sha256": "a85e8c800eab8f88e4c1e13f0d6f6fca783ca432f639abd604be3621e7f5c3f2",
+      "bytes": 308,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-short-v3/quality.json",
+      "sha256": "b8496f1b928602502e9cf3d964ee4d888423d46582aac677eb82805cdbe07a4b",
+      "bytes": 1454,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-short-v3/quality.log",
+      "sha256": "e1f2b57da896a9381ba04ae28e51f9df10028e1cbc4d811d9f6dfe9e01e3b6e3",
+      "bytes": 85,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-short-v3/results.json",
+      "sha256": "9c6c8c57d43fcad22dfdf35d6bdc6f72eb2c9eba51b7aa1c603973cb6573353f",
+      "bytes": 592,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-short-v3/results.json.metadata.json",
+      "sha256": "7522d01ea88a000f7f339d984b097935ec597679ff06d4a35f23de17e43198cd",
+      "bytes": 3550,
+      "mode": "0o600"
+    }
+  ]
+}
