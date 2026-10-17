@@ -1,37 +1,30 @@
-//! Explicit fixture-only smoke test; no transcript is written to diagnostics.
+//! Explicit developer file replay; no transcript is written to diagnostics.
+#[path = "transcribe_probe/input.rs"]
+mod input;
 use everlast_dictation::{
     inference_service::{InferenceService, Job, WorkToken},
     model::REFERENCE,
-    transcription::Language,
 };
 use std::{
-    path::PathBuf,
     sync::Arc,
     thread,
     time::{Duration, Instant},
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let arguments: Vec<String> = std::env::args().collect();
-    if arguments.len() != 3 {
-        return Err("usage: transcribe_probe <reference-model-path> <jfk-wav-path>".into());
-    }
-    let mut reader = hound::WavReader::open(&arguments[2])?;
-    let spec = reader.spec();
-    if spec.channels != 1
-        || spec.sample_rate != 16_000
-        || spec.bits_per_sample != 16
-        || spec.sample_format != hound::SampleFormat::Int
-    {
-        return Err("probe fixture must be PCM16 mono at 16000 Hz".into());
-    }
-    let samples: Result<Vec<f32>, _> = reader
-        .samples::<i16>()
-        .map(|sample| sample.map(|value| f32::from(value) / 32_768.0))
-        .collect();
-    let samples = Arc::new(samples?);
+    let arguments = std::env::args_os()
+        .skip(1)
+        .take(input::MAX_ARGUMENTS + 1)
+        .collect::<Vec<_>>();
+    let options = input::Options::parse(&arguments)?;
+    let samples = Arc::new(input::load_audio(&options.wav)?);
+    let reference = options
+        .reference
+        .as_deref()
+        .map(input::load_reference)
+        .transpose()?;
     let started = Instant::now();
-    let service = InferenceService::load(PathBuf::from(&arguments[1]), REFERENCE)?;
+    let service = InferenceService::load(options.model, REFERENCE)?;
     while !service.ready() {
         if service.is_finished() {
             service.shutdown()?;
@@ -43,15 +36,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         thread::sleep(Duration::from_millis(1));
     }
     println!("model worker ready in {:?}", started.elapsed());
-    for run in 1..=2 {
+    for run in 1..=options.repeats {
+        let job_id = u64::from(run);
         let started = Instant::now();
         service.submit(Job {
-            session: run,
+            session: job_id,
             generation: 1,
-            job_id: run,
+            job_id,
             sample_range: 0..samples.len(),
             audio: Arc::clone(&samples),
-            language: Language::English,
+            language: options.language,
             token: WorkToken::default(),
         })?;
         let completed = loop {
@@ -67,25 +61,44 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             thread::sleep(Duration::from_millis(1));
         };
-        if completed.session != run
+        if completed.session != job_id
             || completed.generation != 1
-            || completed.job_id != run
+            || completed.job_id != job_id
             || completed.sample_range != (0..samples.len())
         {
             return Err("inference worker returned mismatched identity".into());
         }
         let text = completed.result?;
-        if !text
-            .to_lowercase()
-            .contains("ask not what your country can do for you")
-        {
-            return Err("known fixture phrase was not recognized".into());
+        if options.legacy {
+            if !text
+                .to_lowercase()
+                .contains("ask not what your country can do for you")
+            {
+                return Err("known fixture phrase was not recognized".into());
+            }
+            println!(
+                "fixture run {run}: recognized known phrase, {} bytes, {:?}",
+                text.len(),
+                started.elapsed()
+            );
+        } else {
+            let matches = reference
+                .as_ref()
+                .map(|expected| input::reference_matches(&text, expected));
+            println!(
+                "replay run {run}: {} bytes, {:?}, reference_match={}",
+                text.len(),
+                started.elapsed(),
+                matches.map_or("not_requested", |value| if value {
+                    "true"
+                } else {
+                    "false"
+                })
+            );
+            if matches == Some(false) {
+                return Err("replay transcript did not match the supplied reference".into());
+            }
         }
-        println!(
-            "fixture run {run}: recognized known phrase, {} bytes, {:?}",
-            text.len(),
-            started.elapsed()
-        );
     }
     service.shutdown()?;
     Ok(())
