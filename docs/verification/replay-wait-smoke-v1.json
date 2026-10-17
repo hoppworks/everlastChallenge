@@ -1,0 +1,86 @@
+{
+  "scope": "one model-free paced audio smoke; no QoS override, inference, microphone or L qualification",
+  "freeze": {
+    "sourceRevision": "83e8b17d93f28af1eef5198a197175d0d1ae5fbb",
+    "binarySha256": "9c5d1e1700c391d752c9dd7dfa42201b06ca0094c7ea08ad954c642b6b7ce405",
+    "inputSha256": "9a108246c7b1196e8203ee22ebacabe7927d18f7a37a5f2e7647437db7df069c",
+    "qosOverride": false,
+    "inference": false,
+    "chunkMillis": 20,
+    "jitterToleranceNanos": 10000000,
+    "maximumSleepNanos": 1000000,
+    "finalSpinNanos": 250000,
+    "sources": {
+      "src-tauri/examples/paced_audio_probe.rs": "3a96d592a268726aa603100f759d6a63a18223665d205fc9b82a6076e42ffe6e",
+      "src-tauri/examples/paced_audio_probe/runner.rs": "088d8428613e8510b00a8958a29411f34d42718afb25afaae6ce5a1bb562ccd8",
+      "src-tauri/src/audio.rs": "30649268bfb85918ed7971f4707af793cc81882bcbe6e60115670058b70f91f9",
+      "src-tauri/src/audio/replay.rs": "d4ddcb96f91ec766fd2afdc94b05f72a8a7e7ec03413dd08d5d18d1bedad0d8a",
+      "src-tauri/src/audio/replay/clock.rs": "c719ece5ec6bd47211a989c28228dd8087e4f1ad2c123c7345bbe9283468056d",
+      "src-tauri/src/audio/replay/schedule.rs": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b"
+    },
+    "host": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+    "machine": "arm64",
+    "startedAfterFreeze": true
+  },
+  "completion": {
+    "pid": 92651,
+    "exitCode": 0,
+    "startUtc": "2026-10-17T16:11:11.901586Z",
+    "endUtc": "2026-10-17T16:11:20.331300Z",
+    "resultSha256": "fe3003adbbce0a2b3f26a266526ef2de35152a95408a443fec0f6cb037752db4",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "run": {
+    "audioFailure": null,
+    "audioFinishedObservedOffsetNanos": 8195166042,
+    "audioOwnerStopRequestOffsetNanos": 8192124667,
+    "finishedEvents": 1,
+    "inputOutputSamplesEqual": true,
+    "joinFailure": null,
+    "joinUnverified": false,
+    "joined": true,
+    "observationFailure": null,
+    "passed": true,
+    "plannedStopOffsetNanos": 8192000000,
+    "startedClockVerified": true,
+    "startedEvents": 1,
+    "stopRequests": 1,
+    "timingValid": true,
+    "waitSummary": {
+      "detailedPublications": 0,
+      "maxReserveNanos": 7833,
+      "maxSleepOvershootNanos": 1089709,
+      "maxSpinClockGapNanos": 17500,
+      "maxWaitExitToPublishNanos": 10458,
+      "observedPublications": 410
+    }
+  },
+  "publications": 410,
+  "maxPublicationDeviationNanos": 233125,
+  "rawFiles": [
+    {
+      "path": "artifacts/replay/wait-diagnostic-v1/completion.json",
+      "sha256": "f6930d9a959cab6903463bf9f4f724cd7f55f28202ca238ba6c475896e095add",
+      "bytes": 296,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/wait-diagnostic-v1/freeze.json",
+      "sha256": "287143018cd93df02dd024ed992f6bc65db67cb02b68b32aabaecc5b5c5387da",
+      "bytes": 1226,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/wait-diagnostic-v1/result.json",
+      "sha256": "fe3003adbbce0a2b3f26a266526ef2de35152a95408a443fec0f6cb037752db4",
+      "bytes": 106434,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/wait-diagnostic-v1/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    }
+  ]
+}
