@@ -67,10 +67,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             _ => {}
         })
         .build(tauri::generate_context!())?;
-    // Keep the !Send native observer on this main-thread stack through app.run.
+    // Tauri run exits the process directly. Remove native observers explicitly
+    // on Exit, before its cleanup, rather than relying on a stack destructor.
     let power_desktop = app.state::<Desktop>().inner().clone();
     let power_app = app.handle().clone();
-    let _power = PowerObserver::new(move |event| {
+    let mut power = PowerObserver::new(move |event| {
         if event == PowerEvent::WillPowerOff {
             // ExitRequested alone owns shutdown and the eventual join/retry.
             power_app.exit(0);
@@ -78,7 +79,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             eprintln!("Power transition failed: {error}");
         }
     })?;
-    app.run(|app, event| {
+    app.run(move |app, event| {
+        if let tauri::RunEvent::Exit = event {
+            power.remove();
+        }
         if let tauri::RunEvent::ExitRequested { api, .. } = event
             && let Some(desktop) = app.try_state::<Desktop>()
             && !desktop.is_finished()
