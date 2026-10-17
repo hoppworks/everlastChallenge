@@ -14,6 +14,7 @@ use macos_integration::{
 use std::{
     collections::VecDeque,
     num::NonZeroU64,
+    panic::{AssertUnwindSafe, catch_unwind},
     sync::{Arc, Mutex},
     thread::{self, JoinHandle},
     time::{Duration, Instant},
@@ -488,7 +489,10 @@ impl Runtime {
                     capture_pending: None,
                     deferred_audio: None,
                 };
-                let result = (|| { loop {
+                // Contain Rust controller panics on this owner thread while
+                // retaining the actor for explicit owner shutdown below. No
+                // partially mutated controller state is used to resume work.
+                let result = catch_unwind(AssertUnwindSafe(|| { loop {
                     actor.reconcile_revoked()?;
                     actor.poll()?;
                     actor.publish()?;
@@ -536,17 +540,23 @@ impl Runtime {
                         }
                         None => {}
                     }
-                } })();
+                } })).unwrap_or(Err(RuntimeError::Worker));
                 // Revoke outputs and settle accepted requests before potentially slow owner joins.
                 close_admission(&actor.shared);
                 reject_pending(&requests);
                 // All paths release native audio and join inference here,
                 // outside the GUI, including controller/service errors.
-                let audio_cleanup = actor.audio.shutdown().map_err(RuntimeError::Service);
-                let inference_cleanup = match actor.inference.take() {
-                    Some(service) => service.shutdown().map_err(service_error),
-                    None => Ok(()),
-                };
+                // Each cleanup is independently contained: a failing/panicking
+                // audio owner must not bypass joining the inference owner.
+                let audio_cleanup = catch_unwind(AssertUnwindSafe(|| {
+                    actor.audio.shutdown().map_err(RuntimeError::Service)
+                })).unwrap_or(Err(RuntimeError::Worker));
+                let inference_cleanup = catch_unwind(AssertUnwindSafe(|| {
+                    match actor.inference.take() {
+                        Some(service) => service.shutdown().map_err(service_error),
+                        None => Ok(()),
+                    }
+                })).unwrap_or(Err(RuntimeError::Worker));
                 let result = result.and(audio_cleanup).and(inference_cleanup);
                 if let Err(error) = &result
                     && let Ok(mut shared) = actor.shared.lock() {
@@ -1957,5 +1967,228 @@ mod tests {
         assert!(matches!(did_start.try_recv(), Err(TryRecvError::Empty)));
         runtime.join()?;
         Ok(())
+    }
+    struct ReleaseOwners {
+        gates: Vec<Sender<()>>,
+        join: Option<JoinHandle<()>>,
+    }
+    impl Drop for ReleaseOwners {
+        fn drop(&mut self) {
+            for gate in &self.gates {
+                if gate.try_send(()).is_err() { /* already released or owner gone */ }
+            }
+            if let Some(join) = self.join.take()
+                && join.join().is_err()
+            { /* result is observed through the test channel */
+            }
+        }
+    }
+    struct HeldDecoder {
+        entered: Sender<()>,
+        release: Receiver<()>,
+        dropped: Arc<AtomicBool>,
+    }
+    impl Decoder for HeldDecoder {
+        fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+            self.entered
+                .send(())
+                .map_err(|_| InferenceError::InvalidAudio)?;
+            self.release
+                .recv_timeout(Duration::from_secs(5))
+                .map_err(|_| InferenceError::InvalidAudio)?;
+            Ok("cancelled owner result".into())
+        }
+    }
+    impl Drop for HeldDecoder {
+        fn drop(&mut self) {
+            self.dropped.store(true, Ordering::Release);
+        }
+    }
+    struct PanicOwnedAudio {
+        armed: Arc<AtomicBool>,
+        entered: Sender<()>,
+        trigger: Receiver<()>,
+        shutdown_entered: Sender<()>,
+        owner: Option<JoinHandle<()>>,
+        dropped: Arc<AtomicBool>,
+        cleanup_failure: Option<bool>,
+        fault_reached: Arc<AtomicBool>,
+    }
+    impl AudioDriver for PanicOwnedAudio {
+        fn start(&mut self, _: u64, _: Option<String>) -> Result<(), String> {
+            Ok(())
+        }
+        fn stop(&self, _: u64) {}
+        fn poll(&mut self) -> Vec<CaptureEvent> {
+            if self.armed.swap(false, Ordering::AcqRel) {
+                assert!(self.entered.send(()).is_ok());
+                assert!(
+                    self.trigger.recv_timeout(Duration::from_secs(2)).is_err(),
+                    "injected controller panic"
+                );
+            }
+            Vec::new()
+        }
+        fn shutdown(&mut self) -> Result<(), String> {
+            self.shutdown_entered
+                .send(())
+                .map_err(|_| "shutdown observer closed")?;
+            self.owner
+                .take()
+                .ok_or("owner missing")?
+                .join()
+                .map_err(|_| "audio owner failed".to_owned())?;
+            if let Some(panic) = self.cleanup_failure {
+                self.fault_reached.store(true, Ordering::Release);
+                assert!(!panic, "injected audio shutdown panic");
+                return Err("injected audio shutdown error".into());
+            }
+            Ok(())
+        }
+    }
+    impl Drop for PanicOwnedAudio {
+        fn drop(&mut self) {
+            self.dropped.store(true, Ordering::Release);
+        }
+    }
+    fn panic_cleanup_contract(
+        cleanup_failure: Option<bool>,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let (release_audio, audio_release) = bounded(1);
+        let (release_decoder, decoder_release) = bounded(1);
+        let (trigger, panic_trigger) = bounded(1);
+        // Every early error releases all gates; all fixture workers also have
+        // bounded waits. Join is retained by this cleanup guard once spawned.
+        let mut cleanup = ReleaseOwners {
+            gates: vec![
+                release_audio.clone(),
+                release_decoder.clone(),
+                trigger.clone(),
+            ],
+            join: None,
+        };
+        let (decoder_entered, decoding) = bounded(1);
+        let decoder_dropped = Arc::new(AtomicBool::new(false));
+        let inference = InferenceService::with_decoder(HeldDecoder {
+            entered: decoder_entered,
+            release: decoder_release,
+            dropped: Arc::clone(&decoder_dropped),
+        })?;
+        let deadline = Instant::now() + Duration::from_secs(2);
+        while !inference.ready() {
+            if Instant::now() >= deadline {
+                return Err("decoder not ready".into());
+            }
+            thread::yield_now();
+        }
+        inference.submit(crate::inference_service::Job {
+            session: 99,
+            generation: 1,
+            job_id: 99,
+            sample_range: 0..800,
+            audio: Arc::new(vec![0.1; 800]),
+            language: Language::German,
+            token: WorkToken::default(),
+        })?;
+        decoding.recv_timeout(Duration::from_secs(1))?;
+        let audio_stopped = Arc::new(AtomicBool::new(false));
+        let observed = Arc::clone(&audio_stopped);
+        let owner = thread::spawn(move || {
+            if audio_release.recv_timeout(Duration::from_secs(5)).is_err() { /* bounded fallback on test failure */
+            }
+            observed.store(true, Ordering::Release);
+        });
+        let audio_dropped = Arc::new(AtomicBool::new(false));
+        let fault_reached = Arc::new(AtomicBool::new(false));
+        let armed = Arc::new(AtomicBool::new(false));
+        let (entered, at_poll) = bounded(1);
+        let (shutdown_entered, shutting_down) = bounded(1);
+        let (native, _endpoint) = native_mailbox();
+        let runtime = Runtime::with_audio(
+            inference,
+            1,
+            native,
+            PanicOwnedAudio {
+                armed: Arc::clone(&armed),
+                entered,
+                trigger: panic_trigger,
+                shutdown_entered,
+                owner: Some(owner),
+                dropped: Arc::clone(&audio_dropped),
+                cleanup_failure,
+                fault_reached: Arc::clone(&fault_reached),
+            },
+        )?;
+        let client = runtime.client();
+        wait_for(&client, |s| s.model_ready)?;
+        accepted(client.start(settings(), None, false, false)?)?;
+        armed.store(true, Ordering::Release);
+        at_poll.recv_timeout(Duration::from_secs(1))?;
+        let queued_start = client.start(settings(), None, false, false)?;
+        let queued_clear = client.clear_text()?;
+        trigger.send(())?;
+        let start_rejected = acknowledged(queued_start)?.is_err();
+        let clear_rejected = acknowledged(queued_clear)?.is_err();
+        let admission_closed = matches!(
+            client.start(settings(), None, false, false),
+            Err(MailboxError::Closed)
+        );
+        let (finished, joined) = bounded(1);
+        cleanup.join = Some(thread::spawn(move || {
+            if finished.send(runtime.join()).is_err() { /* test caller stopped waiting */ }
+        }));
+        let early = joined.recv_timeout(Duration::from_millis(100)).ok();
+        let shutdown_called = shutting_down
+            .recv_timeout(Duration::from_millis(100))
+            .is_ok();
+        release_audio.try_send(())?;
+        let deadline = Instant::now() + Duration::from_secs(1);
+        while !audio_stopped.load(Ordering::Acquire) && Instant::now() < deadline {
+            thread::yield_now();
+        }
+        let after_audio = joined.recv_timeout(Duration::from_millis(100)).ok();
+        release_decoder.try_send(())?;
+        let result = match early.as_ref().or(after_audio.as_ref()) {
+            Some(_) => None,
+            None => Some(joined.recv_timeout(Duration::from_secs(2))?),
+        };
+        drop(cleanup);
+        assert!(
+            start_rejected && clear_rejected && admission_closed,
+            "admission/acknowledgements waited for blocked owners"
+        );
+        assert!(
+            early.is_none(),
+            "Runtime::join returned while both owners were blocked"
+        );
+        assert!(shutdown_called, "panic bypassed audio shutdown");
+        assert!(
+            after_audio.is_none(),
+            "Runtime::join returned before held decoder shutdown/drop"
+        );
+        assert!(matches!(result, Some(Err(RuntimeError::Worker))));
+        assert!(audio_stopped.load(Ordering::Acquire));
+        assert!(audio_dropped.load(Ordering::Acquire));
+        assert!(decoder_dropped.load(Ordering::Acquire));
+        assert_eq!(
+            fault_reached.load(Ordering::Acquire),
+            cleanup_failure.is_some()
+        );
+        Ok(())
+    }
+    #[test]
+    fn controller_panic_closes_admission_before_joining_both_blocked_owners()
+    -> Result<(), Box<dyn std::error::Error>> {
+        panic_cleanup_contract(None)
+    }
+    #[test]
+    fn controller_panic_keeps_original_error_and_joins_inference_after_audio_shutdown_error()
+    -> Result<(), Box<dyn std::error::Error>> {
+        panic_cleanup_contract(Some(false))
+    }
+    #[test]
+    fn controller_panic_keeps_original_error_and_joins_inference_after_audio_shutdown_panic()
+    -> Result<(), Box<dyn std::error::Error>> {
+        panic_cleanup_contract(Some(true))
     }
 }
