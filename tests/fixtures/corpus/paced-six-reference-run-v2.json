@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "fbbab45",
+  "frozenBeforeModelWorkUtc": "2026-10-17T15:32:48.025552+00:00",
+  "qualified": false,
+  "binary": {
+    "path": "target/release/examples/paced_reference_probe",
+    "sha256": "49c5991e5cc7adf39bfd4a4352177f6959a0e5fcfb4ff94e71b34c3d1490ffb3"
+  },
+  "parameters": {
+    "path": "tests/fixtures/corpus/paced-six-reference-parameters-v2.json",
+    "sha256": "ec18cb5d8291c3481cde54ac77a45b8c7bb584807de427301d4875e5739f0667"
+  },
+  "manifest": {
+    "path": "tests/fixtures/corpus/central-reference-v1.json",
+    "sha256": "244b2cd766874855174699f8568dbb09ae664380a98b272bf6588293f44a36b5"
+  },
+  "model": {
+    "path": "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+    "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+  },
+  "host": {
+    "cpu": {
+      "command": [
+        "/usr/sbin/sysctl",
+        "-n",
+        "machdep.cpu.brand_string",
+        "hw.memsize"
+      ],
+      "exitCode": 0,
+      "stdout": "Apple M5\n34359738368\n",
+      "stderr": ""
+    },
+    "memory": {
+      "command": [
+        "/usr/sbin/sysctl",
+        "-n",
+        "hw.memsize"
+      ],
+      "exitCode": 0,
+      "stdout": "34359738368\n",
+      "stderr": ""
+    },
+    "os": {
+      "command": [
+        "/usr/bin/sw_vers"
+      ],
+      "exitCode": 0,
+      "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+      "stderr": ""
+    },
+    "rustc": {
+      "command": [
+        "rustc",
+        "--version"
+      ],
+      "exitCode": 0,
+      "stdout": "rustc 1.93.0 (254b59607 2026-01-19)\n",
+      "stderr": ""
+    },
+    "powerSource": {
+      "command": [
+        "/usr/bin/pmset",
+        "-g",
+        "batt"
+      ],
+      "exitCode": 0,
+      "stdout": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23461987)\t82%; AC attached; not charging present: true\n",
+      "stderr": ""
+    },
+    "powerSettings": {
+      "command": [
+        "/usr/bin/pmset",
+        "-g",
+        "custom"
+      ],
+      "exitCode": 0,
+      "stdout": "Battery Power:\n Sleep On Power Button 1\n lowpowermode         0\n standby              1\n ttyskeepawake        1\n hibernatemode        3\n powernap             1\n hibernatefile        /var/vm/sleepimage\n displaysleep         2\n womp                 1\n networkoversleep     0\n sleep                1\n lessbright           1\n tcpkeepalive         1\n disksleep            10\nAC Power:\n Sleep On Power Button 1\n lowpowermode         0\n standby              1\n ttyskeepawake        1\n hibernatemode        3\n powernap             1\n hibernatefile        /var/vm/sleepimage\n displaysleep         5\n womp                 1\n networkoversleep     0\n sleep                0\n tcpkeepalive         1\n disksleep            10\n",
+      "stderr": ""
+    }
+  },
+  "command": [
+    "target/release/examples/paced_reference_probe",
+    "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+    "reference",
+    "tests/fixtures/corpus/central-reference-v1.json",
+    "tests/fixtures/corpus/paced-six-reference-parameters-v2.json",
+    "artifacts/paced-six/v2/reference-results.json"
+  ],
+  "log": "artifacts/paced-six/v2/reference.command.log",
+  "failurePolicy": "retain original failed or unexecuted rows; no retry/filtering; do not overwrite raw evidence",
+  "measurementScope": "one warmup then six times thirty paced production-runtime runs; not native microphone or full qualification",
+  "qualityScope": "retain every hypothesis for separate evaluation against unchanged references; no calibration from heldout outputs",
+  "remainingModelScope": "small baseline already fails DE clean quality; this first six-case timing run measures reference only, not a final model choice",
+  "changedConditions": "Scoped publisher pthread QoS override USER_INTERACTIVE/0; full source candidate fbbab45; same six fixtures and 20ms/10ms/250us timing policy. Independent complete trial, no replacement or selective rerun of v1."
+}

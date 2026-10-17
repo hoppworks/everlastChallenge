@@ -99,3 +99,12 @@ Jitterbudget; alle 181 Slots einschließlich 78 nicht ausgeführter bleiben
 erhalten. [Fehlversuch v1](paced-six-reference-v1.md) dokumentiert Rohdaten,
 beendeten Prozess und bestätigten Cleanup. Es gibt aus diesem Versuch kein L
 und keinen bestandenen zentralen Vergleich. Der Prozess wird nicht neu gestartet.
+
+## Neuer getrennter Referenzversuch v2 mit Publisher-QoS
+
+Vor Modellarbeit am 17.10.2026 eingefroren: Werkzeugstand `fbbab45`,
+[Parameter v2](../../tests/fixtures/corpus/paced-six-reference-parameters-v2.json)
+und [Aufruf-/Hostbeobachtung v2](../../tests/fixtures/corpus/paced-six-reference-run-v2.json).
+Binary-SHA256 `49c5991e5cc7adf39bfd4a4352177f6959a0e5fcfb4ff94e71b34c3d1490ffb3`;
+Parameter-SHA256 `ec18cb5d8291c3481cde54ac77a45b8c7bb584807de427301d4875e5739f0667`.
+Der Developer-Releasebuild endete erfolgreich nach 6,42 s; kein App-/DMG-Build.
