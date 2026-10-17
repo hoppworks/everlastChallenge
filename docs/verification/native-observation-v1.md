@@ -71,3 +71,16 @@ Das Sidecar meldet die tatsächlich gewählte noTimestamps-Einstellung. Unbekann
 Optionen werden abgelehnt. Die Alternative aktiviert keine Produktoptimierung;
 ihr tatsächlicher Modellvergleich braucht einen eigenen Vorabfreeze und erhält
 alle positiven wie negativen Ergebnisse. Keine Wirkung ist vorweggenommen.
+
+Für vollständige Qualitätskorpora unterstützt auch corpus_probe dieselbe explizite
+measurement-only Option --native-timestamps. Der Standardaufruf bleibt beim
+bisherigen InferenceService::load. Der Diagnoseaufruf lädt Engine auf dem seriellen
+Entwickler-Hauptthread und übergibt sie mit lokalem Decoderadapter an denselben
+Inferenzdienst; Jobs, Identitätsprüfung, Beobachtungstimeout und Shutdown bleiben
+erhalten. Die gebundene native Beobachtung wird je Auftrag erzeugt und anschließend
+verworfen, nur der unveränderte Text wird weitergegeben. Das Sidecar weist
+Initialisierungsunterschied und zusätzliche Beobachtungsallokationen aus.
+Daraus keine vergleichbaren Init-/Ressourcen- oder Echtzeitwerte ableiten.
+Ohne measurement wird die Option bereits vor Datei-/Modellzugriff abgelehnt;
+kein alternativer Produktpfad wird aktiviert. Die bestehenden Korpusgrenzen und
+der private Dreifeldexport bleiben unverändert.
