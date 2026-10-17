@@ -11,3 +11,5 @@ pub mod runtime;
 pub mod settings;
 pub mod setup;
 pub mod transcription;
+
+pub mod application;
