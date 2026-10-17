@@ -1,0 +1,2001 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-timestamp-acceptance-semantic-anchor-delta",
+  "qualified": false,
+  "sourceRevision": "eb3378f5ad3e6b31e297294dce9683da05024841",
+  "parameterFreezeCommit": "945a1c1",
+  "inventoryCommit": "f55322e",
+  "method": {
+    "all90ComparedPerModel": true,
+    "changedCleanWholePairsManuallyRead": true,
+    "changedCleanEveryAnchorManuallyReread": true,
+    "retention": "Only exact full raw text and status identity permits copying the preceding case judgment unchanged.",
+    "semantics": "Full sentence context and numerical value/unit/relation, negation and entity identity considered separately from orthography; not WER-only or exact-string scoring.",
+    "oldReviewsMutated": false,
+    "audioListened": false,
+    "missingWindowsObserved": false
+  },
+  "limitations": [
+    "Already exposed acceptance cases; no new blind-heldout claim.",
+    "Published reference comparison; no independent audio/label certification or invented hearing-before-ASR gate.",
+    "Existing name spelling/entity failures and numerical uncertainty remain reported; no invented general zero-name-error threshold.",
+    "Local lexical errors and punctuation do not establish a new pipeline segmentation fault.",
+    "Old severe-noise constructed 300s case is outside clean75/158; numerical quality retained separately, no whole-content pass.",
+    "Diagnostic native-timestamp mode only; initialization in developer main and temporary observation allocations differ from ordinary worker initialization. No resource/L comparison or product-default change.",
+    "Inherited parameterChangesFromAcceptanceV1 text is not the complete candidate delta: explicit runtime.no_timestamps=false and parameterChangeFromAcceptanceV2 identify the additional timestamp change.",
+    "Every bound raw file and historical review retained unchanged."
+  ],
+  "bindingVerification": {
+    "verifiedBeforeRawContentReview": true,
+    "sourceHashCount": 30,
+    "allSourcesMatchCurrentAndImmutableSourceRevision": true,
+    "binaryMatchesFreeze": true,
+    "inventoryMatchesImmutableF55322e": true,
+    "historicalBaseBindingsAllStillMatch": true,
+    "parameterFreezeSha256": "e072b406f5fb076f1d68f696437d9ab1b57511b406ea74e5c85ac45be3f22a50",
+    "precedingReviewSha256": "0a67da3d67a8c933b0155b5eee10e86a6106ee5b45b40b42d040c6544259d445",
+    "completionParameterAndExitBinding": {
+      "parameterSha256": "e072b406f5fb076f1d68f696437d9ab1b57511b406ea74e5c85ac45be3f22a50",
+      "runs": [
+        {
+          "model": "reference",
+          "startUtc": "2026-10-17T17:06:01.600464+00:00",
+          "pid": 2244,
+          "inferenceExit": 0,
+          "inferenceEndUtc": "2026-10-17T17:07:46.838348+00:00",
+          "evaluationExit": 0,
+          "endUtc": "2026-10-17T17:07:46.936943+00:00"
+        },
+        {
+          "model": "small",
+          "startUtc": "2026-10-17T17:07:46.937008+00:00",
+          "pid": 2341,
+          "inferenceExit": 0,
+          "inferenceEndUtc": "2026-10-17T17:08:20.419061+00:00",
+          "evaluationExit": 0,
+          "endUtc": "2026-10-17T17:08:20.515909+00:00"
+        }
+      ],
+      "endUtc": "2026-10-17T17:08:20.516081+00:00"
+    }
+  },
+  "privateReview": {
+    "path": "artifacts/acceptance/native-timestamps-v1/anchor-review-v1.json",
+    "sha256": "c5c4935f0cb693889c7b71412dd3e0ee717e8b6126dc4df9e4648630bf463b1d",
+    "bytes": 511051,
+    "mode": "0o600"
+  },
+  "bindings": [
+    {
+      "path": "artifacts/acceptance/v2/anchor-delta-review.json",
+      "sha256": "0a67da3d67a8c933b0155b5eee10e86a6106ee5b45b40b42d040c6544259d445",
+      "bytes": 462983,
+      "mode": "0o600"
+    },
+    {
+      "path": "tests/fixtures/corpus/native-timestamps-acceptance-parameters-v1.json",
+      "sha256": "e072b406f5fb076f1d68f696437d9ab1b57511b406ea74e5c85ac45be3f22a50",
+      "bytes": 16518,
+      "mode": "0o644"
+    },
+    {
+      "path": "tests/fixtures/corpus/acceptance-v1.json",
+      "sha256": "7d7a25695ab77d9d4affe04b0bbc1ce5f8bc4b38a59b40763fd26884d090c67d",
+      "bytes": 126728,
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/verification/reference-anchor-inventory-v1.md",
+      "sha256": "fdf7ca4b2c5d7771e336c5cbd518f78017167a69bad0575a861b01fdb563602a",
+      "bytes": 13550,
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/verification/reference-anchor-review-v1.json",
+      "sha256": "cbb3d2741f58e9796d20884c35e7137779a00925aae9bf3b8f75a064267c4e33",
+      "bytes": 83968,
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/verification/reference-anchor-review-v2.json",
+      "sha256": "647da1e6c81836f916582621b792adcf37bb3aa13eedaea0345ec25bf3f910b3",
+      "bytes": 9812,
+      "mode": "0o644"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-v1/completion.json",
+      "sha256": "d31058e987c77252e573e2248bc945fbbcbf6a7019254844256e8d1a0e40c7ca",
+      "bytes": 710,
+      "mode": "0o600"
+    },
+    {
+      "path": "tests/fixtures/corpus/acceptance-reference-parameters-v2.json",
+      "sha256": "9b045db30e32bc7dfaa8775fba598ca93c7553b6f4b93c26af3dd6180b39f0f7",
+      "bytes": 16506,
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/verification/acceptance-reference-v2.json",
+      "sha256": "aa7a0e5226be39a41b5312c83b3332214149aa9725fd79799f8d090d02c46e91",
+      "bytes": 8473,
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/verification/native-timestamps-calibration-v1.json",
+      "sha256": "44e81325e806438d7531c3a073a2c12953ebba62c4f3a8a938128db705aba67e",
+      "bytes": 14302,
+      "mode": "0o644"
+    },
+    {
+      "path": "artifacts/acceptance/v2/reference-results.json",
+      "sha256": "f92cace71a327ed358bd1aed84001996aa434ea91d094314fd2cbb1d4809d995",
+      "bytes": 21333,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/reference-quality.json",
+      "sha256": "f872f3150317b2f0e873864e44dfc0532b71e3f3560baac12cea2f39da1931d6",
+      "bytes": 25553,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/small-results.json",
+      "sha256": "09126141868fbd02313871aad7feecfa91f306ad64152ea7a253d0f67f41e73a",
+      "bytes": 20749,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/small-quality.json",
+      "sha256": "f1fc8d58dc414d05c9eff5e4d6c0fdfb55752987f258547b564a782f69d1e9d3",
+      "bytes": 25859,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/reference-results.json.metadata.json",
+      "sha256": "b6df1e945efafa8103e20fca2508af25b4071e7f71dccfbf8c0e657063a62a70",
+      "bytes": 12294,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-v1/reference-results.json",
+      "sha256": "6b793e1c21c9ba77f912d7ec163013331d5c3a40b08e03d16a06e9466b420d0e",
+      "bytes": 22116,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-v1/reference-results.json.metadata.json",
+      "sha256": "dc316833b3ad7eeebb0aa7bb3fb79850485d11fda3078409326c09e56ff793e8",
+      "bytes": 12658,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-v1/reference-quality.json",
+      "sha256": "83838b3872040fdb556d887d369371911d23330c87a1c7beaaaf8d47cd0333c1",
+      "bytes": 25608,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-v1/reference.command.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-v1/reference.quality.log",
+      "sha256": "4d238bd90549f73cd2a626978ada9b452ac6da6dc34f5e395aec45881a1df849",
+      "bytes": 86,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/small-results.json.metadata.json",
+      "sha256": "1da58c69c060498567e5afda719c44c61271ccb0e7c6c29dc1ad71c2bda830bf",
+      "bytes": 12234,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-v1/small-results.json",
+      "sha256": "d21992b6309d3921701932fb33c6c1ab624c9944b60580c81c8d59fd8a7f5f39",
+      "bytes": 21750,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-v1/small-results.json.metadata.json",
+      "sha256": "05ca8f811003e0fcd92ba789d2b02a1029fc571740b06454c3069d3262f28e83",
+      "bytes": 12599,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-v1/small-quality.json",
+      "sha256": "250bcbd0608df3c8d87d837529a68fa9402050b137c20f2e794dbd943822d514",
+      "bytes": 25842,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-v1/small.command.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/native-timestamps-v1/small.quality.log",
+      "sha256": "4d238bd90549f73cd2a626978ada9b452ac6da6dc34f5e395aec45881a1df849",
+      "bytes": 86,
+      "mode": "0o600"
+    }
+  ],
+  "models": {
+    "reference": {
+      "identity": {
+        "id": "large-v3-turbo-q5_0",
+        "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+      },
+      "summary": {
+        "cleanCaseCount": 75,
+        "anchorCount": 158,
+        "changedCleanCount": 8,
+        "retainedCleanCount": 67,
+        "changedAll90Count": 10,
+        "anchorVerdicts": {
+          "pass": 154,
+          "fail": 3,
+          "unclear": 1
+        },
+        "byCategory": {
+          "E": {
+            "pass": 68,
+            "fail": 3,
+            "unclear": 1
+          },
+          "N": {
+            "pass": 18
+          },
+          "Z": {
+            "pass": 35
+          },
+          "?": {
+            "pass": 33
+          }
+        },
+        "casesWithFailedAnchors": [
+          "fleurs-de-test-1679",
+          "fleurs-de-test-1684",
+          "fleurs-de-test-1736"
+        ],
+        "casesWithUnclearAnchors": [
+          "fleurs-en-test-1669"
+        ],
+        "unresolvedNumericCases": [],
+        "confirmedWrongNumberCases": [],
+        "lostNegationCases": [],
+        "newWholeClauseLossCases": [],
+        "newWholeClauseDuplicationCases": [],
+        "qualified": false,
+        "caseSemanticVerdicts": {
+          "pass": 61,
+          "fail": 13,
+          "unclear": 1
+        }
+      },
+      "all90Comparisons": [
+        {
+          "id": "fleurs-de-test-1660",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "ef6b20e11ab6e7254270a393c3de13c3d723af66d2bbb36da27b32e8a370dd30",
+          "newTextSha256": "ef6b20e11ab6e7254270a393c3de13c3d723af66d2bbb36da27b32e8a370dd30"
+        },
+        {
+          "id": "fleurs-de-test-1661",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "0a5a838829580ccefd0558c3483c01e13e2bdf87aa68b700fb1c0b53214e88f8",
+          "newTextSha256": "0a5a838829580ccefd0558c3483c01e13e2bdf87aa68b700fb1c0b53214e88f8"
+        },
+        {
+          "id": "fleurs-de-test-1662",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "a10b37ba32ca9ce6523f4aab4525c0f22582132c846a79cf206b106da237c642",
+          "newTextSha256": "a10b37ba32ca9ce6523f4aab4525c0f22582132c846a79cf206b106da237c642"
+        },
+        {
+          "id": "fleurs-de-test-1663",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+          "newTextSha256": "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9"
+        },
+        {
+          "id": "fleurs-de-test-1664",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "6cf8d6ae48f88ba6bf65404e9b69f6f3a17e13370c07c0fe9478c2a803ae30b8",
+          "newTextSha256": "6cf8d6ae48f88ba6bf65404e9b69f6f3a17e13370c07c0fe9478c2a803ae30b8"
+        },
+        {
+          "id": "fleurs-de-test-1665",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "c6faa955bbba9e4687e1ec091005be57f8c767018125861a9d8cfe7c4a1991ae",
+          "newTextSha256": "c6faa955bbba9e4687e1ec091005be57f8c767018125861a9d8cfe7c4a1991ae"
+        },
+        {
+          "id": "fleurs-de-test-1666",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "03fbaac3fbd2d9256b2a6542f8ffeb1734b4e7bca0b118f4fe5d9fdd5d8a016f",
+          "newTextSha256": "03fbaac3fbd2d9256b2a6542f8ffeb1734b4e7bca0b118f4fe5d9fdd5d8a016f"
+        },
+        {
+          "id": "fleurs-de-test-1667",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "b858b3028965ba5afad61cb9cba7a167f2821871df3d7e179fc33323c9f3b6e9",
+          "newTextSha256": "b858b3028965ba5afad61cb9cba7a167f2821871df3d7e179fc33323c9f3b6e9"
+        },
+        {
+          "id": "fleurs-de-test-1668",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "767a99e37ff3d574fb3c12d7bb90b120d499d5355bcbab7fa94f208e0fea3340",
+          "newTextSha256": "767a99e37ff3d574fb3c12d7bb90b120d499d5355bcbab7fa94f208e0fea3340"
+        },
+        {
+          "id": "fleurs-de-test-1669",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "3cc28fc8ee56a2bade992ba58b42035ea746efb87300d38c0bb958f5fc0cb39a",
+          "newTextSha256": "3cc28fc8ee56a2bade992ba58b42035ea746efb87300d38c0bb958f5fc0cb39a"
+        },
+        {
+          "id": "fleurs-de-test-1670",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "fadf61b7ac063104242f4487b5d917a42c2e1eb4f05b255aea73a586eca5c130",
+          "newTextSha256": "fadf61b7ac063104242f4487b5d917a42c2e1eb4f05b255aea73a586eca5c130"
+        },
+        {
+          "id": "fleurs-de-test-1671",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "7210b71233839f5252f62adc4f640b0971180187a199e94d5804d5ec41b0f236",
+          "newTextSha256": "e7e1d66ce2bb7520fe9a58f9d174cd88d16b30e9a330dd3c65d308d2fa266714"
+        },
+        {
+          "id": "fleurs-de-test-1672",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "7f84f7a16cfa8b4f06e69a565d07649dff5dc112b9d700393f46d5e1418b4539",
+          "newTextSha256": "7f84f7a16cfa8b4f06e69a565d07649dff5dc112b9d700393f46d5e1418b4539"
+        },
+        {
+          "id": "fleurs-de-test-1673",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "323fcbe56e65390cfce02d546eec32fc7d396796143ccc405e8a62ddfda606b6",
+          "newTextSha256": "323fcbe56e65390cfce02d546eec32fc7d396796143ccc405e8a62ddfda606b6"
+        },
+        {
+          "id": "fleurs-de-test-1674",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "53c446e1b07488d3d417acf5fd50ba1d9d8010057c9da96997bdbd4bb7eae26f",
+          "newTextSha256": "6d77addc7d27755e335d01879e6adb5b5ede6b6efceb777e9e83933a51199754"
+        },
+        {
+          "id": "fleurs-de-test-1675",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "cb9a431e31f7149f3cf29c2687143ab2e0dcc98a0de4ba14a6827dc3546c8aae",
+          "newTextSha256": "cb9a431e31f7149f3cf29c2687143ab2e0dcc98a0de4ba14a6827dc3546c8aae"
+        },
+        {
+          "id": "fleurs-de-test-1676",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "c5d5da0bb843d479a3001a4da183f70c9fe36a745fcd0564a326aeffa8c14846",
+          "newTextSha256": "c5d5da0bb843d479a3001a4da183f70c9fe36a745fcd0564a326aeffa8c14846"
+        },
+        {
+          "id": "fleurs-de-test-1677",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "b700d143d280ed0ba4eb022e26ba120dd0b0db9defa50460dfae3457e5365c4d",
+          "newTextSha256": "b700d143d280ed0ba4eb022e26ba120dd0b0db9defa50460dfae3457e5365c4d"
+        },
+        {
+          "id": "fleurs-de-test-1678",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "c58fb78a9d5bee86394dba2afac5fcc425c1bf4ffe44b17f08dcc83d9a59ba92",
+          "newTextSha256": "c58fb78a9d5bee86394dba2afac5fcc425c1bf4ffe44b17f08dcc83d9a59ba92"
+        },
+        {
+          "id": "fleurs-de-test-1679",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "147b1ddc39e21868e8fca6a0a2a1c7b03e4fe7015ffe7ab0f700caf3071e81d2",
+          "newTextSha256": "a67eb333736f9b224916d8102629fb402670fb3e75281893995e4b27f56d22fa"
+        },
+        {
+          "id": "fleurs-de-test-1680",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "0c736e7c12c08681d7762e927617bdda19b0f3d28fbf0a8c088eeff017892ef0",
+          "newTextSha256": "0c736e7c12c08681d7762e927617bdda19b0f3d28fbf0a8c088eeff017892ef0"
+        },
+        {
+          "id": "fleurs-de-test-1682",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "3bf4489725a56588ddb092a36b75e310c1cfed7cffa9b7fcb14cc930630b9f61",
+          "newTextSha256": "3bf4489725a56588ddb092a36b75e310c1cfed7cffa9b7fcb14cc930630b9f61"
+        },
+        {
+          "id": "fleurs-de-test-1683",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "80020900f5e9a2ce309bc52ceb74ed67ba8173f20a06121ed20551f751ebf36c",
+          "newTextSha256": "80020900f5e9a2ce309bc52ceb74ed67ba8173f20a06121ed20551f751ebf36c"
+        },
+        {
+          "id": "fleurs-de-test-1684",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "6225e244cee2dfc5a8e2a6387d3f81959cb9fefef59d2d332a9bee2d773f4292",
+          "newTextSha256": "6225e244cee2dfc5a8e2a6387d3f81959cb9fefef59d2d332a9bee2d773f4292"
+        },
+        {
+          "id": "fleurs-de-test-1685",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "f41c24db451ebfea88cc68fb43659a19d975387fa074a52af156b7693fb70dd9",
+          "newTextSha256": "f41c24db451ebfea88cc68fb43659a19d975387fa074a52af156b7693fb70dd9"
+        },
+        {
+          "id": "fleurs-de-test-1686",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "f98461ff1b9bb0f31abd5b0ae2351db2d324592d0235b871f4cf0df58f8c10cb",
+          "newTextSha256": "f98461ff1b9bb0f31abd5b0ae2351db2d324592d0235b871f4cf0df58f8c10cb"
+        },
+        {
+          "id": "fleurs-de-test-1687",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "6cac7f7b48d92757398a59ede12e3d02ee8a6219b6898a873235d07da8122323",
+          "newTextSha256": "6cac7f7b48d92757398a59ede12e3d02ee8a6219b6898a873235d07da8122323"
+        },
+        {
+          "id": "fleurs-de-test-1688",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "2a8c2f69e4e21f642d43a732ef5b5ee7ee779a55f31e23751ddea6aec2b6216f",
+          "newTextSha256": "2a8c2f69e4e21f642d43a732ef5b5ee7ee779a55f31e23751ddea6aec2b6216f"
+        },
+        {
+          "id": "fleurs-de-test-1689",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "966a7fd3c5e6dc71fd22ac1c845a26b72968318315cd938cfd88a47fe3e35ce1",
+          "newTextSha256": "966a7fd3c5e6dc71fd22ac1c845a26b72968318315cd938cfd88a47fe3e35ce1"
+        },
+        {
+          "id": "fleurs-de-test-1690",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "4b1f41db9a12948e205786bab71201ee24cf8dfe6d57e95efe1f4fe446c58bdb",
+          "newTextSha256": "4b1f41db9a12948e205786bab71201ee24cf8dfe6d57e95efe1f4fe446c58bdb"
+        },
+        {
+          "id": "fleurs-de-test-1691",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "d36eb365e8d25bd5f11056e7730742de8ef1ef7dddb521d6e91b7fae15421cce",
+          "newTextSha256": "d36eb365e8d25bd5f11056e7730742de8ef1ef7dddb521d6e91b7fae15421cce"
+        },
+        {
+          "id": "fleurs-de-test-1692",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "c458ce8719ef01660d59247cb7023aaa1e15d3e83f03f6b17db8baf2e5207326",
+          "newTextSha256": "c458ce8719ef01660d59247cb7023aaa1e15d3e83f03f6b17db8baf2e5207326"
+        },
+        {
+          "id": "fleurs-de-test-1693",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "a9a7434501db548f3a7b7505673e04f901f52caebe390a14c51830d7f22fe667",
+          "newTextSha256": "a9a7434501db548f3a7b7505673e04f901f52caebe390a14c51830d7f22fe667"
+        },
+        {
+          "id": "fleurs-de-test-1694",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "da6e9443e24545f328273010793a752afa34398e8eaa6bb9f3526d9492dc2d59",
+          "newTextSha256": "da6e9443e24545f328273010793a752afa34398e8eaa6bb9f3526d9492dc2d59"
+        },
+        {
+          "id": "fleurs-de-test-1695",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "a9cfd8486e71689bf79d8435aaff4c30cc163acddf29ab48075e6658ebc22e93",
+          "newTextSha256": "b433909f06e45d90fc0ac15e3abb6cf5aa00e15733021957525c8310cd628b33"
+        },
+        {
+          "id": "fleurs-de-test-1696",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "3e8fe876442b5e10499158e730cd7fcc0dba84cb072db1f74cc8925828a7abc7",
+          "newTextSha256": "3e8fe876442b5e10499158e730cd7fcc0dba84cb072db1f74cc8925828a7abc7"
+        },
+        {
+          "id": "fleurs-de-test-1697",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "aa1b1f7becaaf8db2cbbf5de063e2da9e3602260fbd42d548de52eb48170b4f5",
+          "newTextSha256": "aa1b1f7becaaf8db2cbbf5de063e2da9e3602260fbd42d548de52eb48170b4f5"
+        },
+        {
+          "id": "fleurs-de-test-1698",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "6e244f856fb9d7a40526c0a7b3a0b4e97baedfdee7456252f2ea139b1c008888",
+          "newTextSha256": "e6f7b91d9630fe9e02b65ca92c5e59c9581073fbf3a3a06f3207fe4343fa5604"
+        },
+        {
+          "id": "fleurs-de-test-1699",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "cec28e2074bd09c0f32640b3923cbc1028b24e9a88b936bf5c01fa7839d48fbb",
+          "newTextSha256": "cec28e2074bd09c0f32640b3923cbc1028b24e9a88b936bf5c01fa7839d48fbb"
+        },
+        {
+          "id": "fleurs-de-test-1700",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "3688280bfe9e6544a5039e9e819647e0d64dabf7e2f999cd32e4fc9931932a59",
+          "newTextSha256": "3688280bfe9e6544a5039e9e819647e0d64dabf7e2f999cd32e4fc9931932a59"
+        },
+        {
+          "id": "fleurs-de-test-1736",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "d36dec2ebe1f1082ce1e143a85ab83793d413ddc8ff1e96aac1c635278050fbf",
+          "newTextSha256": "d36dec2ebe1f1082ce1e143a85ab83793d413ddc8ff1e96aac1c635278050fbf"
+        },
+        {
+          "id": "fleurs-de-test-1660-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "ef6b20e11ab6e7254270a393c3de13c3d723af66d2bbb36da27b32e8a370dd30",
+          "newTextSha256": "ef6b20e11ab6e7254270a393c3de13c3d723af66d2bbb36da27b32e8a370dd30"
+        },
+        {
+          "id": "fleurs-de-test-1661-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "0a5a838829580ccefd0558c3483c01e13e2bdf87aa68b700fb1c0b53214e88f8",
+          "newTextSha256": "0a5a838829580ccefd0558c3483c01e13e2bdf87aa68b700fb1c0b53214e88f8"
+        },
+        {
+          "id": "fleurs-de-test-1662-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "a10b37ba32ca9ce6523f4aab4525c0f22582132c846a79cf206b106da237c642",
+          "newTextSha256": "a10b37ba32ca9ce6523f4aab4525c0f22582132c846a79cf206b106da237c642"
+        },
+        {
+          "id": "fleurs-de-test-1663-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+          "newTextSha256": "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9"
+        },
+        {
+          "id": "fleurs-de-test-1664-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "b6695aa88f5f8afe23edbc6e4e45166c1a8ae91e4b14fa9931d0c632e742456b",
+          "newTextSha256": "6cf8d6ae48f88ba6bf65404e9b69f6f3a17e13370c07c0fe9478c2a803ae30b8"
+        },
+        {
+          "id": "fleurs-en-test-1660",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "4a9fddb493861c1f91705c957d61325aeb81a88b86f92886ac038f810409b09b",
+          "newTextSha256": "4a9fddb493861c1f91705c957d61325aeb81a88b86f92886ac038f810409b09b"
+        },
+        {
+          "id": "fleurs-en-test-1661",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "6a8545878790aa194e3c719e478de1297e5945181165d82d73ccef8dc6ad543d",
+          "newTextSha256": "6a8545878790aa194e3c719e478de1297e5945181165d82d73ccef8dc6ad543d"
+        },
+        {
+          "id": "fleurs-en-test-1662",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "76c7ed45acbf768b4e25fe52333ddd8c418ad156f3f531b16345976a8d7c6f3d",
+          "newTextSha256": "76c7ed45acbf768b4e25fe52333ddd8c418ad156f3f531b16345976a8d7c6f3d"
+        },
+        {
+          "id": "fleurs-en-test-1663",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "5c8d1528d2ca6c88f9e701d7cc3ed6835157984c4a3ebf0122c936eff09b6b4d",
+          "newTextSha256": "5c8d1528d2ca6c88f9e701d7cc3ed6835157984c4a3ebf0122c936eff09b6b4d"
+        },
+        {
+          "id": "fleurs-en-test-1664",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "517cc6236e3bbe6c329f810266dd9d9a77b1f1998b7414ce60dce0ff2582a3ff",
+          "newTextSha256": "517cc6236e3bbe6c329f810266dd9d9a77b1f1998b7414ce60dce0ff2582a3ff"
+        },
+        {
+          "id": "fleurs-en-test-1665",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "b73f2458cd2eb42257fbe4597d59bb2e1e056e6f17d39f2600745342032aeda3",
+          "newTextSha256": "b73f2458cd2eb42257fbe4597d59bb2e1e056e6f17d39f2600745342032aeda3"
+        },
+        {
+          "id": "fleurs-en-test-1666",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "5a20dfd0e38b00f4ddeb0086147689822ad22f34e619e1244f712ac16741ee44",
+          "newTextSha256": "5a20dfd0e38b00f4ddeb0086147689822ad22f34e619e1244f712ac16741ee44"
+        },
+        {
+          "id": "fleurs-en-test-1667",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "f6aaa4452fefd65a3adb9205db9819a7c096fb7c0ac3097f9a9f60df3a90df4e",
+          "newTextSha256": "f6aaa4452fefd65a3adb9205db9819a7c096fb7c0ac3097f9a9f60df3a90df4e"
+        },
+        {
+          "id": "fleurs-en-test-1668",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "6b82313d86434c550689b98347d8607d60155509925031e97040630c3ae0f842",
+          "newTextSha256": "091ecfcf0efaf76ce272f7c7f6eeb85a318b0c4128ec199f9284d5710ced3d10"
+        },
+        {
+          "id": "fleurs-en-test-1669",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "a726a31e50e52b21eacef656afae7482fb01977f962c0f399c4242295c7af80f",
+          "newTextSha256": "a726a31e50e52b21eacef656afae7482fb01977f962c0f399c4242295c7af80f"
+        },
+        {
+          "id": "fleurs-en-test-1670",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "1f22e097d0b5fb3952defb146934032d30792e4b2dc6e9fb543697388e25ec45",
+          "newTextSha256": "1f22e097d0b5fb3952defb146934032d30792e4b2dc6e9fb543697388e25ec45"
+        },
+        {
+          "id": "fleurs-en-test-1671",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "a845b84f5ed2f185db9377da2c810f7db8833689bcb5328c0593c36cd84543d0",
+          "newTextSha256": "a845b84f5ed2f185db9377da2c810f7db8833689bcb5328c0593c36cd84543d0"
+        },
+        {
+          "id": "fleurs-en-test-1672",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "f179e081b436420817232f005537156ecaac2f991c4dbba06e50be929f38df0b",
+          "newTextSha256": "f179e081b436420817232f005537156ecaac2f991c4dbba06e50be929f38df0b"
+        },
+        {
+          "id": "fleurs-en-test-1673",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "b545aa12e499626d7355eb20bd3a89d415328fa7f1a69f73a7847b3c0f0215af",
+          "newTextSha256": "b545aa12e499626d7355eb20bd3a89d415328fa7f1a69f73a7847b3c0f0215af"
+        },
+        {
+          "id": "fleurs-en-test-1674",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "15e33d0c8e813e7bac020ebcecbdc8a1e96f3b891bef440bffe43cd496a77d92",
+          "newTextSha256": "15e33d0c8e813e7bac020ebcecbdc8a1e96f3b891bef440bffe43cd496a77d92"
+        },
+        {
+          "id": "fleurs-en-test-1675",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "a729ea93d2a2b303590870e19261e57f42d477b288f2c43aa46dccddc81a44fc",
+          "newTextSha256": "a729ea93d2a2b303590870e19261e57f42d477b288f2c43aa46dccddc81a44fc"
+        },
+        {
+          "id": "fleurs-en-test-1676",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "2443b0eb3e5cf3384aba601bd83eeaae0429a174f5c32b778f6bc1d329e4dc64",
+          "newTextSha256": "2443b0eb3e5cf3384aba601bd83eeaae0429a174f5c32b778f6bc1d329e4dc64"
+        },
+        {
+          "id": "fleurs-en-test-1677",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "ba5a10a0a4af643971d9fd605761feff77e2ea8b58fedc0e31870de0a06adb98",
+          "newTextSha256": "ba5a10a0a4af643971d9fd605761feff77e2ea8b58fedc0e31870de0a06adb98"
+        },
+        {
+          "id": "fleurs-en-test-1678",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "2e0bdca570f99a093b322f56964c1c9943f188b71aac6285a57b8296bbdafea6",
+          "newTextSha256": "2e0bdca570f99a093b322f56964c1c9943f188b71aac6285a57b8296bbdafea6"
+        },
+        {
+          "id": "fleurs-en-test-1679",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "ec18a7fd1b9aba51176898209d87e434906bec3d81782cee7cff833680ae5d2f",
+          "newTextSha256": "ec18a7fd1b9aba51176898209d87e434906bec3d81782cee7cff833680ae5d2f"
+        },
+        {
+          "id": "fleurs-en-test-1680",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "efb5f0a980b9bcad3abdac0cd4cf6b0f42550e465d466d6c6c44a6c517204e20",
+          "newTextSha256": "efb5f0a980b9bcad3abdac0cd4cf6b0f42550e465d466d6c6c44a6c517204e20"
+        },
+        {
+          "id": "fleurs-en-test-1681",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "53245114b77cc96b31ef739fc32c6dd5db5b82798ae2d8e6b231de2db7894d9d",
+          "newTextSha256": "1f61ba6721db4f46bcde0c40d2027d8d611780b3c64acbd2aa4953a37fbdddac"
+        },
+        {
+          "id": "fleurs-en-test-1682",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "48d67adfdf8e4f64ade6bd4d118289530e9ae8a0e67f06ff270b771521d0e10d",
+          "newTextSha256": "48d67adfdf8e4f64ade6bd4d118289530e9ae8a0e67f06ff270b771521d0e10d"
+        },
+        {
+          "id": "fleurs-en-test-1683",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "eb1498700185397beab96e6413c869ed72c0d8d85ef77349d769528b1b814ab3",
+          "newTextSha256": "eb1498700185397beab96e6413c869ed72c0d8d85ef77349d769528b1b814ab3"
+        },
+        {
+          "id": "fleurs-en-test-1684",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "a706ccf17b573d171a735751291dc9fb0e8767fc993fe12f0e643bc66a48279f",
+          "newTextSha256": "a706ccf17b573d171a735751291dc9fb0e8767fc993fe12f0e643bc66a48279f"
+        },
+        {
+          "id": "fleurs-en-test-1685",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "b09f58412ea469ab517352f153a85b5c54acedc50c28c0c009dc77c167d44805",
+          "newTextSha256": "b09f58412ea469ab517352f153a85b5c54acedc50c28c0c009dc77c167d44805"
+        },
+        {
+          "id": "fleurs-en-test-1686",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "d0b00ec5c4894a22226d1c571835f2a0703b344702ec8570001c0ece2c7f4578",
+          "newTextSha256": "d0b00ec5c4894a22226d1c571835f2a0703b344702ec8570001c0ece2c7f4578"
+        },
+        {
+          "id": "fleurs-en-test-1687",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "a1722014df8da956c072ca131bad91dc97b3b8c9a2b7c4d1222360c64a224a50",
+          "newTextSha256": "a1722014df8da956c072ca131bad91dc97b3b8c9a2b7c4d1222360c64a224a50"
+        },
+        {
+          "id": "fleurs-en-test-1688",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "94e93aed6a8566a34051e7b7e1d745b7a8631f1d9f9460c404e1c1ab3fbd058b",
+          "newTextSha256": "94e93aed6a8566a34051e7b7e1d745b7a8631f1d9f9460c404e1c1ab3fbd058b"
+        },
+        {
+          "id": "fleurs-en-test-1689",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "9a6fec3db8eeb14fed033ab975d00a839d232a40f10767578d7a8556f2a629d7",
+          "newTextSha256": "9a6fec3db8eeb14fed033ab975d00a839d232a40f10767578d7a8556f2a629d7"
+        },
+        {
+          "id": "fleurs-en-test-1660-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "4a9fddb493861c1f91705c957d61325aeb81a88b86f92886ac038f810409b09b",
+          "newTextSha256": "4a9fddb493861c1f91705c957d61325aeb81a88b86f92886ac038f810409b09b"
+        },
+        {
+          "id": "fleurs-en-test-1661-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "6a8545878790aa194e3c719e478de1297e5945181165d82d73ccef8dc6ad543d",
+          "newTextSha256": "6a8545878790aa194e3c719e478de1297e5945181165d82d73ccef8dc6ad543d"
+        },
+        {
+          "id": "fleurs-en-test-1662-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "76c7ed45acbf768b4e25fe52333ddd8c418ad156f3f531b16345976a8d7c6f3d",
+          "newTextSha256": "76c7ed45acbf768b4e25fe52333ddd8c418ad156f3f531b16345976a8d7c6f3d"
+        },
+        {
+          "id": "fleurs-en-test-1663-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "5c8d1528d2ca6c88f9e701d7cc3ed6835157984c4a3ebf0122c936eff09b6b4d",
+          "newTextSha256": "5c8d1528d2ca6c88f9e701d7cc3ed6835157984c4a3ebf0122c936eff09b6b4d"
+        },
+        {
+          "id": "fleurs-en-test-1664-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "517cc6236e3bbe6c329f810266dd9d9a77b1f1998b7414ce60dce0ff2582a3ff",
+          "newTextSha256": "517cc6236e3bbe6c329f810266dd9d9a77b1f1998b7414ce60dce0ff2582a3ff"
+        },
+        {
+          "id": "synthetic-de-silence-5s",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "newTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "id": "synthetic-de-noise-5s",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "newTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "id": "synthetic-en-silence-5s",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "newTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "id": "synthetic-en-noise-5s",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "newTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "id": "constructed-de-masked-300s",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "9e3410799ca315bcffd9858642fa83b7c010379e246197f496c12b660dcd8871",
+          "newTextSha256": "e263f76f057593ef1f6d63c40ed0c571e2eaecd4f96cbffaf9c4699983c9daeb"
+        },
+        {
+          "id": "hd-de-acceptance-s04-t0-d8",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3",
+          "newTextSha256": "2c624232cdd221771294dfbb310aca000a0df6ac8b66b696d90ef06fdefb64a3"
+        },
+        {
+          "id": "hd-de-acceptance-s05-t0-d9",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "99a1b84b98650fd4581b7156cd830ef74402cc54b6b834b677c269a41e731915",
+          "newTextSha256": "99a1b84b98650fd4581b7156cd830ef74402cc54b6b834b677c269a41e731915"
+        },
+        {
+          "id": "hd-en-acceptance-s04-t0-d8",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "c195d2d8756234367242ba7616c5c60369bc25ced2dcb5b92808d31b58ef217a",
+          "newTextSha256": "45db37faf6fb463cadf80424e50cebcb8afa4f7459aa9ce439a3e9b5f21ecc88"
+        },
+        {
+          "id": "hd-en-acceptance-s05-t0-d9",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "99a1b84b98650fd4581b7156cd830ef74402cc54b6b834b677c269a41e731915",
+          "newTextSha256": "99a1b84b98650fd4581b7156cd830ef74402cc54b6b834b677c269a41e731915"
+        }
+      ],
+      "changedCleanCaseIds": [
+        "fleurs-de-test-1671",
+        "fleurs-de-test-1674",
+        "fleurs-de-test-1679",
+        "fleurs-de-test-1695",
+        "fleurs-de-test-1698",
+        "fleurs-en-test-1668",
+        "fleurs-en-test-1681",
+        "hd-en-acceptance-s04-t0-d8"
+      ]
+    },
+    "small": {
+      "identity": {
+        "id": "small-q5_1",
+        "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb"
+      },
+      "summary": {
+        "cleanCaseCount": 75,
+        "anchorCount": 158,
+        "changedCleanCount": 19,
+        "retainedCleanCount": 56,
+        "changedAll90Count": 24,
+        "anchorVerdicts": {
+          "pass": 145,
+          "unclear": 6,
+          "fail": 7
+        },
+        "byCategory": {
+          "E": {
+            "pass": 64,
+            "unclear": 4,
+            "fail": 4
+          },
+          "N": {
+            "pass": 18
+          },
+          "Z": {
+            "pass": 34,
+            "unclear": 1
+          },
+          "?": {
+            "pass": 29,
+            "fail": 3,
+            "unclear": 1
+          }
+        },
+        "casesWithFailedAnchors": [
+          "fleurs-de-test-1671",
+          "fleurs-de-test-1678",
+          "fleurs-de-test-1684",
+          "fleurs-de-test-1689",
+          "fleurs-de-test-1692",
+          "fleurs-de-test-1736",
+          "fleurs-en-test-1670"
+        ],
+        "casesWithUnclearAnchors": [
+          "fleurs-de-test-1663",
+          "fleurs-de-test-1682",
+          "fleurs-de-test-1695",
+          "fleurs-en-test-1660",
+          "fleurs-en-test-1663"
+        ],
+        "unresolvedNumericCases": [
+          "fleurs-de-test-1682"
+        ],
+        "confirmedWrongNumberCases": [],
+        "lostNegationCases": [],
+        "newWholeClauseLossCases": [],
+        "newWholeClauseDuplicationCases": [],
+        "qualified": false,
+        "orthographyIssueSpanCount": 25,
+        "localSyntacticAttachmentUncertaintyCases": [
+          "fleurs-en-test-1681"
+        ]
+      },
+      "all90Comparisons": [
+        {
+          "id": "fleurs-de-test-1660",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "fad75c5ff046214cf1c6b882062beb1b6c0ac8caf1d5bcf65374d33899548630",
+          "newTextSha256": "8700ebc82ab270f14d2e64d94eb16235f1998dc6159621f093891cbca937753d"
+        },
+        {
+          "id": "fleurs-de-test-1661",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "7e070839f461c0cd8ef4fa7d9fe07acffc046127dddff21d1836a2c96c149743",
+          "newTextSha256": "7e070839f461c0cd8ef4fa7d9fe07acffc046127dddff21d1836a2c96c149743"
+        },
+        {
+          "id": "fleurs-de-test-1662",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "a10b37ba32ca9ce6523f4aab4525c0f22582132c846a79cf206b106da237c642",
+          "newTextSha256": "a10b37ba32ca9ce6523f4aab4525c0f22582132c846a79cf206b106da237c642"
+        },
+        {
+          "id": "fleurs-de-test-1663",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "752d0ad959da55be92e45127e297de7d3ae861b20f0abf46c9e7681a7d4a4781",
+          "newTextSha256": "752d0ad959da55be92e45127e297de7d3ae861b20f0abf46c9e7681a7d4a4781"
+        },
+        {
+          "id": "fleurs-de-test-1664",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "6cf8d6ae48f88ba6bf65404e9b69f6f3a17e13370c07c0fe9478c2a803ae30b8",
+          "newTextSha256": "6cf8d6ae48f88ba6bf65404e9b69f6f3a17e13370c07c0fe9478c2a803ae30b8"
+        },
+        {
+          "id": "fleurs-de-test-1665",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "fa927103949c9d2e9e3dbdd1170e98a8d985d4f086ec38819b5431d29c8ac739",
+          "newTextSha256": "fa927103949c9d2e9e3dbdd1170e98a8d985d4f086ec38819b5431d29c8ac739"
+        },
+        {
+          "id": "fleurs-de-test-1666",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "afad748289022f25f210bad15126eec5a6b0427372d7dfd3f9b773eda008fcb2",
+          "newTextSha256": "afad748289022f25f210bad15126eec5a6b0427372d7dfd3f9b773eda008fcb2"
+        },
+        {
+          "id": "fleurs-de-test-1667",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "b858b3028965ba5afad61cb9cba7a167f2821871df3d7e179fc33323c9f3b6e9",
+          "newTextSha256": "b858b3028965ba5afad61cb9cba7a167f2821871df3d7e179fc33323c9f3b6e9"
+        },
+        {
+          "id": "fleurs-de-test-1668",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "b3a0040e085d0032dfad7f19f45bfc16fc0af9cdfb8cbcc1cf971a7ced3586c5",
+          "newTextSha256": "b3a0040e085d0032dfad7f19f45bfc16fc0af9cdfb8cbcc1cf971a7ced3586c5"
+        },
+        {
+          "id": "fleurs-de-test-1669",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "17dce5e505084c077ecae98894b8289aa798bc6dd32b4ea2f5cf2a4dc25ee49e",
+          "newTextSha256": "17dce5e505084c077ecae98894b8289aa798bc6dd32b4ea2f5cf2a4dc25ee49e"
+        },
+        {
+          "id": "fleurs-de-test-1670",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "e30f722f136b603c75641fb2d4f06b8bcc43df12c2580ef7ca51cf31dab4c668",
+          "newTextSha256": "22b6d289e0b79e100e7bfc10ec825ff661a8a44d8d0ac6692a831b2b6547bea0"
+        },
+        {
+          "id": "fleurs-de-test-1671",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "b232fefcba2e5379104b2eb6796bf2b37fd20fd35944132eb6b4773382f89f2c",
+          "newTextSha256": "b232fefcba2e5379104b2eb6796bf2b37fd20fd35944132eb6b4773382f89f2c"
+        },
+        {
+          "id": "fleurs-de-test-1672",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "c7f99693afe74ab449239d3d6718b38ec62b984526e3aa50cf79466a0570fcda",
+          "newTextSha256": "c7f99693afe74ab449239d3d6718b38ec62b984526e3aa50cf79466a0570fcda"
+        },
+        {
+          "id": "fleurs-de-test-1673",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "29b5284a7e0c781e7d35407aeb79394d2772e15e0f7ae6b77a529a14585a2f7d",
+          "newTextSha256": "ea4000e37852ab2754b7d58432bde807329adc63bd2b209f975b655462b1ef46"
+        },
+        {
+          "id": "fleurs-de-test-1674",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "310317ffef0c0aff267c99b545c7c48ff130de199779a7417b1889d061df4e2a",
+          "newTextSha256": "310317ffef0c0aff267c99b545c7c48ff130de199779a7417b1889d061df4e2a"
+        },
+        {
+          "id": "fleurs-de-test-1675",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "e01dc122d99442431c7e989e4bd25260f04f883e4f4d73ece86f921dcc27f17c",
+          "newTextSha256": "248b1c61c600528fb60625021007735c7c5dbc9a1ee02045d87ae191331d936b"
+        },
+        {
+          "id": "fleurs-de-test-1676",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "ab4982f7d8b3209942182e9660eaf731168c2f29fb878fa0ee97020e358d9e91",
+          "newTextSha256": "ab4982f7d8b3209942182e9660eaf731168c2f29fb878fa0ee97020e358d9e91"
+        },
+        {
+          "id": "fleurs-de-test-1677",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "87e62b0d1cc0c1b52c63dda02ca6a397bf5d77f5994f1e01623180a5be397d6c",
+          "newTextSha256": "87e62b0d1cc0c1b52c63dda02ca6a397bf5d77f5994f1e01623180a5be397d6c"
+        },
+        {
+          "id": "fleurs-de-test-1678",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "44a76ac5f86f0bd0da95051426825770cfdbb77caa1ba551149a6ab8a8896921",
+          "newTextSha256": "cec8164ba56a2510d3e7bed9ceda8abe8d3bf7f93be5604004dcab30234ed7fa"
+        },
+        {
+          "id": "fleurs-de-test-1679",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "58caf3f9dabc8355c9bb325da870104ceb2e9feb6c559c923e9148ad58230f07",
+          "newTextSha256": "58caf3f9dabc8355c9bb325da870104ceb2e9feb6c559c923e9148ad58230f07"
+        },
+        {
+          "id": "fleurs-de-test-1680",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "0c736e7c12c08681d7762e927617bdda19b0f3d28fbf0a8c088eeff017892ef0",
+          "newTextSha256": "0c736e7c12c08681d7762e927617bdda19b0f3d28fbf0a8c088eeff017892ef0"
+        },
+        {
+          "id": "fleurs-de-test-1682",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "f7fc4e71e7500cbd885fa9d9244269b6284762e3cd0aa468c272527a228855e3",
+          "newTextSha256": "84c8befbcc879497b6e5d3bfb3d60779c2df9530f4dbdaac4b52f19478b2aefc"
+        },
+        {
+          "id": "fleurs-de-test-1683",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "e790278923094fc9f5f7a7bd43ab9e5f4f3810739df5d29778e82acef1bfde30",
+          "newTextSha256": "e790278923094fc9f5f7a7bd43ab9e5f4f3810739df5d29778e82acef1bfde30"
+        },
+        {
+          "id": "fleurs-de-test-1684",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "ecd790937ec9c138200cc3be03df69ddbde7b120d8e561bb1ffaae1bcb8c0f35",
+          "newTextSha256": "ecd790937ec9c138200cc3be03df69ddbde7b120d8e561bb1ffaae1bcb8c0f35"
+        },
+        {
+          "id": "fleurs-de-test-1685",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "a4454854e6afa6d026b8fd8d474ec5951d96b0abaf9eddbc72ad2cf697553817",
+          "newTextSha256": "93e8570d6c10b11db7f13e8d4ecd5327500359c772e3be11fb765c66b344b588"
+        },
+        {
+          "id": "fleurs-de-test-1686",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "68881cf7db336f24eec684155f538981af8334f2200fb0ec0614a6a2ab5d178f",
+          "newTextSha256": "68881cf7db336f24eec684155f538981af8334f2200fb0ec0614a6a2ab5d178f"
+        },
+        {
+          "id": "fleurs-de-test-1687",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "c7de8f812ad04856da9b284ac499975b25e119c21c86eefb2bd4cc9b5443401d",
+          "newTextSha256": "c7de8f812ad04856da9b284ac499975b25e119c21c86eefb2bd4cc9b5443401d"
+        },
+        {
+          "id": "fleurs-de-test-1688",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "fac8cc9b8689d8da8d64d263312b431cfe278fb06928951108687bb36282a289",
+          "newTextSha256": "fac8cc9b8689d8da8d64d263312b431cfe278fb06928951108687bb36282a289"
+        },
+        {
+          "id": "fleurs-de-test-1689",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "fcac083a81aaf9ccf9999e552ed615eba1440c02241421064e43d6dfa9a50816",
+          "newTextSha256": "fcac083a81aaf9ccf9999e552ed615eba1440c02241421064e43d6dfa9a50816"
+        },
+        {
+          "id": "fleurs-de-test-1690",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "638e599756279f869bf49fddb6c77b9dd88c4f948e32a1f129ebb28a4b532170",
+          "newTextSha256": "638e599756279f869bf49fddb6c77b9dd88c4f948e32a1f129ebb28a4b532170"
+        },
+        {
+          "id": "fleurs-de-test-1691",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "17007f845ccc7781a97c3fec90e895df60aa834b5d964118d433c700fafc4af5",
+          "newTextSha256": "17007f845ccc7781a97c3fec90e895df60aa834b5d964118d433c700fafc4af5"
+        },
+        {
+          "id": "fleurs-de-test-1692",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "d13e59f1175dd72390b3812095afe02eeb7fe82b22ac6ee71cbd04af6b771a4d",
+          "newTextSha256": "d13e59f1175dd72390b3812095afe02eeb7fe82b22ac6ee71cbd04af6b771a4d"
+        },
+        {
+          "id": "fleurs-de-test-1693",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "a9a7434501db548f3a7b7505673e04f901f52caebe390a14c51830d7f22fe667",
+          "newTextSha256": "a9a7434501db548f3a7b7505673e04f901f52caebe390a14c51830d7f22fe667"
+        },
+        {
+          "id": "fleurs-de-test-1694",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "4464cc61da5ca8be8487e34b1798c7ee9491cdda7a53af4e8ce209a0bdd26afd",
+          "newTextSha256": "56c5994703422fd390409a417a45a48a853e9a8ab3498a850d143b50b5a711ac"
+        },
+        {
+          "id": "fleurs-de-test-1695",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "64e46b8a3c9a319100b213f629f25d469b42b366320356939418c60a7c885004",
+          "newTextSha256": "057c2c6787ac2e22c5e75621f0050a8bd807ca0060adf9fba5f875b4e9bceb38"
+        },
+        {
+          "id": "fleurs-de-test-1696",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "f03a93043f2acf7d3c0a1819deb36d9a7f6bf35e0e91293b1356101114a930f2",
+          "newTextSha256": "8ff4e15d6be8983a44fef66c20d20d918ca72f0b3bdda593988d0785e90d8d42"
+        },
+        {
+          "id": "fleurs-de-test-1697",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "1316a6f0d974c623f7fed260948b67773b78f851016ceb353605f9f28ff1e129",
+          "newTextSha256": "1316a6f0d974c623f7fed260948b67773b78f851016ceb353605f9f28ff1e129"
+        },
+        {
+          "id": "fleurs-de-test-1698",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "6e244f856fb9d7a40526c0a7b3a0b4e97baedfdee7456252f2ea139b1c008888",
+          "newTextSha256": "6e244f856fb9d7a40526c0a7b3a0b4e97baedfdee7456252f2ea139b1c008888"
+        },
+        {
+          "id": "fleurs-de-test-1699",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "904a8805ccc0ed06f2973afbb00b2da42fee8a80e8f682faa6cbd260df103669",
+          "newTextSha256": "65e60b52e7398823340292ab57426a816036aa9f6914474c320e5f745149cf4b"
+        },
+        {
+          "id": "fleurs-de-test-1700",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "1320578e706127f7cdabab14c8473f31b0f56011c7fc636aecb39518c91367fd",
+          "newTextSha256": "1320578e706127f7cdabab14c8473f31b0f56011c7fc636aecb39518c91367fd"
+        },
+        {
+          "id": "fleurs-de-test-1736",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "608392335e014a67cf62fd3fef1143292edf757e13fbb436caf9320c1b734fe2",
+          "newTextSha256": "608392335e014a67cf62fd3fef1143292edf757e13fbb436caf9320c1b734fe2"
+        },
+        {
+          "id": "fleurs-de-test-1660-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "fad75c5ff046214cf1c6b882062beb1b6c0ac8caf1d5bcf65374d33899548630",
+          "newTextSha256": "fad75c5ff046214cf1c6b882062beb1b6c0ac8caf1d5bcf65374d33899548630"
+        },
+        {
+          "id": "fleurs-de-test-1661-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "7e070839f461c0cd8ef4fa7d9fe07acffc046127dddff21d1836a2c96c149743",
+          "newTextSha256": "7e070839f461c0cd8ef4fa7d9fe07acffc046127dddff21d1836a2c96c149743"
+        },
+        {
+          "id": "fleurs-de-test-1662-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "a10b37ba32ca9ce6523f4aab4525c0f22582132c846a79cf206b106da237c642",
+          "newTextSha256": "a10b37ba32ca9ce6523f4aab4525c0f22582132c846a79cf206b106da237c642"
+        },
+        {
+          "id": "fleurs-de-test-1663-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "ef9e6b916ef79bb2d4fdda14e6fe900e4c7a7d107ec551c0dd805c38c709d829",
+          "newTextSha256": "ef9e6b916ef79bb2d4fdda14e6fe900e4c7a7d107ec551c0dd805c38c709d829"
+        },
+        {
+          "id": "fleurs-de-test-1664-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "6cf8d6ae48f88ba6bf65404e9b69f6f3a17e13370c07c0fe9478c2a803ae30b8",
+          "newTextSha256": "747e65c284dfa97997667661fa111ab2559daeffb6ebd8659a7445c5ed6e674e"
+        },
+        {
+          "id": "fleurs-en-test-1660",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "aaf3069bf704ac7e70cc725feafea6238b80783e3e61a861db9c5ca8b1238943",
+          "newTextSha256": "aaf3069bf704ac7e70cc725feafea6238b80783e3e61a861db9c5ca8b1238943"
+        },
+        {
+          "id": "fleurs-en-test-1661",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "03256aa025f1e5878a09b74cf71e0e60a68db7edbfb2b07b484c3838492726a7",
+          "newTextSha256": "03256aa025f1e5878a09b74cf71e0e60a68db7edbfb2b07b484c3838492726a7"
+        },
+        {
+          "id": "fleurs-en-test-1662",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "5ef173ae39361a708b9a03f70b37f638eb0fcf7619cdf4527191f3aa111c2e84",
+          "newTextSha256": "5ef173ae39361a708b9a03f70b37f638eb0fcf7619cdf4527191f3aa111c2e84"
+        },
+        {
+          "id": "fleurs-en-test-1663",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "68050288565db54879c1cbb6a72ef2a59b6ef95cfe63a13eb82615af48a1587f",
+          "newTextSha256": "a53c0616c0f28de4102d87d849fd9e90089c7152e95375ad62773638ec709a5d"
+        },
+        {
+          "id": "fleurs-en-test-1664",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "517cc6236e3bbe6c329f810266dd9d9a77b1f1998b7414ce60dce0ff2582a3ff",
+          "newTextSha256": "1335acc73bc13b2db2b804c01ff2bc50b843245d7bd8242b71f5c28ead7cd46f"
+        },
+        {
+          "id": "fleurs-en-test-1665",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "890c0f08df2c4f2f1e1366aade9617758a8dc0eb1933ea6a372f6a31e31294d7",
+          "newTextSha256": "890c0f08df2c4f2f1e1366aade9617758a8dc0eb1933ea6a372f6a31e31294d7"
+        },
+        {
+          "id": "fleurs-en-test-1666",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "5a20dfd0e38b00f4ddeb0086147689822ad22f34e619e1244f712ac16741ee44",
+          "newTextSha256": "5a20dfd0e38b00f4ddeb0086147689822ad22f34e619e1244f712ac16741ee44"
+        },
+        {
+          "id": "fleurs-en-test-1667",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "6c49b0ba42613da611bfdf0e38ec0f86c0be589831704ba5a9e5a3656e6d94e0",
+          "newTextSha256": "f6aaa4452fefd65a3adb9205db9819a7c096fb7c0ac3097f9a9f60df3a90df4e"
+        },
+        {
+          "id": "fleurs-en-test-1668",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "6b82313d86434c550689b98347d8607d60155509925031e97040630c3ae0f842",
+          "newTextSha256": "6b82313d86434c550689b98347d8607d60155509925031e97040630c3ae0f842"
+        },
+        {
+          "id": "fleurs-en-test-1669",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "2759512ceab7876136927149e51166f676ff45af8f2987f3cb3f6475dde88753",
+          "newTextSha256": "2759512ceab7876136927149e51166f676ff45af8f2987f3cb3f6475dde88753"
+        },
+        {
+          "id": "fleurs-en-test-1670",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "6f05cff798ac6294a6c917452408b211674473549e8b734c3fc0cda5eb1f5905",
+          "newTextSha256": "7400804bdd3eb47975dc5c5f48db6a214bb362f8b53526c093c01675450aa807"
+        },
+        {
+          "id": "fleurs-en-test-1671",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "1dbef675126ffc91d4daadbb668e5859e5944a8f686114d0817dec1f7910894d",
+          "newTextSha256": "1dbef675126ffc91d4daadbb668e5859e5944a8f686114d0817dec1f7910894d"
+        },
+        {
+          "id": "fleurs-en-test-1672",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "728407f43a344741627f4ccce4b0de06b88c7b6ec9a9f5b4b728b386b407d8a2",
+          "newTextSha256": "728407f43a344741627f4ccce4b0de06b88c7b6ec9a9f5b4b728b386b407d8a2"
+        },
+        {
+          "id": "fleurs-en-test-1673",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "b545aa12e499626d7355eb20bd3a89d415328fa7f1a69f73a7847b3c0f0215af",
+          "newTextSha256": "b545aa12e499626d7355eb20bd3a89d415328fa7f1a69f73a7847b3c0f0215af"
+        },
+        {
+          "id": "fleurs-en-test-1674",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "15e33d0c8e813e7bac020ebcecbdc8a1e96f3b891bef440bffe43cd496a77d92",
+          "newTextSha256": "15e33d0c8e813e7bac020ebcecbdc8a1e96f3b891bef440bffe43cd496a77d92"
+        },
+        {
+          "id": "fleurs-en-test-1675",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "7be79f799bb76d289fcdbcf58bb50dc2c285d36e9122e28d0cdb781d567411bb",
+          "newTextSha256": "7be79f799bb76d289fcdbcf58bb50dc2c285d36e9122e28d0cdb781d567411bb"
+        },
+        {
+          "id": "fleurs-en-test-1676",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "bdeab86eeae106b54a0dee95e8dc5c7f570beb2fb75ee6f4501bfe287ea389dd",
+          "newTextSha256": "bdeab86eeae106b54a0dee95e8dc5c7f570beb2fb75ee6f4501bfe287ea389dd"
+        },
+        {
+          "id": "fleurs-en-test-1677",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "ba5a10a0a4af643971d9fd605761feff77e2ea8b58fedc0e31870de0a06adb98",
+          "newTextSha256": "ba5a10a0a4af643971d9fd605761feff77e2ea8b58fedc0e31870de0a06adb98"
+        },
+        {
+          "id": "fleurs-en-test-1678",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "b7820b8db54a3eb4c9b02ff877aac701846fd117d9da4527a28761f1432ff171",
+          "newTextSha256": "b7820b8db54a3eb4c9b02ff877aac701846fd117d9da4527a28761f1432ff171"
+        },
+        {
+          "id": "fleurs-en-test-1679",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "776e89b2b222bc2ea3a0cc0294ad3a082774ba76a599eb79467353dc0c08005b",
+          "newTextSha256": "ec18a7fd1b9aba51176898209d87e434906bec3d81782cee7cff833680ae5d2f"
+        },
+        {
+          "id": "fleurs-en-test-1680",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "efb5f0a980b9bcad3abdac0cd4cf6b0f42550e465d466d6c6c44a6c517204e20",
+          "newTextSha256": "efb5f0a980b9bcad3abdac0cd4cf6b0f42550e465d466d6c6c44a6c517204e20"
+        },
+        {
+          "id": "fleurs-en-test-1681",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "8f380dc6b6d42578000b2da05f1b0bc3000c05ec824a461ef8c2e3bebffb16b8",
+          "newTextSha256": "74198579fa78db5ffe8d5f2fc5ec1829ff4e320bddeb4a6a28f7bdb123de5545"
+        },
+        {
+          "id": "fleurs-en-test-1682",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "d5e1432caf113c942e49c10d7ebf4d7d0415a3cf7f6751cb57e36796f0763528",
+          "newTextSha256": "d5e1432caf113c942e49c10d7ebf4d7d0415a3cf7f6751cb57e36796f0763528"
+        },
+        {
+          "id": "fleurs-en-test-1683",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "eb1498700185397beab96e6413c869ed72c0d8d85ef77349d769528b1b814ab3",
+          "newTextSha256": "eb1498700185397beab96e6413c869ed72c0d8d85ef77349d769528b1b814ab3"
+        },
+        {
+          "id": "fleurs-en-test-1684",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "06e44dff2fb857a08e785967774eb0bfbae9f85277269bcc6bad160d84ab4078",
+          "newTextSha256": "06e44dff2fb857a08e785967774eb0bfbae9f85277269bcc6bad160d84ab4078"
+        },
+        {
+          "id": "fleurs-en-test-1685",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "0221b045bbac1228ae14e13fc751e7dd7ac3481f82a8a24ad56902889772be61",
+          "newTextSha256": "000a8f67a93af850539252a50599fe47a160f8e7ba1d941ec35a9f655f6d7dbe"
+        },
+        {
+          "id": "fleurs-en-test-1686",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "d0b00ec5c4894a22226d1c571835f2a0703b344702ec8570001c0ece2c7f4578",
+          "newTextSha256": "d0b00ec5c4894a22226d1c571835f2a0703b344702ec8570001c0ece2c7f4578"
+        },
+        {
+          "id": "fleurs-en-test-1687",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "954b7d6af4854f364de6c0f817f1c77a6ffa65286e9c50da3ce15be23cb827d6",
+          "newTextSha256": "954b7d6af4854f364de6c0f817f1c77a6ffa65286e9c50da3ce15be23cb827d6"
+        },
+        {
+          "id": "fleurs-en-test-1688",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "9bdf7c2e3be8321720f4232fcf3dd24df24f27e6538524008a96f96dedecf530",
+          "newTextSha256": "9bdf7c2e3be8321720f4232fcf3dd24df24f27e6538524008a96f96dedecf530"
+        },
+        {
+          "id": "fleurs-en-test-1689",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "9a6fec3db8eeb14fed033ab975d00a839d232a40f10767578d7a8556f2a629d7",
+          "newTextSha256": "9a6fec3db8eeb14fed033ab975d00a839d232a40f10767578d7a8556f2a629d7"
+        },
+        {
+          "id": "fleurs-en-test-1660-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "f95e1767d3a6ddd6d377ea7b04ee318cbfd3260d2ede449e3bb96cf67a8fca7e",
+          "newTextSha256": "f95e1767d3a6ddd6d377ea7b04ee318cbfd3260d2ede449e3bb96cf67a8fca7e"
+        },
+        {
+          "id": "fleurs-en-test-1661-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "03256aa025f1e5878a09b74cf71e0e60a68db7edbfb2b07b484c3838492726a7",
+          "newTextSha256": "03256aa025f1e5878a09b74cf71e0e60a68db7edbfb2b07b484c3838492726a7"
+        },
+        {
+          "id": "fleurs-en-test-1662-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "e1990efa762e09859e53319d5c749e4e74f3d98e57fadd1a597b78e739fc14bc",
+          "newTextSha256": "61ec4831cff4f2022c829dd90f0593bf35d0d63184cac975cd26cd1aff1be671"
+        },
+        {
+          "id": "fleurs-en-test-1663-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "68050288565db54879c1cbb6a72ef2a59b6ef95cfe63a13eb82615af48a1587f",
+          "newTextSha256": "a53c0616c0f28de4102d87d849fd9e90089c7152e95375ad62773638ec709a5d"
+        },
+        {
+          "id": "fleurs-en-test-1664-quiet",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "10864ff2c241952dd04666e9bbfe9348ac7e80b742f5d54135699e4ccc0d4c7a",
+          "newTextSha256": "1335acc73bc13b2db2b804c01ff2bc50b843245d7bd8242b71f5c28ead7cd46f"
+        },
+        {
+          "id": "synthetic-de-silence-5s",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "newTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "id": "synthetic-de-noise-5s",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "newTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "id": "synthetic-en-silence-5s",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "newTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "id": "synthetic-en-noise-5s",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "newTextSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "id": "constructed-de-masked-300s",
+          "class": "challenging",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "679f9f2a8d1e1ed4ebdfd84d858ccd12231aec2f087112965a4eb7684b0529c4",
+          "newTextSha256": "fa42c84a0657f4de2ae3e486df1e21be3cad6bd8ecbd1f050ca6b455addf0e42"
+        },
+        {
+          "id": "hd-de-acceptance-s04-t0-d8",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "1b3195b381d7a2f78a81851457ca1229a12f1d8f0928852d93af93f3391468d8",
+          "newTextSha256": "1b3195b381d7a2f78a81851457ca1229a12f1d8f0928852d93af93f3391468d8"
+        },
+        {
+          "id": "hd-de-acceptance-s05-t0-d9",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "99a1b84b98650fd4581b7156cd830ef74402cc54b6b834b677c269a41e731915",
+          "newTextSha256": "99a1b84b98650fd4581b7156cd830ef74402cc54b6b834b677c269a41e731915"
+        },
+        {
+          "id": "hd-en-acceptance-s04-t0-d8",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": false,
+          "oldTextSha256": "6ce012fd1056714b493ab0a7b473923e52b597bdb7cde60a0d97ef6f54e60c4d",
+          "newTextSha256": "ef1fc97b3963aee164a9e6e94aa2cf5413155678841d23c0427b6bd79518ef53"
+        },
+        {
+          "id": "hd-en-acceptance-s05-t0-d9",
+          "class": "clean",
+          "oldStatus": "ok",
+          "newStatus": "ok",
+          "exactRawTextIdentity": true,
+          "oldTextSha256": "0e74d7ceebe650322cb3f1ddfb81cef76edcd6273e71f985154c8d69a23fbe66",
+          "newTextSha256": "0e74d7ceebe650322cb3f1ddfb81cef76edcd6273e71f985154c8d69a23fbe66"
+        }
+      ],
+      "changedCleanCaseIds": [
+        "fleurs-de-test-1660",
+        "fleurs-de-test-1670",
+        "fleurs-de-test-1673",
+        "fleurs-de-test-1675",
+        "fleurs-de-test-1678",
+        "fleurs-de-test-1682",
+        "fleurs-de-test-1685",
+        "fleurs-de-test-1694",
+        "fleurs-de-test-1695",
+        "fleurs-de-test-1696",
+        "fleurs-de-test-1699",
+        "fleurs-en-test-1663",
+        "fleurs-en-test-1664",
+        "fleurs-en-test-1667",
+        "fleurs-en-test-1670",
+        "fleurs-en-test-1679",
+        "fleurs-en-test-1681",
+        "fleurs-en-test-1685",
+        "hd-en-acceptance-s04-t0-d8"
+      ]
+    }
+  }
+}
