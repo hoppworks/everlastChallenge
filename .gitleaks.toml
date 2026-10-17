@@ -4,3 +4,10 @@ useDefault = true
 [[allowlists]]
 description = "Generated dependencies, binaries and isolated rule fixtures; never application source."
 paths = ['''(^|/)(node_modules|target|dist|coverage|\.git)/''', '''tests/guardrails/\.generated/''', '''src-tauri/gen/''']
+
+[[allowlists]]
+description = "Upstream global-hotkey documentation uses this public keyboard chord, not an API credential."
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = ['''(^|/)vendor/global-hotkey/src/hotkey\.rs$''']
+regexes = ['''^shift\+alt\+KeyQ$''']
