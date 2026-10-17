@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 1,
+  "kind": "explicit-synthetic-speech-diagnostic",
+  "qualified": false,
+  "compiledSourceRevision": "c6cb312",
+  "parameterSha256": "6645533c2f5dc7d234c05035ffaa27929ee9d4732966fb84237dd6126bea2818",
+  "manifestSha256": "9ece2985b5e2bf46199f0187341ec0ee75d737cbca6f847c1b56f1808db9141b",
+  "cases": [
+    {
+      "id": "synthetic-de-ja",
+      "frames": 7382,
+      "seconds": 0.461375,
+      "sha256": "9d9878f659184ad2e8d7578239ce07da9e42f233e850359dfcb5eaeb9e09facd",
+      "sourceKind": "explicit macOS speech synthesis, not a human recording"
+    },
+    {
+      "id": "synthetic-de-nein",
+      "frames": 9109,
+      "seconds": 0.5693125,
+      "sha256": "335de366410f8f13615168751a1fcb578aa12e4bbac4fa17b215593a852c3eca",
+      "sourceKind": "explicit macOS speech synthesis, not a human recording"
+    },
+    {
+      "id": "synthetic-de-thanks",
+      "frames": 29350,
+      "seconds": 1.834375,
+      "sha256": "70b2cebf90f9a14084184fed47d2c403376c4e29e5ca1c91077ba28da16c5ad8",
+      "sourceKind": "explicit macOS speech synthesis, not a human recording"
+    }
+  ],
+  "runs": [
+    {
+      "model": {
+        "id": "large-v3-turbo-q5_0",
+        "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+      },
+      "inferenceExitCode": 0,
+      "evaluationExitCode": 0,
+      "groups": [
+        {
+          "split": "calibration",
+          "language": "de",
+          "class": "clean",
+          "caseCount": 3,
+          "scoredCount": 3,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 6,
+          "refWords": 6,
+          "edits": 0,
+          "complete": true,
+          "observedWer": 0.0,
+          "wer": 0.0
+        }
+      ],
+      "cases": [
+        {
+          "id": "synthetic-de-ja",
+          "split": "calibration",
+          "language": "de",
+          "class": "clean",
+          "status": "ok",
+          "edits": 0,
+          "refWords": 1,
+          "hypWords": 1,
+          "wer": 0.0,
+          "unwantedText": false
+        },
+        {
+          "id": "synthetic-de-nein",
+          "split": "calibration",
+          "language": "de",
+          "class": "clean",
+          "status": "ok",
+          "edits": 0,
+          "refWords": 1,
+          "hypWords": 1,
+          "wer": 0.0,
+          "unwantedText": false
+        },
+        {
+          "id": "synthetic-de-thanks",
+          "split": "calibration",
+          "language": "de",
+          "class": "clean",
+          "status": "ok",
+          "edits": 0,
+          "refWords": 4,
+          "hypWords": 4,
+          "wer": 0.0,
+          "unwantedText": false
+        }
+      ],
+      "loadError": null,
+      "serviceError": null,
+      "cleanupError": null
+    },
+    {
+      "model": {
+        "id": "small-q5_1",
+        "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb"
+      },
+      "inferenceExitCode": 0,
+      "evaluationExitCode": 0,
+      "groups": [
+        {
+          "split": "calibration",
+          "language": "de",
+          "class": "clean",
+          "caseCount": 3,
+          "scoredCount": 3,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 6,
+          "refWords": 6,
+          "edits": 0,
+          "complete": true,
+          "observedWer": 0.0,
+          "wer": 0.0
+        }
+      ],
+      "cases": [
+        {
+          "id": "synthetic-de-ja",
+          "split": "calibration",
+          "language": "de",
+          "class": "clean",
+          "status": "ok",
+          "edits": 0,
+          "refWords": 1,
+          "hypWords": 1,
+          "wer": 0.0,
+          "unwantedText": false
+        },
+        {
+          "id": "synthetic-de-nein",
+          "split": "calibration",
+          "language": "de",
+          "class": "clean",
+          "status": "ok",
+          "edits": 0,
+          "refWords": 1,
+          "hypWords": 1,
+          "wer": 0.0,
+          "unwantedText": false
+        },
+        {
+          "id": "synthetic-de-thanks",
+          "split": "calibration",
+          "language": "de",
+          "class": "clean",
+          "status": "ok",
+          "edits": 0,
+          "refWords": 4,
+          "hypWords": 4,
+          "wer": 0.0,
+          "unwantedText": false
+        }
+      ],
+      "loadError": null,
+      "serviceError": null,
+      "cleanupError": null
+    }
+  ],
+  "rawFiles": [
+    {
+      "path": "artifacts/diagnostic-speech/v1/generation.json",
+      "bytes": 2669,
+      "mode": "0o600",
+      "sha256": "57991190744cf0aa686a34240c3cbb34aad45b54a9120f22607baf268e3f5b65"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/ja.wav",
+      "bytes": 18860,
+      "mode": "0o600",
+      "sha256": "9d9878f659184ad2e8d7578239ce07da9e42f233e850359dfcb5eaeb9e09facd"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/nein.wav",
+      "bytes": 22314,
+      "mode": "0o600",
+      "sha256": "335de366410f8f13615168751a1fcb578aa12e4bbac4fa17b215593a852c3eca"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/reference-evaluationCommand.log",
+      "bytes": 85,
+      "mode": "0o600",
+      "sha256": "13e4d1b1721f521a8d40ab8203afc716413f0c31e6b7f072cf3a0db1bacaf88d"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/reference-inferenceCommand.log",
+      "bytes": 0,
+      "mode": "0o600",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/reference-quality.json",
+      "bytes": 1253,
+      "mode": "0o600",
+      "sha256": "af82b27a97909e2852f69dcff30973db8ed0748143e60b3d493ea36a0840aa73"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/reference-results.json",
+      "bytes": 263,
+      "mode": "0o600",
+      "sha256": "6794cc73557be3f2ef6aa4524392bdbaf1531b052fefbf103341f79101cf3664"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/reference-results.json.metadata.json",
+      "bytes": 2186,
+      "mode": "0o600",
+      "sha256": "86f9c0ee5f6cb1052a998d6cec041824fd1ffb5ea950c56fdebdc933924d6f79"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/small-evaluationCommand.log",
+      "bytes": 85,
+      "mode": "0o600",
+      "sha256": "13e4d1b1721f521a8d40ab8203afc716413f0c31e6b7f072cf3a0db1bacaf88d"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/small-inferenceCommand.log",
+      "bytes": 0,
+      "mode": "0o600",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/small-quality.json",
+      "bytes": 1253,
+      "mode": "0o600",
+      "sha256": "af82b27a97909e2852f69dcff30973db8ed0748143e60b3d493ea36a0840aa73"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/small-results.json",
+      "bytes": 263,
+      "mode": "0o600",
+      "sha256": "6794cc73557be3f2ef6aa4524392bdbaf1531b052fefbf103341f79101cf3664"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/small-results.json.metadata.json",
+      "bytes": 2176,
+      "mode": "0o600",
+      "sha256": "24cd96dd286a963805d6e5e01770c6b48ed089b71fa1e3e76cfbb47419fe4f1d"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/thanks.wav",
+      "bytes": 62796,
+      "mode": "0o600",
+      "sha256": "70b2cebf90f9a14084184fed47d2c403376c4e29e5ca1c91077ba28da16c5ad8"
+    }
+  ]
+}

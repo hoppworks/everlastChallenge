@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "unicodeVersion": "13.0.0",
+  "dataset": "local-macOS-speech-synthesis-diagnostic",
+  "sourceKind": "explicit synthetic speech, not human recording",
+  "sourceMetadataSha256": "57991190744cf0aa686a34240c3cbb34aad45b54a9120f22607baf268e3f5b65",
+  "purpose": "supplemental Ja/Nein/legitimate-phrase probe; no mutation of heldout corpus",
+  "cases": [
+    {
+      "id": "synthetic-de-ja",
+      "language": "de",
+      "class": "clean",
+      "split": "calibration",
+      "reference": "Ja.",
+      "audio": {
+        "path": "artifacts/diagnostic-speech/v1/ja.wav",
+        "sha256": "9d9878f659184ad2e8d7578239ce07da9e42f233e850359dfcb5eaeb9e09facd",
+        "frames": 7382,
+        "sampleRate": 16000
+      },
+      "tags": [
+        "synthetic",
+        "speech-synthesis",
+        "not-human-recording",
+        "supplemental-diagnostic"
+      ],
+      "source": {
+        "generator": "/usr/bin/say",
+        "voice": "Anna (German (Germany))",
+        "rateWordsPerMinute": 180,
+        "command": [
+          "/usr/bin/say",
+          "-v",
+          "Anna (German (Germany))",
+          "-r",
+          "180",
+          "--file-format=WAVE",
+          "--data-format=LEI16@16000",
+          "-o",
+          "artifacts/diagnostic-speech/v1/ja.wav",
+          "Ja."
+        ]
+      }
+    },
+    {
+      "id": "synthetic-de-nein",
+      "language": "de",
+      "class": "clean",
+      "split": "calibration",
+      "reference": "Nein.",
+      "audio": {
+        "path": "artifacts/diagnostic-speech/v1/nein.wav",
+        "sha256": "335de366410f8f13615168751a1fcb578aa12e4bbac4fa17b215593a852c3eca",
+        "frames": 9109,
+        "sampleRate": 16000
+      },
+      "tags": [
+        "synthetic",
+        "speech-synthesis",
+        "not-human-recording",
+        "supplemental-diagnostic"
+      ],
+      "source": {
+        "generator": "/usr/bin/say",
+        "voice": "Anna (German (Germany))",
+        "rateWordsPerMinute": 180,
+        "command": [
+          "/usr/bin/say",
+          "-v",
+          "Anna (German (Germany))",
+          "-r",
+          "180",
+          "--file-format=WAVE",
+          "--data-format=LEI16@16000",
+          "-o",
+          "artifacts/diagnostic-speech/v1/nein.wav",
+          "Nein."
+        ]
+      }
+    },
+    {
+      "id": "synthetic-de-thanks",
+      "language": "de",
+      "class": "clean",
+      "split": "calibration",
+      "reference": "Vielen Dank fürs Zuschauen.",
+      "audio": {
+        "path": "artifacts/diagnostic-speech/v1/thanks.wav",
+        "sha256": "70b2cebf90f9a14084184fed47d2c403376c4e29e5ca1c91077ba28da16c5ad8",
+        "frames": 29350,
+        "sampleRate": 16000
+      },
+      "tags": [
+        "synthetic",
+        "speech-synthesis",
+        "not-human-recording",
+        "supplemental-diagnostic"
+      ],
+      "source": {
+        "generator": "/usr/bin/say",
+        "voice": "Anna (German (Germany))",
+        "rateWordsPerMinute": 180,
+        "command": [
+          "/usr/bin/say",
+          "-v",
+          "Anna (German (Germany))",
+          "-r",
+          "180",
+          "--file-format=WAVE",
+          "--data-format=LEI16@16000",
+          "-o",
+          "artifacts/diagnostic-speech/v1/thanks.wav",
+          "Vielen Dank fürs Zuschauen."
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "kind": "synthetic-speech-diagnostic",
+  "qualified": false,
+  "compiledSourceRevision": "c6cb312",
+  "binary": {
+    "path": "target/release/examples/corpus_probe",
+    "sha256": "bdc85a31790792ed7a0390ea0cc16fa9ae3d9282e93e351fe1164b6cf36ba723",
+    "build": "release offline locked features=measurement"
+  },
+  "configurationPath": "tests/fixtures/corpus/acceptance-reference-parameters-v1.json",
+  "configurationSha256": "aacbe6cc61d9077966b91dbd3fafcafd2357dc53373ca7b3a9829e85677fbde3",
+  "runtimeParameters": "unchanged original compiled reference configuration; no tuning on synthetic outputs",
+  "currentSourceCheck": {
+    "capture": {
+      "filename": "src-tauri/src/audio.rs",
+      "sha256": "30649268bfb85918ed7971f4707af793cc81882bcbe6e60115670058b70f91f9"
+    },
+    "cargoLock": {
+      "filename": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089"
+    },
+    "clock": {
+      "filename": "src-tauri/src/audio/replay/clock.rs",
+      "sha256": "1e03640021c3cdc8d13b69bb7f78c1f87c1b3224f4e75fbf756ef99c632e756c"
+    },
+    "cpp": {
+      "filename": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+      "sha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e"
+    },
+    "energy": {
+      "filename": "crates/dictation-core/src/audio.rs",
+      "sha256": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46"
+    },
+    "engine": {
+      "filename": "src-tauri/src/transcription.rs",
+      "sha256": "41884c7aba39fb824a7f5170fa40e0f2716822ac71d9d4b85590f8372299052d"
+    },
+    "inference": {
+      "filename": "src-tauri/src/inference_service.rs",
+      "sha256": "3e5963b6a8374f450142f5a6ad2983c8f6ad21f9217435473779c2694d351d13"
+    },
+    "measurement": {
+      "filename": "src-tauri/src/runtime/measurement.rs",
+      "sha256": "ca090ab4f07ccde0a0b20a88766ae5a4fe63f8a7e19cce8af79adeefdbf24b05"
+    },
+    "models": {
+      "filename": "src-tauri/src/model.rs",
+      "sha256": "c70efac3bfb77ac6b6cc72ca01a2a396a95580f9ebd3681b25a5f49d34b287dc"
+    },
+    "options": {
+      "filename": "src-tauri/examples/paced_runtime_probe/options.rs",
+      "sha256": "e092b69cd51c5b490c37a0c89ba9cf454d674560f8eb1c820fdc3be3b920ac68"
+    },
+    "parameters": {
+      "filename": "src-tauri/examples/paced_runtime_probe/parameters.rs",
+      "sha256": "92103eb048214b28d49e3c3cd015729e3c192d286ded7a0644792234eb22cc93"
+    },
+    "paramsWrapper": {
+      "filename": "vendor/whisper-rs/src/whisper_params.rs",
+      "sha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8"
+    },
+    "probe": {
+      "filename": "src-tauri/examples/paced_runtime_probe.rs",
+      "sha256": "e70a4fd5be9e23b9b0f369d6444b27eed3f2127fa1428a21cc7899175abaeabc"
+    },
+    "replay": {
+      "filename": "src-tauri/src/audio/replay.rs",
+      "sha256": "d4ddcb96f91ec766fd2afdc94b05f72a8a7e7ec03413dd08d5d18d1bedad0d8a"
+    },
+    "runner": {
+      "filename": "src-tauri/examples/paced_runtime_probe/runner.rs",
+      "sha256": "9f11707eea7994bca3301229875c6687c09bdd56ae0e7a641554457bd591d42a"
+    },
+    "runtime": {
+      "filename": "src-tauri/src/runtime.rs",
+      "sha256": "58786ec78739707d0f2360d10f1b37fe3656b174bad9f2ddccba6fc9725d9e52"
+    },
+    "schedule": {
+      "filename": "src-tauri/src/audio/replay/schedule.rs",
+      "sha256": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b"
+    },
+    "speechGate": {
+      "filename": "src-tauri/src/transcription/speech_gate.rs",
+      "sha256": "4e6964540cbe78217cf6c5f6924c859d5240bd2ec9603f857113dea272da7f1f"
+    },
+    "statistics": {
+      "filename": "src-tauri/examples/paced_runtime_probe/statistics.rs",
+      "sha256": "c7c4d986deba4386afac48305616651570f5e59ce6f76ab5c7a7cac75c562ae7"
+    },
+    "vadWrapper": {
+      "filename": "vendor/whisper-rs/src/whisper_vad.rs",
+      "sha256": "a4e481fac0b423ab532e3f4b8e3348a23e3134a10e4581ea3f383d6a81e6438d"
+    },
+    "workspaceManifest": {
+      "filename": "Cargo.toml",
+      "sha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230"
+    },
+    "corpusProbe": {
+      "filename": "src-tauri/examples/corpus_probe.rs",
+      "sha256": "30532a8496d89c891259056034599b71b076300c5c2f43aaae49f8495b2627a0"
+    },
+    "corpusInput": {
+      "filename": "src-tauri/examples/corpus_probe/input.rs",
+      "sha256": "91143edc2a8202bae0f015dfa55f8142ca576ed98051c6b5b0d53829b17c32e9"
+    },
+    "qualityEvaluator": {
+      "filename": "scripts/quality.py",
+      "sha256": "0b9a37959d2fedfacd2c70643b134ce548a4e4cf6a281e1a4d95bec89aa6be5c"
+    },
+    "corpusBuilder": {
+      "filename": "scripts/corpus.py",
+      "sha256": "2ec69cfbd00b183caf8defb53450ab5da5711f5fac0fe7e64463cfbb3d6ca5d6"
+    },
+    "shortCorpusBuilder": {
+      "filename": "scripts/short_corpus.py",
+      "sha256": "b5adbc5d64a408d1bdd23799120bc21196fc6df03c151263021dd74184575b0d"
+    },
+    "hostHelper": {
+      "filename": "scripts/run-runtime-resource.py",
+      "sha256": "ee87df6f5976ef6a43cfc97430b9f6ba4ac3b62c7c78ad80e2c09410b5ef8d54"
+    }
+  },
+  "cargoManifestScope": "current src-tauri/Cargo.toml has a new developer-only batch example registration; binary remains the already compiled c6cb312 corpus probe, not a build of this WIP",
+  "manifest": {
+    "path": "tests/fixtures/corpus/synthetic-speech-diagnostic-v1.json",
+    "sha256": "9ece2985b5e2bf46199f0187341ec0ee75d737cbca6f847c1b56f1808db9141b"
+  },
+  "inputSource": "explicit local macOS /usr/bin/say synthetic speech; no human recording claim",
+  "evaluationRuntime": "/usr/bin/python3 3.9.6 Unicode13.0.0",
+  "timingScope": "not a performance measurement; no L, native or overall P05 qualification",
+  "runs": [
+    {
+      "model": "reference",
+      "inferenceCommand": [
+        "target/release/examples/corpus_probe",
+        "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "reference",
+        "tests/fixtures/corpus/synthetic-speech-diagnostic-v1.json",
+        "artifacts/diagnostic-speech/v1/reference-results.json"
+      ],
+      "evaluationCommand": [
+        "/usr/bin/python3",
+        "scripts/quality.py",
+        "tests/fixtures/corpus/synthetic-speech-diagnostic-v1.json",
+        "artifacts/diagnostic-speech/v1/reference-results.json",
+        "--output",
+        "artifacts/diagnostic-speech/v1/reference-quality.json"
+      ]
+    },
+    {
+      "model": "small",
+      "inferenceCommand": [
+        "target/release/examples/corpus_probe",
+        "artifacts/models/ggml-small-q5_1.bin",
+        "small",
+        "tests/fixtures/corpus/synthetic-speech-diagnostic-v1.json",
+        "artifacts/diagnostic-speech/v1/small-results.json"
+      ],
+      "evaluationCommand": [
+        "/usr/bin/python3",
+        "scripts/quality.py",
+        "tests/fixtures/corpus/synthetic-speech-diagnostic-v1.json",
+        "artifacts/diagnostic-speech/v1/small-results.json",
+        "--output",
+        "artifacts/diagnostic-speech/v1/small-quality.json"
+      ]
+    }
+  ]
+}
