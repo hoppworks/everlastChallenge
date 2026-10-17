@@ -103,13 +103,33 @@ impl Engine {
     ) -> Result<String, InferenceError> {
         let Self { context, gate } = self;
         transcribe_with(samples, language, gate, |input, language| {
-            decode(context, input, language, &mut NoObservation)
+            decode::<true, _>(context, input, language, &mut NoObservation)
         })
     }
     /// Developer-only accepted-segment observation on the same serial engine path.
     /// Does not expose encoder windows that produced no accepted segment.
     #[cfg(feature = "measurement")]
     pub fn transcribe_observed(
+        &mut self,
+        samples: &[f32],
+        language: Language,
+    ) -> Result<observation::ObservedTranscription, InferenceError> {
+        self.transcribe_observed_with::<true>(samples, language)
+    }
+
+    /// Developer-only alternative: permit native timestamp tokens. This changes
+    /// decoding behavior and is not a production setting or alignment guarantee.
+    #[cfg(feature = "measurement")]
+    pub fn transcribe_timestamped_observed(
+        &mut self,
+        samples: &[f32],
+        language: Language,
+    ) -> Result<observation::ObservedTranscription, InferenceError> {
+        self.transcribe_observed_with::<false>(samples, language)
+    }
+
+    #[cfg(feature = "measurement")]
+    fn transcribe_observed_with<const SUPPRESS_TIMESTAMPS: bool>(
         &mut self,
         samples: &[f32],
         language: Language,
@@ -121,7 +141,9 @@ impl Engine {
             language,
             gate,
             &mut observation,
-            |input, language, observation| decode(context, input, language, observation),
+            |input, language, observation| {
+                decode::<SUPPRESS_TIMESTAMPS, _>(context, input, language, observation)
+            },
         )?;
         Ok(observation::ObservedTranscription { text, observation })
     }
@@ -189,7 +211,7 @@ fn transcribe_using<D: speech_gate::Detector, O: ObservationSink>(
     decode(input, language, observation)
 }
 
-fn decode<O: ObservationSink>(
+fn decode<const SUPPRESS_TIMESTAMPS: bool, O: ObservationSink>(
     context: &WhisperContext,
     input: &[f32],
     language: Language,
@@ -204,7 +226,7 @@ fn decode<O: ObservationSink>(
     parameters.set_translate(false);
     parameters.set_detect_language(false);
     parameters.set_no_context(true);
-    parameters.set_no_timestamps(true);
+    parameters.set_no_timestamps(SUPPRESS_TIMESTAMPS);
     parameters.set_print_special(false);
     parameters.set_print_progress(false);
     parameters.set_print_realtime(false);

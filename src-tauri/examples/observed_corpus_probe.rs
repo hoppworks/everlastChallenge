@@ -12,17 +12,17 @@ use everlast_dictation::{
     transcription::{Engine, Language},
 };
 use serde_json::{Value, json};
-use std::{path::Path, time::Instant};
+use std::{ffi::OsString, path::Path, time::Instant};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args = std::env::args_os().skip(1).take(5).collect::<Vec<_>>();
-    if args.len() != 4
-        || args
-            .iter()
-            .any(|arg| arg.is_empty() || arg.as_encoded_bytes().len() > 4096)
+    let args = std::env::args_os().skip(1).take(6).collect::<Vec<_>>();
+    let native_timestamps = native_timestamps_option(&args)?;
+    if args
+        .iter()
+        .any(|arg| arg.is_empty() || arg.as_encoded_bytes().len() > 4096)
     {
         return Err(
-            "usage: observed_corpus_probe MODEL reference|small MANIFEST NEW_OUTPUT".into(),
+            "usage: observed_corpus_probe MODEL reference|small MANIFEST NEW_OUTPUT [--native-timestamps]".into(),
         );
     }
     let definition = match args[1].to_str() {
@@ -51,16 +51,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Ok(engine) => input::load_audio(root, &case.audio)
                 .map_err(|error| error.to_string())
                 .and_then(|samples| {
-                    engine
-                        .transcribe_observed(
-                            &samples,
-                            if case.language == "de" {
-                                Language::German
-                            } else {
-                                Language::English
-                            },
-                        )
-                        .map_err(|error| error.to_string())
+                    let language = if case.language == "de" {
+                        Language::German
+                    } else {
+                        Language::English
+                    };
+                    if native_timestamps {
+                        engine.transcribe_timestamped_observed(&samples, language)
+                    } else {
+                        engine.transcribe_observed(&samples, language)
+                    }
+                    .map_err(|error| error.to_string())
                 }),
             Err(error) => Err(error.to_string()),
         };
@@ -105,6 +106,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "schemaVersion":1,"kind":"common-engine-accepted-native-segment-diagnostic",
         "sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
         "manifestSha256":input::digest(&bytes),
+        "noTimestamps":!native_timestamps,
         "model":{"id":definition.id(),"sha256":definition.sha256()},
         "loadMillis":load_millis,"failed":failed,"L":null,"cases":rows,
         "probeSourceSha256":input::digest(include_bytes!("observed_corpus_probe.rs")),
@@ -113,7 +115,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "limits":[
             "Same production Engine preparation, parameters and segment join; direct serial owner, no InferenceService/controller/audio pipeline.",
             "Only accepted native segments after full(); missing or rejected windows, seek, prompt history and fallback temperature are unobserved.",
-            "Native centisecond times with no_timestamps=true are not word alignments; segment NSP may share a window value.",
+            "Default no_timestamps=true; --native-timestamps is an explicit diagnostic alternative only. Native times are not verified word alignments; segment NSP may share a window value.",
             "At most four cases, 4096 segments and 256 KiB raw segment text per case; failures remain explicit.",
             "Private explicit exports only; no model-independent timing, real-time L, microphone or native paste qualification."
         ]
@@ -130,6 +132,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+fn native_timestamps_option(args: &[OsString]) -> Result<bool, &'static str> {
+    match args {
+        [_, _, _, _] => Ok(false),
+        [_, _, _, _, flag] if flag == "--native-timestamps" => Ok(true),
+        _ => Err(
+            "usage: observed_corpus_probe MODEL reference|small MANIFEST NEW_OUTPUT [--native-timestamps]",
+        ),
+    }
+}
+
 fn quality_rows(rows: &[Value]) -> Vec<Value> {
     rows.iter()
         .map(|row| json!({"id":row["id"],"status":row["status"],"text":row["text"]}))
@@ -139,6 +151,20 @@ fn quality_rows(rows: &[Value]) -> Vec<Value> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn timestamp_diagnostic_requires_explicit_known_cli_option() {
+        let mut args = ["model", "reference", "manifest", "output"]
+            .map(OsString::from)
+            .to_vec();
+        assert_eq!(native_timestamps_option(&args), Ok(false));
+        args.push("--native-timestamps".into());
+        assert_eq!(native_timestamps_option(&args), Ok(true));
+        args[4] = "--unknown".into();
+        assert!(native_timestamps_option(&args).is_err());
+        args.push("extra".into());
+        assert!(native_timestamps_option(&args).is_err());
+    }
 
     #[test]
     fn quality_export_keeps_exact_three_field_contract_and_failure_status() {

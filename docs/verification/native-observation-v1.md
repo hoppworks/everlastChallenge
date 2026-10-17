@@ -60,3 +60,14 @@ selbst true garantiert keine tatsächliche Audio-/Wortausrichtung. Diese Werte
 werden weder normalisiert noch zum Verwerfen des Texts benutzt. Index-/NSP-
 Validierung und Segment-/Textgrenzen bleiben erhalten. Reales Regression-RED mit
 den beobachteten Zahlen, danach 17 Tests erfolgreich. Kein Decoderverhalten geändert.
+
+## Getrennte Zeitmarkenalternative für die Diagnose
+
+Die zusätzliche measurement-only Methode transcribe_timestamped_observed und
+explizite CLI-Option --native-timestamps setzen ausschließlich no_timestamps=false.
+Produktionsmethode und bisherige Beobachtung behalten true. Vorbereitung, alle
+anderen Decoderparameter, Segmentauswertung und Textverkettung bleiben gemeinsam.
+Das Sidecar meldet die tatsächlich gewählte noTimestamps-Einstellung. Unbekannte
+Optionen werden abgelehnt. Die Alternative aktiviert keine Produktoptimierung;
+ihr tatsächlicher Modellvergleich braucht einen eigenen Vorabfreeze und erhält
+alle positiven wie negativen Ergebnisse. Keine Wirkung ist vorweggenommen.
