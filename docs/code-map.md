@@ -1,0 +1,53 @@
+## Ein Diktat durch den Code verfolgen
+
+```mermaid
+flowchart LR
+  UI[React / native Aktionen] --> Desktop[Desktop und IPC]
+  Desktop --> Runtime[Runtime-Actor / Controller]
+  Runtime --> Audio[Audioowner: Ring, DSP, Flush]
+  Audio --> Inference[Serieller Inferenzowner]
+  Inference --> Runtime
+  Runtime --> Native[Zielprüfung / native Übergabe]
+  Runtime --> Local[Lokaler Text / Snapshot]
+  Native --> Local
+```
+
+Das ist ein Kontrollfluss, kein Diagramm gemeinsamer veränderbarer Daten.
+Ein Fensterstart hält Text lokal; ein Hotkeystart hat zusätzlich ein anfangs
+erfasstes Ziel. Ein versandtes Tastaturereignis bestätigt nicht den Zielinhalt.
+Ein Cancel entzieht die Berechtigung für weitere Wirkung; es garantiert keinen
+sofortigen Abbruch eines bereits laufenden nativen Decoders.
+
+## Modulgrenzen und Lesepfade
+
+| Bereich | Einstieg und Anschluss | Bei der eigenen Erklärung besonders prüfen |
+|---|---|---|
+| Reiner Sitzungskern | [session.rs](../crates/dictation-core/src/session.rs) → [controller.rs](../src-tauri/src/controller.rs) | Fakten und Effekte, Starting/Stop/Cancel, Sitzungsnummern, veraltete Ergebnisse und genau einmalige Wirkung |
+| Steuerung und Lebensdauer | [control.rs](../src-tauri/src/control.rs), [runtime.rs](../src-tauri/src/runtime.rs), [main.rs](../src-tauri/src/main.rs) | begrenzte Anfragen, gesonderte Stop/Cancel/Shutdown-Signale, Admission schließen, Besitzer joinen, Panic- und Powerpfade |
+| Mikrofon und DSP | [audio.rs](../src-tauri/src/audio.rs) → [Core-DSP](../crates/dictation-core/src/audio.rs), [Aufnahmegrenzen](../crates/dictation-core/src/recording_limits.rs) | Callback produziert in den Ring; Audioowner verarbeitet, schließt, drainiert und flusht; Sample-/Kanal-/Raten- und Speichergrenzen |
+| Inferenz | [inference_service.rs](../src-tauri/src/inference_service.rs) → [transcription.rs](../src-tauri/src/transcription.rs), [speech_gate.rs](../src-tauri/src/transcription/speech_gate.rs) | serielle Arbeit, warme Gewichte/frischer ASR-State, Job-/Session-/Generation-/Bereichsbindung, getrennte VAD-Kopie, Fehler statt scheinbarer Stille |
+| Modellbereitstellung | [setup.rs](../src-tauri/src/setup.rs), [model.rs](../src-tauri/src/model.rs) und [Cache](../src-tauri/src/model/cache.rs)/[Speicher](../src-tauri/src/model/storage.rs) | Größen-/Hashprüfung, Transportfehler, Cancel, Cachebesitz, eigene Teildateien und erfolgreicher Übergang zur geladenen Runtime |
+| Ziel und Versand | [native_service.rs](../src-tauri/src/native_service.rs) → [Targetworker](../crates/macos-integration/src/target/worker.rs), [target.rs](../crates/macos-integration/src/target.rs), [main_delivery.rs](../crates/macos-integration/src/main_delivery.rs) | Main Thread gegenüber AX-Owner, Prozess-/Feldidentität, Rechte/Secure Input, Commitpunkt und Zurückhalten statt unsicherem Versand |
+| Clipboard und Ereignis | [clipboard.rs](../crates/macos-integration/src/clipboard.rs), [delivery.rs](../crates/macos-integration/src/delivery.rs), [paste.rs](../crates/macos-integration/src/paste.rs) | begrenzter Snapshot/Helper, Eigentumswechsel, Restore, Cancel gegen Commit, Ereignisversand gegenüber tatsächlichem Empfang |
+| Hotkey, Glas und System | [hotkeys.rs](../src-tauri/src/hotkeys.rs), [keyboard.rs](../crates/macos-integration/src/keyboard.rs), [glass.rs](../crates/macos-integration/src/glass.rs), [power.rs](../crates/macos-integration/src/power.rs) | Registrierungsbesitz und Fehler, physische Taste/Layout, Main-Thread-/View-Lebensdauer, Observer entfernen, FFI-Sicherheitsargumente |
+| Einstellungen und IPC | [settings.rs](../src-tauri/src/settings.rs), [preferences.rs](../src-tauri/src/preferences.rs), [startup_settings.rs](../src-tauri/src/startup_settings.rs), [ipc.rs](../src-tauri/src/ipc.rs) | validierte Eingaben, atomare private Speicherung/Rücknahme, Recovery, sitzungsgebundene Kommandos und gesperrte Änderungen während Arbeit |
+| Oberfläche und Zustandsvertrag | [App.tsx](../src/App.tsx), [IPC-Client](../src/ipc/index.ts), [AppView](../src/features/app/AppView.tsx), [SettingsView](../src/features/settings/SettingsView.tsx), [RecoveryView](../src/features/settings/RecoveryView.tsx), [Vertrag](../src-tauri/src/contracts.rs) | neuere Snapshots statt zweiter Sitzungszustandsmaschine, Abmeldung/verspätete Antworten, Fehler-/Busyzustände und Bedienbarkeit |
+| Übernommenes SDK | [whisper-rs-Patches](../vendor/whisper-rs/PATCHES.md), [sys-/C++-Patches](../vendor/whisper-rs-sys/PATCHES.md), [Hotkey-Patch](../vendor/global-hotkey/PATCHES.md) | echte Herkunft/Lizenzen, unveränderte gegenüber eigenen Teilen, C-/Rust-Grenze, Pointerlebensdauer und Grenze der lokalen Regressionen |
+
+## Tests und tatsächliche Beobachtungen zuordnen
+
+- Der Kern hat [Sitzungsinvarianten](../crates/dictation-core/tests/session_invariants.rs),
+  [unabhängige Audiosignale](../crates/dictation-core/tests/audio_properties.rs)
+  und [Grenztests](../crates/dictation-core/tests/recording_limits.rs).
+- Runtime-/Adapter-/Inferenztests stehen zusätzlich direkt in den jeweiligen
+  Rust-Modulen; [Maximum](../src-tauri/src/runtime/tests/maximum_contract.rs)
+  und [Neustart](../src-tauri/src/runtime/tests/restart_contract.rs) prüfen deren
+  Verkabelung. Kontrollierte Worker sind keine nativen Mikrofone oder Empfänger.
+- React-/IPC-Tests stehen bei den Komponenten und beim Client. DOM-Tests
+  beweisen keine echte VoiceOver-, WebView-, Fokus- oder Glasdarstellung.
+- [Qualität](verification/acceptance-reference-v1.md),
+  [Inferenz-Lifecycle](verification/inference-lifecycle.md),
+  [Runtime-Ressourcen](verification/runtime-resource.md) und
+  [Echtzeitprotokoll](verification/paced-reference-protocol.md) enthalten die
+  jeweiligen Laufbelege und Grenzen. Die private Audiodatei wird nicht als
+  unabhängige Goldreferenz ausgegeben.
