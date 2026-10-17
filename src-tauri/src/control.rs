@@ -15,6 +15,10 @@ pub enum MailboxError {
     Closed,
     #[error("Invalid session identifier")]
     InvalidSession,
+    #[error("Recording is suspended")]
+    Suspended,
+    #[error("Controller synchronization failed")]
+    Synchronization,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -33,6 +37,8 @@ struct Priority {
 }
 
 pub struct ControlTx<T> {
+    #[cfg(test)]
+    before_send: Option<Arc<dyn Fn() + Send + Sync>>,
     requests: Sender<T>,
     wake: Sender<()>,
     priority: Arc<Priority>,
@@ -41,6 +47,8 @@ pub struct ControlTx<T> {
 impl<T> Clone for ControlTx<T> {
     fn clone(&self) -> Self {
         Self {
+            #[cfg(test)]
+            before_send: self.before_send.clone(),
             requests: self.requests.clone(),
             wake: self.wake.clone(),
             priority: Arc::clone(&self.priority),
@@ -66,6 +74,8 @@ pub fn mailbox<T>(capacity: usize) -> (ControlTx<T>, ControlRx<T>) {
     });
     (
         ControlTx {
+            #[cfg(test)]
+            before_send: None,
             requests,
             wake,
             priority: Arc::clone(&priority),
@@ -85,12 +95,21 @@ impl<T> ControlTx<T> {
         if self.priority.shutdown.load(Ordering::Acquire) {
             return Err(MailboxError::Closed);
         }
+        #[cfg(test)]
+        if let Some(before_send) = &self.before_send {
+            before_send();
+        }
         self.requests
             .try_send(request)
             .map_err(|error| match error {
                 TrySendError::Full(_) => MailboxError::Full,
                 TrySendError::Disconnected(_) => MailboxError::Closed,
             })?;
+        // A sender that raced shutdown must not return a live acknowledgement
+        // for a request which the owner may already have drained.
+        if self.priority.shutdown.load(Ordering::Acquire) {
+            return Err(MailboxError::Closed);
+        }
         self.notify()
     }
 
@@ -114,7 +133,8 @@ impl<T> ControlTx<T> {
         self.notify()
     }
 
-    fn notify(&self) -> Result<(), MailboxError> {
+    /// Wake the owner without occupying or replacing a priority control slot.
+    pub(crate) fn notify(&self) -> Result<(), MailboxError> {
         match self.wake.try_send(()) {
             Ok(()) | Err(TrySendError::Full(())) => Ok(()),
             Err(TrySendError::Disconnected(())) => Err(MailboxError::Closed),
@@ -141,6 +161,17 @@ impl<T> ControlRx<T> {
             });
         }
         self.requests.try_recv().ok().map(Control::Request)
+    }
+
+    /// Close admission and take at most one bounded queue's worth of requests.
+    /// Racing sends recheck shutdown before returning success; no flood can keep
+    /// this teardown loop alive indefinitely.
+    pub(crate) fn close_requests(&self) -> Vec<T> {
+        self.priority.shutdown.store(true, Ordering::Release);
+        self.requests
+            .try_iter()
+            .take(self.requests.capacity().unwrap_or(0))
+            .collect()
     }
 
     /// Wait only on the controller thread. GUI/callback senders never block.
@@ -194,6 +225,45 @@ mod tests {
         tx.shutdown()?;
         assert_eq!(tx.request(()), Err(MailboxError::Closed));
         assert_eq!(tx.stop(2), Err(MailboxError::Closed));
+        Ok(())
+    }
+
+    #[test]
+    fn send_racing_shutdown_is_rejected_even_after_owner_drain()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (mut tx, rx) = mailbox(2);
+        let (entered, at_send) = bounded(1);
+        let (proceed, continue_send) = bounded(1);
+        tx.before_send = Some(Arc::new(move || {
+            assert!(entered.send(()).is_ok());
+            assert!(continue_send.recv_timeout(Duration::from_secs(1)).is_ok());
+        }));
+        let sending = std::thread::spawn(move || tx.request(7));
+        at_send.recv_timeout(Duration::from_secs(1))?;
+        assert!(rx.close_requests().is_empty());
+        proceed.send(())?;
+        assert_eq!(
+            sending.join().map_err(|_| "sender panicked")?,
+            Err(MailboxError::Closed)
+        );
+        // It can own a bounded payload internally, but no successful caller is
+        // left awaiting an actor acknowledgement after this close barrier.
+        assert_eq!(rx.close_requests(), vec![7]);
+        Ok(())
+    }
+
+    #[test]
+    fn lifecycle_wakeup_does_not_replace_stop_cancel_or_shutdown() -> Result<(), MailboxError> {
+        let (tx, rx) = mailbox::<()>(1);
+        tx.stop(1)?;
+        tx.notify()?;
+        assert_eq!(rx.poll(), Some(Control::Stop(1)));
+        tx.cancel(1)?;
+        tx.notify()?;
+        assert_eq!(rx.poll(), Some(Control::Cancel(1)));
+        tx.shutdown()?;
+        tx.notify()?;
+        assert_eq!(rx.poll(), Some(Control::Shutdown));
         Ok(())
     }
 

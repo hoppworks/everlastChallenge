@@ -7,7 +7,10 @@ use crate::{
 };
 use crossbeam_channel::{Receiver, Sender, TryRecvError, bounded};
 use dictation_core::session::{DeliveryResult, Phase};
-use macos_integration::{delivery::DeliveryToken, target::ProcessIdentity};
+use macos_integration::{
+    delivery::{CancelOutcome, DeliveryToken},
+    target::ProcessIdentity,
+};
 use std::{
     collections::VecDeque,
     num::NonZeroU64,
@@ -67,6 +70,7 @@ enum Request {
 }
 
 struct StartRequest {
+    admission_epoch: u64,
     settings: SessionSettings,
     process: Option<ProcessIdentity>,
     delivery: bool,
@@ -86,14 +90,37 @@ pub struct RuntimeSnapshot {
 
 struct Shared {
     closing: bool,
+    suspended: bool,
+    admission_epoch: u64,
     snapshot: RuntimeSnapshot,
     cancellation: Option<(u64, DeliveryToken, WorkToken)>,
 }
 
-struct RuntimeExit(Arc<Mutex<Shared>>);
-impl Drop for RuntimeExit {
+fn close_admission(shared: &Mutex<Shared>) {
+    let mut shared = shared
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    shared.closing = true;
+    if let Some((_, delivery, work)) = &shared.cancellation {
+        delivery.cancel();
+        work.cancel();
+    }
+}
+
+struct RuntimeExit<'a> {
+    shared: Arc<Mutex<Shared>>,
+    requests: &'a crate::control::ControlRx<Request>,
+}
+impl Drop for RuntimeExit<'_> {
     fn drop(&mut self) {
-        if let Ok(mut shared) = self.0.lock() {
+        close_admission(&self.shared);
+        {
+            // Even an unwinding controller must revoke admission and settle
+            // acknowledgements. Recovery here is teardown only.
+            let mut shared = self
+                .shared
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
             if let Some((_, delivery, work)) = shared.cancellation.take() {
                 delivery.cancel();
                 work.cancel();
@@ -103,6 +130,17 @@ impl Drop for RuntimeExit {
             shared.snapshot.model_ready = false;
             shared.snapshot.revision = shared.snapshot.revision.saturating_add(1);
         }
+        reject_pending(self.requests);
+    }
+}
+
+fn reject_pending(requests: &crate::control::ControlRx<Request>) {
+    for request in requests.close_requests() {
+        let reply = match request {
+            Request::Start(request) => request.reply,
+            Request::Clear(reply) => reply,
+        };
+        if reply.send(Err("Controller is closed".into())).is_err() { /* caller already closed */ }
     }
 }
 
@@ -116,6 +154,12 @@ pub enum RuntimeError {
     Worker,
     #[error("Controller service failed: {0}")]
     Service(String),
+    #[error("Recording is suspended")]
+    Suspended,
+    #[error("Recording request predates system sleep")]
+    StaleAdmission,
+    #[error("Recording admission identifiers exhausted; restart the application")]
+    AdmissionExhausted,
 }
 
 #[derive(Clone)]
@@ -132,8 +176,19 @@ impl Client {
         delivery: bool,
         toggle: bool,
     ) -> Result<oneshot::Receiver<Result<(), String>>, MailboxError> {
+        let admission = self
+            .shared
+            .lock()
+            .map_err(|_| MailboxError::Synchronization)?;
+        if admission.closing {
+            return Err(MailboxError::Closed);
+        }
+        if admission.suspended {
+            return Err(MailboxError::Suspended);
+        }
         let (reply, receiver) = oneshot::channel();
         self.control.request(Request::Start(StartRequest {
+            admission_epoch: admission.admission_epoch,
             settings,
             process,
             delivery,
@@ -164,6 +219,73 @@ impl Client {
         }
         drop(shared);
         self.control.cancel(session).map_err(RuntimeError::from)
+    }
+    /// Invalidate queued starts and active work immediately. Audio ownership is
+    /// released by the controller; this notification callback never joins a worker.
+    pub fn suspend(&self) -> Result<(), RuntimeError> {
+        let (session, exhausted) = {
+            let mut shared = self
+                .shared
+                .lock()
+                .map_err(|_| RuntimeError::Synchronization)?;
+            if shared.closing {
+                return Err(MailboxError::Closed.into());
+            }
+            let mut exhausted = false;
+            if !shared.suspended {
+                match shared.admission_epoch.checked_add(1) {
+                    Some(epoch) => shared.admission_epoch = epoch,
+                    None => {
+                        shared.closing = true;
+                        exhausted = true;
+                    }
+                }
+                shared.suspended = true;
+            }
+            let session = shared
+                .cancellation
+                .as_ref()
+                .and_then(|(session, delivery, work)| {
+                    let committed = delivery.cancel() == CancelOutcome::AlreadyCommitted;
+                    work.cancel();
+                    // Lifecycle cleanup cannot retract a committed send. Wake
+                    // the actor to settle it, without reporting a user-cancel error.
+                    (!committed).then_some(*session)
+                });
+            (session, exhausted)
+        };
+        if exhausted {
+            self.control.shutdown()?;
+            return Err(RuntimeError::AdmissionExhausted);
+        }
+        if let Some(session) = session {
+            self.control.cancel(session)?;
+        } else {
+            self.control.notify()?;
+        }
+        Ok(())
+    }
+    /// Re-enable fresh explicit starts. Old admissions and revoked work remain invalid.
+    pub fn resume(&self) -> Result<(), RuntimeError> {
+        {
+            let mut shared = self
+                .shared
+                .lock()
+                .map_err(|_| RuntimeError::Synchronization)?;
+            if shared.closing {
+                return Err(MailboxError::Closed.into());
+            }
+            shared.suspended = false;
+        }
+        self.control.notify()?;
+        Ok(())
+    }
+    pub fn is_suspended(&self) -> Result<bool, RuntimeError> {
+        Ok(self
+            .shared
+            .lock()
+            .map_err(|_| RuntimeError::Synchronization)?
+            .suspended)
     }
     pub fn snapshot(&self) -> Result<RuntimeSnapshot, RuntimeError> {
         Ok(self
@@ -292,6 +414,8 @@ impl Runtime {
         let controller = Controller::default();
         let shared = Arc::new(Mutex::new(Shared {
             closing: false,
+            suspended: false,
+            admission_epoch: 0,
             snapshot: RuntimeSnapshot {
                 revision: 1,
                 running: true,
@@ -310,7 +434,7 @@ impl Runtime {
         let worker = thread::Builder::new()
             .name("dictation-controller".into())
             .spawn(move || {
-                let _exit = RuntimeExit(Arc::clone(&shared));
+                let _exit = RuntimeExit { shared: Arc::clone(&shared), requests: &requests };
                 let mut actor = Actor {
                     controller,
                     inference: Some(inference),
@@ -324,6 +448,7 @@ impl Runtime {
                     deferred_audio: None,
                 };
                 let result = (|| { loop {
+                    actor.reconcile_revoked()?;
                     actor.poll()?;
                     actor.publish()?;
                     match requests.wait(Duration::from_millis(10)) {
@@ -335,10 +460,7 @@ impl Runtime {
                                     Err(error) => return Err(service_error(error)),
                                 }
                             }
-                            actor.audio.shutdown().map_err(RuntimeError::Service)?;
-                            if let Some(inference) = actor.inference.take() {
-                                inference.shutdown().map_err(service_error)?;
-                            }
+                            // All joins happen after close_admission/reject_pending below.
                             return Ok(());
                         }
                         Some(Control::Stop(session)) => {
@@ -356,7 +478,7 @@ impl Runtime {
                         }
                         Some(Control::Request(Request::Start(request))) => {
                             let actions = actor.start_request(
-                                request.settings, request.process, request.delivery, request.toggle,
+                                request.admission_epoch, request.settings, request.process, request.delivery, request.toggle,
                             );
                             let result = match actions {
                                 Ok(actions) => {
@@ -374,6 +496,9 @@ impl Runtime {
                         None => {}
                     }
                 } })();
+                // Revoke outputs and settle accepted requests before potentially slow owner joins.
+                close_admission(&actor.shared);
+                reject_pending(&requests);
                 // All paths release native audio and join inference here,
                 // outside the GUI, including controller/service errors.
                 let audio_cleanup = actor.audio.shutdown().map_err(RuntimeError::Service);
@@ -438,34 +563,46 @@ struct Actor<A: AudioDriver> {
 impl<A: AudioDriver> Actor<A> {
     fn start_request(
         &mut self,
+        admission_epoch: u64,
         settings: SessionSettings,
         process: Option<ProcessIdentity>,
         delivery: bool,
         toggle: bool,
-    ) -> Result<Vec<Action>, crate::controller::ControllerError> {
+    ) -> Result<Vec<Action>, RuntimeError> {
         let shared = Arc::clone(&self.shared);
-        let mut admission = shared
-            .lock()
-            .map_err(|_| crate::controller::ControllerError::Resource)?;
+        let mut admission = shared.lock().map_err(|_| RuntimeError::Synchronization)?;
         if admission.closing {
-            return Err(dictation_core::session::SessionError::NotReady.into());
+            return Err(MailboxError::Closed.into());
+        }
+        if admission.suspended {
+            return Err(RuntimeError::Suspended);
+        }
+        if admission_epoch != admission.admission_epoch {
+            return Err(RuntimeError::StaleAdmission);
         }
         let snapshot = self.controller.snapshot();
         let actions = if toggle && matches!(snapshot.phase, Phase::Starting | Phase::Recording) {
-            self.controller.stop(
-                snapshot
-                    .session
-                    .ok_or(crate::controller::ControllerError::Resource)?,
-            )
+            self.controller
+                .stop(snapshot.session.ok_or(RuntimeError::Synchronization)?)
         } else {
             let ready = self.inference.as_ref().is_some_and(InferenceService::ready)
                 && settings.generation == self.generation;
             self.controller.start(settings, process, ready, delivery)
-        }?;
+        }
+        .map_err(service_error)?;
         // Register before dispatch: cancellation and shutdown can see a session
         // even while its first native command is being sent.
         admission.cancellation = self.controller.cancellation_handles();
         Ok(actions)
+    }
+
+    fn reconcile_revoked(&mut self) -> Result<(), RuntimeError> {
+        let actions = {
+            let shared = Arc::clone(&self.shared);
+            let _admission = shared.lock().map_err(|_| RuntimeError::Synchronization)?;
+            self.controller.reconcile_cancel().map_err(service_error)?
+        };
+        self.execute(actions)
     }
 
     fn fail(
@@ -521,7 +658,7 @@ impl<A: AudioDriver> Actor<A> {
                     // new microphone start can pass this boundary.
                     let shared = Arc::clone(&self.shared);
                     let admission = shared.lock().map_err(|_| RuntimeError::Synchronization)?;
-                    if admission.closing
+                    if (admission.closing || admission.suspended)
                         && let Some((_, _, work)) = self.controller.cancellation_handles()
                     {
                         work.cancel();
@@ -852,6 +989,440 @@ mod tests {
                 _ => return Err("request acknowledgement missing".into()),
             }
         }
+    }
+
+    struct LifecycleFixture {
+        runtime: Runtime,
+        audio: Sender<CaptureEvent>,
+        starts: Receiver<u64>,
+        stops: Receiver<u64>,
+        native: NativeEndpoint,
+        armed: Arc<AtomicBool>,
+        at_poll: Receiver<()>,
+        continue_poll: Sender<()>,
+        closed: Arc<AtomicBool>,
+    }
+    impl LifecycleFixture {
+        fn new() -> Result<Self, Box<dyn std::error::Error>> {
+            Self::with_decoder(FixtureDecoder)
+        }
+        fn with_decoder(decoder: impl Decoder) -> Result<Self, Box<dyn std::error::Error>> {
+            let (audio, events) = bounded(3);
+            let (started, starts) = bounded(4);
+            let (stopped, stops) = bounded(4);
+            let (entered, at_poll) = bounded(1);
+            let (continue_poll, proceed) = bounded(1);
+            let armed = Arc::new(AtomicBool::new(false));
+            let closed = Arc::new(AtomicBool::new(false));
+            let (port, native) = native_mailbox();
+            let runtime = Runtime::with_audio(
+                InferenceService::with_decoder(decoder)?,
+                1,
+                port,
+                ControlledAudio {
+                    events,
+                    started,
+                    stopped,
+                    closed: Arc::clone(&closed),
+                    gate: Some((Arc::clone(&armed), entered, proceed)),
+                },
+            )?;
+            wait_for(&runtime.client(), |state| state.model_ready)?;
+            Ok(Self {
+                runtime,
+                audio,
+                starts,
+                stops,
+                native,
+                armed,
+                at_poll,
+                continue_poll,
+                closed,
+            })
+        }
+        fn pause(&self) -> Result<(), Box<dyn std::error::Error>> {
+            self.armed.store(true, Ordering::Release);
+            self.at_poll.recv_timeout(Duration::from_secs(1))?;
+            Ok(())
+        }
+        fn proceed(&self) -> Result<(), Box<dyn std::error::Error>> {
+            self.continue_poll.send(())?;
+            Ok(())
+        }
+        fn record(&self) -> Result<DeliveryToken, Box<dyn std::error::Error>> {
+            accepted(self.runtime.client().start(settings(), None, true, false)?)?;
+            let token = match self.native.requests.recv_timeout(Duration::from_secs(1))? {
+                NativeCommand::Capture { token, .. } => token,
+                _ => return Err("capture missing".into()),
+            };
+            self.native.responses.send(NativeResult::Captured {
+                session: 1,
+                result: Ok(()),
+            })?;
+            assert_eq!(self.starts.recv_timeout(Duration::from_secs(1))?, 1);
+            self.audio.send(CaptureEvent::Started {
+                session: 1,
+                format: AudioFormat {
+                    sample_rate: 16_000,
+                    channels: 1,
+                },
+                started: Instant::now(),
+            })?;
+            wait_for(&self.runtime.client(), |state| {
+                state.session.phase == Phase::Recording
+            })?;
+            Ok(token)
+        }
+        fn deliver(&self) -> Result<DeliveryToken, Box<dyn std::error::Error>> {
+            self.record()?;
+            self.runtime.client().stop(1)?;
+            assert_eq!(self.stops.recv_timeout(Duration::from_secs(1))?, 1);
+            self.audio.send(CaptureEvent::Finished {
+                session: 1,
+                result: Ok(vec![0.1; 800]),
+                maximum: false,
+            })?;
+            match self.native.requests.recv_timeout(Duration::from_secs(1))? {
+                NativeCommand::Deliver { token, .. } => Ok(token),
+                _ => Err("delivery missing".into()),
+            }
+        }
+    }
+
+    #[test]
+    fn sleep_revokes_recording_before_wake_and_waits_for_audio_release()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        let token = fixture.record()?;
+        let client = fixture.runtime.client();
+        fixture.pause()?;
+        client.suspend()?;
+        client.suspend()?;
+        assert!(client.is_suspended()?);
+        assert!(!token.is_pending());
+        assert!(matches!(
+            client.start(settings(), None, false, false),
+            Err(MailboxError::Suspended)
+        ));
+        client.resume()?;
+        client.resume()?;
+        assert!(!client.is_suspended()?);
+        fixture.proceed()?;
+        assert_eq!(fixture.stops.recv_timeout(Duration::from_secs(1))?, 1);
+        wait_for(&client, |state| state.session.phase == Phase::Cancelling)?;
+        fixture.audio.send(CaptureEvent::Finished {
+            session: 1,
+            result: Ok(vec![0.1; 800]),
+            maximum: false,
+        })?;
+        wait_for(&client, |state| {
+            state.session.phase == Phase::Idle && state.session.outcome == Some(Outcome::Cancelled)
+        })?;
+        assert!(matches!(
+            fixture.starts.try_recv(),
+            Err(TryRecvError::Empty)
+        ));
+        while let Ok(command) = fixture.native.requests.try_recv() {
+            assert!(!matches!(command, NativeCommand::Deliver { .. }));
+        }
+        accepted(client.start(settings(), None, false, false)?)?;
+        assert_eq!(fixture.starts.recv_timeout(Duration::from_secs(1))?, 2);
+        fixture.runtime.join()?;
+        assert!(fixture.closed.load(Ordering::Acquire));
+        Ok(())
+    }
+
+    #[test]
+    fn target_reply_after_sleep_cannot_start_deferred_audio()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        let client = fixture.runtime.client();
+        accepted(client.start(settings(), None, true, false)?)?;
+        let token = match fixture
+            .native
+            .requests
+            .recv_timeout(Duration::from_secs(1))?
+        {
+            NativeCommand::Capture { token, .. } => token,
+            _ => return Err("capture missing".into()),
+        };
+        fixture.pause()?;
+        client.suspend()?;
+        client.resume()?;
+        fixture.native.responses.send(NativeResult::Captured {
+            session: 1,
+            result: Ok(()),
+        })?;
+        fixture.proceed()?;
+        let snapshot = wait_for(&client, |state| state.session.phase == Phase::Idle)?;
+        assert_eq!(snapshot.session.outcome, Some(Outcome::Cancelled));
+        assert!(!token.is_pending());
+        assert!(matches!(
+            fixture.starts.try_recv(),
+            Err(TryRecvError::Empty)
+        ));
+        fixture.runtime.join()?;
+        Ok(())
+    }
+
+    #[test]
+    fn sleep_before_delivery_commit_revokes_late_result_after_wake()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        let token = fixture.deliver()?;
+        let client = fixture.runtime.client();
+        fixture.pause()?;
+        client.suspend()?;
+        assert!(!token.is_pending());
+        assert!(token.try_commit().is_err());
+        client.resume()?;
+        fixture.native.responses.send(NativeResult::Delivered {
+            session: 1,
+            result: DeliveryResult::Sent,
+        })?;
+        fixture.proceed()?;
+        let snapshot = wait_for(&client, |state| state.session.phase == Phase::Idle)?;
+        assert_eq!(snapshot.session.outcome, Some(Outcome::Cancelled));
+        assert_eq!(snapshot.session.text.as_deref(), Some("fixture words"));
+        assert!(matches!(
+            fixture.starts.try_recv(),
+            Err(TryRecvError::Empty)
+        ));
+        fixture.runtime.join()?;
+        Ok(())
+    }
+
+    #[test]
+    fn delivery_committed_before_sleep_stays_sent_and_duplicate_power_events_are_harmless()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        let token = fixture.deliver()?;
+        token.try_commit()?;
+        let client = fixture.runtime.client();
+        fixture.pause()?;
+        client.suspend()?;
+        client.suspend()?;
+        assert!(token.is_committed());
+        client.resume()?;
+        client.resume()?;
+        let queued = client.start(settings(), None, false, false)?;
+        fixture.proceed()?;
+        // A normal request acknowledgement fences the higher-priority lifecycle
+        // control. Deliberately withhold Delivered until that control was handled.
+        assert!(accepted(queued).is_err());
+        let error_before_delivery = client.snapshot()?.error;
+        fixture.native.responses.send(NativeResult::Delivered {
+            session: 1,
+            result: DeliveryResult::Sent,
+        })?;
+        let snapshot = wait_for(&client, |state| state.session.phase == Phase::Idle)?;
+        assert_eq!(snapshot.session.outcome, Some(Outcome::Sent));
+        assert_eq!(snapshot.session.text.as_deref(), Some("fixture words"));
+        assert_eq!(snapshot.error, None);
+        assert_eq!(error_before_delivery, None);
+        assert!(matches!(
+            fixture.starts.try_recv(),
+            Err(TryRecvError::Empty)
+        ));
+        fixture.runtime.join()?;
+        Ok(())
+    }
+
+    #[test]
+    fn shutdown_rejects_queued_requests_before_a_blocked_decoder_finishes()
+    -> Result<(), Box<dyn std::error::Error>> {
+        struct BlockedDecoder {
+            entered: Sender<()>,
+            release: Receiver<()>,
+        }
+        impl Decoder for BlockedDecoder {
+            fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+                self.entered
+                    .send(())
+                    .map_err(|_| InferenceError::InvalidAudio)?;
+                self.release
+                    .recv_timeout(Duration::from_secs(5))
+                    .map_err(|_| InferenceError::InvalidAudio)?;
+                Ok("revoked decoder result".into())
+            }
+        }
+        let (entered, decoding) = bounded(1);
+        let (release_decoder, released) = bounded(1);
+        let fixture = LifecycleFixture::with_decoder(BlockedDecoder {
+            entered,
+            release: released,
+        })?;
+        fixture.record()?;
+        let client = fixture.runtime.client();
+        client.stop(1)?;
+        assert_eq!(fixture.stops.recv_timeout(Duration::from_secs(1))?, 1);
+        fixture.audio.send(CaptureEvent::Finished {
+            session: 1,
+            result: Ok(vec![0.1; 800]),
+            maximum: false,
+        })?;
+        decoding.recv_timeout(Duration::from_secs(1))?;
+        fixture.pause()?;
+        let mut start_reply = client.start(settings(), None, false, false)?;
+        let mut clear_reply = client.clear_text()?;
+        client.shutdown()?;
+        fixture.proceed()?;
+        let deadline = Instant::now() + Duration::from_secs(2);
+        let (mut start_rejected, mut clear_rejected) = (false, false);
+        while Instant::now() < deadline && !(start_rejected && clear_rejected) {
+            if matches!(start_reply.try_recv(), Ok(Err(_))) {
+                start_rejected = true;
+            }
+            if matches!(clear_reply.try_recv(), Ok(Err(_))) {
+                clear_rejected = true;
+            }
+            thread::yield_now();
+        }
+        // Always release and join, including the RED case, before reporting a failure.
+        release_decoder.send(())?;
+        fixture.runtime.join()?;
+        assert!(
+            start_rejected,
+            "accepted start acknowledgement waited for decoder shutdown"
+        );
+        assert!(
+            clear_rejected,
+            "accepted clear acknowledgement waited for decoder shutdown"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn shutdown_dominates_wake_and_never_starts_queued_audio()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        let client = fixture.runtime.client();
+        fixture.pause()?;
+        let mut reply = client.start(settings(), None, false, false)?;
+        let mut clear_reply = client.clear_text()?;
+        client.suspend()?;
+        client.shutdown()?;
+        assert!(matches!(
+            client.resume(),
+            Err(RuntimeError::Mailbox(MailboxError::Closed))
+        ));
+        assert!(matches!(
+            client.suspend(),
+            Err(RuntimeError::Mailbox(MailboxError::Closed))
+        ));
+        assert!(matches!(
+            client.start(settings(), None, false, false),
+            Err(MailboxError::Closed)
+        ));
+        fixture.proceed()?;
+        fixture.runtime.join()?;
+        assert!(
+            matches!(reply.try_recv(), Ok(Err(_))),
+            "shutdown must settle an accepted queued request"
+        );
+        assert!(matches!(clear_reply.try_recv(), Ok(Err(_))));
+        assert!(fixture.closed.load(Ordering::Acquire));
+        assert!(!client.snapshot()?.running);
+        assert!(matches!(
+            fixture.starts.try_recv(),
+            Err(TryRecvError::Empty) | Err(TryRecvError::Disconnected)
+        ));
+        Ok(())
+    }
+
+    #[test]
+    fn panic_guard_settles_queued_request_and_closes_admission()
+    -> Result<(), Box<dyn std::error::Error>> {
+        struct PanicAudio {
+            entered: Sender<()>,
+            proceed: Receiver<()>,
+        }
+        impl AudioDriver for PanicAudio {
+            fn start(&mut self, _: u64, _: Option<String>) -> Result<(), String> {
+                Ok(())
+            }
+            fn stop(&self, _: u64) {}
+            fn poll(&mut self) -> Vec<CaptureEvent> {
+                assert!(self.entered.send(()).is_ok());
+                // Sending the rendezvous value injects a worker panic, without
+                // panicking the test caller or touching any native device.
+                assert!(
+                    self.proceed.recv_timeout(Duration::from_secs(2)).is_err(),
+                    "injected worker failure"
+                );
+                Vec::new()
+            }
+            fn shutdown(&mut self) -> Result<(), String> {
+                Ok(())
+            }
+        }
+        let (entered, at_poll) = bounded(1);
+        let (proceed, continue_poll) = bounded(1);
+        let (native, _endpoint) = native_mailbox();
+        let runtime = Runtime::with_audio(
+            InferenceService::with_decoder(FixtureDecoder)?,
+            1,
+            native,
+            PanicAudio {
+                entered,
+                proceed: continue_poll,
+            },
+        )?;
+        at_poll.recv_timeout(Duration::from_secs(1))?;
+        let client = runtime.client();
+        let mut reply = client.start(settings(), None, false, false)?;
+        proceed.send(())?;
+        assert!(runtime.join().is_err());
+        assert!(matches!(reply.try_recv(), Ok(Err(_))));
+        assert!(!client.snapshot()?.running);
+        assert!(matches!(
+            client.start(settings(), None, false, false),
+            Err(MailboxError::Closed)
+        ));
+        Ok(())
+    }
+
+    #[test]
+    fn sleep_then_wake_rejects_a_queued_start_without_creating_a_session()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (_send_audio, receive_audio) = bounded(3);
+        let (started, did_start) = bounded(2);
+        let (stopped, _did_stop) = bounded(2);
+        let (entered, at_poll) = bounded(1);
+        let (continue_tx, continue_poll) = bounded(1);
+        let armed = Arc::new(AtomicBool::new(false));
+        let (native, _endpoint) = native_mailbox();
+        let runtime = Runtime::with_audio(
+            InferenceService::with_decoder(FixtureDecoder)?,
+            1,
+            native,
+            ControlledAudio {
+                events: receive_audio,
+                started,
+                stopped,
+                closed: Arc::new(AtomicBool::new(false)),
+                gate: Some((Arc::clone(&armed), entered, continue_poll)),
+            },
+        )?;
+        let client = runtime.client();
+        wait_for(&client, |state| state.model_ready)?;
+        armed.store(true, Ordering::Release);
+        at_poll.recv_timeout(Duration::from_secs(1))?;
+        let reply = client.start(settings(), None, false, false)?;
+        client.suspend()?;
+        client.resume()?;
+        continue_tx.send(())?;
+        assert!(
+            accepted(reply).is_err(),
+            "pre-sleep start must not be replayed after wake"
+        );
+        assert_eq!(client.snapshot()?.session.phase, Phase::Idle);
+        assert_eq!(client.snapshot()?.session.session, None);
+        assert!(matches!(did_start.try_recv(), Err(TryRecvError::Empty)));
+        accepted(client.start(settings(), None, false, false)?)?;
+        assert_eq!(did_start.recv_timeout(Duration::from_secs(1))?, 1);
+        runtime.join()?;
+        Ok(())
     }
 
     #[test]
