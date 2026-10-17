@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "kind": "single-model-free-300s-publisher-phase-result",
+  "qualified": false,
+  "L": null,
+  "parameterFreeze": {
+    "path": "tests/fixtures/corpus/replay-wait-long-parameters-v1.json",
+    "sha256": "20f7077216054ca45c6b2f1ea58ae6afdc903dfdab54cc06b7bbbe3bc74189a3",
+    "bytes": 2981,
+    "mode": "0o644",
+    "commit": "f123a01"
+  },
+  "configuration": {
+    "qosOverride": false,
+    "inference": false,
+    "microphone": false,
+    "chunkMillis": 20,
+    "jitterToleranceNanos": 10000000,
+    "maximumSleepNanos": 1000000,
+    "finalSpinNanos": 250000,
+    "finishObservationBudgetSecondsAfterFeed": 10
+  },
+  "completion": {
+    "pid": 3639,
+    "startUtc": "2026-10-17T17:17:31.894452+00:00",
+    "endUtc": "2026-10-17T17:22:31.973254+00:00",
+    "exitCode": 0,
+    "parameterFreezeCommit": "f123a01",
+    "parameterSha256": "20f7077216054ca45c6b2f1ea58ae6afdc903dfdab54cc06b7bbbe3bc74189a3",
+    "resultSha256": "0bfc5972d97cf1851b38afe789ecb2d2807921ff39d591939201b988e36a1841",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "sourceRevision": "83e8b17d93f28af1eef5198a197175d0d1ae5fbb",
+  "sourceHashes": {
+    "src-tauri/examples/paced_audio_probe.rs": "3a96d592a268726aa603100f759d6a63a18223665d205fc9b82a6076e42ffe6e",
+    "src-tauri/examples/paced_audio_probe/runner.rs": "088d8428613e8510b00a8958a29411f34d42718afb25afaae6ce5a1bb562ccd8",
+    "src-tauri/src/audio.rs": "30649268bfb85918ed7971f4707af793cc81882bcbe6e60115670058b70f91f9",
+    "src-tauri/src/audio/replay.rs": "d4ddcb96f91ec766fd2afdc94b05f72a8a7e7ec03413dd08d5d18d1bedad0d8a",
+    "src-tauri/src/audio/replay/clock.rs": "c719ece5ec6bd47211a989c28228dd8087e4f1ad2c123c7345bbe9283468056d",
+    "src-tauri/src/audio/replay/schedule.rs": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b"
+  },
+  "input": {
+    "path": "artifacts/diagnostic-speech/long-control-v1/controlled-300s.wav",
+    "sha256": "80b79393de147e78e9b9a86bad3d88998dae4056a9fe10a080ef2468c92dc25b",
+    "frames": 4800000,
+    "sampleRate": 16000,
+    "channels": 1,
+    "sampleBits": 16,
+    "durationSeconds": 300
+  },
+  "host": {
+    "os": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+    "machine": "arm64",
+    "chip": "Apple M5",
+    "memoryBytes": 34359738368
+  },
+  "run": {
+    "audioFailure": null,
+    "audioFinishedObservedOffsetNanos": 300003053542,
+    "audioOwnerStopRequestOffsetNanos": 300000015375,
+    "finishedEvents": 1,
+    "inputOutputSamplesEqual": true,
+    "joinFailure": null,
+    "joinUnverified": false,
+    "joined": true,
+    "observationFailure": null,
+    "passed": true,
+    "plannedStopOffsetNanos": 300000000000,
+    "startedClockVerified": true,
+    "startedEvents": 1,
+    "stopRequests": 1,
+    "timingValid": true,
+    "waitSummary": {
+      "detailedPublications": 0,
+      "maxReserveNanos": 12875,
+      "maxSleepOvershootNanos": 2091833,
+      "maxSpinClockGapNanos": 232666,
+      "maxWaitExitToPublishNanos": 14375,
+      "observedPublications": 15000
+    }
+  },
+  "publications": 15000,
+  "maxPublicationDeviationNanos": 270667,
+  "lastPublication": {
+    "afterPublishNanos": 300000014709,
+    "beforePublishNanos": 300000000292,
+    "deviationNanos": 14709,
+    "endFrame": 4800000,
+    "plannedNanos": 300000000000,
+    "startFrame": 4799680,
+    "timing": "onBudget"
+  },
+  "rawFiles": [
+    {
+      "path": "artifacts/replay/wait-diagnostic-long-v1/completion.json",
+      "sha256": "7570716f436103032003a19fd8210802cbff017f31c32c251ee8cf03b2b3ff7b",
+      "bytes": 432,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/wait-diagnostic-long-v1/result.json",
+      "sha256": "0bfc5972d97cf1851b38afe789ecb2d2807921ff39d591939201b988e36a1841",
+      "bytes": 3933710,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/wait-diagnostic-long-v1/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    }
+  ],
+  "limits": [
+    "Phase observation of a new timing violation only; no retrospective explanation of historical v2 trials.",
+    "No QoS override or model/controller workload; differs from central v2.",
+    "Phase durations include instrumentation, interruptions and descheduling; do not prove a kernel cause.",
+    "No end-to-end latency, ASR completeness, resource or installed native acceptance.",
+    "A successful single run does not establish scheduling stability.",
+    "No timing violation occurred; therefore no failing phase or cause was localized."
+  ]
+}
