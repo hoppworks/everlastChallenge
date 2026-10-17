@@ -1,0 +1,336 @@
+{
+  "schemaVersion": 1,
+  "kind": "prospective-owned-tc-runtime-local-empty-smoke",
+  "qualified": false,
+  "sourceRevision": "80261d31aedcecd58e3cc3e1a95735c98e56259e",
+  "createdBeforeModelWorkUtc": "2026-10-17T19:26:31.228083+00:00",
+  "binary": {
+    "path": "target/release/examples/paced_runtime_probe",
+    "sha256": "3fdbba9971791d64c582f6e316bcb9d00f49828bee254f3eb72dcb30f1e75dd1",
+    "bytes": 4623040,
+    "mode": "0o755"
+  },
+  "parameters": {
+    "path": "tests/fixtures/corpus/paced-runtime-tc-parameters-v1.json",
+    "sha256": "3ff7364edee948401aac6aa86327e65adb632eb8e43305ef5fc02f17aba8a2f5",
+    "bytes": 12046,
+    "mode": "0o644"
+  },
+  "sources": [
+    {
+      "path": "src-tauri/src/audio.rs",
+      "sha256": "30649268bfb85918ed7971f4707af793cc81882bcbe6e60115670058b70f91f9",
+      "bytes": 34524,
+      "mode": "0o644"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089",
+      "bytes": 129670,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/audio/replay/clock.rs",
+      "sha256": "c5cb28a620b0222a01f6b658665199eae94f8df2117466964eeff9164599c17b",
+      "bytes": 25281,
+      "mode": "0o644"
+    },
+    {
+      "path": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+      "sha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e",
+      "bytes": 330873,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/dictation-core/src/audio.rs",
+      "sha256": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46",
+      "bytes": 7074,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/transcription.rs",
+      "sha256": "10da1b705f06903db515b4fd592375c6d2097f8a0c3e6f716393a69c9e22787c",
+      "bytes": 22442,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/inference_service.rs",
+      "sha256": "886f40f2fbc9b0dbe43e008b7d17875e0cddbef5b7350d4754285fdee2beb083",
+      "bytes": 24335,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/Cargo.toml",
+      "sha256": "7696f89d6e3ece66139610e369d96242c070b6865e5faa9acc23c671fcd7e585",
+      "bytes": 1698,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/runtime/measurement.rs",
+      "sha256": "396485e56f89982b95e78c0544f2b815745319644b36554dd1b3352c03cc9955",
+      "bytes": 34736,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/model.rs",
+      "sha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2",
+      "bytes": 17435,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/src/lib.rs",
+      "sha256": "0d55b5e246ea6d2510c3868670a57288e983a8762fe128b18533884fd5521b9e",
+      "bytes": 497,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/Cargo.toml",
+      "sha256": "14be4d5bc3c6528b345b5631459329d4b851385967fa6fb7eacd9a5d3c60f8b9",
+      "bytes": 945,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/src/realtime.rs",
+      "sha256": "ab04deb53f86b8821e73097acacfa07da566bb4f609fcc7f80511b34ed5708fc",
+      "bytes": 27469,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/paced_runtime_probe/options.rs",
+      "sha256": "2b34798c449dcf8413008d14a0941b8e8d020f9eabe3f3c46697079ea2d202a9",
+      "bytes": 8453,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/paced_runtime_probe/parameters.rs",
+      "sha256": "fc379be7f995bd3efad79b2f2314fa69fe0ade6c7e9dcc5588c150c0c6a50bd3",
+      "bytes": 13064,
+      "mode": "0o644"
+    },
+    {
+      "path": "vendor/whisper-rs/src/whisper_params.rs",
+      "sha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8",
+      "bytes": 34127,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/paced_runtime_probe.rs",
+      "sha256": "f48339520c7630f752496c34385e2b43c8addd4019648c37ac636ec34a5c61de",
+      "bytes": 10978,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/paced_runtime_probe/publisher.rs",
+      "sha256": "656edd0c4191b247caba7e2d743a87133850ceb51217012aca6fef517fe3d6cc",
+      "bytes": 26191,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/src/qos.rs",
+      "sha256": "09308c2d9280aed0f61e98b124fa42501514abb3befe47a6669bd8009a160772",
+      "bytes": 6255,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/audio/replay.rs",
+      "sha256": "d4ddcb96f91ec766fd2afdc94b05f72a8a7e7ec03413dd08d5d18d1bedad0d8a",
+      "bytes": 23298,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/paced_runtime_probe/runner.rs",
+      "sha256": "4c8311e887cc44d7555cbaab5931ecbf5efd4d59d36db40cec0a2435e47c308c",
+      "bytes": 30524,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/runtime.rs",
+      "sha256": "04d2b763b7f4b2d8e82afa7288a46294fffb1b41a52c00a8fa98fec5984dc868",
+      "bytes": 92000,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/audio/replay/schedule.rs",
+      "sha256": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b",
+      "bytes": 12357,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/transcription/speech_gate.rs",
+      "sha256": "4e6964540cbe78217cf6c5f6924c859d5240bd2ec9603f857113dea272da7f1f",
+      "bytes": 9418,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/paced_runtime_probe/statistics.rs",
+      "sha256": "c7c4d986deba4386afac48305616651570f5e59ce6f76ab5c7a7cac75c562ae7",
+      "bytes": 3655,
+      "mode": "0o644"
+    },
+    {
+      "path": "vendor/whisper-rs/src/whisper_vad.rs",
+      "sha256": "a4e481fac0b423ab532e3f4b8e3348a23e3134a10e4581ea3f383d6a81e6438d",
+      "bytes": 10152,
+      "mode": "0o644"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230",
+      "bytes": 1104,
+      "mode": "0o644"
+    },
+    {
+      "path": ".cargo/config.toml",
+      "sha256": "867049e39a2c207bba21bf98eb9858aef44b4e93adc5f766d2866748fe207b8b",
+      "bytes": 40,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/control.rs",
+      "sha256": "b957a1ac8b9b7b80bd9bb5830fce1cbec2aa3d49f4ad8fc2f238add1014c49d2",
+      "bytes": 9576,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/controller.rs",
+      "sha256": "f95c0c2c3ad37f4cc1a0b9c9248ece3bfe87911b73d3053aae39953d9feeadf7",
+      "bytes": 19745,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/dictation-core/src/session.rs",
+      "sha256": "4c3d969f5d2e95923b1a00da9d9824a8c4e45b93a7837dccbdbe2750678ecaa1",
+      "bytes": 7474,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/dictation-core/src/recording_limits.rs",
+      "sha256": "aec74e2f6787b3b3d56349a11344cf69f1960775e3998a0a5c6856b703118b9a",
+      "bytes": 1227,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/dictation-core/Cargo.toml",
+      "sha256": "2df1f66443970922b1bb5d96441d3c30fd86e4f221c2a442438488cff3f0d489",
+      "bytes": 306,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/src/delivery.rs",
+      "sha256": "e0be2653a4f2f2a260f94093a63969fa1cf9e2c38656d4b8bd24857244dc767d",
+      "bytes": 4792,
+      "mode": "0o644"
+    }
+  ],
+  "model": {
+    "path": "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+    "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+    "bytes": 574041195,
+    "mode": "0o644"
+  },
+  "vad": {
+    "path": "artifacts/models/ggml-silero-v5.1.2.bin",
+    "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+    "bytes": 885098,
+    "mode": "0o600"
+  },
+  "privateBaselineProvenance": {
+    "path": "artifacts/replay/runtime-resource-v2/baseline-comparison.json",
+    "sha256": "3cd94942aa1c6289e8edca8be61599b2ce8d46cab6ac32aa998a78abe46d23fa",
+    "bytes": 588,
+    "mode": "0o600"
+  },
+  "runs": [
+    {
+      "id": "local",
+      "expectedOutcome": "Local",
+      "fixture": {
+        "path": "artifacts/replay/neue-aufnahme.wav",
+        "sha256": "9a108246c7b1196e8203ee22ebacabe7927d18f7a37a5f2e7647437db7df069c",
+        "bytes": 262222,
+        "mode": "0o600",
+        "frames": 131072,
+        "sampleRate": 16000,
+        "channels": 1
+      },
+      "reference": {
+        "path": "artifacts/replay/neue-aufnahme-baseline.txt",
+        "sha256": "6e0700c02c1f08629895d05206fbeeb924afaea30fa6d3e49e3356136622cc67",
+        "bytes": 56,
+        "mode": "0o600"
+      },
+      "command": [
+        "target/release/examples/paced_runtime_probe",
+        "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "reference",
+        "artifacts/replay/neue-aufnahme.wav",
+        "de",
+        "tests/fixtures/corpus/paced-runtime-tc-parameters-v1.json",
+        "artifacts/paced-runtime-tc/smoke-v1/local-results.json",
+        "1",
+        "artifacts/replay/neue-aufnahme-baseline.txt"
+      ],
+      "log": "artifacts/paced-runtime-tc/smoke-v1/local.command.log",
+      "expectedRows": 2,
+      "warmupRows": 1,
+      "measuredRows": 1
+    },
+    {
+      "id": "empty",
+      "expectedOutcome": "Empty",
+      "fixture": {
+        "path": "artifacts/corpus/audio/calibration-de-zero-5s.wav",
+        "sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec",
+        "bytes": 160044,
+        "mode": "0o600",
+        "frames": 80000,
+        "sampleRate": 16000,
+        "channels": 1
+      },
+      "reference": null,
+      "command": [
+        "target/release/examples/paced_runtime_probe",
+        "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "reference",
+        "artifacts/corpus/audio/calibration-de-zero-5s.wav",
+        "de",
+        "tests/fixtures/corpus/paced-runtime-tc-parameters-v1.json",
+        "artifacts/paced-runtime-tc/smoke-v1/empty-results.json",
+        "1",
+        "--expect-empty"
+      ],
+      "log": "artifacts/paced-runtime-tc/smoke-v1/empty.command.log",
+      "expectedRows": 2,
+      "warmupRows": 1,
+      "measuredRows": 1
+    }
+  ],
+  "completion": "artifacts/paced-runtime-tc/smoke-v1/completion.json",
+  "environment": {
+    "EVERLAST_BENCHMARK_REVISION": "80261d31aedcecd58e3cc3e1a95735c98e56259e"
+  },
+  "host": {
+    "os": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+    "cpu": "Apple M5",
+    "memoryBytes": 34359738368,
+    "powerSource": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23461987)\t82%; AC attached; not charging present: true\n"
+  },
+  "policy": {
+    "serial": true,
+    "noConcurrentBuildTestsModelsOrAgentWork": true,
+    "retainFailures": true,
+    "retryUnchanged": false,
+    "failedFirstMakesFollowingUnavailable": true
+  },
+  "runtimeParameterDeltaFromPriorSmoke": {},
+  "changedSetup": "owned TC publisher and SID-bound Stop entry; same decoder, frames, relative sleep, spin and jitter budget; policy snapshot errors/mismatch invalidate row",
+  "limits": [
+    "Two explicit smoke cases only; no6case L, tenrun RTF distribution or general P05/P06 qualification.",
+    "Local expected text is prior private ASR repeatability baseline, not independent transcript truth.",
+    "Synthetic zero input is not natural room noise.",
+    "Empty must retain t_text/L/stopToText asnull and have separate t_terminal; Engine-RTF covers actual Enginecall.",
+    "No bundle rebuild, microphone, hotkey or native paste.",
+    "Point-in-time sequential policy/CPU observations are not continuous RT or per-period CPU-budget proof.",
+    "Actual processId in metadata must match the launched runtime child, not an observer PID."
+  ]
+}
