@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "kind": "published-reference-diagnostic",
+  "sourceRevision": "c6cb312",
+  "parameterSha256": "aacbe6cc61d9077966b91dbd3fafcafd2357dc53373ca7b3a9829e85677fbde3",
+  "qualified": false,
+  "L": null,
+  "runs": [
+    {
+      "model": {
+        "id": "large-v3-turbo-q5_0",
+        "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+      },
+      "caseCount": 90,
+      "inferenceExitCode": 0,
+      "evaluationExitCode": 0,
+      "groups": [
+        {
+          "split": "acceptance",
+          "language": "de",
+          "class": "challenging",
+          "caseCount": 8,
+          "scoredCount": 6,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 2,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 559,
+          "refWords": 559,
+          "edits": 279,
+          "complete": true,
+          "observedWer": 0.4991055456171735,
+          "wer": 0.4991055456171735
+        },
+        {
+          "split": "acceptance",
+          "language": "de",
+          "class": "clean",
+          "caseCount": 43,
+          "scoredCount": 43,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 915,
+          "refWords": 915,
+          "edits": 46,
+          "complete": true,
+          "observedWer": 0.05027322404371585,
+          "wer": 0.05027322404371585
+        },
+        {
+          "split": "acceptance",
+          "language": "en",
+          "class": "challenging",
+          "caseCount": 7,
+          "scoredCount": 5,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 2,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 99,
+          "refWords": 99,
+          "edits": 5,
+          "complete": true,
+          "observedWer": 0.050505050505050504,
+          "wer": 0.050505050505050504
+        },
+        {
+          "split": "acceptance",
+          "language": "en",
+          "class": "clean",
+          "caseCount": 32,
+          "scoredCount": 32,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 734,
+          "refWords": 734,
+          "edits": 32,
+          "complete": true,
+          "observedWer": 0.043596730245231606,
+          "wer": 0.043596730245231606
+        }
+      ],
+      "constructedMaximumCase": {
+        "id": "constructed-de-masked-300s",
+        "split": "acceptance",
+        "language": "de",
+        "class": "challenging",
+        "status": "ok",
+        "edits": 274,
+        "refWords": 463,
+        "hypWords": 343,
+        "wer": 0.591792656587473,
+        "unwantedText": false
+      },
+      "cleanWerThresholdMetByLanguage": {
+        "de": true,
+        "en": true
+      },
+      "diagnosticQ": 0.04693497714447373,
+      "loadMillis": 1240,
+      "cleanupMillis": 4,
+      "loadError": null,
+      "serviceError": null,
+      "cleanupError": null
+    },
+    {
+      "model": {
+        "id": "small-q5_1",
+        "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb"
+      },
+      "caseCount": 90,
+      "inferenceExitCode": 0,
+      "evaluationExitCode": 0,
+      "groups": [
+        {
+          "split": "acceptance",
+          "language": "de",
+          "class": "challenging",
+          "caseCount": 8,
+          "scoredCount": 6,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 2,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 559,
+          "refWords": 559,
+          "edits": 347,
+          "complete": true,
+          "observedWer": 0.6207513416815742,
+          "wer": 0.6207513416815742
+        },
+        {
+          "split": "acceptance",
+          "language": "de",
+          "class": "clean",
+          "caseCount": 43,
+          "scoredCount": 43,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 915,
+          "refWords": 915,
+          "edits": 96,
+          "complete": true,
+          "observedWer": 0.10491803278688525,
+          "wer": 0.10491803278688525
+        },
+        {
+          "split": "acceptance",
+          "language": "en",
+          "class": "challenging",
+          "caseCount": 7,
+          "scoredCount": 5,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 2,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 99,
+          "refWords": 99,
+          "edits": 9,
+          "complete": true,
+          "observedWer": 0.09090909090909091,
+          "wer": 0.09090909090909091
+        },
+        {
+          "split": "acceptance",
+          "language": "en",
+          "class": "clean",
+          "caseCount": 32,
+          "scoredCount": 32,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 734,
+          "refWords": 734,
+          "edits": 45,
+          "complete": true,
+          "observedWer": 0.06130790190735695,
+          "wer": 0.06130790190735695
+        }
+      ],
+      "constructedMaximumCase": {
+        "id": "constructed-de-masked-300s",
+        "split": "acceptance",
+        "language": "de",
+        "class": "challenging",
+        "status": "ok",
+        "edits": 336,
+        "refWords": 463,
+        "hypWords": 288,
+        "wer": 0.7257019438444925,
+        "unwantedText": false
+      },
+      "cleanWerThresholdMetByLanguage": {
+        "de": false,
+        "en": true
+      },
+      "diagnosticQ": 0.08311296734712109,
+      "loadMillis": 565,
+      "cleanupMillis": 1,
+      "loadError": null,
+      "serviceError": null,
+      "cleanupError": null
+    }
+  ],
+  "rawFiles": [
+    {
+      "path": "artifacts/acceptance/v1/reference-quality.json",
+      "bytes": 25539,
+      "mode": "0o600",
+      "sha256": "fa1082c7f37562d072f3fbc190ac816d24ea083bee466ac0fd1f15ba7c3ca026"
+    },
+    {
+      "path": "artifacts/acceptance/v1/reference-results.json",
+      "bytes": 21327,
+      "mode": "0o600",
+      "sha256": "539608f755fec41311ef5bda3afc67aa9c9893ff114ad30a7cf180fee8ccf818"
+    },
+    {
+      "path": "artifacts/acceptance/v1/reference-results.json.metadata.json",
+      "bytes": 12256,
+      "mode": "0o600",
+      "sha256": "91bf993769746221e85ba804391e593668102fb0554870eaac1eec8689a4976a"
+    },
+    {
+      "path": "artifacts/acceptance/v1/reference.command.log",
+      "bytes": 0,
+      "mode": "0o600",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/acceptance/v1/reference.quality.log",
+      "bytes": 86,
+      "mode": "0o600",
+      "sha256": "4d238bd90549f73cd2a626978ada9b452ac6da6dc34f5e395aec45881a1df849"
+    },
+    {
+      "path": "artifacts/acceptance/v1/small-quality.json",
+      "bytes": 25861,
+      "mode": "0o600",
+      "sha256": "00c5e9c95821076dce169961502bce3af1c4f5b87333a4337ecaab7b294ace67"
+    },
+    {
+      "path": "artifacts/acceptance/v1/small-results.json",
+      "bytes": 20865,
+      "mode": "0o600",
+      "sha256": "65eda4ee0a416816fd93bffd9c47406bfcf960ecf7672b556c679039ac98f099"
+    },
+    {
+      "path": "artifacts/acceptance/v1/small-results.json.metadata.json",
+      "bytes": 12201,
+      "mode": "0o600",
+      "sha256": "ccbf94ff037aa9b3fafcaa951c50d096333ba39a7f854628d945af08cc8aaf16"
+    },
+    {
+      "path": "artifacts/acceptance/v1/small.command.log",
+      "bytes": 0,
+      "mode": "0o600",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/acceptance/v1/small.quality.log",
+      "bytes": 86,
+      "mode": "0o600",
+      "sha256": "4d238bd90549f73cd2a626978ada9b452ac6da6dc34f5e395aec45881a1df849"
+    }
+  ]
+}
