@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-long-cancel-short-runtime-restart-readback",
+  "qualified": false,
+  "sourceRevision": "66d918aea8b51e37514255f32416a027bfd696c5",
+  "freeze": {
+    "path": "tests/fixtures/corpus/native-runtime-restart-run-v1.json",
+    "sha256": "6fcb68fa2865c10a46060a4f00a90e1f573b502705e2a340f0461d6e86d996e7",
+    "bytes": 6177,
+    "mode": "0o644"
+  },
+  "completion": {
+    "schemaVersion": 1,
+    "startedUtc": "2026-10-17T18:34:36.501721+00:00",
+    "finishedUtc": "2026-10-17T18:35:00.564552+00:00",
+    "pid": 14676,
+    "exitCode": 0,
+    "freezeSha256": "6fcb68fa2865c10a46060a4f00a90e1f573b502705e2a340f0461d6e86d996e7",
+    "command": [
+      "target/release/deps/everlast_dictation-bce8840c43bd9c35",
+      "runtime::tests::restart_contract::native_300s_cancel_admits_short_recording_before_old_decode_finishes",
+      "--ignored",
+      "--exact",
+      "--test-threads=1"
+    ]
+  },
+  "rawFiles": [
+    {
+      "path": "artifacts/runtime-restart/native-v1/command.log",
+      "sha256": "f43ed2ea33aff09df5b34350685a27621b17ef847a694d0ba1dab6bdf7ca8829",
+      "bytes": 230,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/runtime-restart/native-v1/completion.json",
+      "sha256": "307307796079b0cbb2f4e60d64bd18c6bffed7323b1ae9ddd054d7f4999b888f",
+      "bytes": 497,
+      "mode": "0o600"
+    }
+  ],
+  "testResult": {
+    "passed": 1,
+    "failed": 0,
+    "ignored": 0,
+    "harnessElapsedSeconds": 23.71
+  },
+  "verifiedAssertions": {
+    "testsPassed": 1,
+    "longInputFrames": 4800000,
+    "shortInputFrames": 131072,
+    "actualDecoderCalls": 2,
+    "newRecordingBeforeOldRelease": true,
+    "newFinalizingBeforeOldRelease": true,
+    "onlySession2Delivery": true,
+    "oldAndNewDecodeMustSucceed": true,
+    "privateBaselineByteExact": true,
+    "audioAndDecoderOwnersReleased": true,
+    "joined": true
+  },
+  "limits": [
+    "One native long plus one short decode, no warmup or repeated timing comparison.",
+    "Barrier is before the actual inner decode; no kernel interruption or claimed mid-kernel arrival.",
+    "Model initialized by test thread before move to serial worker; not production initialization-thread qualification.",
+    "Controlled audio/native boundaries, no capture/DSP timing, microphone, recipient, RSS or text-quality qualification.",
+    "Private short fixture baseline proves repeatability only; long content intentionally not asserted."
+  ],
+  "p05Qualified": false,
+  "L": null
+}
