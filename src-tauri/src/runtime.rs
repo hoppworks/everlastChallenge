@@ -2191,4 +2191,6 @@ mod tests {
     -> Result<(), Box<dyn std::error::Error>> {
         panic_cleanup_contract(Some(true))
     }
+    mod maximum_contract;
+    mod restart_contract;
 }
