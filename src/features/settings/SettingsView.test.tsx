@@ -24,6 +24,11 @@ function props(): SettingsViewProps {
       needsRestart: false,
       recoveryRequired: false,
       languages: ["german"],
+      keyLabels: "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((key) => ({
+        key: key as SettingsViewProps["preferences"]["keyLabels"][number]["key"],
+        plain: key,
+        command: key,
+      })),
     },
     setup: {
       phase: "Ready",
@@ -248,4 +253,43 @@ test("explains a normalized ambiguous microphone without offering it for selecti
       .getByRole("option", { name: "USB Mikrofon (nicht eindeutig)" })
       .matches(":disabled"),
   ).toBe(true);
+});
+
+test("layout labels change while option values and the unsaved physical selection stay fixed", () => {
+  const p = props();
+  p.preferences.keyLabels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    .split("")
+    .map((key) => ({
+      key: key as SettingsViewProps["preferences"]["keyLabels"][number]["key"],
+      plain: key === "D" ? "E" : key,
+      command: key,
+    }));
+  const view = render(<SettingsView {...p} />);
+  const select = screen.getByLabelText(
+    "Physische Taste (US-Position)",
+  ) as HTMLSelectElement;
+  expect(select.value).toBe("D");
+  expect(
+    screen.getByRole("option", { name: "E (US-Position D)" }),
+  ).toBeTruthy();
+  fireEvent.click(screen.getByLabelText("Command"));
+  expect(
+    screen.getByRole("option", { name: "D (US-Position D)" }),
+  ).toBeTruthy();
+  p.preferences = {
+    ...p.preferences,
+    keyLabels: p.preferences.keyLabels.map((entry) => ({
+      ...entry,
+      command: entry.key === "D" ? "X" : entry.command,
+    })),
+  };
+  view.rerender(<SettingsView {...p} />);
+  expect(select.value).toBe("D");
+  expect(
+    screen.getByRole("option", { name: "X (US-Position D)" }),
+  ).toBeTruthy();
+  expect((screen.getByLabelText("Command") as HTMLInputElement).checked).toBe(
+    true,
+  );
+  expect(p.onSave).not.toHaveBeenCalled();
 });

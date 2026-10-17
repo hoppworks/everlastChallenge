@@ -2,13 +2,23 @@
 use everlast_dictation::{desktop::Desktop, ipc};
 use macos_integration::{
     glass_header::GlassHeader,
+    keyboard::LayoutObserver,
     power::{PowerEvent, PowerObserver},
 };
 use tauri::{
-    Manager,
+    Emitter, Manager,
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
 };
+fn refresh_hotkey_labels(desktop: &Desktop, app: &tauri::AppHandle) -> Result<(), String> {
+    let labels = macos_integration::keyboard::KeyLabels::read_current()
+        .map_err(|error| error.to_string())?;
+    if let Some(snapshot) = desktop.update_hotkey_labels(labels)? {
+        app.emit(everlast_dictation::desktop::SNAPSHOT_EVENT, snapshot)
+            .map_err(|error| error.to_string())?;
+    }
+    Ok(())
+}
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
@@ -65,6 +75,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             tauri::WindowEvent::Focused(true) => {
                 if let Some(desktop) = window.app_handle().try_state::<Desktop>() {
                     desktop.refresh_permissions();
+                    if let Err(error) = refresh_hotkey_labels(&desktop, window.app_handle()) {
+                        eprintln!("Keyboard label refresh failed: {error}");
+                    }
                 }
             }
             _ => {}
@@ -99,9 +112,19 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             eprintln!("Power transition failed: {error}");
         }
     })?;
+    let label_desktop = native_desktop.clone();
+    let label_app = app.handle().clone();
+    let mut layout = LayoutObserver::new(move || {
+        if let Err(error) = refresh_hotkey_labels(&label_desktop, &label_app) {
+            eprintln!("Keyboard label refresh failed: {error}");
+        }
+    })?;
+    // Subscribe before the initial read, closing the startup notification gap.
+    refresh_hotkey_labels(&native_desktop, app.handle())?;
     window.show()?;
     app.run(move |app, event| {
         if let tauri::RunEvent::Exit = event {
+            layout.remove();
             power.remove();
             if let Some(mut attachment) = header.take()
                 && let Err(error) = attachment.detach()

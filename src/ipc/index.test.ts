@@ -45,6 +45,11 @@ function snapshot(): Snapshot {
       needsRestart: false,
       recoveryRequired: false,
       languages: ["german"],
+      keyLabels: "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((key) => ({
+        key: key as Snapshot["preferences"]["keyLabels"][number]["key"],
+        plain: key,
+        command: key,
+      })),
     },
     error: null,
     setup: {
@@ -507,3 +512,41 @@ test("accepts explicit startup recovery state and its dedicated reset command", 
   await command("settings_reset");
   expect(native.invoke).toHaveBeenCalledWith("settings_reset");
 });
+
+test("accepts all physical layout labels but rejects incomplete or duplicated choices", () => {
+  const value = snapshot();
+  expect(decodeSnapshot(value).preferences.keyLabels).toHaveLength(26);
+  expect(() =>
+    decodeSnapshot({
+      ...value,
+      preferences: {
+        ...value.preferences,
+        keyLabels: value.preferences.keyLabels.slice(1),
+      },
+    }),
+  ).toThrow("Ungültiger Anwendungsstatus");
+  const duplicate = [...value.preferences.keyLabels];
+  duplicate[25] = { key: "A", plain: "A", command: "A" };
+  expect(() =>
+    decodeSnapshot({
+      ...value,
+      preferences: { ...value.preferences, keyLabels: duplicate },
+    }),
+  ).toThrow("Ungültiger Anwendungsstatus");
+});
+
+test.each(["", "x".repeat(129), "bad\nlabel"])(
+  "rejects invalid native key labels %j",
+  (plain) => {
+    const value = snapshot();
+    const keyLabels = value.preferences.keyLabels.map((entry) =>
+      entry.key === "D" ? { ...entry, plain } : entry,
+    );
+    expect(() =>
+      decodeSnapshot({
+        ...value,
+        preferences: { ...value.preferences, keyLabels },
+      }),
+    ).toThrow("Ungültiger Anwendungsstatus");
+  },
+);

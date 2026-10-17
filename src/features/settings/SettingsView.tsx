@@ -183,9 +183,21 @@ export function SettingsView(props: SettingsViewProps) {
                 })
               }
             >
-              {keys.map((key) => (
-                <option key={key}>{key}</option>
-              ))}
+              {keys.map((key) => {
+                const entry = preferences.keyLabels.find(
+                  (entry) => entry.key === key,
+                );
+                const label = entry
+                  ? draft.hotkey.command
+                    ? entry.command
+                    : entry.plain
+                  : "Layout unbekannt";
+                return (
+                  <option key={key} value={key}>
+                    {label} (US-Position {key})
+                  </option>
+                );
+              })}
             </select>
           </label>
           <div className="settings-modifiers">
@@ -206,8 +218,8 @@ export function SettingsView(props: SettingsViewProps) {
             ))}
           </div>
           <p id="physical-key-help" className="settings-help">
-            Die Taste wird über ihre Position auf einer US-Tastatur erkannt. Auf
-            anderen Tastaturlayouts kann sie anders beschriftet sein.
+            Die Beschriftung folgt dem aktiven Layout. Gespeichert bleibt die
+            physische US-Position; ein Layoutwechsel ändert das Kürzel nicht.
           </p>
           {!valid && (
             <p role="alert">

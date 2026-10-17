@@ -68,10 +68,26 @@ function preferences(value: unknown): boolean {
       "needsRestart",
       "recoveryRequired",
       "languages",
+      "keyLabels",
     ])
   )
     return false;
   return (
+    Array.isArray(value.keyLabels) &&
+    value.keyLabels.length === 26 &&
+    value.keyLabels.every(
+      (entry, index) =>
+        object(entry, ["key", "plain", "command"]) &&
+        entry.key === "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[index] &&
+        text(entry.plain, 128) &&
+        entry.plain.length > 0 &&
+        text(entry.command, 128) &&
+        entry.command.length > 0 &&
+        Array.from(entry.plain + entry.command).every((character) => {
+          const code = character.charCodeAt(0);
+          return code >= 32 && (code < 127 || code > 159);
+        }),
+    ) &&
     draft(value.current) &&
     Array.isArray(value.devices) &&
     value.devices.length <= 128 &&

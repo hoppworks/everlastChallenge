@@ -34,6 +34,7 @@ struct Shared {
     settings: Settings,
     action_error: Option<String>,
     settings_requests: u32,
+    key_labels: macos_integration::keyboard::KeyLabels,
     preferences: PreferenceState,
 }
 #[derive(Default)]
@@ -112,6 +113,7 @@ impl Desktop {
                 settings: Settings::default(),
                 action_error: None,
                 settings_requests: 0,
+                key_labels: Default::default(),
                 preferences: PreferenceState::default(),
             }),
             closing: AtomicBool::new(false),
@@ -199,6 +201,42 @@ impl Desktop {
         if let Err(error) = result {
             self.action_error(error);
         }
+    }
+    /// Install one complete native layout snapshot, independent of the selected
+    /// settings key. Callers publish the returned revision via SNAPSHOT_EVENT.
+    /// Both selection and labels are projected under the same lock, so a layout
+    /// refresh cannot restore an older hotkey. No native work occurs under lock.
+    pub fn update_hotkey_labels(
+        &self,
+        labels: macos_integration::keyboard::KeyLabels,
+    ) -> Result<Option<view::Snapshot>, String> {
+        if self.0.closing.load(Ordering::Acquire) {
+            return Ok(None);
+        }
+        let mut shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+        if self.0.closing.load(Ordering::Acquire) {
+            return Ok(None);
+        }
+        shared.key_labels = labels;
+        let current = draft_of(&shared.settings);
+        let hotkey = crate::hotkey_labels::shortcut(&shared.settings.hotkey, &shared.key_labels);
+        let choices = crate::hotkey_labels::options(&shared.key_labels);
+        if hotkey == shared.view.labels.hotkey
+            && choices == shared.view.preferences.key_labels
+            && current == shared.view.preferences.current
+        {
+            return Ok(None);
+        }
+        let revision = shared
+            .view
+            .revision
+            .checked_add(1)
+            .ok_or("Snapshot revision exhausted")?;
+        shared.view.preferences.current = current;
+        shared.view.labels.hotkey = hotkey;
+        shared.view.preferences.key_labels = choices;
+        shared.view.revision = revision;
+        Ok(Some(shared.view.clone()))
     }
     pub fn refresh_permissions(&self) {
         self.0.refresh.store(true, Ordering::Release);
@@ -931,8 +969,11 @@ impl Desktop {
                 if let Some(native) = native {
                     next.permissions = permissions(native);
                 }
+                next.labels.hotkey =
+                    crate::hotkey_labels::shortcut(&shared.settings.hotkey, &shared.key_labels);
                 next.settings_request = shared.settings_requests;
                 next.preferences = view::Preferences {
+                    key_labels: crate::hotkey_labels::options(&shared.key_labels),
                     current: draft_of(&shared.settings),
                     devices: shared.preferences.devices.clone(),
                     error: shared.preferences.error.clone(),
@@ -1129,11 +1170,12 @@ fn initial() -> view::Snapshot {
         labels: view::Labels {
             device: "Standardmikrofon".into(),
             language: "Deutsch".into(),
-            hotkey: "⌥D (physisch)".into(),
+            hotkey: crate::hotkey_labels::shortcut(&settings.hotkey, &Default::default()),
         },
         settings_busy: true,
         settings_request: 0,
         preferences: view::Preferences {
+            key_labels: crate::hotkey_labels::options(&Default::default()),
             current: draft_of(&settings),
             devices: Vec::new(),
             error: None,
@@ -1212,15 +1254,7 @@ fn project(
         crate::settings::SettingsLanguage::English => "English",
     }
     .into();
-    let key = &settings.hotkey;
-    result.labels.hotkey = format!(
-        "{}{}{}{}{:?} (physisch)",
-        if key.control { "⌃" } else { "" },
-        if key.option { "⌥" } else { "" },
-        if key.shift { "⇧" } else { "" },
-        if key.command { "⌘" } else { "" },
-        key.key
-    );
+    result.labels.hotkey = crate::hotkey_labels::shortcut(&settings.hotkey, &Default::default());
     if let Some(runtime) = runtime {
         result.session.phase = match runtime.session.phase {
             Phase::Idle => view::SessionPhase::Idle,
@@ -1277,6 +1311,7 @@ mod tests {
                 settings: Settings::default(),
                 action_error: None,
                 settings_requests: 0,
+                key_labels: Default::default(),
                 preferences: PreferenceState::default(),
             }),
             closing: AtomicBool::new(false),
@@ -2025,6 +2060,48 @@ mod tests {
         desktop.shutdown();
         assert!(owner.client().snapshot()?.closing);
         owner.join()?;
+        Ok(())
+    }
+    #[test]
+    fn layout_refresh_updates_snapshot_without_restoring_a_previous_selected_key()
+    -> Result<(), String> {
+        let desktop = unstarted_desktop();
+        let initial = desktop.snapshot()?;
+        let labels = macos_integration::keyboard::KeyLabels::from_translator(|code, command| {
+            Ok(match (code, command) {
+                (0x02, false) => "E",
+                (0x02, true) => "D",
+                (0x28, _) => "T",
+                _ => "X",
+            }
+            .into())
+        });
+        let changed = desktop
+            .update_hotkey_labels(labels.clone())?
+            .ok_or("missing update")?;
+        assert!(changed.revision > initial.revision);
+        assert_eq!(changed.labels.hotkey, "⌥E");
+        assert_eq!(changed.preferences.key_labels.len(), 26);
+        assert!(desktop.update_hotkey_labels(labels.clone())?.is_none());
+        // A settings commit can occur before a later layout refresh. The full
+        // table carries no selected key; projection must use the current choice.
+        {
+            let mut shared = desktop.0.shared.lock().map_err(|_| "lock failed")?;
+            shared.settings.hotkey.key = crate::settings::PhysicalKey::K;
+            shared.settings.hotkey.command = true;
+        }
+        desktop.update_hotkey_labels(labels)?;
+        assert_eq!(desktop.snapshot()?.labels.hotkey, "⌥⌘T");
+        assert_eq!(
+            desktop.snapshot()?.preferences.current.hotkey.key,
+            crate::settings::PhysicalKey::K
+        );
+        let fallback = desktop
+            .update_hotkey_labels(Default::default())?
+            .ok_or("missing fallback")?;
+        assert_eq!(fallback.labels.hotkey, "⌥⌘[physisch K; Layout unbekannt]");
+        desktop.shutdown();
+        assert!(desktop.update_hotkey_labels(Default::default())?.is_none());
         Ok(())
     }
 }

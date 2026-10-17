@@ -85,8 +85,16 @@ pub struct Labels {
     pub hotkey: String,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(deny_unknown_fields)]
+pub struct KeyLabel {
+    pub key: crate::settings::PhysicalKey,
+    pub plain: String,
+    pub command: String,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Preferences {
+    pub key_labels: Vec<KeyLabel>,
     pub current: crate::preferences::SettingsDraft,
     pub devices: Vec<crate::devices::InputDevice>,
     pub error: Option<String>,

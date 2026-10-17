@@ -42,6 +42,11 @@ function snapshot(): Snapshot {
       needsRestart: false,
       recoveryRequired: false,
       languages: ["german"],
+      keyLabels: "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((key) => ({
+        key: key as Snapshot["preferences"]["keyLabels"][number]["key"],
+        plain: key,
+        command: key,
+      })),
     },
     error: null,
     setup: {
