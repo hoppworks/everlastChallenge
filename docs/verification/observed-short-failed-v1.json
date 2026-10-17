@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "kind": "failed-first-native-observation",
+  "qualified": false,
+  "L": null,
+  "parameterSha256": "bd6b12d418539ed5a4161597d4756a439826dc01925e1649dc2a8d104d946187",
+  "completion": {
+    "startUtc": "2026-10-17T16:37:17.735388+00:00",
+    "parameterSha256": "bd6b12d418539ed5a4161597d4756a439826dc01925e1649dc2a8d104d946187",
+    "pid": 96789,
+    "inferenceExit": 1,
+    "inferenceEndUtc": "2026-10-17T16:37:21.728907+00:00",
+    "evaluationExit": 2,
+    "endUtc": "2026-10-17T16:37:21.784246+00:00"
+  },
+  "cases": [
+    {
+      "id": "diagnostic-de1662-original",
+      "status": "failed",
+      "error": "Invalid or oversized native transcription observation",
+      "observationAvailable": false
+    },
+    {
+      "id": "diagnostic-de1662-weak-mask-isolated",
+      "status": "failed",
+      "error": "Invalid or oversized native transcription observation",
+      "observationAvailable": false
+    }
+  ],
+  "sourceRevision": "0959b2fbd774ed969c9c7a403e1ef06676ad5ea1",
+  "sourceHashMetadata": {
+    "probeSourceSha256": "a04086958353cf88f665e55a15d7e97dc8755c1cf8c4969fd287219b798458cd",
+    "engineSourceSha256": "65a7c8efe67e5a150c4ee2cb667e542b558d60a754a5002cc541a5816517e016",
+    "observationSourceSha256": "c1cba50e48bde7422455ec53110496f040914ea42099316b8e7aedde6d3dbfb5"
+  },
+  "failures": [
+    "Both calls rejected observation due to metadata or a segment/text bound; old generic error did not distinguish the reason or retain values/counts. No native cause or actual segments inferred.",
+    "WER evaluator rejected diagnostic enriched result schema; no valid quality report exists."
+  ],
+  "rawFiles": [
+    {
+      "path": "artifacts/diagnostic-speech/observed-short-v1/command.log",
+      "sha256": "d81fe859ce83114df8db6c9949e840f55a0e10ca16a65e980e0ff14ccec9d06b",
+      "bytes": 111,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-short-v1/completion.json",
+      "sha256": "cf3085189d0abd567ef0bb6bfe310821992f8046c58bf050edfc6b1faf7b0117",
+      "bytes": 308,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-short-v1/manifest.json",
+      "sha256": "0007353d221d0b9b3e097063435d3b9df300a72ee94429c220be176169347f16",
+      "bytes": 2243,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-short-v1/quality.log",
+      "sha256": "2cc0d715c4b9ace102855f9a0e57cf3305b0b05d150edc50b6fd6aa3f90c464f",
+      "bytes": 51,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-short-v1/results.json",
+      "sha256": "a033a1177d17dd610fc197dec9d635ac28751b7d72a294268d2710079cd35753",
+      "bytes": 428,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/observed-short-v1/results.json.metadata.json",
+      "sha256": "099e032d8d2ea91eb29a21e2be28b3f48d16323fd2048ba72434ae2e79c1fac0",
+      "bytes": 1350,
+      "mode": "0o600"
+    }
+  ]
+}

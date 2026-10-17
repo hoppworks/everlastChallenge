@@ -48,6 +48,16 @@ pub enum InferenceError {
     #[cfg(feature = "measurement")]
     #[error("Invalid or oversized native transcription observation")]
     Observation,
+    #[cfg(feature = "measurement")]
+    #[error(
+        "Invalid native observation metadata: index={index}, start={start}, end={end}, probability={probability}"
+    )]
+    ObservationMetadata {
+        index: i32,
+        start: i64,
+        end: i64,
+        probability: f32,
+    },
     #[error("Insufficient memory for bounded inference buffers")]
     Memory,
 }
@@ -462,7 +472,10 @@ mod tests {
                 Ok(String::new())
             },
         );
-        assert!(matches!(result, Err(InferenceError::Observation)));
+        assert!(matches!(
+            result,
+            Err(InferenceError::ObservationMetadata { .. })
+        ));
         let mut failed_gate = SpeechGate::from_detector(FailedDetector);
         let result = transcribe_using(
             &[0.01; 3200],

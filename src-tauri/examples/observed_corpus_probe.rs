@@ -105,7 +105,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
         "manifestSha256":input::digest(&bytes),
         "model":{"id":definition.id(),"sha256":definition.sha256()},
-        "loadMillis":load_millis,"failed":failed,"L":null,
+        "loadMillis":load_millis,"failed":failed,"L":null,"cases":rows,
         "probeSourceSha256":input::digest(include_bytes!("observed_corpus_probe.rs")),
         "engineSourceSha256":input::digest(include_bytes!("../src/transcription.rs")),
         "observationSourceSha256":input::digest(include_bytes!("../src/transcription/observation.rs")),
@@ -119,7 +119,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
     input::write_reports(
         Path::new(&args[3]),
-        &serde_json::to_vec_pretty(&rows)?,
+        &serde_json::to_vec_pretty(&quality_rows(&rows))?,
         &serde_json::to_vec_pretty(&metadata)?,
     )?;
     println!("observed corpus: {} cases, failures={failed}", rows.len());
@@ -127,4 +127,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Err("native observation recorded failures; inspect private exports".into());
     }
     Ok(())
+}
+
+fn quality_rows(rows: &[Value]) -> Vec<Value> {
+    rows.iter()
+        .map(|row| json!({"id":row["id"],"status":row["status"],"text":row["text"]}))
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn quality_export_keeps_exact_three_field_contract_and_failure_status() {
+        let rows = vec![
+            json!({"id":"ok","status":"ok","text":" Kept. ","error":null,"observation":{"segments":[]}}),
+            json!({"id":"failed","status":"failed","text":null,"error":"invalid native metadata","observation":null}),
+        ];
+        assert_eq!(
+            quality_rows(&rows),
+            vec![
+                json!({"id":"ok","status":"ok","text":" Kept. "}),
+                json!({"id":"failed","status":"failed","text":null}),
+            ]
+        );
+        assert_eq!(rows[1]["error"], "invalid native metadata");
+    }
 }

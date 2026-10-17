@@ -44,16 +44,22 @@ impl Observation {
             .text_bytes
             .checked_add(text.len())
             .ok_or(InferenceError::Observation)?;
-        if self.segments.len() >= MAX_SEGMENTS
-            || bytes > MAX_TEXT_BYTES
-            || index < 0
+        if self.segments.len() >= MAX_SEGMENTS || bytes > MAX_TEXT_BYTES {
+            return Err(InferenceError::Observation);
+        }
+        if index < 0
             || index as usize != self.segments.len()
             || start < 0
             || end < start
             || !probability.is_finite()
             || !(0.0..=1.0).contains(&probability)
         {
-            return Err(InferenceError::Observation);
+            return Err(InferenceError::ObservationMetadata {
+                index,
+                start,
+                end,
+                probability,
+            });
         }
         self.segments
             .try_reserve(1)
@@ -148,7 +154,7 @@ mod tests {
             let mut observation = Observation::default();
             assert!(matches!(
                 observation.record(index, start, end, probability, "bad"),
-                Err(InferenceError::Observation)
+                Err(InferenceError::ObservationMetadata { .. })
             ));
             assert!(observation.segments.is_empty());
             observation.record(0, 0, 1, 0.5, "valid after rejected record")?;
@@ -179,6 +185,36 @@ mod tests {
         ));
         assert_eq!(bytes.segments.len(), 1);
         assert_eq!(bytes.segments[0].text, full);
+        Ok(())
+    }
+    #[test]
+    fn invalid_native_metadata_retains_actual_numbers_without_segment_text()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let mut observation = Observation::default();
+        let result = observation.record(0, -17, 2346, 0.125, "private text must not escape");
+        let display = result.as_ref().err().ok_or("expected failure")?.to_string();
+        assert!(display.contains("index=0, start=-17, end=2346, probability=0.125"));
+        assert!(!display.contains("private text"));
+        match result {
+            Err(InferenceError::ObservationMetadata {
+                index,
+                start,
+                end,
+                probability,
+            }) => {
+                assert_eq!(index, 0);
+                assert_eq!(start, -17);
+                assert_eq!(end, 2346);
+                assert_eq!(probability, 0.125);
+            }
+            other => {
+                return Err(format!("expected typed native metadata error, got {other:?}").into());
+            }
+        }
+        let result = observation.record(0, 0, 1, f32::NAN, "private text");
+        assert!(
+            matches!(result, Err(InferenceError::ObservationMetadata { index: 0, start: 0, end: 1, probability }) if probability.is_nan())
+        );
         Ok(())
     }
 }

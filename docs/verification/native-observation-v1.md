@@ -44,3 +44,10 @@ Fehlalarm auf zusammengeschriebene Protokollprosa wurde durch lesbare Formulieru
 beseitigt, keine Regel ausgenommen. Unabhängiger kombinierter Review ohne
 Befunde; gemeinsame Parameter einschließlich full()-Aufruf unverändert.
 Eine tatsächliche Modellbeobachtung ist damit noch nicht durchgeführt.
+
+Der erste tatsächliche Lauf scheiterte an einer nicht weiter differenzierten
+Beobachtungsablehnung und einem inkompatiblen Ergebnisexport. Der Fehlerbericht
+bleibt separat erhalten. Anschließend typisierte numerische Metadatenfehler
+hinzugefügt, ohne Grenzen/Validatoren zu lockern; kompatible Dreifeldresultate
+und vollständige Sidecar-Diagnose getrennt. Tatsächliches RED→GREEN, 15 Engine-
+und sechs Beispieltests, strikte integrierte Prüfungen und unabhängiger Review.
