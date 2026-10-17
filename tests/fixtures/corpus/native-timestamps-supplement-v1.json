@@ -1,0 +1,267 @@
+{
+  "schemaVersion": 1,
+  "unicodeVersion": "13.0.0",
+  "purpose": "unchanged supplemental short/A22/30-second cases for fixed native-timestamp reference candidate; separate from original acceptance groups",
+  "sourceManifests": [
+    {
+      "path": "tests/fixtures/corpus/synthetic-speech-diagnostic-v1.json",
+      "sha256": "9ece2985b5e2bf46199f0187341ec0ee75d737cbca6f847c1b56f1808db9141b",
+      "bytes": 3294
+    },
+    {
+      "path": "tests/fixtures/corpus/thirty-second-v1.json",
+      "sha256": "93874aa60fcc63e625f3310a7e5602a7aaa057c7586386e803ac4a5205d12dc4",
+      "bytes": 7209
+    }
+  ],
+  "cases": [
+    {
+      "id": "synthetic-de-ja",
+      "language": "de",
+      "class": "clean",
+      "split": "calibration",
+      "reference": "Ja.",
+      "audio": {
+        "path": "artifacts/diagnostic-speech/v1/ja.wav",
+        "sha256": "9d9878f659184ad2e8d7578239ce07da9e42f233e850359dfcb5eaeb9e09facd",
+        "frames": 7382,
+        "sampleRate": 16000
+      },
+      "tags": [
+        "synthetic",
+        "speech-synthesis",
+        "not-human-recording",
+        "supplemental-diagnostic"
+      ],
+      "source": {
+        "generator": "/usr/bin/say",
+        "voice": "Anna (German (Germany))",
+        "rateWordsPerMinute": 180,
+        "command": [
+          "/usr/bin/say",
+          "-v",
+          "Anna (German (Germany))",
+          "-r",
+          "180",
+          "--file-format=WAVE",
+          "--data-format=LEI16@16000",
+          "-o",
+          "artifacts/diagnostic-speech/v1/ja.wav",
+          "Ja."
+        ]
+      }
+    },
+    {
+      "id": "synthetic-de-nein",
+      "language": "de",
+      "class": "clean",
+      "split": "calibration",
+      "reference": "Nein.",
+      "audio": {
+        "path": "artifacts/diagnostic-speech/v1/nein.wav",
+        "sha256": "335de366410f8f13615168751a1fcb578aa12e4bbac4fa17b215593a852c3eca",
+        "frames": 9109,
+        "sampleRate": 16000
+      },
+      "tags": [
+        "synthetic",
+        "speech-synthesis",
+        "not-human-recording",
+        "supplemental-diagnostic"
+      ],
+      "source": {
+        "generator": "/usr/bin/say",
+        "voice": "Anna (German (Germany))",
+        "rateWordsPerMinute": 180,
+        "command": [
+          "/usr/bin/say",
+          "-v",
+          "Anna (German (Germany))",
+          "-r",
+          "180",
+          "--file-format=WAVE",
+          "--data-format=LEI16@16000",
+          "-o",
+          "artifacts/diagnostic-speech/v1/nein.wav",
+          "Nein."
+        ]
+      }
+    },
+    {
+      "id": "synthetic-de-thanks",
+      "language": "de",
+      "class": "clean",
+      "split": "calibration",
+      "reference": "Vielen Dank fürs Zuschauen.",
+      "audio": {
+        "path": "artifacts/diagnostic-speech/v1/thanks.wav",
+        "sha256": "70b2cebf90f9a14084184fed47d2c403376c4e29e5ca1c91077ba28da16c5ad8",
+        "frames": 29350,
+        "sampleRate": 16000
+      },
+      "tags": [
+        "synthetic",
+        "speech-synthesis",
+        "not-human-recording",
+        "supplemental-diagnostic"
+      ],
+      "source": {
+        "generator": "/usr/bin/say",
+        "voice": "Anna (German (Germany))",
+        "rateWordsPerMinute": 180,
+        "command": [
+          "/usr/bin/say",
+          "-v",
+          "Anna (German (Germany))",
+          "-r",
+          "180",
+          "--file-format=WAVE",
+          "--data-format=LEI16@16000",
+          "-o",
+          "artifacts/diagnostic-speech/v1/thanks.wav",
+          "Vielen Dank fürs Zuschauen."
+        ]
+      }
+    },
+    {
+      "audio": {
+        "frames": 480000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1732-thirty-second-v1.wav",
+        "sampleRate": 16000,
+        "sha256": "045f4e0c1534e2d4240a10a2dbda1fad22c8ae9ca83809b2cd34e0a2a7510a2e"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1732-thirty-second-v1",
+      "language": "de",
+      "reference": "Die Epoche, in der die Ereignisse stattfanden, wird gemeinhin als Hochmittelalter bezeichnet, ein Zeitalter in der europäischen Geschichte, das sich über das 11., 12. und 13 Jahrhundert erstreckt (1000–1300 n. Chr.).",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "13834375742030049582.wav",
+        "independentListeningVerified": false,
+        "priorConstructedCaseExposure": [],
+        "priorManifestExposure": [],
+        "referenceProvenance": {
+          "columnZeroBased": 2,
+          "method": "publisher-original-raw-text-no-ASR",
+          "sha256": "82fab72c58a347345675c238f2492bb997105a4ab45d69e2a2b34ed29082fa97",
+          "tsv": "de_de-test.tsv"
+        },
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1732,
+        "sha256": "51eb452a100223c490096af6458be03ab7997ffe3ae25ad6109fcd8dd306136d",
+        "sourceFrames": 471360,
+        "sourceSampleRate": 16000,
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "saturate": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "operation": "trailing_zero_padding",
+            "paddingFrames": 8640,
+            "sourceFrames": 471360,
+            "targetFrames": 480000
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "supplemental",
+        "duration-30s",
+        "whole-source",
+        "trailing-zero-padding"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 480000,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1670-thirty-second-v1.wav",
+        "sampleRate": 16000,
+        "sha256": "ce7e66bfe03c6d4ce0a1975f7f399d873de5c412635c68fceb86331726bdcb96"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1670-thirty-second-v1",
+      "language": "en",
+      "reference": "Their thermal behavior is not as steady as large caves on Earth that often maintain a fairly constant temperature, but it is consistent with these being deep holes in the ground,\" said Glen Cushing of the United States Geological Survey (USGS) Astrogeology Team and of Northern Arizona University located in Flagstaff, Arizona.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "2508559905589212221.wav",
+        "independentListeningVerified": false,
+        "priorConstructedCaseExposure": [
+          {
+            "exposureKind": "same-sentence-id-other-language",
+            "filename": "10844590730633377222.wav",
+            "id": "constructed-de-masked-300s",
+            "language": "de",
+            "outputEndFrame": 2618880,
+            "outputStartFrame": 2280960,
+            "sameAudioClip": false,
+            "sentenceId": 1670,
+            "sourceFrames": 337920
+          }
+        ],
+        "priorManifestExposure": [
+          {
+            "id": "fleurs-de-test-1670",
+            "language": "de",
+            "split": "acceptance"
+          },
+          {
+            "id": "fleurs-en-test-1670",
+            "language": "en",
+            "split": "acceptance"
+          }
+        ],
+        "referenceProvenance": {
+          "columnZeroBased": 2,
+          "method": "publisher-original-raw-text-no-ASR",
+          "sha256": "74c046239374deeb60fa63f258f907388093a32bcaa3140965f70ef05c79f7ca",
+          "tsv": "en_us-test.tsv"
+        },
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1670,
+        "sha256": "6dc676eae80109d088233f838226d4164f76befd8aafc772e1a6cb9eaa0d31df",
+        "sourceFrames": 468800,
+        "sourceSampleRate": 16000,
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "saturate": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "operation": "trailing_zero_padding",
+            "paddingFrames": 11200,
+            "sourceFrames": 468800,
+            "targetFrames": 480000
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "supplemental",
+        "duration-30s",
+        "whole-source",
+        "trailing-zero-padding",
+        "reused-reference-not-independent-coverage"
+      ]
+    }
+  ],
+  "limits": [
+    "Synthetic three cases explicitly synthetic, not human recording.",
+    "Both 30-second cases use whole published source plus previously frozen zero padding; references/exposure history retained unchanged.",
+    "Historical thirty-second requiredCoveragePending is retained in its original source; its hearing/natural-monologue assertions are not additional plan gates.",
+    "No repair/reclassification of prior acceptance cases; no new blind or native acceptance."
+  ]
+}
