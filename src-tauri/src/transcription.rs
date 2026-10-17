@@ -7,6 +7,9 @@ use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextPar
 
 mod speech_gate;
 
+#[cfg(feature = "measurement")]
+pub mod observation;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Language {
     German,
@@ -42,6 +45,9 @@ pub enum InferenceError {
     Vad,
     #[error("Voice activity model could not be verified: {0}")]
     VadModel(#[source] ModelError),
+    #[cfg(feature = "measurement")]
+    #[error("Invalid or oversized native transcription observation")]
+    Observation,
     #[error("Insufficient memory for bounded inference buffers")]
     Memory,
 }
@@ -87,10 +93,42 @@ impl Engine {
     ) -> Result<String, InferenceError> {
         let Self { context, gate } = self;
         transcribe_with(samples, language, gate, |input, language| {
-            decode(context, input, language)
+            decode(context, input, language, &mut NoObservation)
         })
     }
+    /// Developer-only accepted-segment observation on the same serial engine path.
+    /// Does not expose encoder windows that produced no accepted segment.
+    #[cfg(feature = "measurement")]
+    pub fn transcribe_observed(
+        &mut self,
+        samples: &[f32],
+        language: Language,
+    ) -> Result<observation::ObservedTranscription, InferenceError> {
+        let Self { context, gate } = self;
+        let mut observation = observation::Observation::default();
+        let text = transcribe_using(
+            samples,
+            language,
+            gate,
+            &mut observation,
+            |input, language, observation| decode(context, input, language, observation),
+        )?;
+        Ok(observation::ObservedTranscription { text, observation })
+    }
 }
+
+trait ObservationSink {
+    fn prepared(&mut self, _: usize, _: Option<std::ops::Range<usize>>, _: usize) {}
+    fn segment(
+        &mut self,
+        _: &whisper_rs::WhisperSegment<'_>,
+        _: &str,
+    ) -> Result<(), InferenceError> {
+        Ok(())
+    }
+}
+struct NoObservation;
+impl ObservationSink for NoObservation {}
 
 fn transcribe_with<D: speech_gate::Detector>(
     samples: &[f32],
@@ -98,16 +136,34 @@ fn transcribe_with<D: speech_gate::Detector>(
     gate: &mut speech_gate::SpeechGate<D>,
     decode: impl FnOnce(&[f32], Language) -> Result<String, InferenceError>,
 ) -> Result<String, InferenceError> {
+    transcribe_using(
+        samples,
+        language,
+        gate,
+        &mut NoObservation,
+        |input, language, _| decode(input, language),
+    )
+}
+
+fn transcribe_using<D: speech_gate::Detector, O: ObservationSink>(
+    samples: &[f32],
+    language: Language,
+    gate: &mut speech_gate::SpeechGate<D>,
+    observation: &mut O,
+    decode: impl FnOnce(&[f32], Language, &mut O) -> Result<String, InferenceError>,
+) -> Result<String, InferenceError> {
     if samples.len() > MAX_SAMPLES || samples.iter().any(|sample| !sample.is_finite()) {
         return Err(InferenceError::InvalidAudio);
     }
     let Some(range) = speech_range(samples, EnergyProfile::default()) else {
+        observation.prepared(samples.len(), None, 0);
         return Ok(String::new());
     };
     if !gate.allows(samples)? {
+        observation.prepared(samples.len(), Some(range), 0);
         return Ok(String::new());
     }
-    let selected = &samples[range];
+    let selected = &samples[range.clone()];
     let mut padded = Vec::new();
     let input = if selected.len() < 16_000 {
         padded
@@ -119,13 +175,15 @@ fn transcribe_with<D: speech_gate::Detector>(
     } else {
         selected
     };
-    decode(input, language)
+    observation.prepared(samples.len(), Some(range), input.len());
+    decode(input, language, observation)
 }
 
-fn decode(
+fn decode<O: ObservationSink>(
     context: &WhisperContext,
     input: &[f32],
     language: Language,
+    observation: &mut O,
 ) -> Result<String, InferenceError> {
     let mut state = context
         .create_state()
@@ -150,11 +208,12 @@ fn decode(
         .map_err(|_| InferenceError::Decode)?;
     let mut text = String::new();
     for segment in state.as_iter() {
-        let segment = segment.to_str().map_err(|_| InferenceError::InvalidText)?;
-        if text.len() + segment.len() > 256 * 1024 {
+        let segment_text = segment.to_str().map_err(|_| InferenceError::InvalidText)?;
+        if text.len() + segment_text.len() > 256 * 1024 {
             return Err(InferenceError::OutputLimit);
         }
-        text.push_str(segment);
+        observation.segment(&segment, segment_text)?;
+        text.push_str(segment_text);
     }
     Ok(text.trim().to_owned())
 }
@@ -307,5 +366,121 @@ mod tests {
         assert_eq!(observed.len(), 32000);
         assert!(observed.iter().all(|v| *v == 0.95));
         Ok(())
+    }
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn observed_and_normal_preparation_feed_identical_original_pcm_and_text()
+    -> Result<(), InferenceError> {
+        let mut samples = vec![0.0; 64000];
+        samples[32000..35200].fill(0.02);
+        let mut normal_pcm = Vec::new();
+        let mut normalized = Vec::new();
+        let scores = vec![0.9; 125];
+        let mut gate = SpeechGate::from_detector(RecordingDetector {
+            scores: &scores,
+            observed: &mut normalized,
+        });
+        let normal = transcribe_with(&samples, Language::English, &mut gate, |input, language| {
+            assert_eq!(language, Language::English);
+            normal_pcm.extend_from_slice(input);
+            Ok("unchanged full text".into())
+        })?;
+        let mut observation = observation::Observation::default();
+        let observed = transcribe_using(
+            &samples,
+            Language::English,
+            &mut gate,
+            &mut observation,
+            |input, language, _| {
+                assert_eq!(language, Language::English);
+                assert_eq!(input, normal_pcm.as_slice());
+                assert_eq!(&input[..8800], &samples[29600..38400]);
+                assert!(input[8800..].iter().all(|x| *x == 0.0));
+                Ok("unchanged full text".into())
+            },
+        )?;
+        assert_eq!(normal, observed);
+        assert_eq!(observation.input_frames, 64000);
+        assert_eq!(observation.selected_range, Some(29600..38400));
+        assert_eq!(observation.selected_frames, 8800);
+        assert_eq!(observation.padded_frames, 7200);
+        assert_eq!(observation.asr_input_frames, 16000);
+        Ok(())
+    }
+
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn observed_gate_rejections_preserve_preparation_but_do_not_claim_asr()
+    -> Result<(), InferenceError> {
+        for (samples, expected_range) in
+            [(vec![0.0; 3200], None), (vec![0.01; 3200], Some(0..3200))]
+        {
+            let mut normalized = Vec::new();
+            let mut gate = SpeechGate::from_detector(RecordingDetector {
+                scores: &[0.0; 7],
+                observed: &mut normalized,
+            });
+            let mut observation = observation::Observation::default();
+            let mut called = false;
+            let result = transcribe_using(
+                &samples,
+                Language::German,
+                &mut gate,
+                &mut observation,
+                |_, _, _| {
+                    called = true;
+                    Ok("must not decode".into())
+                },
+            )?;
+            assert!(!called);
+            assert!(result.is_empty());
+            assert_eq!(observation.input_frames, 3200);
+            assert_eq!(observation.selected_range, expected_range);
+            assert_eq!(observation.asr_input_frames, 0);
+            assert_eq!(observation.padded_frames, 0);
+            assert!(observation.segments.is_empty());
+        }
+        Ok(())
+    }
+
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn observation_and_gate_errors_propagate_instead_of_silence() {
+        let mut normalized = Vec::new();
+        let mut gate = SpeechGate::from_detector(RecordingDetector {
+            scores: &[0.9; 7],
+            observed: &mut normalized,
+        });
+        let mut observation = observation::Observation::default();
+        let result = transcribe_using(
+            &[0.01; 3200],
+            Language::German,
+            &mut gate,
+            &mut observation,
+            |_, _, observation| {
+                observation.record(0, 0, 1, f32::NAN, "invalid native result")?;
+                Ok(String::new())
+            },
+        );
+        assert!(matches!(result, Err(InferenceError::Observation)));
+        let mut failed_gate = SpeechGate::from_detector(FailedDetector);
+        let result = transcribe_using(
+            &[0.01; 3200],
+            Language::German,
+            &mut failed_gate,
+            &mut observation,
+            |_, _, _| Ok(String::new()),
+        );
+        assert!(matches!(result, Err(InferenceError::Vad)));
+        for input in [vec![f32::NAN], vec![0.01; MAX_SAMPLES + 1]] {
+            let result = transcribe_using(
+                &input,
+                Language::German,
+                &mut gate,
+                &mut observation,
+                |_, _, _| Ok(String::new()),
+            );
+            assert!(matches!(result, Err(InferenceError::InvalidAudio)));
+        }
     }
 }

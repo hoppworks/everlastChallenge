@@ -54,3 +54,7 @@ required-features = ["measurement"]
 [[example]]
 name = "paced_reference_probe"
 required-features = ["measurement"]
+
+[[example]]
+name = "observed_corpus_probe"
+required-features = ["measurement"]
