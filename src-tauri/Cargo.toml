@@ -42,3 +42,7 @@ workspace = true
 [[example]]
 name = "paced_audio_probe"
 required-features = ["measurement"]
+
+[[example]]
+name = "paced_runtime_probe"
+required-features = ["measurement"]

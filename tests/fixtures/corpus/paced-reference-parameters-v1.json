@@ -1,0 +1,255 @@
+{
+  "build": {
+    "architecture": "aarch64",
+    "debugAssertions": false
+  },
+  "configurationId": "paced-full-recording-reference-v1",
+  "limits": {
+    "controllerTimestamps": true,
+    "maximumEndpointAcceptancePending": true,
+    "noNativeDelivery": true,
+    "notAggregateL": true,
+    "notFullP05Qualification": true,
+    "notMicrophoneAcceptance": true,
+    "pacedInput": true
+  },
+  "measurement": {
+    "chunkMillis": 20,
+    "clock": "same monotone Instant, offsets relative to actual capture t0",
+    "failurePolicy": "retain every failed or unexecuted run; no partial-sample statistics",
+    "finalSpinNanos": 250000,
+    "inputFormat": "PCM16 mono 16000 Hz decoded to f32",
+    "jitterToleranceNanos": 10000000,
+    "maximumSleepNanos": 1000000,
+    "measuredRuns": "explicit CLI count 1..30",
+    "mode": "paced-complete-recording",
+    "reset": "actor rejects non-idle audio/inference; fresh session data, warm model context",
+    "stopTimestamp": "host entry before controller queue/lock",
+    "textTimestamp": "directly after accepted final nonempty controller text",
+    "variant": "complete-recording-reference; no speculative or audio_ctx optimization",
+    "warmupRuns": 1
+  },
+  "models": [
+    {
+      "id": "large-v3-turbo-q5_0",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+    },
+    {
+      "id": "small-q5_1",
+      "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb"
+    }
+  ],
+  "preprocessing": {
+    "backendPaddingMinimumSamples": 16000,
+    "channels": 1,
+    "endRms": 0.000025,
+    "frameSamples": 320,
+    "maximumSamples": 4800000,
+    "mode": "finite/bounds then energy-empty guard; full-recording VAD; unchanged outer energy-range ASR; no speculative segments",
+    "paddingSampleValue": 0.0,
+    "prerollSamples": 2400,
+    "sampleRate": 16000,
+    "startRms": 0.00005,
+    "tailSamples": 3200
+  },
+  "runtime": {
+    "context": {
+      "dtw": "disabled",
+      "flash_attn": false,
+      "gpu_device": 0,
+      "use_gpu": true
+    },
+    "fullParams": {
+      "audio_ctx": 0,
+      "beam_patience": -1.0,
+      "beam_size": -1,
+      "callbacks": "all disabled/null",
+      "carry_initial_prompt": false,
+      "debug_mode": false,
+      "detect_language": false,
+      "duration_ms": 0,
+      "entropy_thold": 2.4,
+      "grammar_penalty": 100.0,
+      "grammar_rules": null,
+      "greedy_best_of": 1,
+      "i_start_rule": 0,
+      "initial_prompt": null,
+      "language": "explicit per case: de or en",
+      "length_penalty": -1.0,
+      "logprob_thold": -1.0,
+      "max_initial_ts": 1.0,
+      "max_len": 0,
+      "max_tokens": 0,
+      "n_grammar_rules": 0,
+      "n_max_text_ctx": 16384,
+      "n_threads": 4,
+      "no_context": true,
+      "no_speech_thold": 0.6,
+      "no_timestamps": true,
+      "offset_ms": 0,
+      "print_progress": false,
+      "print_realtime": false,
+      "print_special": false,
+      "print_timestamps": false,
+      "prompt_n_tokens": 0,
+      "prompt_tokens": null,
+      "single_segment": false,
+      "split_on_word": false,
+      "strategy": "greedy",
+      "suppress_blank": true,
+      "suppress_nst": true,
+      "suppress_regex": null,
+      "tdrz_enable": false,
+      "temperature": 0.0,
+      "temperature_inc": 0.2,
+      "thold_pt": 0.01,
+      "thold_ptsum": 0.01,
+      "token_timestamps": false,
+      "translate": false,
+      "vad": false,
+      "vad_model_path": null,
+      "vad_params": "upstream defaults inactive because vad=false; exact source hash below"
+    },
+    "localCorrections": [
+      "initial SOT no-speech row",
+      "VAD failure propagation",
+      "VAD CString ownership"
+    ],
+    "speechGate": {
+      "aggregation": "at least one finite probability >= threshold, after validating all values and exact ceil(samples/512) count",
+      "cancelCallback": false,
+      "failurePolicy": "distinct error; never blank text as fallback",
+      "input": "entire original recording in normalized scratch only; never alters ASR input",
+      "maximumScratchSamples": 4800000,
+      "model": {
+        "bytes": 885098,
+        "file": "ggml-silero-v5.1.2.bin",
+        "id": "silero-v5.1.2",
+        "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+        "sourceRevision": "9ffd54a1e1ee413ddf265af9913beaf518d1639b"
+      },
+      "nativeStateResetEachCall": true,
+      "normalization": {
+        "clip": false,
+        "gain": "0.95 / whole-recording absolute peak; zero peak has gain=1",
+        "peakTarget": 0.95,
+        "trim": false
+      },
+      "positiveThreshold": 0.5,
+      "threads": 1,
+      "useGpu": false,
+      "warmContext": true,
+      "windowSamples": 512
+    },
+    "whisperCppSourceRevision": "2eeeba56e9edd762b4b38467bab96c2517163158",
+    "whisperCppUpstreamRevision": "2eeeba56e9edd762b4b38467bab96c2517163158",
+    "whisperRs": "0.16.0",
+    "whisperRsSys": "0.15.0",
+    "whisperRsSysLocalPatch": {
+      "id": "initial-sot-no-speech-row-v1+vad-failure-status-v1",
+      "notes": "vendor/whisper-rs-sys/PATCHES.md",
+      "path": "vendor/whisper-rs-sys"
+    },
+    "whisperRsUpstreamRevision": "7558e1b72f54f2f22a53589afb77e65681834c36"
+  },
+  "schemaVersion": 2,
+  "sourceHashes": {
+    "capture": {
+      "filename": "src-tauri/src/audio.rs",
+      "sha256": "3e154b8f852885c0ffea0202ea86aa7493026713db8d65bd891acdfb153107af"
+    },
+    "cargoLock": {
+      "filename": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089"
+    },
+    "clock": {
+      "filename": "src-tauri/src/audio/replay/clock.rs",
+      "sha256": "ebc6fc7674ac2e97f4ef697494c228300dae5b9dd1a8a2f8dfb2212df479c0fc"
+    },
+    "cpp": {
+      "filename": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+      "sha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e"
+    },
+    "energy": {
+      "filename": "crates/dictation-core/src/audio.rs",
+      "sha256": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46"
+    },
+    "engine": {
+      "filename": "src-tauri/src/transcription.rs",
+      "sha256": "41884c7aba39fb824a7f5170fa40e0f2716822ac71d9d4b85590f8372299052d"
+    },
+    "inference": {
+      "filename": "src-tauri/src/inference_service.rs",
+      "sha256": "3e5963b6a8374f450142f5a6ad2983c8f6ad21f9217435473779c2694d351d13"
+    },
+    "manifest": {
+      "filename": "src-tauri/Cargo.toml",
+      "sha256": "e4891158c7c5f336e7f1b45cc9b4e51b96530973d6778bc756a9b0dd6b2c76c4"
+    },
+    "measurement": {
+      "filename": "src-tauri/src/runtime/measurement.rs",
+      "sha256": "ca090ab4f07ccde0a0b20a88766ae5a4fe63f8a7e19cce8af79adeefdbf24b05"
+    },
+    "models": {
+      "filename": "src-tauri/src/model.rs",
+      "sha256": "c70efac3bfb77ac6b6cc72ca01a2a396a95580f9ebd3681b25a5f49d34b287dc"
+    },
+    "options": {
+      "filename": "src-tauri/examples/paced_runtime_probe/options.rs",
+      "sha256": "e092b69cd51c5b490c37a0c89ba9cf454d674560f8eb1c820fdc3be3b920ac68"
+    },
+    "parameters": {
+      "filename": "src-tauri/examples/paced_runtime_probe/parameters.rs",
+      "sha256": "92103eb048214b28d49e3c3cd015729e3c192d286ded7a0644792234eb22cc93"
+    },
+    "paramsWrapper": {
+      "filename": "vendor/whisper-rs/src/whisper_params.rs",
+      "sha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8"
+    },
+    "probe": {
+      "filename": "src-tauri/examples/paced_runtime_probe.rs",
+      "sha256": "e70a4fd5be9e23b9b0f369d6444b27eed3f2127fa1428a21cc7899175abaeabc"
+    },
+    "replay": {
+      "filename": "src-tauri/src/audio/replay.rs",
+      "sha256": "c4abb9af2890ba2d3596f49c6f52712ed6bc5a3370a80fd7c635176939f3fe25"
+    },
+    "runner": {
+      "filename": "src-tauri/examples/paced_runtime_probe/runner.rs",
+      "sha256": "9f11707eea7994bca3301229875c6687c09bdd56ae0e7a641554457bd591d42a"
+    },
+    "runtime": {
+      "filename": "src-tauri/src/runtime.rs",
+      "sha256": "58786ec78739707d0f2360d10f1b37fe3656b174bad9f2ddccba6fc9725d9e52"
+    },
+    "schedule": {
+      "filename": "src-tauri/src/audio/replay/schedule.rs",
+      "sha256": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b"
+    },
+    "speechGate": {
+      "filename": "src-tauri/src/transcription/speech_gate.rs",
+      "sha256": "4e6964540cbe78217cf6c5f6924c859d5240bd2ec9603f857113dea272da7f1f"
+    },
+    "statistics": {
+      "filename": "src-tauri/examples/paced_runtime_probe/statistics.rs",
+      "sha256": "c7c4d986deba4386afac48305616651570f5e59ce6f76ab5c7a7cac75c562ae7"
+    },
+    "vadWrapper": {
+      "filename": "vendor/whisper-rs/src/whisper_vad.rs",
+      "sha256": "a4e481fac0b423ab532e3f4b8e3348a23e3134a10e4581ea3f383d6a81e6438d"
+    },
+    "workspaceManifest": {
+      "filename": "Cargo.toml",
+      "sha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230"
+    }
+  },
+  "state": {
+    "abortCallback": false,
+    "freshWhisperStateEachJob": true,
+    "serialInference": true,
+    "warmAsrContexts": 1,
+    "warmVadContexts": 1
+  },
+  "status": "measurement baseline; not a model, quality or latency qualification",
+  "unicodeVersion": "13.0.0"
+}

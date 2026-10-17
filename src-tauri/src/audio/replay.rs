@@ -7,6 +7,7 @@ use dictation_core::audio::AudioProcessor;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Instant;
 
+pub mod clock;
 pub mod schedule;
 
 /// The owner has started at `started`. The caller owns pacing/publication and

@@ -3,25 +3,16 @@ use crossbeam_channel::bounded;
 use dictation_core::audio::AudioFormat;
 use everlast_dictation::audio::{
     CaptureEvent, CaptureHandle,
-    replay::schedule::{JITTER_TOLERANCE, PublicationTiming, ReplaySchedule, observe},
+    replay::{
+        clock::{Publication, feed},
+        schedule::{JITTER_TOLERANCE, ReplaySchedule},
+    },
 };
 use serde::Serialize;
 use std::{
     thread,
     time::{Duration, Instant},
 };
-
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Publication {
-    pub start_frame: usize,
-    pub end_frame: usize,
-    pub planned_nanos: u128,
-    pub before_publish_nanos: u128,
-    pub after_publish_nanos: u128,
-    pub deviation_nanos: u128,
-    pub timing: &'static str,
-}
 
 #[derive(Default, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -42,22 +33,6 @@ pub struct Run {
     pub join_unverified: bool,
     pub join_failure: Option<String>,
     pub publications: Vec<Publication>,
-}
-
-/// Short sleeps avoid relying on one coalescible 20-ms OS timer. The final
-/// spin is bounded by 250 us per chunk; it does not wait for a consumer.
-fn wait_until(target: Instant) {
-    loop {
-        let remaining = target.saturating_duration_since(Instant::now());
-        if remaining.is_zero() {
-            break;
-        }
-        if remaining <= Duration::from_micros(250) {
-            std::hint::spin_loop();
-        } else {
-            thread::sleep((remaining - Duration::from_micros(250)).min(Duration::from_millis(1)));
-        }
-    }
 }
 
 fn drain_events(
@@ -118,7 +93,6 @@ pub fn run(samples: &[f32], finish_budget: Duration) -> Run {
             return run;
         }
     };
-    run.publications.reserve_exact(schedule.chunks().len());
     run.planned_stop_offset_nanos = schedule
         .chunks()
         .last()
@@ -145,42 +119,32 @@ pub fn run(samples: &[f32], finish_budget: Duration) -> Run {
     if source.format != format {
         run.observation_failure = Some("replay source format changed".into());
     } else {
-        for plan in schedule.chunks() {
-            wait_until(source.started + plan.planned_offset);
-            let before = source.started.elapsed();
-            source
-                .port
-                .publish(&samples[plan.start_frame..plan.end_frame]);
-            let after = source.started.elapsed();
-            let observation = observe(plan, after);
-            let timing = match observation.classification {
-                PublicationTiming::Early => "early",
-                PublicationTiming::OnBudget => "onBudget",
-                PublicationTiming::Late => "late",
-            };
-            run.timing_valid &= before >= plan.planned_offset
-                && observation.classification == PublicationTiming::OnBudget;
-            run.publications.push(Publication {
-                start_frame: plan.start_frame,
-                end_frame: plan.end_frame,
-                planned_nanos: plan.planned_offset.as_nanos(),
-                before_publish_nanos: before.as_nanos(),
-                after_publish_nanos: after.as_nanos(),
-                deviation_nanos: observation.deviation.as_nanos(),
-                timing,
-            });
+        match feed(&mut source, samples) {
+            Ok(evidence) => {
+                // Stop must be timestamped immediately after feed returns,
+                // before report processing or any DSP/event observation.
+                let stop = source.started.elapsed();
+                handle.request_stop();
+                run.stop_requests += 1;
+                run.audio_owner_stop_request_offset_nanos = Some(stop.as_nanos());
+                run.timing_valid = evidence.timing_valid
+                    && stop >= evidence.planned_stop_offset
+                    && stop - evidence.planned_stop_offset <= JITTER_TOLERANCE;
+                run.planned_stop_offset_nanos = Some(evidence.planned_stop_offset.as_nanos());
+                run.publications = evidence.publications;
+            }
+            Err(error) => {
+                run.observation_failure = Some(error.to_string());
+                run.timing_valid = false;
+            }
         }
     }
-    let stop = source.started.elapsed();
-    run.audio_owner_stop_request_offset_nanos = Some(stop.as_nanos());
-    handle.request_stop();
-    run.stop_requests += 1;
+    if run.stop_requests == 0 {
+        run.audio_owner_stop_request_offset_nanos = Some(source.started.elapsed().as_nanos());
+        handle.request_stop();
+        run.stop_requests += 1;
+    }
     drop(source.port);
-    let planned_stop = schedule
-        .chunks()
-        .last()
-        .map_or(Duration::ZERO, |plan| plan.planned_offset);
-    run.timing_valid &= stop >= planned_stop && stop - planned_stop <= JITTER_TOLERANCE;
     let deadline = Instant::now() + finish_budget;
     loop {
         if Instant::now() >= deadline {

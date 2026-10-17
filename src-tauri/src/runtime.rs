@@ -21,6 +21,9 @@ use std::{
 };
 use tokio::sync::oneshot;
 
+#[cfg(feature = "measurement")]
+pub mod measurement;
+
 pub enum NativeCommand {
     Capture {
         session: NonZeroU64,
@@ -68,6 +71,8 @@ pub fn native_mailbox() -> (NativePort, NativeEndpoint) {
 enum Request {
     Start(StartRequest),
     Clear(oneshot::Sender<Result<(), String>>),
+    #[cfg(feature = "measurement")]
+    MeasuredStart(measurement::StartRequest),
 }
 
 struct StartRequest {
@@ -97,6 +102,8 @@ struct Shared {
     admission_epoch: u64,
     snapshot: RuntimeSnapshot,
     cancellation: Option<(u64, DeliveryToken, WorkToken)>,
+    #[cfg(feature = "measurement")]
+    timing: Option<Arc<measurement::Trace>>,
 }
 
 fn close_admission(shared: &Mutex<Shared>) {
@@ -134,6 +141,10 @@ impl Drop for RuntimeExit<'_> {
             shared.snapshot.elapsed_millis = 0;
             shared.snapshot.level_permille = 0;
             shared.snapshot.revision = shared.snapshot.revision.saturating_add(1);
+            #[cfg(feature = "measurement")]
+            if let Some(trace) = &shared.timing {
+                trace.closed();
+            }
         }
         reject_pending(self.requests);
     }
@@ -141,11 +152,19 @@ impl Drop for RuntimeExit<'_> {
 
 fn reject_pending(requests: &crate::control::ControlRx<Request>) {
     for request in requests.close_requests() {
-        let reply = match request {
-            Request::Start(request) => request.reply,
-            Request::Clear(reply) => reply,
+        let disconnected = match request {
+            Request::Start(request) => request
+                .reply
+                .send(Err("Controller is closed".into()))
+                .is_err(),
+            Request::Clear(reply) => reply.send(Err("Controller is closed".into())).is_err(),
+            #[cfg(feature = "measurement")]
+            Request::MeasuredStart(request) => request
+                .reply
+                .send(Err("Controller is closed".into()))
+                .is_err(),
         };
-        if reply.send(Err("Controller is closed".into())).is_err() { /* caller already closed */ }
+        if disconnected { /* caller already closed */ }
     }
 }
 
@@ -351,6 +370,14 @@ trait AudioDriver: Send + 'static {
         None
     }
     fn shutdown(&mut self) -> Result<(), String>;
+    #[cfg(feature = "measurement")]
+    fn measurement_trace(&self) -> Option<Arc<measurement::Trace>> {
+        None
+    }
+    #[cfg(feature = "measurement")]
+    fn prepare_measurement(&mut self) -> Result<(), String> {
+        Err("Audio source does not support measurement reset".into())
+    }
 }
 
 #[derive(Default)]
@@ -451,6 +478,8 @@ impl Runtime {
         audio: impl AudioDriver,
     ) -> Result<Self, RuntimeError> {
         let controller = Controller::default();
+        #[cfg(feature = "measurement")]
+        let timing = audio.measurement_trace();
         let shared = Arc::new(Mutex::new(Shared {
             closing: false,
             suspended: false,
@@ -466,6 +495,8 @@ impl Runtime {
                 error: None,
             },
             cancellation: None,
+            #[cfg(feature = "measurement")]
+            timing,
         }));
         let (control, requests) = control::mailbox(16);
         let client = Client {
@@ -520,6 +551,13 @@ impl Runtime {
                             actor.controller.clear_text();
                             actor.publish()?;
                             if reply.send(Ok(())).is_err() { /* requester no longer waiting */ }
+                        }
+                        #[cfg(feature = "measurement")]
+                        Some(Control::Request(Request::MeasuredStart(request))) => {
+                            let result = actor.start_measured(request.admission_epoch, request.settings)
+                                .map_err(|error| error.to_string());
+                            actor.publish()?;
+                            if request.reply.send(result).is_err() { /* caller no longer waiting */ }
                         }
                         Some(Control::Request(Request::Start(request))) => {
                             let actions = actor.start_request(
@@ -676,7 +714,24 @@ impl<A: AudioDriver> Actor<A> {
         let _admission = shared
             .lock()
             .map_err(|_| crate::controller::ControllerError::Resource)?;
-        self.controller.accept(event)
+        #[cfg(feature = "measurement")]
+        let previous = self.controller.snapshot();
+        #[cfg(feature = "measurement")]
+        let candidate = matches!(&event, Event::InferenceFinished { session, generation, job_id, result: Ok(text), .. }
+            if previous.session == Some(*session) && *generation == self.generation && *job_id == *session && !text.is_empty());
+        let actions = self.controller.accept(event)?;
+        #[cfg(feature = "measurement")]
+        {
+            // Capture at the actual adoption boundary, before snapshot cloning,
+            // action dispatch, publication, or any observer's polling interval.
+            let adopted = Instant::now();
+            if let Some(trace) = &_admission.timing {
+                trace
+                    .accepted(&previous, &self.controller.snapshot(), candidate, adopted)
+                    .map_err(|_| crate::controller::ControllerError::Resource)?;
+            }
+        }
+        Ok(actions)
     }
 
     fn execute(&mut self, actions: Vec<Action>) -> Result<(), RuntimeError> {
@@ -950,6 +1005,10 @@ impl<A: AudioDriver> Actor<A> {
             .lock()
             .map_err(|_| RuntimeError::Synchronization)?;
         let session = self.controller.snapshot();
+        #[cfg(feature = "measurement")]
+        if let Some(trace) = &shared.timing {
+            trace.terminal(&session)?;
+        }
         let progress = self.progress.filter(|value| {
             !shared.closing
                 && !shared.suspended

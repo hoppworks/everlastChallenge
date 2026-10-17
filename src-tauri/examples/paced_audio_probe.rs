@@ -32,7 +32,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!(
         "{}",
         serde_json::to_string_pretty(&serde_json::json!({
-            "schemaVersion": 2, "kind": "paced-audio-owner-probe", "passed": run.passed,
+            "schemaVersion": 3, "kind": "paced-audio-owner-probe", "passed": run.passed,
             "fixtureSha256": declared.sha256, "inputFrames": samples.len(),
             "sampleRate": 16000, "channels": 1, "chunkMillis": 20,
             "jitterToleranceNanos": 10000000,
@@ -42,6 +42,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "runnerSourceSha256": input::digest(include_bytes!("paced_audio_probe/runner.rs")),
             "audioSourceSha256": input::digest(include_bytes!("../src/audio.rs")),
             "replaySourceSha256": input::digest(include_bytes!("../src/audio/replay.rs")),
+            "clockSourceSha256": input::digest(include_bytes!("../src/audio/replay/clock.rs")),
             "scheduleSourceSha256": input::digest(include_bytes!("../src/audio/replay/schedule.rs")),
             "sourceRevision": std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
             "L": null, "tText": null,

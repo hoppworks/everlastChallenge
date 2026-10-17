@@ -1,0 +1,195 @@
+//! Explicit developer measurement of paced stop-to-text through the real runtime.
+#![forbid(unsafe_code)]
+#[allow(
+    dead_code,
+    reason = "reuse the bounded, hash-verified corpus input and private export seam"
+)]
+#[path = "corpus_probe/input.rs"]
+mod input;
+#[path = "paced_runtime_probe/options.rs"]
+mod options;
+#[path = "paced_runtime_probe/parameters.rs"]
+mod parameters;
+#[path = "paced_runtime_probe/runner.rs"]
+mod runner;
+#[path = "paced_runtime_probe/statistics.rs"]
+mod statistics;
+
+use dictation_core::audio::AudioFormat;
+use everlast_dictation::{
+    inference_service::InferenceService, runtime::measurement::MeasuredRuntime,
+};
+use std::{io::Cursor, path::Path, time::Instant};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let arguments = std::env::args_os().skip(1).take(9).collect::<Vec<_>>();
+    if arguments.len() == 1 && arguments[0] == "--print-parameters" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&parameters::template()?)?
+        );
+        return Ok(());
+    }
+    let options = options::Options::parse(&arguments)?;
+    let parameter_bytes = input::bounded_read(&options.parameters, 1024 * 1024)?;
+    let parameter_document = parameters::validate(&parameter_bytes)?;
+    let bytes = input::bounded_read(&options.wav, input::MAX_AUDIO)?;
+    let wav = hound::WavReader::new(Cursor::new(&bytes))?;
+    let declared = input::Audio {
+        path: "explicit-local-fixture.wav".into(),
+        sha256: input::digest(&bytes),
+        frames: wav.duration(),
+        sample_rate: wav.spec().sample_rate,
+    };
+    let samples = input::decode_audio(&bytes, &declared)?;
+    let reference_bytes = options
+        .reference
+        .as_deref()
+        .map(|path| input::bounded_read(path, 256 * 1024))
+        .transpose()?;
+    let reference = reference_bytes
+        .as_ref()
+        .map(|data| std::str::from_utf8(data))
+        .transpose()?;
+    if reference.is_some_and(|text| text.trim().is_empty()) {
+        return Err("reference must contain non-whitespace UTF-8 text".into());
+    }
+    let host = host_observation();
+    let load_started = Instant::now();
+    let mut runtime = None;
+    let mut unavailable = match InferenceService::load(options.model, options.definition) {
+        Ok(service) => match MeasuredRuntime::spawn(
+            service,
+            1,
+            AudioFormat {
+                sample_rate: 16_000,
+                channels: 1,
+            },
+        ) {
+            Ok(measured) => {
+                let ready = runner::wait_ready(&measured);
+                runtime = Some(measured);
+                ready.err()
+            }
+            Err(error) => Some(error.to_string()),
+        },
+        Err(error) => Some(error.to_string()),
+    };
+    let load_millis = load_started.elapsed().as_millis();
+    let load_error = unavailable.clone();
+    let mut results = Vec::new();
+    let mut observations = Vec::new();
+    for index in 0..=options.runs {
+        let id = if index == 0 {
+            "warmup".into()
+        } else {
+            format!("measured-{index:03}")
+        };
+        let output = if let Some(error) = &unavailable {
+            runner::unavailable(id, index == 0, error.clone())
+        } else if let Some(measured) = &runtime {
+            runner::one(
+                measured,
+                &samples,
+                options.language,
+                id,
+                index == 0,
+                reference,
+            )
+        } else {
+            runner::unavailable(id, index == 0, "runtime was not initialized".into())
+        };
+        if output.observation.status != "ok" && unavailable.is_none() {
+            unavailable = Some(
+                output
+                    .observation
+                    .error
+                    .clone()
+                    .unwrap_or_else(|| "preceding run failed".into()),
+            );
+        }
+        results.push(
+            serde_json::json!({"id":output.observation.id,"warmup":output.observation.warmup,
+            "status":output.observation.status,"text":output.text}),
+        );
+        observations.push(output.observation);
+    }
+    let latencies = observations
+        .iter()
+        .filter(|row| !row.warmup)
+        .map(|row| {
+            if row.status == "ok" {
+                row.stop_to_text_nanos
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+    let cleanup = runtime.map(runner::cleanup);
+    let passed = unavailable.is_none() && cleanup.as_ref().is_some_and(|value| value.joined);
+    let summary = if passed {
+        statistics::summarize(&latencies)
+    } else {
+        None
+    };
+    let metadata = serde_json::json!({
+        "schemaVersion":1,"kind":"paced-runtime-complete-recording","passed":passed,
+        "debugAssertions":cfg!(debug_assertions),
+        "sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
+        "fixtureSha256":declared.sha256,"inputFrames":samples.len(),"sampleRate":16000,"channels":1,
+        "model":{"id":options.definition.id(),"sha256":options.definition.sha256()},
+        "language":options.language.code(),"parameterDocumentSha256":input::digest(&parameter_bytes),
+        "parameters":parameter_document,"hostObservation":host,
+        "referenceSha256":reference_bytes.as_ref().map(|data| input::digest(data)),
+        "referenceComparison":"trimmed exact text only; provenance and independent WER are separate",
+        "warmupRuns":1,"measuredRunsRequested":options.runs,"loadMillis":load_millis,"loadError":load_error,
+        "runs":observations,"summary":summary,"cleanup":cleanup,
+        "thirtyMeasuredRunsCompleted":options.runs==30&&passed,
+        "L":null,"notAggregateL":true,"qualified":false,
+        "limits":["single explicitly selected fixture; no six-case aggregate L",
+            "all failures retained; no partial-case summary or retry of a failed run",
+            "no microphone, hotkey, native paste, RSS/heap acceptance or 300-s endpoint qualification",
+            "parameter document is frozen before model work and must equal the compiled source template"]
+    });
+    input::write_reports(
+        Path::new(&options.output),
+        &serde_json::to_vec_pretty(&results)?,
+        &serde_json::to_vec_pretty(&metadata)?,
+    )?;
+    println!("paced runtime report written; success={passed}; no transcript printed");
+    if !passed {
+        return Err("paced runtime run failed; inspect complete private report".into());
+    }
+    Ok(())
+}
+
+fn host_observation() -> serde_json::Value {
+    fn read(program: &str, args: &[&str]) -> Option<String> {
+        let output = std::process::Command::new(program)
+            .args(args)
+            .output()
+            .ok()?;
+        if !output.status.success() {
+            return None;
+        }
+        String::from_utf8(output.stdout)
+            .ok()
+            .map(|text| text.trim().to_owned())
+    }
+    let power = read("/usr/bin/pmset", &["-g", "batt"]).map(|text| {
+        if text.contains("AC Power") {
+            "AC Power"
+        } else if text.contains("Battery Power") {
+            "Battery Power"
+        } else {
+            "unknown"
+        }
+    });
+    serde_json::json!({"architecture":std::env::consts::ARCH,
+        "cpu":read("/usr/sbin/sysctl", &["-n","machdep.cpu.brand_string"]),
+        "memoryBytes":read("/usr/sbin/sysctl", &["-n","hw.memsize"]).and_then(|s| s.parse::<u64>().ok()),
+        "macOS":read("/usr/bin/sw_vers", &["-productVersion"]),
+        "macOSBuild":read("/usr/bin/sw_vers", &["-buildVersion"]),"powerSource":power,
+        "rustc":read("rustc", &["--version"]),
+        "scope":"read-only observation before model initialization; not a resource measurement"})
+}

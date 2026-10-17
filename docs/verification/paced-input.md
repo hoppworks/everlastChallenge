@@ -4,6 +4,10 @@ Stand: 17.10.2026, Basis `d661cd6`. Implementiert ist das Eingangs-Fundament
 für §13 des Plans. **Controller-Zeitstempel, Inferenz und vollständiges L sind
 noch nicht angeschlossen.** Der neue Probe schreibt deshalb L und tText als null.
 
+Nachtrag: Der nachfolgende [Runtime-Messpfad](paced-runtime.md) verbindet inzwischen
+Controller und Inferenz. Die hier dokumentierten alten Audiopiloten bleiben
+unverändert; sie erhalten rückwirkend keine Textzeitstempel oder L-Werte.
+
 ## Ein produktiver Audioowner, zwei Quellen
 
 CaptureHandle verwendet einen gemeinsamen RecordingOwner für native Aufnahme
