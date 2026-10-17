@@ -1,0 +1,457 @@
+{
+  "schemaVersion": 1,
+  "kind": "full42-native-timestamps-calibration",
+  "qualified": false,
+  "L": null,
+  "parameterSha256": "8fb1d67754f96456b6988b5c86c8395bf8bb7b64a7eec3dbe4b37754453098b8",
+  "completion": {
+    "parameterSha256": "8fb1d67754f96456b6988b5c86c8395bf8bb7b64a7eec3dbe4b37754453098b8",
+    "runs": [
+      {
+        "model": "reference",
+        "startUtc": "2026-10-17T17:00:44.038413+00:00",
+        "pid": 1436,
+        "inferenceExit": 0,
+        "inferenceEndUtc": "2026-10-17T17:01:21.947038+00:00",
+        "evaluationExit": 0,
+        "endUtc": "2026-10-17T17:01:22.001871+00:00"
+      },
+      {
+        "model": "small",
+        "startUtc": "2026-10-17T17:01:22.001930+00:00",
+        "pid": 1492,
+        "inferenceExit": 0,
+        "inferenceEndUtc": "2026-10-17T17:01:33.600941+00:00",
+        "evaluationExit": 0,
+        "endUtc": "2026-10-17T17:01:33.656924+00:00"
+      }
+    ],
+    "endUtc": "2026-10-17T17:01:33.657106+00:00"
+  },
+  "runs": [
+    {
+      "model": "reference",
+      "caseCount": 42,
+      "okCases": 42,
+      "changedIds": [
+        "fleurs-de-dev-1510",
+        "fleurs-de-dev-1514",
+        "fleurs-de-dev-1510-quiet",
+        "fleurs-en-dev-1519",
+        "hd-de-calibration-s01-t0-d9",
+        "calibration-de-trailing-silence"
+      ],
+      "oldGroups": [
+        {
+          "split": "calibration",
+          "language": "de",
+          "class": "challenging",
+          "caseCount": 9,
+          "scoredCount": 6,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 3,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 147,
+          "refWords": 147,
+          "edits": 3,
+          "complete": true,
+          "observedWer": 0.02040816326530612,
+          "wer": 0.02040816326530612
+        },
+        {
+          "split": "calibration",
+          "language": "de",
+          "class": "clean",
+          "caseCount": 12,
+          "scoredCount": 12,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 218,
+          "refWords": 218,
+          "edits": 8,
+          "complete": true,
+          "observedWer": 0.03669724770642202,
+          "wer": 0.03669724770642202
+        },
+        {
+          "split": "calibration",
+          "language": "en",
+          "class": "challenging",
+          "caseCount": 9,
+          "scoredCount": 6,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 3,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 135,
+          "refWords": 135,
+          "edits": 4,
+          "complete": true,
+          "observedWer": 0.02962962962962963,
+          "wer": 0.02962962962962963
+        },
+        {
+          "split": "calibration",
+          "language": "en",
+          "class": "clean",
+          "caseCount": 12,
+          "scoredCount": 12,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 207,
+          "refWords": 207,
+          "edits": 5,
+          "complete": true,
+          "observedWer": 0.024154589371980676,
+          "wer": 0.024154589371980676
+        }
+      ],
+      "newGroups": [
+        {
+          "split": "calibration",
+          "language": "de",
+          "class": "challenging",
+          "caseCount": 9,
+          "scoredCount": 6,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 3,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 147,
+          "refWords": 147,
+          "edits": 3,
+          "complete": true,
+          "observedWer": 0.02040816326530612,
+          "wer": 0.02040816326530612
+        },
+        {
+          "split": "calibration",
+          "language": "de",
+          "class": "clean",
+          "caseCount": 12,
+          "scoredCount": 12,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 218,
+          "refWords": 218,
+          "edits": 7,
+          "complete": true,
+          "observedWer": 0.03211009174311927,
+          "wer": 0.03211009174311927
+        },
+        {
+          "split": "calibration",
+          "language": "en",
+          "class": "challenging",
+          "caseCount": 9,
+          "scoredCount": 6,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 3,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 135,
+          "refWords": 135,
+          "edits": 4,
+          "complete": true,
+          "observedWer": 0.02962962962962963,
+          "wer": 0.02962962962962963
+        },
+        {
+          "split": "calibration",
+          "language": "en",
+          "class": "clean",
+          "caseCount": 12,
+          "scoredCount": 12,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 207,
+          "refWords": 207,
+          "edits": 5,
+          "complete": true,
+          "observedWer": 0.024154589371980676,
+          "wer": 0.024154589371980676
+        }
+      ],
+      "loadError": null,
+      "serviceError": null,
+      "cleanupError": null,
+      "diagnosticMetadata": {
+        "boundedAcceptedSegmentObservationAllocatedPerJob": true,
+        "candidateInitializationDifference": true,
+        "enabled": true,
+        "modelInitializationOwner": "developer-main-before-serial-worker",
+        "realTimeLatencyProtocolExecuted": false,
+        "resourceQualified": false,
+        "sharedInferenceServiceJobLifecycle": true
+      }
+    },
+    {
+      "model": "small",
+      "caseCount": 42,
+      "okCases": 42,
+      "changedIds": [
+        "fleurs-de-dev-1512",
+        "fleurs-de-dev-1511-quiet",
+        "fleurs-en-dev-1515",
+        "fleurs-en-dev-1516",
+        "fleurs-en-dev-1511-quiet",
+        "fleurs-en-dev-1512-quiet",
+        "fleurs-en-dev-1514-quiet",
+        "hd-de-calibration-s01-t0-d9",
+        "hd-en-calibration-s01-t0-d9"
+      ],
+      "oldGroups": [
+        {
+          "split": "calibration",
+          "language": "de",
+          "class": "challenging",
+          "caseCount": 9,
+          "scoredCount": 6,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 3,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 147,
+          "refWords": 147,
+          "edits": 9,
+          "complete": true,
+          "observedWer": 0.061224489795918366,
+          "wer": 0.061224489795918366
+        },
+        {
+          "split": "calibration",
+          "language": "de",
+          "class": "clean",
+          "caseCount": 12,
+          "scoredCount": 12,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 218,
+          "refWords": 218,
+          "edits": 18,
+          "complete": true,
+          "observedWer": 0.08256880733944955,
+          "wer": 0.08256880733944955
+        },
+        {
+          "split": "calibration",
+          "language": "en",
+          "class": "challenging",
+          "caseCount": 9,
+          "scoredCount": 6,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 3,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 135,
+          "refWords": 135,
+          "edits": 5,
+          "complete": true,
+          "observedWer": 0.037037037037037035,
+          "wer": 0.037037037037037035
+        },
+        {
+          "split": "calibration",
+          "language": "en",
+          "class": "clean",
+          "caseCount": 12,
+          "scoredCount": 12,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 207,
+          "refWords": 207,
+          "edits": 9,
+          "complete": true,
+          "observedWer": 0.043478260869565216,
+          "wer": 0.043478260869565216
+        }
+      ],
+      "newGroups": [
+        {
+          "split": "calibration",
+          "language": "de",
+          "class": "challenging",
+          "caseCount": 9,
+          "scoredCount": 6,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 3,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 147,
+          "refWords": 147,
+          "edits": 10,
+          "complete": true,
+          "observedWer": 0.06802721088435375,
+          "wer": 0.06802721088435375
+        },
+        {
+          "split": "calibration",
+          "language": "de",
+          "class": "clean",
+          "caseCount": 12,
+          "scoredCount": 12,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 218,
+          "refWords": 218,
+          "edits": 18,
+          "complete": true,
+          "observedWer": 0.08256880733944955,
+          "wer": 0.08256880733944955
+        },
+        {
+          "split": "calibration",
+          "language": "en",
+          "class": "challenging",
+          "caseCount": 9,
+          "scoredCount": 6,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 3,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 135,
+          "refWords": 135,
+          "edits": 5,
+          "complete": true,
+          "observedWer": 0.037037037037037035,
+          "wer": 0.037037037037037035
+        },
+        {
+          "split": "calibration",
+          "language": "en",
+          "class": "clean",
+          "caseCount": 12,
+          "scoredCount": 12,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 207,
+          "refWords": 207,
+          "edits": 9,
+          "complete": true,
+          "observedWer": 0.043478260869565216,
+          "wer": 0.043478260869565216
+        }
+      ],
+      "loadError": null,
+      "serviceError": null,
+      "cleanupError": null,
+      "diagnosticMetadata": {
+        "boundedAcceptedSegmentObservationAllocatedPerJob": true,
+        "candidateInitializationDifference": true,
+        "enabled": true,
+        "modelInitializationOwner": "developer-main-before-serial-worker",
+        "realTimeLatencyProtocolExecuted": false,
+        "resourceQualified": false,
+        "sharedInferenceServiceJobLifecycle": true
+      }
+    }
+  ],
+  "changedPairReading": "All15changedcompletepublished-reference/old/new triples read; reference changes punctuation plus faithful40 representation; Small has one extraquietGerman word corruption, ordinalrepresentation andlocalspelling changes. No newlostexplicitnegation or wrongnumber identified in changedpairs; not wholeacceptanceanchorqualification.",
+  "limits": [
+    "Calibrationonly; fullunchanged90acceptance andcurrentanchorassessment stillpending",
+    "Referencegroupimprovement and controls do notqualify300s completeness oractivation",
+    "SmallDEchallenging +1/147 is retained; no noise/class/refcriteria adjustment",
+    "Diagnosticinitownerandobservations preventmatchingperformance/resource claims"
+  ],
+  "rawFiles": [
+    {
+      "path": "artifacts/corpus/calibration-timestamps-v1/completion.json",
+      "sha256": "5644d5b087928056c834aec3296e44fc0911f1b4df847ee93c4a06b71f3f5eed",
+      "bytes": 710,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-timestamps-v1/reference-quality.json",
+      "sha256": "d417c7f58ab2ede5dd3909b9e12b250b43370c7a6a353fd79b827eea9eefefed",
+      "bytes": 12984,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-timestamps-v1/reference-results.json",
+      "sha256": "bc692a974a049dc05b5cc3384122b0e4466ea58d6e40b80a1fddfb38cd833895",
+      "bytes": 7791,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-timestamps-v1/reference-results.json.metadata.json",
+      "sha256": "bfba04602ed15fee2219b2c7f4a485647429acc574679fd61c89092561691ac7",
+      "bytes": 7148,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-timestamps-v1/reference.command.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-timestamps-v1/reference.quality.log",
+      "sha256": "e52c2ed4205c28df8f46cf02dc4914a03cf9f580ff5301b8f59f3493008847e7",
+      "bytes": 86,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-timestamps-v1/small-quality.json",
+      "sha256": "e299fa0f7b27ba711a2f98d8d68acf250094c4f5ec15d0bec4d3146f8f5254a2",
+      "bytes": 13100,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-timestamps-v1/small-results.json",
+      "sha256": "9caed0ec0445815dda8ce06c7faed15c8b81efb0bbaaaa313cf576739e10efc3",
+      "bytes": 7766,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-timestamps-v1/small-results.json.metadata.json",
+      "sha256": "cf3e73c2a2cf9b0509cf61359c79effa4f5b06573fe0bf081dbfc1084623d716",
+      "bytes": 7122,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-timestamps-v1/small.command.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/calibration-timestamps-v1/small.quality.log",
+      "sha256": "e52c2ed4205c28df8f46cf02dc4914a03cf9f580ff5301b8f59f3493008847e7",
+      "bytes": 86,
+      "mode": "0o600"
+    }
+  ]
+}
