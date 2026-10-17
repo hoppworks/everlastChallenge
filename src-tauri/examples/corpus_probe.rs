@@ -136,7 +136,7 @@ fn main() -> Result<(), Error> {
         "engine": { "threads":4, "samplingStrategy":"greedy", "bestOf":1, "useGpu":true, "flashAttention":false,
             "suppressNonSpeechTokens":true, "noSpeechThreshold":0.6, "logprobThreshold":-1.0, "entropyThreshold":2.4,
             "utteranceMode":"complete-recording", "freshStatePerJob":true,
-            "inputSegmentation":"energy-range", "energyStartRms":0.01, "energyEndRms":0.005,
+            "inputSegmentation":"energy-range", "energyStartRms":0.00005, "energyEndRms":0.000025,
             "energyFrameSamples":320, "prerollMillis":150, "tailMillis":200, "minimumBackendSamples":16000, "noContext":true, "translate":false, "detectLanguage":false,
             "noTimestamps":true, "printSpecial":false, "printProgress":false, "printRealtime":false, "printTimestamps":false },
         "cases": observations,

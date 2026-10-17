@@ -17,8 +17,12 @@ pub struct EnergyProfile {
 impl Default for EnergyProfile {
     fn default() -> Self {
         Self {
-            start_rms: 0.01,
-            end_rms: 0.005,
+            // The previous 0.01 gate discarded fourteen calibration clips
+            // before decoding. The weakest quiet clip peaks near 0.000105 RMS.
+            // Keep a margin below that level; these remain signal-energy
+            // thresholds, never a semantic claim that noise contains no voice.
+            start_rms: 0.00005,
+            end_rms: 0.000025,
         }
     }
 }

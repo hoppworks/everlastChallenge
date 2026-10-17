@@ -80,3 +80,24 @@ Yannik Stradmann, Johannes Schemmel und Friedemann Zenke, CC BY 4.0.
 Quellenrevisionen und Transformationen sind je Fall ausgewiesen; Auswahl,
 Formatkonvertierung, Padding, Lautstärkeänderung und konstruierte Fälle stammen
 aus diesem Projekt. Details und Primärquellen stehen im verlinkten Quellenbericht.
+
+## Ergänzte Kalibrierung v2
+
+Die unveränderten 34 Kalibrierungsfälle werden um acht Kontrollen ergänzt:
+Nullsignal, synthetisches Rauschen mit neuem Seed, Satz plus drei Sekunden
+Stille und ein fest vorgewählter natürlicher Büroton, jeweils DE/EN. Die
+[CC0-Quelle und ihr Labelvorbehalt](../../../docs/verification/room-noise-source.md)
+sind getrennt dokumentiert. Die ursprüngliche Abnahmemenge bleibt unverändert.
+
+```sh
+/usr/bin/python3 scripts/calibration.py --source-manifest tests/fixtures/corpus/manifest.json --room-source artifacts/corpus/source/freesound-456207-hq.mp3 --output tests/fixtures/corpus/calibration-v2.json
+```
+
+Der Builder prüft Quellmanifest, tatsächliche WAV-Bytes, Raumdatei und Decoder
+gegen feste Hashes. Bestehende identische Dateien bleiben erhalten; andere
+Dateiinhalte werden nicht überschrieben. Die Parameterdateien dokumentieren
+den jeweiligen Codezustand und sind keine vom Probeprogramm eingelesenen
+Laufzeitoptionen. Zur Wiederholung einer historischen Messung ist daher auch
+die im Messbericht genannte Quellrevision zu verwenden. Die
+[Kalibrierungsberichte](../../../docs/verification/calibration-v2.md) weisen
+negative Kontrollresultate ausdrücklich aus; eingefroren bedeutet nicht abgenommen.

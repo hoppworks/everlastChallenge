@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "configurationId": "complete-recording-reference-v2",
+  "status": "pre-calibration candidate; not a qualification claim",
+  "unicodeVersion": "13.0.0",
+  "models": [
+    {
+      "id": "large-v3-turbo-q5_0",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+    },
+    {
+      "id": "small-q5_1",
+      "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb"
+    }
+  ],
+  "runtime": {
+    "whisperRs": "0.16.0",
+    "whisperRsSys": "0.15.0",
+    "whisperRsSysSourceRevision": "7558e1b72f54f2f22a53589afb77e65681834c36",
+    "context": {
+      "use_gpu": true,
+      "flash_attn": false,
+      "gpu_device": 0,
+      "dtw": "disabled"
+    },
+    "fullParams": {
+      "strategy": "greedy",
+      "greedy_best_of": 1,
+      "beam_size": -1,
+      "beam_patience": -1.0,
+      "n_threads": 4,
+      "n_max_text_ctx": 16384,
+      "offset_ms": 0,
+      "duration_ms": 0,
+      "translate": false,
+      "no_context": true,
+      "no_timestamps": true,
+      "single_segment": false,
+      "print_special": false,
+      "print_progress": false,
+      "print_realtime": false,
+      "print_timestamps": false,
+      "token_timestamps": false,
+      "thold_pt": 0.01,
+      "thold_ptsum": 0.01,
+      "max_len": 0,
+      "split_on_word": false,
+      "max_tokens": 0,
+      "debug_mode": false,
+      "audio_ctx": 0,
+      "tdrz_enable": false,
+      "suppress_regex": null,
+      "initial_prompt": null,
+      "carry_initial_prompt": false,
+      "prompt_tokens": null,
+      "prompt_n_tokens": 0,
+      "language": "explicit per case: de or en",
+      "detect_language": false,
+      "suppress_blank": true,
+      "suppress_nst": true,
+      "temperature": 0.0,
+      "max_initial_ts": 1.0,
+      "length_penalty": -1.0,
+      "temperature_inc": 0.2,
+      "entropy_thold": 2.4,
+      "logprob_thold": -1.0,
+      "no_speech_thold": 0.6,
+      "callbacks": "all disabled/null",
+      "grammar_rules": null,
+      "n_grammar_rules": 0,
+      "i_start_rule": 0,
+      "grammar_penalty": 100.0,
+      "vad": false,
+      "vad_model_path": null,
+      "vad_params": "upstream defaults inactive because vad=false; exact source hash below"
+    }
+  },
+  "preprocessing": {
+    "mode": "one complete recording, outer energy range only, no speculative/segment inference",
+    "sampleRate": 16000,
+    "channels": 1,
+    "startRms": 5e-05,
+    "endRms": 2.5e-05,
+    "frameSamples": 320,
+    "prerollSamples": 2400,
+    "tailSamples": 3200,
+    "backendPaddingMinimumSamples": 16000,
+    "paddingSampleValue": 0.0,
+    "maximumSamples": 4800000
+  },
+  "state": {
+    "oneWarmModelContext": true,
+    "freshWhisperStateEachJob": true,
+    "serialInference": true,
+    "abortCallback": false
+  },
+  "sourceHashes": {
+    "engine": {
+      "filename": "src-tauri/src/transcription.rs",
+      "sha256": "9e4fea4ec3547a052335a9f68a66465286f757ff6711dfdd29233712388aaa8b"
+    },
+    "energy": {
+      "filename": "crates/dictation-core/src/audio.rs",
+      "sha256": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46"
+    },
+    "whisperCppDefaults": {
+      "filename": "whisper.cpp",
+      "sha256": "d1e041704c12e20b8eb9596632db3b3b31046348dbb0e493f8a5ab8edd5f4376"
+    },
+    "whisperParamsWrapper": {
+      "filename": "whisper_params.rs",
+      "sha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8"
+    },
+    "cargoLock": {
+      "filename": "Cargo.lock",
+      "sha256": "5d68d3f58516106d00b96127e92ab40d33fea5c7262a2247600e13ad2d3b4245"
+    }
+  },
+  "limits": {
+    "fileBackendOnly": true,
+    "notRealtimeL": true,
+    "notMicrophoneAcceptance": true,
+    "notFullP05Qualification": true
+  },
+  "measurementHost": {
+    "observedDate": "2026-10-17",
+    "hardware": "Apple M5",
+    "architecture": "aarch64",
+    "memoryBytes": 34359738368,
+    "macOS": "27.0.1",
+    "macOSBuild": "26A434",
+    "powerSource": "AC Power",
+    "rustc": "1.93.0 (254b59607 2026-01-19)",
+    "cargo": "1.93.0 (083ac5135 2025-12-15)",
+    "xcode": "27.1 (27A9275)",
+    "python": "3.9.6",
+    "unicodeVersion": "13.0.0",
+    "ffmpeg": "9.0.2",
+    "scope": "host observation before calibration; not resource or latency acceptance"
+  },
+  "changeFromV1": "Only energy start/end thresholds lowered after 14/34 calibration clips were discarded before inference; no decoder or corpus changes."
+}

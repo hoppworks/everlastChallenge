@@ -1,0 +1,1775 @@
+{
+  "cases": [
+    {
+      "audio": {
+        "frames": 144000,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1510.wav",
+        "sampleRate": 16000,
+        "sha256": "42390b1d1694ebe382c4cdb73158f8ca9da7119fd082b99bc32d76859d4291c9"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1510",
+      "language": "de",
+      "reference": "Die Vereinten Nationen hoffen zudem, einen Fonds einrichten zu können, der den von der globalen Erwärmung betroffenen Ländern helfen soll, mit den Auswirkungen fertig zu werden.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "16425197982854817946.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1510,
+        "sha256": "b346aa2056867c656850fa6a45b0e0590358db0795955f47dc1a030e6fb8e802",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 216000,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1511.wav",
+        "sampleRate": 16000,
+        "sha256": "6e0d89e1af7ba3b83142d5b3b35d811ae34e4e2c11e42ef34b1d27ca4883cc76"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1511",
+      "language": "de",
+      "reference": "Bald betraten Polizisten, die mit Schutzanzügen ausgerüstet waren, das Gelände und drängten die Insassen mit Tränengas in die Ecke.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3895054676176812350.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1511,
+        "sha256": "a5f439d8525ad1570464214476b92ac50822644a8fad45e7e7c0b6708d1f0a22",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 448320,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1512.wav",
+        "sampleRate": 16000,
+        "sha256": "63c850e1a7aeb8b01a24db224403320a26a9f781bf20461634ef1762518a7a42"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1512",
+      "language": "de",
+      "reference": "Dieses neue Umfeld hat andere Ressourcen und andere Konkurrenten, so dass die neue Bevölkerung andere Merkmale oder Anpassungen benötigt, um ein starker Konkurrent zu sein, als das, was sie vorher gebraucht hat.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11447383195362139105.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1512,
+        "sha256": "d12de062a62f321b732612a8fa60fe8ba539044a224b92d1ede0fc227b5798ee",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 86400,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1513.wav",
+        "sampleRate": 16000,
+        "sha256": "6bde7e8faf46d53d6f99c0d12df0a94314dc9df76f29f08c17205c9fb271e2f9"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1513",
+      "language": "de",
+      "reference": "Argentinien ist bekannt dafür, dass sein Polo-Team und die Spieler zu den besten der Welt gehören.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "149437509380665175.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1513,
+        "sha256": "6303885f518777651404d6c72e120fe1ebcc294480172dba52928f535e2b056f",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 191040,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1514.wav",
+        "sampleRate": 16000,
+        "sha256": "7ad30249797d2b1545ab80075511ad23f242ac5d4fc66d02c69c5323f1276a39"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1514",
+      "language": "de",
+      "reference": "Als die Kämpfe nach dem Transport der Verwundeten ins Krankenhaus aufhörten, blieben etwa 40 der übrigen Insassen auf dem Hof ​​und weigerten sich, in ihre Zellen zurückzukehren.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "15157582824062732431.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1514,
+        "sha256": "9f00c16eda0be554b0d36ea2beee7c3254ded46d1eba0cdff5583efbbaca3ff1",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 115200,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1515.wav",
+        "sampleRate": 16000,
+        "sha256": "2858cc8a2b98f1c748fa086b9306b0422f4c1c420a38637c6e584208644075a6"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1515",
+      "language": "de",
+      "reference": "Es ist Martellys fünftes CEP innerhalb von vier Jahren.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10829590158907308643.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1515,
+        "sha256": "f7676192afa3397e822da436e16e8977fd7b63c9a299ab1fb2e8166e32047f10",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 212160,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1516.wav",
+        "sampleRate": 16000,
+        "sha256": "650db96286857120af9db07b66f6c57ac11b4d57deac6eb7bc53b1a7b064d77d"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1516",
+      "language": "de",
+      "reference": "Bitte behandeln Sie diese Stätte mit der Würde, der Ehrfurcht und dem Respekt, die ihr gebühren. Machen Sie keine Witze über den Holocaust oder die Nazis.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "14164803304062297838.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1516,
+        "sha256": "3bc1ab5cba50a75d311e4e10e4b1a621759b81be59d8fbd794de8e701ee23b64",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 168960,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1517.wav",
+        "sampleRate": 16000,
+        "sha256": "b892cf9dc80c437f0a78c6f261d83dda196252e31a1e415032981472d3ea9137"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1517",
+      "language": "de",
+      "reference": "Forschung im Bereich KI umfasst die Herstellung von Maschinen zur Automatisierung von Aufgaben, die intelligentes Verhalten erfordern.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11568009216104084779.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1517,
+        "sha256": "6410514864409de7362bd2de92c932d5d87711c291bf0a34ef3f3c26d187e5dc",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 214080,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1518.wav",
+        "sampleRate": 16000,
+        "sha256": "c0e1251805bb74de1b8c95ceedb1f45ee8d1b9ddca19e7045460d96eb9d1005c"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1518",
+      "language": "de",
+      "reference": "Ein ehemaliger philippinischer Polizist hat Touristen aus Hongkong als Geiseln genommen, indem er ihren Bus in Manila, der Hauptstadt der Philippinen, entführte.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11083586197548566977.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1518,
+        "sha256": "e501bae7da3900e726b3428d34300baccde84a3d6e138bd2fe71b60c27206cce",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 360000,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1519.wav",
+        "sampleRate": 16000,
+        "sha256": "d28d7d00c5d831ea5dc5aeabeb1ff3607b1c1be39ede62a197a2a71f9c8c2244"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1519",
+      "language": "de",
+      "reference": "In vielen Fällen, kann die Teilnahme in einem Auslands-Überbrückungsjahr-Programm Ihre Chancen auf eine Hochschulausbildung in Ihrem Heimatland tatsächlich verbessern.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "14565174356836630009.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1519,
+        "sha256": "c83eb2e8dd6fa8303d298555181ee9c0e614b6f887cb170273d45ead239294fa",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 144000,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1510-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "40baab82dc557a09f9e1c0e57af79a798f5ab779d813eac111aed4f0ca0a8445"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-dev-1510-quiet",
+      "language": "de",
+      "reference": "Die Vereinten Nationen hoffen zudem, einen Fonds einrichten zu können, der den von der globalen Erwärmung betroffenen Ländern helfen soll, mit den Auswirkungen fertig zu werden.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "16425197982854817946.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1510,
+        "sha256": "b346aa2056867c656850fa6a45b0e0590358db0795955f47dc1a030e6fb8e802",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 216000,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1511-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "86877936a055c05c09a7939c33399ec04de88534c0c3742512af12bff7ea5480"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-dev-1511-quiet",
+      "language": "de",
+      "reference": "Bald betraten Polizisten, die mit Schutzanzügen ausgerüstet waren, das Gelände und drängten die Insassen mit Tränengas in die Ecke.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3895054676176812350.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1511,
+        "sha256": "a5f439d8525ad1570464214476b92ac50822644a8fad45e7e7c0b6708d1f0a22",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 448320,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1512-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "4af4b724064571ce2558c3d63553a62c657a2423712ad6e87b08fb2ca47b1a2c"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-dev-1512-quiet",
+      "language": "de",
+      "reference": "Dieses neue Umfeld hat andere Ressourcen und andere Konkurrenten, so dass die neue Bevölkerung andere Merkmale oder Anpassungen benötigt, um ein starker Konkurrent zu sein, als das, was sie vorher gebraucht hat.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11447383195362139105.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1512,
+        "sha256": "d12de062a62f321b732612a8fa60fe8ba539044a224b92d1ede0fc227b5798ee",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 86400,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1513-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "26ca04f8cdbea9ed6f259ebe1e0dfd3ba691169a7075264a907d59f5bcaa8ce8"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-dev-1513-quiet",
+      "language": "de",
+      "reference": "Argentinien ist bekannt dafür, dass sein Polo-Team und die Spieler zu den besten der Welt gehören.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "149437509380665175.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1513,
+        "sha256": "6303885f518777651404d6c72e120fe1ebcc294480172dba52928f535e2b056f",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 191040,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1514-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "7a5649ae0660c398ba628b36a4d8c01cbdb735de53f7df260d3f3afa398c0968"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-dev-1514-quiet",
+      "language": "de",
+      "reference": "Als die Kämpfe nach dem Transport der Verwundeten ins Krankenhaus aufhörten, blieben etwa 40 der übrigen Insassen auf dem Hof ​​und weigerten sich, in ihre Zellen zurückzukehren.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "15157582824062732431.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1514,
+        "sha256": "9f00c16eda0be554b0d36ea2beee7c3254ded46d1eba0cdff5583efbbaca3ff1",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 126720,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1510.wav",
+        "sampleRate": 16000,
+        "sha256": "63b2188b0dc3bd9e7c7f502bf41dcf8cef261bedd0cf89a5aafca8d192457b4b"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1510",
+      "language": "en",
+      "reference": "The U.N. also hopes to finalize a fund to help countries affected by global warming to cope with the impacts.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1009709090964908274.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1510,
+        "sha256": "e5664ae10a6273fbe0009068e512f4c416cccbeff19d3d2d11e5fb8d72d03fb7",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 151680,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1511.wav",
+        "sampleRate": 16000,
+        "sha256": "634794ddabb9d5db58c851a009a5173240c52c81e0caa6301d71ad0b8dfbde61"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1511",
+      "language": "en",
+      "reference": "Soon, officers equipped with riot gear entered the yard and cornered the inmates with tear gas.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10927605878527486298.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1511,
+        "sha256": "a043fab2fffba982748b7cd3f74042cac7df8306c020cdd861d075c79754ce7e",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 170880,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1512.wav",
+        "sampleRate": 16000,
+        "sha256": "75e3eb17b6642890d64296f6c46837f3c50edb3106a118756efb653f33c4c0c2"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1512",
+      "language": "en",
+      "reference": "This new environment has different resources and different competitors, so the new population will need different features or adaptations to be a strong competitor than what they had needed before.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "12949536968068093150.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1512,
+        "sha256": "2f8bc090ecc9083640a0fb751cd057eb2aaf82fdcb65bebf828d6707e65a0394",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 119040,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1513.wav",
+        "sampleRate": 16000,
+        "sha256": "5535a47c473b35feb0e41ef4b837efc352c2a28777b495efb12725577ef908f8"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1513",
+      "language": "en",
+      "reference": "Argentina is well known for having one of the best polo teams and players in the world.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11771680184554370328.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1513,
+        "sha256": "da9ed01d55de84dd7afdfa6ce674d2bcfa9c7bd8d4010f5ba2fa2e64390c4e4a",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 164160,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1514.wav",
+        "sampleRate": 16000,
+        "sha256": "279d2fc7eb3c672fa8f21847324dfedeb4e5d91ff5707f9a02895a743926856e"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1514",
+      "language": "en",
+      "reference": "When the fighting ceased after the wounded were transported to the hospital, about 40 of the other remaining inmates stayed in the yard and refused to return to their cells.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1250175024747413359.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1514,
+        "sha256": "07350cffc21a2678f7a64bd253e3e26a565e7e1a7aa99b6f931a8f5e27b93f5e",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 109760,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1515.wav",
+        "sampleRate": 16000,
+        "sha256": "544ca943be70d2e9e7aa3120119bcce578bec16595fa7a4586eeacd9ec04e718"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1515",
+      "language": "en",
+      "reference": "It is Martelly's fifth CEP in four years.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1317055409880056194.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1515,
+        "sha256": "d4aab93c4b1d0da90413e4933e5bad8ad6574b0c620e7b33e1a090e1d1a1bce3",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 193920,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1516.wav",
+        "sampleRate": 16000,
+        "sha256": "1374146326b5aca94a988bbb53da429e77fae987f82845489a69f524fdee0de4"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1516",
+      "language": "en",
+      "reference": "Please treat the site with all of the dignity, solemnity and respect it deserves. Do not make jokes about the Holocaust or Nazis.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "17606651572533263873.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1516,
+        "sha256": "cedfe8d5a838e7d504032efa42e5bcc7ef841236e8f14071d7fd0eeefeda038a",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 112320,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1517.wav",
+        "sampleRate": 16000,
+        "sha256": "6eefdac6c3830016205f1a8773a0a0f029bacb3a302bf2eab881f1d930452824"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1517",
+      "language": "en",
+      "reference": "Research in AI involves making machines to automate tasks that require intelligent behavior.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10885549230041454053.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1517,
+        "sha256": "cce5614bd73b7f31748e06f23577542266b137b505fdb5cd4c51aac98045c60a",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 188160,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1518.wav",
+        "sampleRate": 16000,
+        "sha256": "7179e0a7e83bb6f2d86f34a904c8eb8cb05dfcca8e514e0c7c27575cb27e9d50"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1518",
+      "language": "en",
+      "reference": "A former Filipino policeman has kept Hong Kong tourists hostage by hijacking their bus in Manila, the capital of the Philippines.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10807778671969097912.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1518,
+        "sha256": "9d697e8cd1cb875329ae80dad34757cfe01cb580da07cd615e803a3271ece9d1",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 210880,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1519.wav",
+        "sampleRate": 16000,
+        "sha256": "fe006c9ccd888b1cbd70181aae6fd2590f54c921e559a9f5298c23977ae5a19f"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1519",
+      "language": "en",
+      "reference": "In many cases, enrolling on a gap-year course abroad can actually improve your chances of moving into higher education back in your home country.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1329002535244170064.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1519,
+        "sha256": "52e29bb27e35339263e2469054ca8fc21e8c62e0fa62a4bc560ab2689e32dabc",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 126720,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1510-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "9ed1f3fb8e59dcb3248a31e454af22bd8e7aaf1dc90bb6785813b8662087867d"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-dev-1510-quiet",
+      "language": "en",
+      "reference": "The U.N. also hopes to finalize a fund to help countries affected by global warming to cope with the impacts.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1009709090964908274.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1510,
+        "sha256": "e5664ae10a6273fbe0009068e512f4c416cccbeff19d3d2d11e5fb8d72d03fb7",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 151680,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1511-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "47c0165546a32af6c8cdafabacbaee1497222a818b880bb6948d2513244c9c19"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-dev-1511-quiet",
+      "language": "en",
+      "reference": "Soon, officers equipped with riot gear entered the yard and cornered the inmates with tear gas.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10927605878527486298.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1511,
+        "sha256": "a043fab2fffba982748b7cd3f74042cac7df8306c020cdd861d075c79754ce7e",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 170880,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1512-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "5ff81bccd42a90a60d1eb4afe0f9083bdb5d19d52e047241e947db1659b61a01"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-dev-1512-quiet",
+      "language": "en",
+      "reference": "This new environment has different resources and different competitors, so the new population will need different features or adaptations to be a strong competitor than what they had needed before.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "12949536968068093150.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1512,
+        "sha256": "2f8bc090ecc9083640a0fb751cd057eb2aaf82fdcb65bebf828d6707e65a0394",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 119040,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1513-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "4a4f4f0c719df47166bde67ac583af3c864a6542dce50ba49e7b7ec6b300b308"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-dev-1513-quiet",
+      "language": "en",
+      "reference": "Argentina is well known for having one of the best polo teams and players in the world.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11771680184554370328.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1513,
+        "sha256": "da9ed01d55de84dd7afdfa6ce674d2bcfa9c7bd8d4010f5ba2fa2e64390c4e4a",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 164160,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1514-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "b503c7fcb8abe64d467ab12d0c21db3ce00206791c2d25a94f53f66e4b47891a"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-dev-1514-quiet",
+      "language": "en",
+      "reference": "When the fighting ceased after the wounded were transported to the hospital, about 40 of the other remaining inmates stayed in the yard and refused to return to their cells.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1250175024747413359.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1514,
+        "sha256": "07350cffc21a2678f7a64bd253e3e26a565e7e1a7aa99b6f931a8f5e27b93f5e",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 11523,
+        "path": "artifacts/corpus/audio/hd-de-calibration-s00-t0-d8.wav",
+        "sampleRate": 16000,
+        "sha256": "075484445237ec7b1640184ec8af0376f9fe4763e23dc7158a2778c244a07669"
+      },
+      "class": "clean",
+      "id": "hd-de-calibration-s00-t0-d8",
+      "language": "de",
+      "reference": "acht",
+      "source": {
+        "bitsPerSample": 16,
+        "channels": 1,
+        "dataset": "Heidelberg Digits",
+        "digit": 8,
+        "filename": "audio/lang-german_speaker-00_trial-0_digit-8.flac",
+        "frames": 34570,
+        "referenceProvenance": "filename digit/language class mapped to fixed word before inference",
+        "sampleRate": 48000,
+        "sha256": "84bbc624f92f603198fb125621e54787020f7921ad02b5ec523106f81fd4b0ff",
+        "speaker": 0,
+        "split": "train",
+        "transformations": [
+          {
+            "bitexact": true,
+            "channels": 1,
+            "decoder": {
+              "path": "/opt/homebrew/bin/ffmpeg",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers"
+            },
+            "format": "PCM16",
+            "gainChange": false,
+            "mapMetadata": -1,
+            "operation": "full-file decode and resample",
+            "sampleRate": 16000,
+            "trim": false
+          }
+        ],
+        "version": "1.0"
+      },
+      "split": "calibration",
+      "tags": [
+        "natural-short",
+        "digit-anchor",
+        "independent-class-label"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 11495,
+        "path": "artifacts/corpus/audio/hd-de-calibration-s01-t0-d9.wav",
+        "sampleRate": 16000,
+        "sha256": "55cc27500ead188a9d1c9cf4d2edc26a9a7827eb6bdcf98d0e77fa576a1432ee"
+      },
+      "class": "clean",
+      "id": "hd-de-calibration-s01-t0-d9",
+      "language": "de",
+      "reference": "neun",
+      "source": {
+        "bitsPerSample": 16,
+        "channels": 1,
+        "dataset": "Heidelberg Digits",
+        "digit": 9,
+        "filename": "audio/lang-german_speaker-01_trial-0_digit-9.flac",
+        "frames": 34484,
+        "referenceProvenance": "filename digit/language class mapped to fixed word before inference",
+        "sampleRate": 48000,
+        "sha256": "7432b8819b16a638420c5eafbac0e8eb85013d2a9bd0e2f38426989195dd3a95",
+        "speaker": 1,
+        "split": "train",
+        "transformations": [
+          {
+            "bitexact": true,
+            "channels": 1,
+            "decoder": {
+              "path": "/opt/homebrew/bin/ffmpeg",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers"
+            },
+            "format": "PCM16",
+            "gainChange": false,
+            "mapMetadata": -1,
+            "operation": "full-file decode and resample",
+            "sampleRate": 16000,
+            "trim": false
+          }
+        ],
+        "version": "1.0"
+      },
+      "split": "calibration",
+      "tags": [
+        "natural-short",
+        "digit-anchor",
+        "independent-class-label"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 9677,
+        "path": "artifacts/corpus/audio/hd-en-calibration-s00-t10-d8.wav",
+        "sampleRate": 16000,
+        "sha256": "0c82c4275abb47a5682bcc7786479f7af29428b3e85955d6f6ea04b9613ce0fd"
+      },
+      "class": "clean",
+      "id": "hd-en-calibration-s00-t10-d8",
+      "language": "en",
+      "reference": "eight",
+      "source": {
+        "bitsPerSample": 16,
+        "channels": 1,
+        "dataset": "Heidelberg Digits",
+        "digit": 8,
+        "filename": "audio/lang-english_speaker-00_trial-10_digit-8.flac",
+        "frames": 29031,
+        "referenceProvenance": "filename digit/language class mapped to fixed word before inference",
+        "sampleRate": 48000,
+        "sha256": "2bbe06f344208c47375217027e40ccb02246829f2a59a4b7aa66d2c23efd936a",
+        "speaker": 0,
+        "split": "train",
+        "transformations": [
+          {
+            "bitexact": true,
+            "channels": 1,
+            "decoder": {
+              "path": "/opt/homebrew/bin/ffmpeg",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers"
+            },
+            "format": "PCM16",
+            "gainChange": false,
+            "mapMetadata": -1,
+            "operation": "full-file decode and resample",
+            "sampleRate": 16000,
+            "trim": false
+          }
+        ],
+        "version": "1.0"
+      },
+      "split": "calibration",
+      "tags": [
+        "natural-short",
+        "digit-anchor",
+        "independent-class-label"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 10037,
+        "path": "artifacts/corpus/audio/hd-en-calibration-s01-t0-d9.wav",
+        "sampleRate": 16000,
+        "sha256": "57053be81e28b1f5d46c46a826c50fad247e816985075686ff2d78e9a1af4cd6"
+      },
+      "class": "clean",
+      "id": "hd-en-calibration-s01-t0-d9",
+      "language": "en",
+      "reference": "nine",
+      "source": {
+        "bitsPerSample": 16,
+        "channels": 1,
+        "dataset": "Heidelberg Digits",
+        "digit": 9,
+        "filename": "audio/lang-english_speaker-01_trial-0_digit-9.flac",
+        "frames": 30112,
+        "referenceProvenance": "filename digit/language class mapped to fixed word before inference",
+        "sampleRate": 48000,
+        "sha256": "03a01f22bc3ee4df34807ce2363f8c028fd1232e42181990a430206668bf98e9",
+        "speaker": 1,
+        "split": "train",
+        "transformations": [
+          {
+            "bitexact": true,
+            "channels": 1,
+            "decoder": {
+              "path": "/opt/homebrew/bin/ffmpeg",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers"
+            },
+            "format": "PCM16",
+            "gainChange": false,
+            "mapMetadata": -1,
+            "operation": "full-file decode and resample",
+            "sampleRate": 16000,
+            "trim": false
+          }
+        ],
+        "version": "1.0"
+      },
+      "split": "calibration",
+      "tags": [
+        "natural-short",
+        "digit-anchor",
+        "independent-class-label"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/calibration-de-zero-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec"
+      },
+      "class": "challenging",
+      "id": "calibration-de-zero-5s",
+      "language": "de",
+      "reference": "",
+      "source": {
+        "dataset": "synthetic",
+        "revision": "calibration-v2",
+        "sha256": null,
+        "split": "calibration",
+        "transformations": [
+          {
+            "frames": 80000,
+            "generator": "zero",
+            "operation": "generate_zero",
+            "seed": null,
+            "uniformAmplitude": 0
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "synthetic",
+        "not-room-noise",
+        "zero"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/calibration-de-noise-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "108900272d713942a382a8611c69f3e5f1ae8af5948633bb6fccf01deeccee81"
+      },
+      "class": "challenging",
+      "id": "calibration-de-noise-5s",
+      "language": "de",
+      "reference": "",
+      "source": {
+        "dataset": "synthetic",
+        "revision": "calibration-v2",
+        "sha256": null,
+        "split": "calibration",
+        "transformations": [
+          {
+            "frames": 80000,
+            "generator": "xorshift32-v1",
+            "operation": "generate_noise",
+            "seed": 1163281202,
+            "uniformAmplitude": 0.04
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "synthetic",
+        "not-room-noise",
+        "noise"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 192000,
+        "path": "artifacts/corpus/audio/calibration-de-trailing-silence.wav",
+        "sampleRate": 16000,
+        "sha256": "4f0090652adc300613277ea6a3aceb96e2c9c9dff2a477e7d30e4e6b8b3e10c4"
+      },
+      "class": "challenging",
+      "id": "calibration-de-trailing-silence",
+      "language": "de",
+      "reference": "Die Vereinten Nationen hoffen zudem, einen Fonds einrichten zu können, der den von der globalen Erwärmung betroffenen Ländern helfen soll, mit den Auswirkungen fertig zu werden.",
+      "source": {
+        "baseCaseId": "fleurs-de-dev-1510",
+        "dataset": "google/fleurs",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sha256": "42390b1d1694ebe382c4cdb73158f8ca9da7119fd082b99bc32d76859d4291c9",
+        "split": "dev",
+        "transformations": [
+          {
+            "addedFrames": 48000,
+            "addedSeconds": 3,
+            "operation": "copy_verified_pcm16_and_append_zero_frames",
+            "sourceFrames": 144000
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "trailing-silence"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/calibration-de-room-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "91d7d1bf89611ff27bc1d4db11c05eb5580c6c5db44e241722c2498bf2996b59"
+      },
+      "class": "challenging",
+      "id": "calibration-de-room-5s",
+      "language": "de",
+      "reference": "",
+      "source": {
+        "author": "richwise",
+        "bytes": 10002720,
+        "channels": 2,
+        "dataset": "Freesound",
+        "durationSeconds": 472.052,
+        "license": "CC0-1.0",
+        "referenceProvenance": "publisher-described unoccupied office; independent listening pending",
+        "revision": "456207",
+        "sampleRate": 48000,
+        "sha256": "0f2131bd208b604498f32f0151e98ca7440a603d1309a25879c04a232ecba047",
+        "split": "calibration",
+        "title": "Empty Office Room Tone",
+        "transformations": [
+          {
+            "bitexact": true,
+            "channels": 1,
+            "decoder": {
+              "path": "/opt/homebrew/bin/ffmpeg",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers"
+            },
+            "endSeconds": 5,
+            "format": "PCM16",
+            "gainChange": false,
+            "input": "verified RAM bytes via stdin",
+            "operation": "decode_first_five_seconds",
+            "sampleRate": 16000,
+            "startSeconds": 0
+          }
+        ],
+        "url": "https://cdn.freesound.org/previews/456/456207_1481531-hq.mp3"
+      },
+      "split": "calibration",
+      "tags": [
+        "natural-room-tone",
+        "publisher-no-speech-label",
+        "listening-pending"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/calibration-en-zero-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec"
+      },
+      "class": "challenging",
+      "id": "calibration-en-zero-5s",
+      "language": "en",
+      "reference": "",
+      "source": {
+        "dataset": "synthetic",
+        "revision": "calibration-v2",
+        "sha256": null,
+        "split": "calibration",
+        "transformations": [
+          {
+            "frames": 80000,
+            "generator": "zero",
+            "operation": "generate_zero",
+            "seed": null,
+            "uniformAmplitude": 0
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "synthetic",
+        "not-room-noise",
+        "zero"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/calibration-en-noise-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "108900272d713942a382a8611c69f3e5f1ae8af5948633bb6fccf01deeccee81"
+      },
+      "class": "challenging",
+      "id": "calibration-en-noise-5s",
+      "language": "en",
+      "reference": "",
+      "source": {
+        "dataset": "synthetic",
+        "revision": "calibration-v2",
+        "sha256": null,
+        "split": "calibration",
+        "transformations": [
+          {
+            "frames": 80000,
+            "generator": "xorshift32-v1",
+            "operation": "generate_noise",
+            "seed": 1163281202,
+            "uniformAmplitude": 0.04
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "synthetic",
+        "not-room-noise",
+        "noise"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 174720,
+        "path": "artifacts/corpus/audio/calibration-en-trailing-silence.wav",
+        "sampleRate": 16000,
+        "sha256": "85517b795629737f422c11281d8beef90337523041b182f4497eb9196e76a647"
+      },
+      "class": "challenging",
+      "id": "calibration-en-trailing-silence",
+      "language": "en",
+      "reference": "The U.N. also hopes to finalize a fund to help countries affected by global warming to cope with the impacts.",
+      "source": {
+        "baseCaseId": "fleurs-en-dev-1510",
+        "dataset": "google/fleurs",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sha256": "63b2188b0dc3bd9e7c7f502bf41dcf8cef261bedd0cf89a5aafca8d192457b4b",
+        "split": "dev",
+        "transformations": [
+          {
+            "addedFrames": 48000,
+            "addedSeconds": 3,
+            "operation": "copy_verified_pcm16_and_append_zero_frames",
+            "sourceFrames": 126720
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "trailing-silence"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/calibration-en-room-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "91d7d1bf89611ff27bc1d4db11c05eb5580c6c5db44e241722c2498bf2996b59"
+      },
+      "class": "challenging",
+      "id": "calibration-en-room-5s",
+      "language": "en",
+      "reference": "",
+      "source": {
+        "author": "richwise",
+        "bytes": 10002720,
+        "channels": 2,
+        "dataset": "Freesound",
+        "durationSeconds": 472.052,
+        "license": "CC0-1.0",
+        "referenceProvenance": "publisher-described unoccupied office; independent listening pending",
+        "revision": "456207",
+        "sampleRate": 48000,
+        "sha256": "0f2131bd208b604498f32f0151e98ca7440a603d1309a25879c04a232ecba047",
+        "split": "calibration",
+        "title": "Empty Office Room Tone",
+        "transformations": [
+          {
+            "bitexact": true,
+            "channels": 1,
+            "decoder": {
+              "path": "/opt/homebrew/bin/ffmpeg",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers"
+            },
+            "endSeconds": 5,
+            "format": "PCM16",
+            "gainChange": false,
+            "input": "verified RAM bytes via stdin",
+            "operation": "decode_first_five_seconds",
+            "sampleRate": 16000,
+            "startSeconds": 0
+          }
+        ],
+        "url": "https://cdn.freesound.org/previews/456/456207_1481531-hq.mp3"
+      },
+      "split": "calibration",
+      "tags": [
+        "natural-room-tone",
+        "publisher-no-speech-label",
+        "listening-pending"
+      ]
+    }
+  ],
+  "dataset": "calibration-v2",
+  "requiredCoveragePending": [
+    "natural_continuous_de_300s_without_safe_pause",
+    "natural_room_noise",
+    "independent_listening_and_anchor_annotation_numbers_names_negations",
+    "real_microphone_hotkey_end_to_end",
+    "exact_30s_duration_cases",
+    "independent_roomtone_listening"
+  ],
+  "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+  "schemaVersion": 1,
+  "selectionRules": {
+    "acceptanceIncluded": false,
+    "addedCases": 8,
+    "inheritedCases": 34,
+    "inheritedSplit": "calibration",
+    "noiseSeed": 1163281202,
+    "noiseUniformAmplitude": 0.04,
+    "roomSelection": "fixed Freesound456207 HQ MP3, decoded interval [0,5), no gain change",
+    "tailSelection": "first clean FLEURS case per language in full manifest order; append exactly three seconds of zeros"
+  },
+  "sourceManifest": {
+    "path": "tests/fixtures/corpus/manifest.json",
+    "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+    "sha256": "734199a55fe70bd0cf0dbc7df2fb3ea7afc7de14ed4daf20aa3d0a5672f0c60b"
+  },
+  "sources": [
+    {
+      "archive": {
+        "bytes": 227694463,
+        "filename": "de_de-dev.tar.gz",
+        "sha256": "72cac13bbddbddf674d8102a9e7b90a3b1db5d777ed92e88eccc5ae69cb8fc9d"
+      },
+      "key": "de_de-dev",
+      "language": "de",
+      "split": "dev",
+      "tsv": {
+        "bytes": 221691,
+        "filename": "de_de-dev.tsv",
+        "sha256": "055b6ddecc9ad493d9ead86babe3ebe225148dd3c174fa6f95cb83a4f9586e18"
+      }
+    },
+    {
+      "archive": {
+        "bytes": 568734559,
+        "filename": "de_de-test.tar.gz",
+        "sha256": "e86b42dfcdef749926cd92135045f87c25966c09e50d01c401adb04ee7d8628f"
+      },
+      "key": "de_de-test",
+      "language": "de",
+      "split": "test",
+      "tsv": {
+        "bytes": 559542,
+        "filename": "de_de-test.tsv",
+        "sha256": "82fab72c58a347345675c238f2492bb997105a4ab45d69e2a2b34ed29082fa97"
+      }
+    },
+    {
+      "archive": {
+        "bytes": 171250900,
+        "filename": "en_us-dev.tar.gz",
+        "sha256": "2658fda72f199e12676ecac9415094667a4e14e149b146e568ea00b2a2f0954c"
+      },
+      "key": "en_us-dev",
+      "language": "en",
+      "split": "dev",
+      "tsv": {
+        "bytes": 213065,
+        "filename": "en_us-dev.tsv",
+        "sha256": "9d57ee7e91e9d4c92edb39f6bbea668ef8dc2a3ff96eb510d5580b2ad05d17ec"
+      }
+    },
+    {
+      "archive": {
+        "bytes": 289851356,
+        "filename": "en_us-test.tar.gz",
+        "sha256": "d9c2e37b41aacd41bc283554a0a82b5476b36887049774ecb2819dcaaa55a356"
+      },
+      "key": "en_us-test",
+      "language": "en",
+      "split": "test",
+      "tsv": {
+        "bytes": 367864,
+        "filename": "en_us-test.tsv",
+        "sha256": "74c046239374deeb60fa63f258f907388093a32bcaa3140965f70ef05c79f7ca"
+      }
+    },
+    {
+      "archiveBytes": 337342212,
+      "archiveSha256": "4980128f02deba417ad3592e37166b8af603e200e298dd6108c20c4ffaa2e610",
+      "attribution": "Copyright 2019 Benjamin Cramer, Yannik Stradmann, Johannes Schemmel, Friedemann Zenke; doi:10.1109/TNNLS.2020.3044364",
+      "dataset": "Heidelberg Digits original audio",
+      "decoder": {
+        "path": "/opt/homebrew/bin/ffmpeg",
+        "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+        "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers"
+      },
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "archive README.md: spoken digits dataset",
+      "sourceId": "heidelberg-digits-v1.0",
+      "url": "https://zenkelab.org/datasets/shd/hd_audio.tar.gz",
+      "version": "1.0"
+    }
+  ],
+  "unicodeVersion": "13.0.0"
+}
