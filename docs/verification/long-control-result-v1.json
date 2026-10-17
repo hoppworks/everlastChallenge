@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "kind": "threshold-derived-300s-duration-control-result",
+  "parameterSha256": "9b9b7cdd881c3fdac26039ff1b41dfa6f05b398309d42247fc9145e765c2646f",
+  "qualified": false,
+  "L": null,
+  "completion": {
+    "startUtc": "2026-10-17T16:28:39.359148+00:00",
+    "parameterSha256": "9b9b7cdd881c3fdac26039ff1b41dfa6f05b398309d42247fc9145e765c2646f",
+    "pid": 95259,
+    "inferenceExit": 0,
+    "inferenceEndUtc": "2026-10-17T16:28:53.162294+00:00",
+    "evaluationExit": 0,
+    "endUtc": "2026-10-17T16:28:53.235110+00:00"
+  },
+  "generation": {
+    "frames": 4800000,
+    "sourceFrames": 4599360,
+    "windowCount": 15000,
+    "minimum20msRms": 0.0002655040258626123,
+    "maximum20msRms": 0.23070356689515198,
+    "allWindowsAboveStartAndEnd": true,
+    "original300sUnchanged": true,
+    "manifestSha256": "d03a4aa23d2f5a5fe67671ddb298801b64af4368e8eab90510eafc30bcf2ed37",
+    "outputSha256": "80b79393de147e78e9b9a86bad3d88998dae4056a9fe10a080ef2468c92dc25b",
+    "recipeSha256": "6dd4e935bacaebbc7f6b318f27cc14748b71adee4d848338bc6afd4661fd0615"
+  },
+  "qualityCases": [
+    {
+      "id": "diagnostic-de-controlled-300s",
+      "split": "acceptance",
+      "language": "de",
+      "class": "challenging",
+      "status": "ok",
+      "edits": 147,
+      "refWords": 463,
+      "hypWords": 335,
+      "wer": 0.3174946004319654,
+      "unwantedText": false
+    }
+  ],
+  "loadError": null,
+  "serviceError": null,
+  "cleanupError": null,
+  "observation": "Fewer edits than original strong mask, but source content including DE1662 alloy and periodic-table sentences still absent. No completeness qualification. Native seek/window behavior not yet observed.",
+  "limits": [
+    "Same exposed sources; not a blind heldout comparison",
+    "Neither old severe-noise isolated failure nor new control failure establishes a sole general cause",
+    "No control adjustment, decoder tuning, originalcorpus replacement or resource/abort/timing qualification"
+  ],
+  "rawFiles": [
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/build.py",
+      "sha256": "30b46ce6eadd22e38fcec2c1b34dedb65d3796bb30922f1a949439b66dc691de",
+      "bytes": 4280,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/command.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/completion.json",
+      "sha256": "62d97bdf70a1fd45909a3e9f4f7649d46814fa1b18b0ab8226006399111e1abd",
+      "bytes": 308,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/controlled-300s.wav",
+      "sha256": "80b79393de147e78e9b9a86bad3d88998dae4056a9fe10a080ef2468c92dc25b",
+      "bytes": 9600044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/generation.json",
+      "sha256": "11ceedb0376aa3cc576ff4dcc7592fadd16710231ce6a7d1a0cf4415502c62a8",
+      "bytes": 490,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/manifest.json",
+      "sha256": "d03a4aa23d2f5a5fe67671ddb298801b64af4368e8eab90510eafc30bcf2ed37",
+      "bytes": 12137,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/quality.json",
+      "sha256": "cc51f8234a9c5547f510158abd09b2f8667a2d2f309b08a82e747b39f8dec9b8",
+      "bytes": 828,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/quality.log",
+      "sha256": "1af2e298bbbe09eb199b2970d3d1441b467af606370f5593849eda4700aad6ec",
+      "bytes": 85,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/recipe.json",
+      "sha256": "6dd4e935bacaebbc7f6b318f27cc14748b71adee4d848338bc6afd4661fd0615",
+      "bytes": 7059,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/results.json",
+      "sha256": "3c1b31130bfea63fdd7a5036a1f735698751bef19c91fd76d3086b6e0655925d",
+      "bytes": 2483,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/results.json.metadata.json",
+      "sha256": "0952ad69f238c86987ba0e4389f4eb3c663cd5ab44e914dfa9dc544c0239cd7e",
+      "bytes": 2010,
+      "mode": "0o600"
+    }
+  ]
+}
