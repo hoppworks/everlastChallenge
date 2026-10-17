@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "kind": "relative-then-mach-wait-only-diagnostic-readback",
+  "qualified": false,
+  "sourceRevision": "e1290318fff7de104d45fd0b8463ddb0a43c5330",
+  "freeze": {
+    "path": "tests/fixtures/corpus/deadline-wait-run-v1.json",
+    "sha256": "5a0056fce51828609ba15776ac7633bfd07d300f1dbb6a620ca9c7a64564ee11",
+    "bytes": 3768,
+    "mode": "0o644"
+  },
+  "parameters": {
+    "path": "tests/fixtures/corpus/deadline-wait-parameters-v1.json",
+    "sha256": "bf804936f54f83a7d1bca30b29e7f72ff7d2fe4f8feb98c947f725d50ddfeb83",
+    "bytes": 2028,
+    "mode": "0o644"
+  },
+  "rawFiles": [
+    {
+      "path": "artifacts/deadline-wait/v1/command.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/deadline-wait/v1/completion.json",
+      "sha256": "5dbf54e8b8bab2fcdbdc6ddc538d6fdf50ef6d021bbb3c8fd5c3bbd5d0cf3571",
+      "bytes": 423,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/deadline-wait/v1/results.json",
+      "sha256": "196998554ff1c1d5343361575b96e309d6f19935bfa6a998ddb46ceec52dc1e9",
+      "bytes": 10104485,
+      "mode": "0o600"
+    }
+  ],
+  "completion": {
+    "schemaVersion": 1,
+    "startedUtc": "2026-10-17T18:45:29.388600+00:00",
+    "finishedUtc": "2026-10-17T18:46:34.054402+00:00",
+    "pid": 16354,
+    "exitCode": 0,
+    "freezeSha256": "5a0056fce51828609ba15776ac7633bfd07d300f1dbb6a620ca9c7a64564ee11",
+    "command": [
+      "target/release/examples/deadline_probe",
+      "tests/fixtures/corpus/deadline-wait-parameters-v1.json",
+      "artifacts/deadline-wait/v1/results.json"
+    ]
+  },
+  "pid": 16354,
+  "completed": true,
+  "diagnosticThresholdPassed": true,
+  "modes": [
+    {
+      "error": null,
+      "mode": "relative",
+      "observedDurationNanos": 30001085834,
+      "qosEntered": true,
+      "qosError": null,
+      "qosFinished": true,
+      "status": "completed",
+      "summary": {
+        "aboveThresholdCalls": 0,
+        "collectedCalls": 19905,
+        "failedCalls": 0,
+        "successfulCalls": 19905,
+        "successfulMaxElapsedNanos": 1926750,
+        "successfulMaxOvershootNanos": 926750
+      },
+      "callsCanonicalSha256": "8b99caf09b5856bf8cb19b02af2354817517690101ca77433d4bc7e27f3d2d44"
+    },
+    {
+      "error": null,
+      "mode": "mach",
+      "observedDurationNanos": 30000292792,
+      "qosEntered": true,
+      "qosError": null,
+      "qosFinished": true,
+      "status": "completed",
+      "summary": {
+        "aboveThresholdCalls": 0,
+        "collectedCalls": 20066,
+        "failedCalls": 0,
+        "successfulCalls": 20066,
+        "successfulMaxElapsedNanos": 2163375,
+        "successfulMaxOvershootNanos": 1163375
+      },
+      "callsCanonicalSha256": "a97d3bd4ddf9aae38558265f15f63ff510f0f2fb4fedb3864bd583e63755dcb9"
+    }
+  ],
+  "allCallsValidated": 39971,
+  "L": null,
+  "p05Qualified": false,
+  "causeEstablished": false,
+  "improvementEstablished": false,
+  "limits": [
+    "Fixed relative-then-Mach order; no order randomization or causal OS diagnosis.",
+    "This is a 1ms waiting-only diagnostic without spin, audio, models or replay policy changes.",
+    "10ms overshoot threshold is diagnostic, not the corpus publication jitter budget or L.",
+    "Successful-call maxima exclude failed calls explicitly; all failed rows remain in modes.",
+    "QoS is best effort and changes no requested base policy; no realtime guarantee.",
+    "Neither short mode reproduced the old rare sleep interval; absence is not proof that API replacement fixes it.",
+    "No replay default change or new full corpus timing retry based only on this result."
+  ]
+}
