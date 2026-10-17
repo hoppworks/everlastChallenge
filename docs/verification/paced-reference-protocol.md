@@ -92,3 +92,10 @@ diesen Prozess und schreibt erst nach dessen Ende einen Completionbeleg mit
 Exitstatus und Rohhashes. Dieser Startbeleg ist kein abgeschlossener Messbericht;
 L, vollständige 181 Zeilen, absolute Grenzen und Cleanup sind noch zu prüfen.
 Ein Timeout der Beobachtung ist kein Grund zum Neustart.
+
+Nachtrag: Der Prozess ist am selben Tag um 14:57:53.854355 UTC mit Exit 1
+terminal geworden. Eine Chunkpublikation überschritt das eingefrorene
+Jitterbudget; alle 181 Slots einschließlich 78 nicht ausgeführter bleiben
+erhalten. [Fehlversuch v1](paced-six-reference-v1.md) dokumentiert Rohdaten,
+beendeten Prozess und bestätigten Cleanup. Es gibt aus diesem Versuch kein L
+und keinen bestandenen zentralen Vergleich. Der Prozess wird nicht neu gestartet.
