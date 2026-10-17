@@ -86,3 +86,8 @@ Modell-Lifecycle-/Heap-Abnahme und P05 bleiben offen.
 | vad-resource-short100.time.txt | `2e56792a579b6d606570e259c883f5a72b5ce49a38d1b71e18b0291ad479b0df` |
 | vad-resource-max300-short100.json | `3b3e8bae438d2787e00f195b39d7891986724989e8e9044c8b738c3f8080cd6f` |
 | vad-resource-max300-short100.time.txt | `66e5e0b31534a6ddf7e9d9f473fbe82eea63e8130a13d99854aff9ef584a668f` |
+
+Die benannten Audio-/DSP-Puffer wurden später für dieselben festen Formate
+vervollständigt und die öffentliche FFT-Scratchgröße tatsächlich abgefragt:
+[audio-buffer-budget-v1.md](audio-buffer-budget-v1.md). Die historische
+59.265.536B-Teilsumme oben bleibt erhalten; sie ist keine vollständige Grenze.

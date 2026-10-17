@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "kind": "bounded-audio-dsp-requested-payload-accounting",
+  "qualified": false,
+  "sourceRevision": "66d918aea8b51e37514255f32416a027bfd696c5",
+  "sourceBindings": [
+    {
+      "path": "crates/dictation-core/src/audio.rs",
+      "sha256": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46",
+      "bytes": 7074,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/audio.rs",
+      "sha256": "30649268bfb85918ed7971f4707af793cc81882bcbe6e60115670058b70f91f9",
+      "bytes": 34524,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/inference_service.rs",
+      "sha256": "886f40f2fbc9b0dbe43e008b7d17875e0cddbef5b7350d4754285fdee2beb083",
+      "bytes": 24335,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/controller.rs",
+      "sha256": "f95c0c2c3ad37f4cc1a0b9c9248ece3bfe87911b73d3053aae39953d9feeadf7",
+      "bytes": 19745,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/transcription.rs",
+      "sha256": "10da1b705f06903db515b4fd592375c6d2097f8a0c3e6f716393a69c9e22787c",
+      "bytes": 22442,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/transcription/speech_gate.rs",
+      "sha256": "4e6964540cbe78217cf6c5f6924c859d5240bd2ec9603f857113dea272da7f1f",
+      "bytes": 9418,
+      "mode": "0o644"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089",
+      "bytes": 129670,
+      "mode": "0o644"
+    }
+  ],
+  "dependencySources": [
+    {
+      "path": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rubato-0.16.2/src/synchro.rs",
+      "sha256": "701fb07c0ff574489cbea6afe10f3f38fa6aefe34b5bc5a9c7984343e3d28304",
+      "bytes": 37766,
+      "mode": "0o644"
+    },
+    {
+      "path": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/realfft-3.5.0/src/lib.rs",
+      "sha256": "5698c417a3e8ad6f9255297f69f3b03ec74c0e218ce064bc02c1d5df41425078",
+      "bytes": 38711,
+      "mode": "0o644"
+    }
+  ],
+  "compiledRealFft": {
+    "path": "target/release/deps/librealfft-d087e0653434a576.rlib",
+    "sha256": "4c4617aa6bfe4bcf9b85b94840735d4b727733431f8cfc1429b0c7b8a56b20a8",
+    "bytes": 165664,
+    "mode": "0o644"
+  },
+  "rawFiles": [
+    {
+      "path": "artifacts/diagnostics/fft-scratch-v1/command.log",
+      "sha256": "95283aaa5f9756e9c54ec76e4491a3800606ed0c0a7eeaf025a857e04e0176b9",
+      "bytes": 777,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostics/fft-scratch-v1/probe",
+      "sha256": "6407aad82b4a233d2be10153650d8b7217bb6e7aa166132be235575267b672c8",
+      "bytes": 968888,
+      "mode": "0o700"
+    },
+    {
+      "path": "artifacts/diagnostics/fft-scratch-v1/probe.rs",
+      "sha256": "eaebdd9747699a51dd5cc0d55bbc9328a9ca5ff368f587f869939fe53b99abac",
+      "bytes": 889,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostics/fft-scratch-v1/values.json",
+      "sha256": "c68de479a05efad14c75ebbc1cf7f2a02334127d7cf90e22b17f3b5038ae2936",
+      "bytes": 653,
+      "mode": "0o600"
+    }
+  ],
+  "compiler": "rustc 1.93.0 (254b59607 2026-01-19)",
+  "compileCommand": [
+    "rustc",
+    "--edition=2024",
+    "/tmp/everlast-fft-scratch.rs",
+    "-L",
+    "dependency=target/release/deps",
+    "--extern",
+    "realfft=target/release/deps/librealfft-d087e0653434a576.rlib",
+    "-C",
+    "opt-level=3",
+    "-o",
+    "/tmp/everlast-fft-scratch"
+  ],
+  "host": {
+    "cpu": "Apple M5",
+    "os": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n"
+  },
+  "rows": [
+    {
+      "sampleRate": 8000,
+      "bypass": false,
+      "numericDspPayloadBytes": 57352,
+      "fftScratchBytes": 0,
+      "channelMaskBytes": 1,
+      "ringMaximum8ChannelsBytes": 256000
+    },
+    {
+      "sampleRate": 16000,
+      "bypass": true,
+      "numericDspPayloadBytes": 4096,
+      "fftScratchBytes": 0,
+      "channelMaskBytes": 0,
+      "ringMaximum8ChannelsBytes": 512000
+    },
+    {
+      "sampleRate": 24000,
+      "bypass": false,
+      "numericDspPayloadBytes": 35564,
+      "fftScratchBytes": 0,
+      "channelMaskBytes": 1,
+      "ringMaximum8ChannelsBytes": 768000
+    },
+    {
+      "sampleRate": 32000,
+      "bypass": false,
+      "numericDspPayloadBytes": 32776,
+      "fftScratchBytes": 0,
+      "channelMaskBytes": 1,
+      "ringMaximum8ChannelsBytes": 1024000
+    },
+    {
+      "sampleRate": 44100,
+      "bypass": false,
+      "numericDspPayloadBytes": 46664,
+      "fftScratchBytes": 0,
+      "channelMaskBytes": 1,
+      "ringMaximum8ChannelsBytes": 1411200
+    },
+    {
+      "sampleRate": 48000,
+      "bypass": false,
+      "numericDspPayloadBytes": 30096,
+      "fftScratchBytes": 0,
+      "channelMaskBytes": 1,
+      "ringMaximum8ChannelsBytes": 1536000
+    }
+  ],
+  "namedOriginalPayloadBytes": 59265536,
+  "conservativeNumericPayloadBytes": 59322888,
+  "conservativeKnownPayloadWithMaskBytes": 59322889,
+  "mono16kNumericPayloadBytes": 57740288,
+  "innerPlans": "Structurally bounded by the fixed supported format and one resampler; internal plan object allocations not numerically exposed by public API.",
+  "processQueryPeakRssBytes": 2162688,
+  "processQueryPeakFootprintBytes": 1360232,
+  "limits": [
+    "Numerically named requested audio/DSP payload only, not total heap limit.",
+    "Zero external FFT scratch is observed for this compiled library/CPU/planner; internal plan storage is not zero.",
+    "Allocation rounding, container/Arc/channel overhead, stacks, CPAL/OS and native model/backend allocations remain separate.",
+    "Planner-query process peaks do not measure full resampler/application peaks.",
+    "No models, microphone, timing comparison or native capture acceptance."
+  ]
+}
