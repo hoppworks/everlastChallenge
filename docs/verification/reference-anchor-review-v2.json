@@ -1,0 +1,300 @@
+{
+  "schemaVersion": 1,
+  "kind": "semantic-clean-anchor-delta-review-v1-to-v2",
+  "qualified": false,
+  "inventoryCommit": "f55322e",
+  "sourceRevision": "db9a640fb2a783f708510d3e9ce236d6e0bf2107",
+  "method": {
+    "all90ResultsComparedById": true,
+    "unchangedJudgments": "Exact status and full raw text identity required; original historical case judgment copied without alteration.",
+    "changedCleanJudgments": "All four changed full reference/hypothesis pairs per model and all their inventory anchors manually reread; semantic value/context assessed, not exact-string scoring.",
+    "originalAudioListened": false,
+    "historicalReviewsMutated": false,
+    "scope": "75 frozen clean cases / 158 frozen anchors per model; constructed 300s remains separate challenging evidence."
+  },
+  "limits": [
+    "Published reference text comparison does not independently certify original audio/labels.",
+    "No additional hearing-before-ASR gate imposed.",
+    "No blanket zero-name-error threshold invented; name orthography and entity failures retained.",
+    "Local lexical damage is not treated as proof of segmentation failure.",
+    "No P05, latency, hardware, whole-corpus anchor qualification, or natural-300s claim.",
+    "Freeze openCoverageFromManifest names a derived current remainder, not a literal manifest export; freeze retained immutable."
+  ],
+  "bindings": [
+    {
+      "path": "tests/fixtures/corpus/acceptance-v1.json",
+      "sha256": "7d7a25695ab77d9d4affe04b0bbc1ce5f8bc4b38a59b40763fd26884d090c67d",
+      "bytes": 126728,
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/verification/reference-anchor-inventory-v1.md",
+      "sha256": "fdf7ca4b2c5d7771e336c5cbd518f78017167a69bad0575a861b01fdb563602a",
+      "bytes": 13550,
+      "mode": "0o644"
+    },
+    {
+      "path": "tests/fixtures/corpus/acceptance-reference-parameters-v2.json",
+      "sha256": "9b045db30e32bc7dfaa8775fba598ca93c7553b6f4b93c26af3dd6180b39f0f7",
+      "bytes": 16506,
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/verification/reference-anchor-review-v1.json",
+      "sha256": "cbb3d2741f58e9796d20884c35e7137779a00925aae9bf3b8f75a064267c4e33",
+      "bytes": 83968,
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/verification/acceptance-reference-v1.json",
+      "sha256": "bfb3311a4141c13b5288b6a0d34029d654dbb2782b84738abc41ab7eb2e68084",
+      "bytes": 8182,
+      "mode": "0o644"
+    },
+    {
+      "path": "artifacts/acceptance/v2/completion.json",
+      "sha256": "8a42c8c6468eb9a98d00b1b12d516d2e8885583c65c6fb03e9f5c61e2fc6f9c6",
+      "bytes": 712,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/anchors-v1/reference-review.json",
+      "sha256": "00dd5f931c6af3bbcdc545b128ace9b537d00f3bd40f3872f21c02cc22029c33",
+      "bytes": 134552,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v1/reference-results.json",
+      "sha256": "539608f755fec41311ef5bda3afc67aa9c9893ff114ad30a7cf180fee8ccf818",
+      "bytes": 21327,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v1/reference-results.json.metadata.json",
+      "sha256": "91bf993769746221e85ba804391e593668102fb0554870eaac1eec8689a4976a",
+      "bytes": 12256,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v1/reference-quality.json",
+      "sha256": "fa1082c7f37562d072f3fbc190ac816d24ea083bee466ac0fd1f15ba7c3ca026",
+      "bytes": 25539,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/reference-results.json",
+      "sha256": "f92cace71a327ed358bd1aed84001996aa434ea91d094314fd2cbb1d4809d995",
+      "bytes": 21333,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/reference-results.json.metadata.json",
+      "sha256": "b6df1e945efafa8103e20fca2508af25b4071e7f71dccfbf8c0e657063a62a70",
+      "bytes": 12294,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/reference-quality.json",
+      "sha256": "f872f3150317b2f0e873864e44dfc0532b71e3f3560baac12cea2f39da1931d6",
+      "bytes": 25553,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/anchors-v1/small-review-r2.json",
+      "sha256": "9c3bdedb30344412708c352c4dcf5fc86cbb24ca844cd03d489ad0a94d757022",
+      "bytes": 125287,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v1/small-results.json",
+      "sha256": "65eda4ee0a416816fd93bffd9c47406bfcf960ecf7672b556c679039ac98f099",
+      "bytes": 20865,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v1/small-results.json.metadata.json",
+      "sha256": "ccbf94ff037aa9b3fafcaa951c50d096333ba39a7f854628d945af08cc8aaf16",
+      "bytes": 12201,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v1/small-quality.json",
+      "sha256": "00c5e9c95821076dce169961502bce3af1c4f5b87333a4337ecaab7b294ace67",
+      "bytes": 25861,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/small-results.json",
+      "sha256": "09126141868fbd02313871aad7feecfa91f306ad64152ea7a253d0f67f41e73a",
+      "bytes": 20749,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/small-results.json.metadata.json",
+      "sha256": "1da58c69c060498567e5afda719c44c61271ccb0e7c6c29dc1ad71c2bda830bf",
+      "bytes": 12234,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/small-quality.json",
+      "sha256": "f1fc8d58dc414d05c9eff5e4d6c0fdfb55752987f258547b564a782f69d1e9d3",
+      "bytes": 25859,
+      "mode": "0o600"
+    }
+  ],
+  "privateReview": {
+    "path": "artifacts/acceptance/v2/anchor-delta-review.json",
+    "sha256": "0a67da3d67a8c933b0155b5eee10e86a6106ee5b45b40b42d040c6544259d445",
+    "bytes": 462983,
+    "mode": "0o600"
+  },
+  "models": {
+    "reference": {
+      "identity": {
+        "id": "large-v3-turbo-q5_0",
+        "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+      },
+      "comparisonCount": 90,
+      "changedCleanCaseIds": [
+        "fleurs-de-test-1670",
+        "fleurs-de-test-1675",
+        "fleurs-de-test-1678",
+        "fleurs-en-test-1682"
+      ],
+      "summary": {
+        "cleanCases": 75,
+        "anchors": 158,
+        "anchorVerdicts": {
+          "pass": 155,
+          "fail": 2,
+          "unclear": 1
+        },
+        "byCategory": {
+          "E": {
+            "pass": 69,
+            "fail": 2,
+            "unclear": 1
+          },
+          "N": {
+            "pass": 18
+          },
+          "Z": {
+            "pass": 35
+          },
+          "?": {
+            "pass": 33
+          }
+        },
+        "casesWithFailedAnchors": [
+          "fleurs-de-test-1684",
+          "fleurs-de-test-1736"
+        ],
+        "casesWithUnclearAnchors": [
+          "fleurs-en-test-1669"
+        ],
+        "unresolvedNumericCases": [],
+        "confirmedWrongNumberCases": [],
+        "lostNegationCases": [],
+        "newSegmentLossCases": [],
+        "newSegmentDuplicationCases": [],
+        "qualified": false,
+        "caseSemanticVerdicts": {
+          "pass": 62,
+          "fail": 12,
+          "unclear": 1
+        }
+      },
+      "constructed300s": {
+        "id": "constructed-de-masked-300s",
+        "class": "challenging",
+        "rawTextChanged": false,
+        "status": "ok",
+        "edits": 274,
+        "refWords": 463,
+        "hypWords": 343,
+        "wer": 0.591792656587473,
+        "qualified": false,
+        "limits": "Outside frozen 75-clean/158-anchor review. Numerical WER does not certify whole original content or segmentation; remains nongreen quality evidence."
+      }
+    },
+    "small": {
+      "identity": {
+        "id": "small-q5_1",
+        "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb"
+      },
+      "comparisonCount": 90,
+      "changedCleanCaseIds": [
+        "fleurs-de-test-1675",
+        "fleurs-de-test-1678",
+        "fleurs-de-test-1682",
+        "fleurs-en-test-1682"
+      ],
+      "summary": {
+        "cleanCases": 75,
+        "anchors": 158,
+        "anchorVerdicts": {
+          "pass": 144,
+          "unclear": 7,
+          "fail": 7
+        },
+        "byCategory": {
+          "E": {
+            "pass": 63,
+            "unclear": 5,
+            "fail": 4
+          },
+          "N": {
+            "pass": 18
+          },
+          "Z": {
+            "pass": 34,
+            "unclear": 1
+          },
+          "?": {
+            "pass": 29,
+            "fail": 3,
+            "unclear": 1
+          }
+        },
+        "casesWithFailedAnchors": [
+          "fleurs-de-test-1671",
+          "fleurs-de-test-1678",
+          "fleurs-de-test-1684",
+          "fleurs-de-test-1689",
+          "fleurs-de-test-1692",
+          "fleurs-de-test-1736",
+          "fleurs-en-test-1670"
+        ],
+        "casesWithUnclearAnchors": [
+          "fleurs-de-test-1660",
+          "fleurs-de-test-1663",
+          "fleurs-de-test-1682",
+          "fleurs-de-test-1695",
+          "fleurs-en-test-1660",
+          "fleurs-en-test-1663"
+        ],
+        "unresolvedNumericCases": [
+          "fleurs-de-test-1682"
+        ],
+        "confirmedWrongNumberCases": [],
+        "lostNegationCases": [],
+        "newSegmentLossCases": [],
+        "newSegmentDuplicationCases": [],
+        "qualified": false,
+        "orthographyIssueSpanCount": 26
+      },
+      "constructed300s": {
+        "id": "constructed-de-masked-300s",
+        "class": "challenging",
+        "rawTextChanged": true,
+        "status": "ok",
+        "edits": 335,
+        "refWords": 463,
+        "hypWords": 266,
+        "wer": 0.7235421166306696,
+        "qualified": false,
+        "limits": "Outside frozen 75-clean/158-anchor review. Numerical WER does not certify whole original content or segmentation; remains nongreen quality evidence."
+      }
+    }
+  }
+}
