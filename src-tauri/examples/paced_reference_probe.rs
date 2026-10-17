@@ -27,20 +27,26 @@ use everlast_dictation::{
     inference_service::InferenceService, runtime::measurement::MeasuredRuntime,
     transcription::Language,
 };
-use std::{path::Path, time::Instant};
+use std::{path::Path, sync::Arc, time::Instant};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = std::env::args_os().skip(1).take(6).collect::<Vec<_>>();
-    if args.len() == 1 && args[0] == "--print-parameters" {
+    if args.len() == 1
+        && (args[0] == "--print-parameters" || args[0] == "--print-scheduling-parameters")
+    {
         println!(
             "{}",
-            serde_json::to_string_pretty(&parameters::template()?)?
+            serde_json::to_string_pretty(&if args[0] == "--print-scheduling-parameters" {
+                parameters::scheduling_template()?
+            } else {
+                parameters::template()?
+            })?
         );
         return Ok(());
     }
     let options = options::Options::parse(&args)?;
     report::check_new(&options.output)?;
     let parameter_bytes = input::bounded_read(&options.parameters, 1024 * 1024)?;
-    let parameter_document = parameters::validate(&parameter_bytes)?;
+    let (parameter_document, execution_mode) = parameters::select(&parameter_bytes)?;
     let manifest_bytes = input::bounded_read(&options.manifest, input::MAX_MANIFEST)?;
     let cases = manifest::parse(&manifest_bytes)?;
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -50,7 +56,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // the six bounded normalized PCM vectors (960,000 samples in total).
     let samples = cases
         .iter()
-        .map(|case| input::load_audio(root, &case.audio).map_err(|e| e.to_string()))
+        .map(|case| {
+            input::load_audio(root, &case.audio)
+                .map(Arc::new)
+                .map_err(|e| e.to_string())
+        })
         .collect::<Result<Vec<_>, _>>();
     let host = host::observe();
     let mut runtime = None;
@@ -83,18 +93,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             slot.id, slot.fixture_id, slot.run_index, slot.warmup
         );
         match (&runtime, &samples) {
-            (Some(runtime), Ok(samples)) => runner::one(
-                runtime,
-                &samples[slot.fixture_index],
-                if slot.language == "de" {
+            (Some(runtime), Ok(samples)) => {
+                let language = if slot.language == "de" {
                     Language::German
                 } else {
                     Language::English
-                },
-                slot.id.clone(),
-                slot.warmup,
-                None,
-            ),
+                };
+                if execution_mode == parameters::ExecutionMode::TimeConstrained {
+                    runner::one_scheduled(
+                        runtime,
+                        &samples[slot.fixture_index],
+                        language,
+                        slot.id.clone(),
+                        slot.warmup,
+                        None,
+                        runner::ExpectedOutcome::Local,
+                    )
+                } else {
+                    runner::one(
+                        runtime,
+                        &samples[slot.fixture_index],
+                        language,
+                        slot.id.clone(),
+                        slot.warmup,
+                        None,
+                    )
+                }
+            }
             _ => runner::unavailable(
                 slot.id.clone(),
                 slot.warmup,
@@ -118,7 +143,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let fixtures=cases.iter().map(|case|serde_json::json!({"id":case.id,"language":case.language,"class":"clean","split":"acceptance","durationSeconds":case.seconds,
         "audioSha256":case.audio.sha256,"inputFrames":case.audio.frames,"sampleRate":case.audio.sample_rate,"referenceUtf8Sha256":input::digest(case.reference.as_bytes())})).collect::<Vec<_>>();
     let metadata = serde_json::json!({
-        "schemaVersion":1,"kind":"paced-six-case-complete-recording-reference","measurementComplete":complete,
+        "schemaVersion":1,"processId":std::process::id(),"kind":"paced-six-case-complete-recording-reference","measurementComplete":complete,
         "qualified":false,"p05Qualified":false,"qualityEvaluated":false,
         "sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
         "debugAssertions":cfg!(debug_assertions),"hostObservation":host,

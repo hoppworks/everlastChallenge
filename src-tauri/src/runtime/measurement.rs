@@ -203,6 +203,29 @@ pub struct MeasuredRuntime {
     #[cfg(test)]
     stop_entry: Option<Sender<Instant>>,
 }
+/// Session-bound Stop endpoint without ownership of Runtime or its worker.
+#[derive(Clone)]
+pub struct MeasuredStopHandle {
+    client: Client,
+    trace: Arc<Trace>,
+    session: u64,
+    #[cfg(test)]
+    stop_entry: Option<Sender<Instant>>,
+}
+impl MeasuredStopHandle {
+    pub fn stop(&self) -> Result<Instant, RuntimeError> {
+        let arrived = Instant::now(); // FIRST operation, before shared locks.
+        stop_at(
+            &self.client,
+            &self.trace,
+            self.session,
+            arrived,
+            #[cfg(test)]
+            &self.stop_entry,
+        )
+    }
+}
+
 impl MeasuredRuntime {
     pub fn spawn(
         inference: InferenceService,
@@ -275,37 +298,25 @@ impl MeasuredRuntime {
         }
         Ok(input)
     }
+    pub fn stop_handle(&self, session: u64) -> MeasuredStopHandle {
+        MeasuredStopHandle {
+            client: self.runtime.client.clone(),
+            trace: Arc::clone(&self.trace),
+            session,
+            #[cfg(test)]
+            stop_entry: self.stop_entry.clone(),
+        }
+    }
     pub fn stop(&self, session: u64) -> Result<Instant, RuntimeError> {
         let arrived = Instant::now(); // FIRST operation: before any lock or queue.
-        #[cfg(test)]
-        if let Some(sender) = &self.stop_entry
-            && sender.try_send(arrived).is_err()
-        { /* test observer no longer waiting */ }
-        let client = &self.runtime.client;
-        let shared = client
-            .shared
-            .lock()
-            .map_err(|_| RuntimeError::Synchronization)?;
-        if !control_targets_current(&shared, session)? {
-            return Err(RuntimeError::Service(
-                "Stop does not target the current measurement".into(),
-            ));
-        }
-        {
-            let mut trace = self
-                .trace
-                .value
-                .lock()
-                .map_err(|_| RuntimeError::Synchronization)?;
-            if trace.session != Some(session) || trace.terminal.is_some() {
-                return Err(RuntimeError::Service("Measurement already ended".into()));
-            }
-            if trace.t_stop.is_none() {
-                trace.t_stop = Some(arrived);
-            }
-        }
-        client.control.stop(session)?;
-        Ok(arrived)
+        stop_at(
+            &self.runtime.client,
+            &self.trace,
+            session,
+            arrived,
+            #[cfg(test)]
+            &self.stop_entry,
+        )
     }
     pub fn cancel(&self, session: u64) -> Result<(), RuntimeError> {
         self.runtime.client.cancel(session)
@@ -322,6 +333,42 @@ impl MeasuredRuntime {
     pub fn join(self) -> Result<(), RuntimeError> {
         self.runtime.join()
     }
+}
+
+fn stop_at(
+    client: &Client,
+    trace: &Trace,
+    session: u64,
+    arrived: Instant,
+    #[cfg(test)] stop_entry: &Option<Sender<Instant>>,
+) -> Result<Instant, RuntimeError> {
+    #[cfg(test)]
+    if let Some(sender) = stop_entry
+        && sender.try_send(arrived).is_err()
+    { /* test observer no longer waiting */ }
+    let shared = client
+        .shared
+        .lock()
+        .map_err(|_| RuntimeError::Synchronization)?;
+    if !control_targets_current(&shared, session)? {
+        return Err(RuntimeError::Service(
+            "Stop does not target the current measurement".into(),
+        ));
+    }
+    {
+        let mut trace = trace
+            .value
+            .lock()
+            .map_err(|_| RuntimeError::Synchronization)?;
+        if trace.session != Some(session) || trace.terminal.is_some() {
+            return Err(RuntimeError::Service("Measurement already ended".into()));
+        }
+        if trace.t_stop.is_none() {
+            trace.t_stop = Some(arrived);
+        }
+    }
+    client.control.stop(session)?;
+    Ok(arrived)
 }
 
 impl<A: AudioDriver> Actor<A> {
@@ -389,6 +436,9 @@ impl<A: AudioDriver> Actor<A> {
 
 #[cfg(test)]
 mod tests {
+    #[path = "measurement_stop_tests.rs"]
+    mod stop_handle_tests;
+
     use super::*;
     use crate::{
         inference_service::Decoder,

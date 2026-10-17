@@ -19,20 +19,26 @@ use dictation_core::audio::AudioFormat;
 use everlast_dictation::{
     inference_service::InferenceService, runtime::measurement::MeasuredRuntime,
 };
-use std::{io::Cursor, path::Path, time::Instant};
+use std::{io::Cursor, path::Path, sync::Arc, time::Instant};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arguments = std::env::args_os().skip(1).take(9).collect::<Vec<_>>();
-    if arguments.len() == 1 && arguments[0] == "--print-parameters" {
+    if arguments.len() == 1
+        && (arguments[0] == "--print-parameters" || arguments[0] == "--print-scheduling-parameters")
+    {
         println!(
             "{}",
-            serde_json::to_string_pretty(&parameters::template()?)?
+            serde_json::to_string_pretty(&if arguments[0] == "--print-scheduling-parameters" {
+                parameters::scheduling_template()?
+            } else {
+                parameters::template()?
+            })?
         );
         return Ok(());
     }
     let options = options::Options::parse(&arguments)?;
     let parameter_bytes = input::bounded_read(&options.parameters, 1024 * 1024)?;
-    let parameter_document = parameters::validate(&parameter_bytes)?;
+    let (parameter_document, execution_mode) = parameters::select(&parameter_bytes)?;
     let bytes = input::bounded_read(&options.wav, input::MAX_AUDIO)?;
     let wav = hound::WavReader::new(Cursor::new(&bytes))?;
     let declared = input::Audio {
@@ -41,7 +47,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         frames: wav.duration(),
         sample_rate: wav.spec().sample_rate,
     };
-    let samples = input::decode_audio(&bytes, &declared)?;
+    let samples = Arc::new(input::decode_audio(&bytes, &declared)?);
     let reference_bytes = options
         .reference
         .as_deref()
@@ -88,24 +94,36 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut output = if let Some(error) = &unavailable {
             runner::unavailable(id, index == 0, error.clone())
         } else if let Some(measured) = &runtime {
-            match options.expected_outcome {
-                runner::ExpectedOutcome::Local => runner::one(
+            if execution_mode == parameters::ExecutionMode::TimeConstrained {
+                runner::one_scheduled(
                     measured,
                     &samples,
                     options.language,
                     id,
                     index == 0,
                     reference,
-                ),
-                runner::ExpectedOutcome::Empty => runner::one_expected(
-                    measured,
-                    &samples,
-                    options.language,
-                    id,
-                    index == 0,
-                    None,
                     options.expected_outcome,
-                ),
+                )
+            } else {
+                match options.expected_outcome {
+                    runner::ExpectedOutcome::Local => runner::one(
+                        measured,
+                        &samples,
+                        options.language,
+                        id,
+                        index == 0,
+                        reference,
+                    ),
+                    runner::ExpectedOutcome::Empty => runner::one_expected(
+                        measured,
+                        &samples,
+                        options.language,
+                        id,
+                        index == 0,
+                        None,
+                        options.expected_outcome,
+                    ),
+                }
             }
         } else {
             runner::unavailable(id, index == 0, "runtime was not initialized".into())
@@ -191,7 +209,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let metadata = serde_json::json!({
         "schemaVersion":1,"kind":"paced-runtime-complete-recording","passed":passed,
         "debugAssertions":cfg!(debug_assertions),
-        "sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
+        "processId":std::process::id(),"sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
         "fixtureSha256":declared.sha256,"inputFrames":samples.len(),"sampleRate":16000,"channels":1,
         "model":{"id":options.definition.id(),"sha256":options.definition.sha256()},
         "language":options.language.code(),"parameterDocumentSha256":input::digest(&parameter_bytes),

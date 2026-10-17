@@ -1,4 +1,8 @@
 //! Freeze the actual runtime configuration before any resource workload.
+#[allow(
+    dead_code,
+    reason = "resource workload freezes the baseline template; it does not select paced publisher execution"
+)]
 #[path = "../paced_runtime_probe/parameters.rs"]
 mod baseline;
 

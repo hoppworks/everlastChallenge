@@ -11,6 +11,9 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
+#[path = "publisher.rs"]
+mod publisher;
+
 const WAIT: Duration = Duration::from_secs(120);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -49,6 +52,8 @@ pub struct Observation {
     pub qos_entered: bool,
     pub qos_finished: bool,
     pub qos_error: Option<String>,
+    pub publisher_joined: Option<bool>,
+    pub publisher: Option<serde_json::Value>,
 }
 pub struct Output {
     pub observation: Observation,
@@ -78,6 +83,8 @@ fn observation(id: String, warmup: bool) -> Observation {
         qos_entered: false,
         qos_finished: false,
         qos_error: None,
+        publisher_joined: None,
+        publisher: None,
     }
 }
 pub fn unavailable(id: String, warmup: bool, error: String) -> Output {
@@ -213,6 +220,111 @@ pub fn one_expected(
     )
 }
 
+/// Explicit frozen TC alternative. Samples are shared once per loaded fixture;
+/// Runtime remains owned by the normal parent and is never captured by the child.
+pub fn one_scheduled(
+    runtime: &MeasuredRuntime,
+    samples: &std::sync::Arc<Vec<f32>>,
+    language: Language,
+    id: String,
+    warmup: bool,
+    reference: Option<&str>,
+    expected: ExpectedOutcome,
+) -> Output {
+    one_scheduled_with(
+        runtime,
+        samples,
+        language,
+        id,
+        warmup,
+        Expectation {
+            outcome: expected,
+            reference,
+        },
+        || publisher::Native::spawn(std::sync::Arc::clone(samples)),
+    )
+}
+fn one_scheduled_with<P: publisher::Publisher>(
+    runtime: &MeasuredRuntime,
+    samples: &std::sync::Arc<Vec<f32>>,
+    language: Language,
+    id: String,
+    warmup: bool,
+    expectation: Expectation<'_>,
+    make: impl FnOnce() -> Result<P, String>,
+) -> Output {
+    let mut row = observation(id, warmup);
+    row.expected_outcome = expectation.outcome;
+    if expectation.outcome == ExpectedOutcome::Empty && expectation.reference.is_some() {
+        row.error = Some("Empty expectation cannot have a text reference".into());
+        return Output {
+            observation: row,
+            text: None,
+        };
+    }
+    if samples.is_empty() || samples.len() > 4_800_000 {
+        row.error = Some("scheduled fixture outside 1..4800000 mono frames".into());
+        return Output {
+            observation: row,
+            text: None,
+        };
+    }
+    let mut publisher = match make() {
+        Ok(p) => p,
+        Err(error) => {
+            row.status = "invalid_setup";
+            row.error = Some(error);
+            return Output {
+                observation: row,
+                text: None,
+            };
+        }
+    };
+    // Feed duration plus the existing observer budget, not a 120s cap on a
+    // legitimate 300s feed. Start/input waits retain their own bounded budget.
+    let budget = Duration::from_secs((samples.len() as u64).div_ceil(16000)) + WAIT;
+    let published = publisher::orchestrate(
+        &mut publisher,
+        || {
+            let (session, source) =
+                start_input(runtime, language, &mut row).map_err(|e| e.to_string())?;
+            Ok(publisher::Input {
+                source,
+                stop: runtime.stop_handle(session),
+            })
+        },
+        budget,
+    );
+    row.publisher_joined = Some(published.joined);
+    row.publisher = published.policy;
+    row.feed = published.feed;
+    let result = if !published.joined {
+        Err("publisher join was not confirmed".into())
+    } else if let Some((t0, stopped)) = published.t0.zip(published.stopped) {
+        row.t_stop_offset_nanos = stopped.checked_duration_since(t0).map(|d| d.as_nanos());
+        observe_terminal(
+            runtime,
+            &mut row,
+            t0,
+            stopped,
+            samples.len(),
+            expectation.outcome,
+        )
+    } else {
+        Err("publisher did not return complete feed/stop evidence".into())
+    };
+    let mut output = finish_result(runtime, row, result, expectation);
+    if !published.errors.is_empty() {
+        let mut errors = published.errors;
+        if let Some(error) = output.observation.error.take() {
+            errors.push(error);
+        }
+        output.observation.status = "invalid_setup";
+        output.observation.error = Some(errors.join("; "));
+    }
+    output
+}
+
 fn one_scoped<Q: PublisherScope>(
     runtime: &MeasuredRuntime,
     samples: &[f32],
@@ -247,27 +359,7 @@ fn one_scoped<Q: PublisherScope>(
         }
     };
     let mut result = (|| -> Result<String, Box<dyn std::error::Error>> {
-        let mut reply = runtime.start(SessionSettings {
-            device: None,
-            language,
-            generation: 1,
-        })?;
-        let deadline = Instant::now() + WAIT;
-        let session = loop {
-            match reply.try_recv() {
-                Ok(result) => break result?,
-                Err(tokio::sync::oneshot::error::TryRecvError::Empty)
-                    if Instant::now() < deadline =>
-                {
-                    thread::sleep(Duration::from_millis(1))
-                }
-                _ => {
-                    return Err("measured start acknowledgement unavailable before deadline".into());
-                }
-            }
-        };
-        row.session = Some(session);
-        let mut source = runtime.take_input(WAIT)?;
+        let (session, mut source) = start_input(runtime, language, &mut row)?;
         let t0 = source.started;
         row.feed = Some(feed(&mut source, samples)?);
         let stopped = runtime.stop(session)?;
@@ -282,49 +374,14 @@ fn one_scoped<Q: PublisherScope>(
                 }
             }
         }
-        let deadline = Instant::now() + WAIT;
-        let timing = loop {
-            let timing = runtime.timing()?;
-            if timing.session != Some(session) {
-                return Err("measurement session identity changed".into());
-            }
-            offsets(&mut row, timing, t0);
-            if timing.terminal.is_some() {
-                break timing;
-            }
-            let state = runtime.snapshot()?;
-            if !state.running {
-                return Err("runtime closed before final text".into());
-            }
-            if Instant::now() >= deadline {
-                return Err("controller final-text observation timed out".into());
-            }
-            thread::sleep(Duration::from_millis(1));
-        };
-        if timing.t_stop != Some(stopped) || !row.controller_clock_matches_capture {
-            return Err("host/controller/capture monotone clock identity mismatch".into());
-        }
-        if row.stop_to_terminal_nanos.is_none() {
-            return Err("accepted terminal timestamp precedes stop or is missing".into());
-        }
-        validate_engine_timing(timing.decode_timing, samples.len(), expectation.outcome)?;
-        if expectation.outcome == ExpectedOutcome::Empty {
-            if timing.terminal != Some(MeasuredTerminal::Empty) || timing.t_text.is_some() {
-                return Err("run did not end with explicitly expected Empty outcome".into());
-            }
-            if runtime.snapshot()?.session.text.is_some() {
-                return Err("Empty outcome retained unexpected session text".into());
-            }
-            return Ok(String::new());
-        }
-        if timing.terminal != Some(MeasuredTerminal::Local) || timing.t_text.is_none() {
-            return Err("run ended without accepted nonempty final controller text".into());
-        }
-        let state = runtime.snapshot()?;
-        state
-            .session
-            .text
-            .ok_or_else(|| "controller final text is missing".into())
+        observe_terminal(
+            runtime,
+            &mut row,
+            t0,
+            stopped,
+            samples.len(),
+            expectation.outcome,
+        )
     })();
     // Error paths drop the source port while unwinding the closure, then end
     // the override before cancellation/observer work. Preserve both failures.
@@ -340,6 +397,94 @@ fn one_scoped<Q: PublisherScope>(
             }
         }
     }
+    finish_result(runtime, row, result, expectation)
+}
+
+fn start_input(
+    runtime: &MeasuredRuntime,
+    language: Language,
+    row: &mut Observation,
+) -> Result<(u64, everlast_dictation::audio::replay::ReplayInput), Box<dyn std::error::Error>> {
+    let mut reply = runtime.start(SessionSettings {
+        device: None,
+        language,
+        generation: 1,
+    })?;
+    let deadline = Instant::now() + WAIT;
+    let session = loop {
+        match reply.try_recv() {
+            Ok(result) => break result?,
+            Err(tokio::sync::oneshot::error::TryRecvError::Empty) if Instant::now() < deadline => {
+                thread::sleep(Duration::from_millis(1))
+            }
+            _ => {
+                return Err("measured start acknowledgement unavailable before deadline".into());
+            }
+        }
+    };
+    row.session = Some(session);
+    let source = runtime.take_input(WAIT)?;
+    Ok((session, source))
+}
+fn observe_terminal(
+    runtime: &MeasuredRuntime,
+    row: &mut Observation,
+    t0: Instant,
+    stopped: Instant,
+    frames: usize,
+    expected: ExpectedOutcome,
+) -> Result<String, Box<dyn std::error::Error>> {
+    let session = row.session.ok_or("missing current measurement session")?;
+    let deadline = Instant::now() + WAIT;
+    let timing = loop {
+        let timing = runtime.timing()?;
+        if timing.session != Some(session) {
+            return Err("measurement session identity changed".into());
+        }
+        offsets(row, timing, t0);
+        if timing.terminal.is_some() {
+            break timing;
+        }
+        let state = runtime.snapshot()?;
+        if !state.running {
+            return Err("runtime closed before final text".into());
+        }
+        if Instant::now() >= deadline {
+            return Err("controller final-text observation timed out".into());
+        }
+        thread::sleep(Duration::from_millis(1));
+    };
+    if timing.t_stop != Some(stopped) || !row.controller_clock_matches_capture {
+        return Err("host/controller/capture monotone clock identity mismatch".into());
+    }
+    if row.stop_to_terminal_nanos.is_none() {
+        return Err("accepted terminal timestamp precedes stop or is missing".into());
+    }
+    validate_engine_timing(timing.decode_timing, frames, expected)?;
+    if expected == ExpectedOutcome::Empty {
+        if timing.terminal != Some(MeasuredTerminal::Empty) || timing.t_text.is_some() {
+            return Err("run did not end with explicitly expected Empty outcome".into());
+        }
+        if runtime.snapshot()?.session.text.is_some() {
+            return Err("Empty outcome retained unexpected session text".into());
+        }
+        return Ok(String::new());
+    }
+    if timing.terminal != Some(MeasuredTerminal::Local) || timing.t_text.is_none() {
+        return Err("run ended without accepted nonempty final controller text".into());
+    }
+    let state = runtime.snapshot()?;
+    state
+        .session
+        .text
+        .ok_or_else(|| "controller final text is missing".into())
+}
+fn finish_result(
+    runtime: &MeasuredRuntime,
+    mut row: Observation,
+    result: Result<String, Box<dyn std::error::Error>>,
+    expectation: Expectation<'_>,
+) -> Output {
     match result {
         Ok(text) => {
             row.reference_match = expectation

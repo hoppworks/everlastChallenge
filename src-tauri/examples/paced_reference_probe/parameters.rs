@@ -60,13 +60,38 @@ fn sources() -> Value {
         "nativeManifest":source!("crates/macos-integration/Cargo.toml","../../../crates/macos-integration/Cargo.toml")
     })
 }
+
+pub use baseline::ExecutionMode;
+pub fn scheduling_template() -> Result<Value, serde_json::Error> {
+    let mut value = template()?;
+    value["configurationId"] = json!("paced-six-case-native-timestamps-owned-tc-v3");
+    if let Some(object) = value["measurement"].as_object_mut() {
+        object.remove("publisherQos");
+    }
+    value["measurement"]["publisherThread"] =
+        baseline::scheduling_template()?["measurement"]["publisherThread"].clone();
+    Ok(value)
+}
+pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
+    let value = validate(bytes)?;
+    let mode = if value["measurement"].get("publisherThread").is_some() {
+        ExecutionMode::TimeConstrained
+    } else {
+        ExecutionMode::Baseline
+    };
+    Ok((value, mode))
+}
+
 pub fn validate(bytes: &[u8]) -> Result<Value, String> {
     if bytes.len() > 1024 * 1024 {
         return Err("parameter document exceeds1MiB".into());
     }
     let supplied: Value = serde_json::from_slice(bytes).map_err(|_| "invalid parameter JSON")?;
     let actual = template().map_err(|_| "compiled parameter template is invalid")?;
-    if supplied != actual {
+    if supplied != actual
+        && supplied
+            != scheduling_template().map_err(|_| "compiled scheduling template is invalid")?
+    {
         return Err("parameter document differs from this compiled six-case protocol; freeze before model work".into());
     }
     Ok(supplied)
@@ -94,6 +119,27 @@ mod tests {
         }
         assert!(validate(b"{}").is_err());
         assert!(validate(b"invalid").is_err());
+        Ok(())
+    }
+    #[test]
+    fn six_case_tc_selection_preserves_counts_and_rejects_mixed_freezes()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let original = template()?;
+        let scheduled = scheduling_template()?;
+        assert!(
+            original != scheduled,
+            "scheduling freeze must be explicit and distinct"
+        );
+        assert_eq!(
+            select(&serde_json::to_vec(&scheduled)?)?.1,
+            ExecutionMode::TimeConstrained
+        );
+        assert_eq!(scheduled["measurement"]["totalRows"], 181);
+        assert_eq!(scheduled["measurement"]["warmupRuns"], 1);
+        assert_eq!(scheduled["measurement"]["measuredRunsPerCase"], 30);
+        let mut mixed = scheduled;
+        mixed["configurationId"] = original["configurationId"].clone();
+        assert!(select(&serde_json::to_vec(&mixed)?).is_err());
         Ok(())
     }
 }

@@ -79,14 +79,59 @@ pub fn template() -> Result<Value, serde_json::Error> {
     Ok(value)
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ExecutionMode {
+    Baseline,
+    TimeConstrained,
+}
+pub fn scheduling_template() -> Result<Value, serde_json::Error> {
+    use macos_integration::realtime;
+    let mut value = template()?;
+    value["configurationId"] = json!("paced-full-recording-native-timestamps-rtf-tc-owned-v6");
+    if let Some(object) = value["measurement"].as_object_mut() {
+        object.remove("publisherQos");
+    }
+    value["measurement"]["publisherThread"] = json!({
+        "policy":"timeConstrained","periodNanos":realtime::PERIOD.as_nanos(),
+        "computationNanos":realtime::COMPUTATION.as_nanos(),"constraintNanos":realtime::CONSTRAINT.as_nanos(),"preemptible":true,
+        "scope":"fresh owned publisher child; normal parent, Runtime actor, audio/DSP and inference workers unchanged",
+        "readyBeforeParentStart":true,"normalParentRequestedQosChanged":false,"publisherQosOverride":false,
+        "inputWaitBudgetSeconds":120,"readyWaitBudgetSeconds":120,
+        "joinBudget":"ceil fixture duration seconds plus120; bounded completion-channel wait, then post-read/thread-exit poll using same deadline; unverified child output explicit on timeout",
+        "order":"policy-ready; parent measured Start/ACK/ReplayInput; child beforeFeed, unchanged feed_observed, bound Stop, portdrop, afterFeed; child policy ends/joins; parent terminal polling",
+        "stop":"SID-bound StopHandle; FIRST operation Instant::now before shared admission/control lock",
+        "validation":"configured,beforeFeed,afterFeed,post and each invalid-publication snapshot: exact requested ticks/defaultfalse/basic2; raw basic2 alone is not continuous RT proof",
+        "snapshots":"sequential OS reads, not atomic; outlier observer after publication timestamps may affect following chunks",
+        "fixtureOwnership":"one Arc<Vec<f32>> per loaded fixture; no per-run full PCM copy; StopHandle has no Runtime worker owner",
+        "waitPolicy":"unchanged20ms input,10ms budget,1ms std sleep,250us final spin; no Mach waiter substitution",
+        "failurePolicy":"retain feed/stop/policy/text/Engine evidence when available; failed policy invalidates run; next rows unavailable; no retry"});
+    Ok(value)
+}
 pub fn validate(bytes: &[u8]) -> Result<Value, String> {
+    if bytes.len() > 1024 * 1024 {
+        return Err("parameter document exceeds1MiB".into());
+    }
     let supplied: Value =
         serde_json::from_slice(bytes).map_err(|_| "invalid bounded parameter JSON")?;
-    let actual = template().map_err(|_| "compiled parameter template is invalid")?;
-    if supplied != actual {
-        return Err("parameter document differs from this compiled configuration; freeze a new document before running".into());
+    if supplied == template().map_err(|_| "compiled parameter template is invalid")? {
+        return Ok(supplied);
     }
-    Ok(supplied)
+    if supplied == scheduling_template().map_err(|_| "compiled scheduling template is invalid")? {
+        return Ok(supplied);
+    }
+    Err(
+        "parameter document differs from both exact compiled configurations; freeze before running"
+            .into(),
+    )
+}
+pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
+    let supplied = validate(bytes)?;
+    let mode = if supplied["measurement"].get("publisherThread").is_some() {
+        ExecutionMode::TimeConstrained
+    } else {
+        ExecutionMode::Baseline
+    };
+    Ok((supplied, mode))
 }
 
 fn compiled_sources() -> Value {
@@ -96,6 +141,8 @@ fn compiled_sources() -> Value {
         };
     }
     json!({
+        "nativeRealtime":source!("crates/macos-integration/src/realtime.rs","../../../crates/macos-integration/src/realtime.rs"),
+        "publisher":source!("src-tauri/examples/paced_runtime_probe/publisher.rs","publisher.rs"),
         "publisherQos":source!("crates/macos-integration/src/qos.rs","../../../crates/macos-integration/src/qos.rs"),
         "nativeLibrary":source!("crates/macos-integration/src/lib.rs","../../../crates/macos-integration/src/lib.rs"),
         "nativeManifest":source!("crates/macos-integration/Cargo.toml","../../../crates/macos-integration/Cargo.toml"),
@@ -167,6 +214,25 @@ mod tests {
             assert!(validate(&serde_json::to_vec(&wrong)?).is_err());
         }
         assert!(validate(b"{broken").is_err());
+        Ok(())
+    }
+    #[test]
+    fn explicit_tc_freeze_is_distinct_and_selects_only_the_exact_compiled_mode()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let legacy = template()?;
+        let scheduled = scheduling_template()?;
+        assert_ne!(legacy, scheduled);
+        assert_eq!(
+            select(&serde_json::to_vec(&legacy)?)?.1,
+            ExecutionMode::Baseline
+        );
+        assert_eq!(
+            select(&serde_json::to_vec(&scheduled)?)?.1,
+            ExecutionMode::TimeConstrained
+        );
+        let mut changed = scheduled;
+        changed["measurement"]["publisherThread"]["constraintNanos"] = json!(2_000_000);
+        assert!(select(&serde_json::to_vec(&changed)?).is_err());
         Ok(())
     }
 }
