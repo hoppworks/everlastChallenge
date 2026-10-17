@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "kind": "fresh-process-model-readiness",
+  "passed": true,
+  "sourceRevision": "7de795a",
+  "parameterSha256": "3443cead56d4751cdc4e7edcc605bd4d2653e64aca174b60df6a05ece3b7343c",
+  "rows": [
+    {
+      "id": "reference-01",
+      "model": "reference",
+      "status": "ok",
+      "error": null,
+      "wrapperPid": 76232,
+      "exitCode": 0,
+      "parentProcessElapsedNanos": 1922201458,
+      "loadMillis": 1269,
+      "cleanupMillis": 3,
+      "resultSha256": "6771f3c88e106cc43ba16d82029f7dddbf5e308cccef3a11a16778b3d29ae6ef",
+      "metadataSha256": "7bb8e9bf75c5193248c45dc45ff863921656b57db6d1866d5ef4d118d36794b8",
+      "logSha256": "e8b9ceef4c09fe8912bdad1bf03cba5d5224d938a0fa2c71106e59fd7d28dd91",
+      "jobMillis": 1
+    },
+    {
+      "id": "small-01",
+      "model": "small",
+      "status": "ok",
+      "error": null,
+      "wrapperPid": 76245,
+      "exitCode": 0,
+      "parentProcessElapsedNanos": 1017450375,
+      "loadMillis": 549,
+      "cleanupMillis": 2,
+      "resultSha256": "6771f3c88e106cc43ba16d82029f7dddbf5e308cccef3a11a16778b3d29ae6ef",
+      "metadataSha256": "c44340be4fa8a6baf1cd730c778ba05270e4b33fddad4e0ffe7185ec2a7f53cd",
+      "logSha256": "4b61dbeb5e8b81ae4aaf52e9d14566493d2cf123cf3238387045a92221428c1f",
+      "jobMillis": 1
+    },
+    {
+      "id": "reference-02",
+      "model": "reference",
+      "status": "ok",
+      "error": null,
+      "wrapperPid": 76249,
+      "exitCode": 0,
+      "parentProcessElapsedNanos": 1627772208,
+      "loadMillis": 1245,
+      "cleanupMillis": 3,
+      "resultSha256": "6771f3c88e106cc43ba16d82029f7dddbf5e308cccef3a11a16778b3d29ae6ef",
+      "metadataSha256": "ef48925238da159e64f3010eeacb9261a9ca9b1c188448bf1ce40e186f322e9e",
+      "logSha256": "c49a8e2e9f72e7e0975337cdb06f0735ceab95d3798592717f04598e714026b9",
+      "jobMillis": 1
+    },
+    {
+      "id": "small-02",
+      "model": "small",
+      "status": "ok",
+      "error": null,
+      "wrapperPid": 76259,
+      "exitCode": 0,
+      "parentProcessElapsedNanos": 1020668500,
+      "loadMillis": 548,
+      "cleanupMillis": 2,
+      "resultSha256": "6771f3c88e106cc43ba16d82029f7dddbf5e308cccef3a11a16778b3d29ae6ef",
+      "metadataSha256": "c87a744f9aaf2720e247a0d0a3cc3dbf8bb331e852f285c0514f6d552862386f",
+      "logSha256": "946e05938929089c23b59880752b608cbaffe4af2244b37b18461d16f6441510",
+      "jobMillis": 1
+    },
+    {
+      "id": "reference-03",
+      "model": "reference",
+      "status": "ok",
+      "error": null,
+      "wrapperPid": 76262,
+      "exitCode": 0,
+      "parentProcessElapsedNanos": 1645678875,
+      "loadMillis": 1251,
+      "cleanupMillis": 3,
+      "resultSha256": "6771f3c88e106cc43ba16d82029f7dddbf5e308cccef3a11a16778b3d29ae6ef",
+      "metadataSha256": "9d2823912875472966218fc86516f34139990f4e879e5fa2c3ab6f7cde5178ae",
+      "logSha256": "4c9b5d26bf8f0aeeafe7806c39ea117b15e8b16fd44d575999848831fcd6a9c5",
+      "jobMillis": 1
+    },
+    {
+      "id": "small-03",
+      "model": "small",
+      "status": "ok",
+      "error": null,
+      "wrapperPid": 76268,
+      "exitCode": 0,
+      "parentProcessElapsedNanos": 1005726250,
+      "loadMillis": 539,
+      "cleanupMillis": 1,
+      "resultSha256": "6771f3c88e106cc43ba16d82029f7dddbf5e308cccef3a11a16778b3d29ae6ef",
+      "metadataSha256": "1f37071b9497c0f0d8b7f258f0d91c26ec1e8ebc50ee5d33c990d4ff9278809c",
+      "logSha256": "f8263cf584224ba018f48a2e7dc5aca237bf5d6495719a13332f36d015c41bf6",
+      "jobMillis": 1
+    }
+  ],
+  "summary": {
+    "reference": {
+      "count": 3,
+      "individualLoadMillis": [
+        1269,
+        1245,
+        1251
+      ],
+      "medianMillis": 1251,
+      "minMillis": 1245,
+      "maxMillis": 1269,
+      "rangeMillis": 24
+    },
+    "small": {
+      "count": 3,
+      "individualLoadMillis": [
+        549,
+        548,
+        539
+      ],
+      "medianMillis": 548,
+      "minMillis": 539,
+      "maxMillis": 549,
+      "rangeMillis": 10
+    }
+  },
+  "firstError": null,
+  "limits": [
+    "not L, first nonempty inference, app startup, microphone, hotkey or language/quality qualification",
+    "power source observation is not a controlled energy profile",
+    "one synthetic zero-input job follows readiness and must remain empty"
+  ],
+  "wrapperPidIsNotTargetPid": true
+}

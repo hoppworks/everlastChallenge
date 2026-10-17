@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "purpose": "fresh-process model-readiness only; synthetic empty job is not speech quality or first nonempty inference",
+  "sourceManifestSha256": "514befba28e7ea14882cd13a71f971e5fb6c6131f914491b697741a027611a49",
+  "cases": [
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/calibration-de-zero-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec"
+      },
+      "class": "challenging",
+      "id": "calibration-de-zero-5s",
+      "language": "de",
+      "reference": "",
+      "source": {
+        "dataset": "synthetic",
+        "revision": "calibration-v2",
+        "sha256": null,
+        "split": "calibration",
+        "transformations": [
+          {
+            "frames": 80000,
+            "generator": "zero",
+            "operation": "generate_zero",
+            "seed": null,
+            "uniformAmplitude": 0
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "synthetic",
+        "not-room-noise",
+        "zero"
+      ]
+    }
+  ]
+}
