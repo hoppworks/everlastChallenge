@@ -1,0 +1,711 @@
+//! Owns model I/O and initialization outside the GUI. No inference context is loaded twice concurrently.
+use crate::{
+    inference_service::InferenceService,
+    model::{self, ModelDefinition, ModelError},
+};
+use std::{
+    path::{Path, PathBuf},
+    sync::{Arc, Mutex},
+    thread::{self, JoinHandle},
+    time::Duration,
+};
+use tokio_util::sync::CancellationToken;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Phase {
+    Missing,
+    Checking,
+    Downloading,
+    Loading,
+    Cancelling,
+    Cancelled,
+    Ready,
+    Failed,
+}
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
+#[serde(tag = "code", rename_all = "snake_case")]
+pub enum Failure {
+    Permission,
+    DiskFull,
+    Io,
+    Size,
+    Hash,
+    NetworkOrTls,
+    Timeout,
+    Redirect,
+    Http { status: u16 },
+    Initialization,
+    Worker,
+}
+#[derive(Clone, Debug, serde::Serialize)]
+pub struct Snapshot {
+    pub revision: u64,
+    pub phase: Phase,
+    pub model: ModelDefinition,
+    pub received: u64,
+    pub total: u64,
+    pub failure: Option<Failure>,
+}
+#[derive(Debug, thiserror::Error)]
+pub enum SetupError {
+    #[error("Model setup is busy or already ready")]
+    Busy,
+    #[error("Model setup has shut down")]
+    Closed,
+    #[error("Model setup synchronization failed")]
+    Synchronization,
+    #[error("Model setup worker could not start or join")]
+    Worker,
+}
+struct State {
+    closed: bool,
+    snapshot: Snapshot,
+    cancel: Option<CancellationToken>,
+    ready: Option<InferenceService>,
+}
+impl State {
+    fn update(&mut self, phase: Phase, received: u64, failure: Option<Failure>) {
+        if self.snapshot.phase != phase
+            || self.snapshot.received != received
+            || self.snapshot.failure != failure
+        {
+            self.snapshot.revision = self.snapshot.revision.saturating_add(1);
+            self.snapshot.phase = phase;
+            self.snapshot.received = received;
+            self.snapshot.failure = failure;
+        }
+    }
+}
+trait Backend: Send + Sync + 'static {
+    fn inspect(
+        &self,
+        directory: &Path,
+        definition: ModelDefinition,
+        cancel: &CancellationToken,
+    ) -> Result<Option<PathBuf>, ModelError>;
+    fn download(
+        &self,
+        directory: &Path,
+        definition: ModelDefinition,
+        cancel: &CancellationToken,
+        progress: &mut dyn FnMut(u64),
+    ) -> Result<PathBuf, ModelError>;
+    fn load(&self, path: PathBuf, definition: ModelDefinition)
+    -> Result<InferenceService, Failure>;
+}
+struct NativeBackend;
+impl Backend for NativeBackend {
+    fn inspect(
+        &self,
+        directory: &Path,
+        definition: ModelDefinition,
+        cancel: &CancellationToken,
+    ) -> Result<Option<PathBuf>, ModelError> {
+        if cancel.is_cancelled() {
+            return Err(ModelError::Cancelled);
+        }
+        let path = directory.join(definition.file_name());
+        match std::fs::metadata(&path) {
+            Ok(_) => {
+                model::verify_file_cancellable(&path, definition, cancel)?;
+                Ok(Some(path))
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+            Err(error) => Err(error.into()),
+        }
+    }
+    fn download(
+        &self,
+        directory: &Path,
+        definition: ModelDefinition,
+        cancel: &CancellationToken,
+        progress: &mut dyn FnMut(u64),
+    ) -> Result<PathBuf, ModelError> {
+        model::download_model(directory, definition, cancel, progress)
+    }
+    fn load(
+        &self,
+        path: PathBuf,
+        definition: ModelDefinition,
+    ) -> Result<InferenceService, Failure> {
+        InferenceService::load(path, definition).map_err(|_| Failure::Initialization)
+    }
+}
+
+struct WorkerExit(Arc<Mutex<State>>);
+impl Drop for WorkerExit {
+    fn drop(&mut self) {
+        if let Ok(mut state) = self.0.lock()
+            && state.cancel.take().is_some()
+        {
+            let received = state.snapshot.received;
+            state.update(Phase::Failed, received, Some(Failure::Worker));
+        }
+    }
+}
+
+pub struct SetupService {
+    directory: PathBuf,
+    definition: ModelDefinition,
+    backend: Arc<dyn Backend>,
+    state: Arc<Mutex<State>>,
+    worker: Mutex<Option<JoinHandle<()>>>,
+}
+impl SetupService {
+    pub fn new(directory: PathBuf, definition: ModelDefinition) -> Self {
+        Self::with_backend(directory, definition, Arc::new(NativeBackend))
+    }
+    fn with_backend(
+        directory: PathBuf,
+        definition: ModelDefinition,
+        backend: Arc<dyn Backend>,
+    ) -> Self {
+        Self {
+            directory,
+            definition,
+            backend,
+            state: Arc::new(Mutex::new(State {
+                closed: false,
+                snapshot: Snapshot {
+                    revision: 1,
+                    phase: Phase::Missing,
+                    model: definition,
+                    received: 0,
+                    total: definition.bytes(),
+                    failure: None,
+                },
+                cancel: None,
+                ready: None,
+            })),
+            worker: Mutex::new(None),
+        }
+    }
+    pub fn snapshot(&self) -> Result<Snapshot, SetupError> {
+        Ok(self
+            .state
+            .lock()
+            .map_err(|_| SetupError::Synchronization)?
+            .snapshot
+            .clone())
+    }
+    /// Check a cached model automatically; network access requires download=true.
+    pub fn start(&self, download: bool) -> Result<(), SetupError> {
+        let mut worker = self
+            .worker
+            .lock()
+            .map_err(|_| SetupError::Synchronization)?;
+        if worker.as_ref().is_some_and(|worker| !worker.is_finished()) {
+            return Err(SetupError::Busy);
+        }
+        if let Some(previous) = worker.take() {
+            previous.join().map_err(|_| SetupError::Worker)?;
+        }
+        let cancel = CancellationToken::new();
+        {
+            let mut state = self.state.lock().map_err(|_| SetupError::Synchronization)?;
+            if state.closed {
+                return Err(SetupError::Closed);
+            }
+            if state.snapshot.phase == Phase::Ready {
+                return Err(SetupError::Busy);
+            }
+            state.update(Phase::Checking, 0, None);
+            state.cancel = Some(cancel.clone());
+        }
+        let state = Arc::clone(&self.state);
+        let backend = Arc::clone(&self.backend);
+        let directory = self.directory.clone();
+        let definition = self.definition;
+        *worker = Some(
+            thread::Builder::new()
+                .name("model-setup".into())
+                .spawn(move || {
+                    let _exit = WorkerExit(Arc::clone(&state));
+                    run(
+                        backend.as_ref(),
+                        &directory,
+                        definition,
+                        download,
+                        &cancel,
+                        &state,
+                    );
+                })
+                .map_err(|_| {
+                    if let Ok(mut state) = self.state.lock() {
+                        state.update(Phase::Failed, 0, Some(Failure::Worker));
+                        state.cancel = None;
+                    }
+                    SetupError::Worker
+                })?,
+        );
+        Ok(())
+    }
+    pub fn cancel(&self) -> Result<(), SetupError> {
+        let mut state = self.state.lock().map_err(|_| SetupError::Synchronization)?;
+        if state.closed {
+            return Err(SetupError::Closed);
+        }
+        if let Some(cancel) = &state.cancel {
+            cancel.cancel();
+            let received = state.snapshot.received;
+            state.update(Phase::Cancelling, received, None);
+        }
+        Ok(())
+    }
+    /// Moves the already warm serial service to the application owner exactly once.
+    pub fn take_ready(&self) -> Result<Option<InferenceService>, SetupError> {
+        let mut state = self.state.lock().map_err(|_| SetupError::Synchronization)?;
+        if state.closed {
+            return Err(SetupError::Closed);
+        }
+        Ok(state.ready.take())
+    }
+    /// Wait outside the GUI. Model initialization may have to finish before it can be discarded.
+    pub fn shutdown(&self) -> Result<(), SetupError> {
+        {
+            let mut state = self.state.lock().map_err(|_| SetupError::Synchronization)?;
+            state.closed = true;
+            if let Some(cancel) = &state.cancel {
+                cancel.cancel();
+                let received = state.snapshot.received;
+                state.update(Phase::Cancelling, received, None);
+            }
+        }
+        let worker = self
+            .worker
+            .lock()
+            .map_err(|_| SetupError::Synchronization)?
+            .take();
+        if let Some(worker) = worker {
+            worker.join().map_err(|_| SetupError::Worker)?;
+        }
+        let ready = self
+            .state
+            .lock()
+            .map_err(|_| SetupError::Synchronization)?
+            .ready
+            .take();
+        if let Some(ready) = ready {
+            ready.shutdown().map_err(|_| SetupError::Worker)?;
+        }
+        Ok(())
+    }
+}
+impl Drop for SetupService {
+    fn drop(&mut self) {
+        if let Ok(state) = self.state.lock()
+            && let Some(cancel) = &state.cancel
+        {
+            cancel.cancel();
+        }
+    }
+}
+
+fn failure(error: ModelError) -> Failure {
+    match error {
+        ModelError::Io(error) => match error.kind() {
+            std::io::ErrorKind::PermissionDenied => Failure::Permission,
+            std::io::ErrorKind::StorageFull => Failure::DiskFull,
+            _ => Failure::Io,
+        },
+        ModelError::Size => Failure::Size,
+        ModelError::Hash => Failure::Hash,
+        ModelError::Timeout => Failure::Timeout,
+        ModelError::Redirect => Failure::Redirect,
+        ModelError::Network => Failure::NetworkOrTls,
+        ModelError::Http(status) => Failure::Http { status },
+        ModelError::Closed | ModelError::Cancelled => Failure::Io,
+    }
+}
+fn run(
+    backend: &dyn Backend,
+    directory: &Path,
+    definition: ModelDefinition,
+    download: bool,
+    cancel: &CancellationToken,
+    state: &Mutex<State>,
+) {
+    let result = (|| {
+        let cached = match backend.inspect(directory, definition, cancel) {
+            Ok(path) => path,
+            Err(ModelError::Hash | ModelError::Size) if download => None,
+            Err(error) => return Err(failure(error)),
+        };
+        if cancel.is_cancelled() {
+            return Ok(None);
+        }
+        let path = match cached {
+            Some(path) => path,
+            None if !download => return Ok(None),
+            None => {
+                {
+                    let mut state = state.lock().map_err(|_| Failure::Worker)?;
+                    if cancel.is_cancelled() {
+                        return Ok(None);
+                    }
+                    state.update(Phase::Downloading, 0, None);
+                }
+                backend
+                    .download(directory, definition, cancel, &mut |received| {
+                        if let Ok(mut state) = state.lock()
+                            && !cancel.is_cancelled()
+                        {
+                            state.update(
+                                Phase::Downloading,
+                                received.min(definition.bytes()),
+                                None,
+                            );
+                        }
+                    })
+                    .map_err(failure)?
+            }
+        };
+        if cancel.is_cancelled() {
+            return Ok(None);
+        }
+        {
+            let mut state = state.lock().map_err(|_| Failure::Worker)?;
+            if !cancel.is_cancelled() {
+                let received = state.snapshot.received;
+                state.update(Phase::Loading, received, None);
+            }
+        }
+        if cancel.is_cancelled() {
+            return Ok(None);
+        }
+        let service = backend.load(path, definition)?;
+        loop {
+            if cancel.is_cancelled() {
+                service.shutdown().map_err(|_| Failure::Initialization)?;
+                return Ok(None);
+            }
+            if service.ready() {
+                return Ok(Some(service));
+            }
+            if service.is_finished() {
+                service.shutdown().map_err(|_| Failure::Initialization)?;
+                return Err(Failure::Initialization);
+            }
+            thread::sleep(Duration::from_millis(10));
+        }
+    })();
+    let Ok(mut shared) = state.lock() else {
+        return;
+    };
+    let received = shared.snapshot.received;
+    shared.cancel = None;
+    if cancel.is_cancelled() {
+        // Closing a loaded context can wait for backend initialization; do not
+        // hold the snapshot mutex while its owner joins.
+        let (discard, cleanup_failure) = match result {
+            Ok(Some(service)) => (Some(service), None),
+            Err(error @ (Failure::Initialization | Failure::Worker)) => (None, Some(error)),
+            _ => (None, None),
+        };
+        shared.update(Phase::Cancelling, received, None);
+        drop(shared);
+        if let Some(service) = discard
+            && service.shutdown().is_err()
+        {
+            if let Ok(mut shared) = state.lock() {
+                shared.update(Phase::Failed, received, Some(Failure::Initialization));
+            }
+            return;
+        }
+        if let Ok(mut shared) = state.lock() {
+            if let Some(error) = cleanup_failure {
+                shared.update(Phase::Failed, received, Some(error));
+            } else {
+                shared.update(Phase::Cancelled, received, None);
+            }
+        }
+    } else {
+        match result {
+            Ok(Some(service)) => {
+                shared.ready = Some(service);
+                shared.update(Phase::Ready, received, None);
+            }
+            Ok(None) => shared.update(Phase::Missing, received, None),
+            Err(error) => shared.update(Phase::Failed, received, Some(error)),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        inference_service::Decoder,
+        transcription::{InferenceError, Language},
+    };
+    struct EmptyDecoder;
+    impl Decoder for EmptyDecoder {
+        fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+            Ok(String::new())
+        }
+    }
+    struct Fixture;
+    impl Backend for Fixture {
+        fn inspect(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            _: &CancellationToken,
+        ) -> Result<Option<PathBuf>, ModelError> {
+            Ok(None)
+        }
+        fn download(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            _: &CancellationToken,
+            progress: &mut dyn FnMut(u64),
+        ) -> Result<PathBuf, ModelError> {
+            progress(42);
+            Ok(PathBuf::from("fixture"))
+        }
+        fn load(&self, _: PathBuf, _: ModelDefinition) -> Result<InferenceService, Failure> {
+            InferenceService::with_decoder(EmptyDecoder).map_err(|_| Failure::Initialization)
+        }
+    }
+    fn finished(service: &SetupService) -> Result<Snapshot, Box<dyn std::error::Error>> {
+        let deadline = std::time::Instant::now() + Duration::from_secs(2);
+        loop {
+            let snapshot = service.snapshot()?;
+            if matches!(
+                snapshot.phase,
+                Phase::Ready | Phase::Missing | Phase::Failed | Phase::Cancelled
+            ) {
+                return Ok(snapshot);
+            }
+            if std::time::Instant::now() >= deadline {
+                return Err("setup did not finish".into());
+            }
+            thread::sleep(Duration::from_millis(1));
+        }
+    }
+    #[test]
+    fn explicit_download_loads_and_transfers_one_warm_service()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let setup = SetupService::with_backend(
+            PathBuf::from("fixture"),
+            model::REFERENCE,
+            Arc::new(Fixture),
+        );
+        setup.start(true)?;
+        let snapshot = finished(&setup)?;
+        assert_eq!(snapshot.phase, Phase::Ready);
+        assert_eq!(snapshot.received, 42);
+        let ready = setup.take_ready()?.ok_or("warm service missing")?;
+        assert!(ready.ready());
+        assert!(setup.take_ready()?.is_none());
+        assert!(matches!(setup.start(true), Err(SetupError::Busy)));
+        ready.shutdown()?;
+        setup.shutdown()?;
+        Ok(())
+    }
+    #[test]
+    fn cache_check_never_downloads_implicitly() -> Result<(), Box<dyn std::error::Error>> {
+        let setup = SetupService::with_backend(
+            PathBuf::from("fixture"),
+            model::REFERENCE,
+            Arc::new(Fixture),
+        );
+        setup.start(false)?;
+        assert_eq!(finished(&setup)?.phase, Phase::Missing);
+        assert!(setup.take_ready()?.is_none());
+        setup.shutdown()?;
+        Ok(())
+    }
+
+    struct Controlled {
+        entered: crossbeam_channel::Sender<()>,
+        release: crossbeam_channel::Receiver<()>,
+    }
+    impl Backend for Controlled {
+        fn inspect(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            _: &CancellationToken,
+        ) -> Result<Option<PathBuf>, ModelError> {
+            Ok(None)
+        }
+        fn download(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            cancel: &CancellationToken,
+            progress: &mut dyn FnMut(u64),
+        ) -> Result<PathBuf, ModelError> {
+            progress(7);
+            self.entered.send(()).map_err(|_| ModelError::Closed)?;
+            loop {
+                if cancel.is_cancelled() {
+                    return Err(ModelError::Cancelled);
+                }
+                if self.release.recv_timeout(Duration::from_millis(1)).is_ok() {
+                    return Ok(PathBuf::from("fixture"));
+                }
+            }
+        }
+        fn load(
+            &self,
+            path: PathBuf,
+            definition: ModelDefinition,
+        ) -> Result<InferenceService, Failure> {
+            Fixture.load(path, definition)
+        }
+    }
+    #[test]
+    fn cancel_releases_setup_and_retry_cannot_run_two_downloads()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (entered, began) = crossbeam_channel::bounded(1);
+        let (release, waiting) = crossbeam_channel::bounded(1);
+        let setup = SetupService::with_backend(
+            PathBuf::from("fixture"),
+            model::REFERENCE,
+            Arc::new(Controlled {
+                entered,
+                release: waiting,
+            }),
+        );
+        setup.start(true)?;
+        began.recv_timeout(Duration::from_secs(1))?;
+        assert!(matches!(setup.start(true), Err(SetupError::Busy)));
+        assert_eq!(setup.snapshot()?.received, 7);
+        setup.cancel()?;
+        assert_eq!(finished(&setup)?.phase, Phase::Cancelled);
+        assert!(setup.take_ready()?.is_none());
+        release.send(())?;
+        let deadline = std::time::Instant::now() + Duration::from_secs(1);
+        loop {
+            match setup.start(true) {
+                Ok(()) => break,
+                Err(SetupError::Busy) if std::time::Instant::now() < deadline => {
+                    thread::yield_now()
+                }
+                Err(error) => return Err(error.into()),
+            }
+        }
+        began.recv_timeout(Duration::from_secs(1))?;
+        assert_eq!(finished(&setup)?.phase, Phase::Ready);
+        setup.shutdown()?;
+        Ok(())
+    }
+    struct BrokenOnCancel {
+        cancel: Mutex<Option<CancellationToken>>,
+        path: PathBuf,
+    }
+    impl Backend for BrokenOnCancel {
+        fn inspect(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            cancel: &CancellationToken,
+        ) -> Result<Option<PathBuf>, ModelError> {
+            if let Ok(mut token) = self.cancel.lock() {
+                *token = Some(cancel.clone());
+            }
+            Ok(Some(self.path.clone()))
+        }
+        fn download(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            _: &CancellationToken,
+            _: &mut dyn FnMut(u64),
+        ) -> Result<PathBuf, ModelError> {
+            Err(ModelError::Closed)
+        }
+        fn load(
+            &self,
+            path: PathBuf,
+            definition: ModelDefinition,
+        ) -> Result<InferenceService, Failure> {
+            let service =
+                InferenceService::load(path, definition).map_err(|_| Failure::Initialization)?;
+            if let Ok(cancel) = self.cancel.lock()
+                && let Some(cancel) = cancel.as_ref()
+            {
+                cancel.cancel();
+            }
+            Ok(service)
+        }
+    }
+    #[test]
+    fn failed_worker_shutdown_is_not_hidden_by_cancel() -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let backend = BrokenOnCancel {
+            cancel: Mutex::new(None),
+            path: directory.path().join("missing.bin"),
+        };
+        let setup = SetupService::with_backend(
+            directory.path().to_owned(),
+            model::REFERENCE,
+            Arc::new(backend),
+        );
+        setup.start(false)?;
+        let state = finished(&setup)?;
+        assert_eq!(state.phase, Phase::Failed);
+        assert_eq!(state.failure, Some(Failure::Initialization));
+        setup.shutdown()?;
+        Ok(())
+    }
+    struct InvalidCache;
+    impl Backend for InvalidCache {
+        fn inspect(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            _: &CancellationToken,
+        ) -> Result<Option<PathBuf>, ModelError> {
+            Err(ModelError::Hash)
+        }
+        fn download(
+            &self,
+            directory: &Path,
+            definition: ModelDefinition,
+            cancel: &CancellationToken,
+            progress: &mut dyn FnMut(u64),
+        ) -> Result<PathBuf, ModelError> {
+            Fixture.download(directory, definition, cancel, progress)
+        }
+        fn load(
+            &self,
+            path: PathBuf,
+            definition: ModelDefinition,
+        ) -> Result<InferenceService, Failure> {
+            Fixture.load(path, definition)
+        }
+    }
+    #[test]
+    fn invalid_cache_requires_explicit_repair_and_shutdown_rejects_restart()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let setup = SetupService::with_backend(
+            PathBuf::from("fixture"),
+            model::REFERENCE,
+            Arc::new(InvalidCache),
+        );
+        setup.start(false)?;
+        let state = finished(&setup)?;
+        assert_eq!(state.phase, Phase::Failed);
+        assert_eq!(state.failure, Some(Failure::Hash));
+        let deadline = std::time::Instant::now() + Duration::from_secs(1);
+        loop {
+            match setup.start(true) {
+                Ok(()) => break,
+                Err(SetupError::Busy) if std::time::Instant::now() < deadline => {
+                    thread::yield_now()
+                }
+                Err(error) => return Err(error.into()),
+            }
+        }
+        assert_eq!(finished(&setup)?.phase, Phase::Ready);
+        setup.shutdown()?;
+        assert!(matches!(setup.start(true), Err(SetupError::Closed)));
+        assert!(matches!(setup.take_ready(), Err(SetupError::Closed)));
+        Ok(())
+    }
+}

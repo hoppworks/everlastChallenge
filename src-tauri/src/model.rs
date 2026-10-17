@@ -166,6 +166,25 @@ fn hex_digest(digest: impl AsRef<[u8]>) -> String {
 }
 
 pub fn verify_file(path: &Path, definition: ModelDefinition) -> Result<(), ModelError> {
+    verify(path, definition, None)
+}
+
+pub fn verify_file_cancellable(
+    path: &Path,
+    definition: ModelDefinition,
+    cancel: &tokio_util::sync::CancellationToken,
+) -> Result<(), ModelError> {
+    verify(path, definition, Some(cancel))
+}
+
+fn verify(
+    path: &Path,
+    definition: ModelDefinition,
+    cancel: Option<&tokio_util::sync::CancellationToken>,
+) -> Result<(), ModelError> {
+    if cancel.is_some_and(|cancel| cancel.is_cancelled()) {
+        return Err(ModelError::Cancelled);
+    }
     let mut file = File::open(path)?;
     if file.metadata()?.len() != definition.bytes {
         return Err(ModelError::Size);
@@ -174,6 +193,9 @@ pub fn verify_file(path: &Path, definition: ModelDefinition) -> Result<(), Model
     let mut buffer = [0_u8; 65_536];
     let mut received = 0_u64;
     loop {
+        if cancel.is_some_and(|cancel| cancel.is_cancelled()) {
+            return Err(ModelError::Cancelled);
+        }
         let read = file.read(&mut buffer)?;
         if read == 0 {
             break;
@@ -380,6 +402,18 @@ mod tests {
         let path = download.finish()?;
         assert_eq!(std::fs::read(path)?, b"abc");
         assert_eq!(std::fs::read_dir(directory.path())?.count(), 1);
+        Ok(())
+    }
+    #[test]
+    fn cancelled_hash_verification_does_not_open_the_file() -> Result<(), Box<dyn std::error::Error>>
+    {
+        let directory = tempfile::tempdir()?;
+        let cancel = tokio_util::sync::CancellationToken::new();
+        cancel.cancel();
+        assert!(matches!(
+            verify_file_cancellable(&directory.path().join("absent.bin"), fixture(), &cancel),
+            Err(ModelError::Cancelled)
+        ));
         Ok(())
     }
 }

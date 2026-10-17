@@ -9,4 +9,5 @@ pub mod model;
 pub mod native_service;
 pub mod runtime;
 pub mod settings;
+pub mod setup;
 pub mod transcription;
