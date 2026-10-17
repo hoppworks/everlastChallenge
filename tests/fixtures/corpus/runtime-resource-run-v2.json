@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "kind": "prospective-production-native-timestamp-resource-workload",
+  "qualified": false,
+  "createdBeforeWorkloadUtc": "2026-10-17T17:32:29.182369+00:00",
+  "sourceRevision": "736242d87e9fa452486c5b58a2559c8b1bf6142b",
+  "binary": {
+    "path": "target/release/examples/runtime_resource_probe",
+    "sha256": "30f41f9a1db5395047e5f295abf0e42005a74fcf218049cbc8226129db277347",
+    "bytes": 4550416,
+    "mode": "0o755"
+  },
+  "parameters": {
+    "path": "tests/fixtures/corpus/runtime-resource-parameters-v2.json",
+    "sha256": "a53085218fce9937fbc162efe0337c9e3cc6f9bda90a897d11a86893e9e82f3f",
+    "bytes": 13100,
+    "mode": "0o600"
+  },
+  "launcher": {
+    "path": "scripts/run-runtime-resource.py",
+    "sha256": "ee87df6f5976ef6a43cfc97430b9f6ba4ac3b62c7c78ad80e2c09410b5ef8d54",
+    "bytes": 5410,
+    "mode": "0o644"
+  },
+  "fixture": {
+    "path": "artifacts/replay/neue-aufnahme.wav",
+    "sha256": "9a108246c7b1196e8203ee22ebacabe7927d18f7a37a5f2e7647437db7df069c",
+    "bytes": 262222,
+    "mode": "0o600",
+    "frames": 131072,
+    "sampleRate": 16000,
+    "channels": 1
+  },
+  "reference": {
+    "path": "artifacts/replay/neue-aufnahme-baseline.txt",
+    "sha256": "6e0700c02c1f08629895d05206fbeeb924afaea30fa6d3e49e3356136622cc67",
+    "bytes": 56,
+    "mode": "0o600"
+  },
+  "baselineSnapshotBindings": [
+    {
+      "path": "artifacts/replay/runtime-resource-v2/baseline-comparison.json",
+      "sha256": "3cd94942aa1c6289e8edca8be61599b2ce8d46cab6ac32aa998a78abe46d23fa",
+      "bytes": 588,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/runtime-resource-v2/baseline-completion.json",
+      "sha256": "4f854f8d23070e9b155034595d8da9357fb262274b325832793ac609e5df1388",
+      "bytes": 219,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/runtime-resource-v2/baseline-freeze.json",
+      "sha256": "0991039a9f84596f688fce3e9e08b15fd96ae757c23d72853ecd62705316d5a8",
+      "bytes": 2042,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/runtime-resource-v2/baseline-manifest.json",
+      "sha256": "d241c77ba58dec1f10049320f67b47e173d3d27bab539a849f52d6aa919cfa7d",
+      "bytes": 469,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/runtime-resource-v2/baseline-results.json",
+      "sha256": "bd1133ffc975997ebb2b381f79ef087eeddc4cee2b47760a2bb9ccd8620c3f6d",
+      "bytes": 140,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/runtime-resource-v2/baseline-results.json.metadata.json",
+      "sha256": "8ee9104a839edf73d20674f5f78745269c507697865a8fd29205dd0536a54364",
+      "bytes": 2359,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/runtime-resource-v2/baseline.command.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    }
+  ],
+  "baselineExactIdentityConfirmed": true,
+  "models": {
+    "reference": {
+      "path": "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+      "bytes": 574041195,
+      "mode": "0o644"
+    },
+    "vad": {
+      "path": "artifacts/models/ggml-silero-v5.1.2.bin",
+      "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+      "bytes": 885098,
+      "mode": "0o600"
+    }
+  },
+  "command": [
+    "/usr/bin/python3",
+    "scripts/run-runtime-resource.py",
+    "target/release/examples/runtime_resource_probe",
+    "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+    "reference",
+    "artifacts/replay/neue-aufnahme.wav",
+    "artifacts/replay/neue-aufnahme-baseline.txt",
+    "tests/fixtures/corpus/runtime-resource-parameters-v2.json",
+    "artifacts/replay/runtime-resource-v2/workload.json"
+  ],
+  "environment": {
+    "EVERLAST_BENCHMARK_REVISION": "736242d87e9fa452486c5b58a2559c8b1bf6142b"
+  },
+  "expected": {
+    "warmupSessions": 5,
+    "measuredSessions": 100,
+    "measuredStopComplete": 34,
+    "measuredCancelCapture": 33,
+    "measuredCancelDecoderEntry": 33,
+    "completeInputComparisons": 72,
+    "stopTextComparisons": 39,
+    "rssCheckpoints": 101,
+    "vmmapCheckpoints": 2,
+    "runtimeJoined": true
+  },
+  "policy": {
+    "runs": 1,
+    "retainAllFailedAndUnavailableRows": true,
+    "noConcurrentBuildTestsOrModels": true,
+    "unchangedRetry": false
+  },
+  "limits": [
+    "Production Engine/transcribe configuration, but developer replay harness initializes Engine before moving to worker and retains one extra constant original fixture.",
+    "Baseline repeatability is not independently certified transcript accuracy.",
+    "RSS is resident memory, not live heap; report preserves raw observations without an invented pass threshold.",
+    "No native kernel preemption promise; cancelled decode may finish and must remain discarded.",
+    "Embedded paced/QoS parameters are provenance; this resource harness does not execute central L or publisher QoS.",
+    "No installed app/bundle build, microphone, hotkey, UI, native paste or general P05/P06 qualification."
+  ]
+}
