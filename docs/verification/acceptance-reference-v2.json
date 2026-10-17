@@ -1,0 +1,282 @@
+{
+  "schemaVersion": 1,
+  "kind": "acceptance-quality-after-nst-mask-correction",
+  "sourceRevision": "db9a640fb2a783f708510d3e9ce236d6e0bf2107",
+  "parameterSha256": "9b045db30e32bc7dfaa8775fba598ca93c7553b6f4b93c26af3dd6180b39f0f7",
+  "qualified": false,
+  "L": null,
+  "runs": [
+    {
+      "model": "reference",
+      "groups": [
+        {
+          "split": "acceptance",
+          "language": "de",
+          "class": "challenging",
+          "caseCount": 8,
+          "scoredCount": 6,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 2,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 559,
+          "refWords": 559,
+          "edits": 279,
+          "complete": true,
+          "observedWer": 0.4991055456171735,
+          "wer": 0.4991055456171735
+        },
+        {
+          "split": "acceptance",
+          "language": "de",
+          "class": "clean",
+          "caseCount": 43,
+          "scoredCount": 43,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 915,
+          "refWords": 915,
+          "edits": 47,
+          "complete": true,
+          "observedWer": 0.05136612021857923,
+          "wer": 0.05136612021857923
+        },
+        {
+          "split": "acceptance",
+          "language": "en",
+          "class": "challenging",
+          "caseCount": 7,
+          "scoredCount": 5,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 2,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 99,
+          "refWords": 99,
+          "edits": 5,
+          "complete": true,
+          "observedWer": 0.050505050505050504,
+          "wer": 0.050505050505050504
+        },
+        {
+          "split": "acceptance",
+          "language": "en",
+          "class": "clean",
+          "caseCount": 32,
+          "scoredCount": 32,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 734,
+          "refWords": 734,
+          "edits": 31,
+          "complete": true,
+          "observedWer": 0.04223433242506812,
+          "wer": 0.04223433242506812
+        }
+      ],
+      "changedResultIds": [
+        "fleurs-de-test-1670",
+        "fleurs-de-test-1675",
+        "fleurs-de-test-1678",
+        "fleurs-en-test-1682"
+      ],
+      "okCases": 90,
+      "loadMillis": 1401,
+      "cleanupMillis": 3,
+      "loadError": null,
+      "serviceError": null,
+      "cleanupError": null
+    },
+    {
+      "model": "small",
+      "groups": [
+        {
+          "split": "acceptance",
+          "language": "de",
+          "class": "challenging",
+          "caseCount": 8,
+          "scoredCount": 6,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 2,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 559,
+          "refWords": 559,
+          "edits": 346,
+          "complete": true,
+          "observedWer": 0.6189624329159212,
+          "wer": 0.6189624329159212
+        },
+        {
+          "split": "acceptance",
+          "language": "de",
+          "class": "clean",
+          "caseCount": 43,
+          "scoredCount": 43,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 915,
+          "refWords": 915,
+          "edits": 96,
+          "complete": true,
+          "observedWer": 0.10491803278688525,
+          "wer": 0.10491803278688525
+        },
+        {
+          "split": "acceptance",
+          "language": "en",
+          "class": "challenging",
+          "caseCount": 7,
+          "scoredCount": 5,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 2,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 99,
+          "refWords": 99,
+          "edits": 9,
+          "complete": true,
+          "observedWer": 0.09090909090909091,
+          "wer": 0.09090909090909091
+        },
+        {
+          "split": "acceptance",
+          "language": "en",
+          "class": "clean",
+          "caseCount": 32,
+          "scoredCount": 32,
+          "failedCount": 0,
+          "missingCount": 0,
+          "silenceCount": 0,
+          "silenceFailedCount": 0,
+          "unwantedTextCount": 0,
+          "expectedRefWords": 734,
+          "refWords": 734,
+          "edits": 44,
+          "complete": true,
+          "observedWer": 0.05994550408719346,
+          "wer": 0.05994550408719346
+        }
+      ],
+      "changedResultIds": [
+        "fleurs-de-test-1675",
+        "fleurs-de-test-1678",
+        "fleurs-de-test-1682",
+        "fleurs-en-test-1682",
+        "constructed-de-masked-300s"
+      ],
+      "okCases": 90,
+      "loadMillis": 583,
+      "cleanupMillis": 2,
+      "loadError": null,
+      "serviceError": null,
+      "cleanupError": null
+    }
+  ],
+  "completion": {
+    "parameterSha256": "9b045db30e32bc7dfaa8775fba598ca93c7553b6f4b93c26af3dd6180b39f0f7",
+    "runs": [
+      {
+        "model": "reference",
+        "startUtc": "2026-10-17T16:14:49.651834+00:00",
+        "pid": 93318,
+        "inferenceExit": 0,
+        "inferenceEndUtc": "2026-10-17T16:16:30.324927+00:00",
+        "evaluationExit": 0,
+        "endUtc": "2026-10-17T16:16:30.414298+00:00"
+      },
+      {
+        "model": "small",
+        "startUtc": "2026-10-17T16:16:30.414363+00:00",
+        "pid": 93426,
+        "inferenceExit": 0,
+        "inferenceEndUtc": "2026-10-17T16:17:01.284795+00:00",
+        "evaluationExit": 0,
+        "endUtc": "2026-10-17T16:17:01.360383+00:00"
+      }
+    ],
+    "endUtc": "2026-10-17T16:17:01.360584+00:00"
+  },
+  "provenanceClarification": "Frozen parameter field openCoverageFromManifest contains derived current remaining requirements, not a literal manifest field export. Historical manifest unchanged. No runtime impact.",
+  "rawFiles": [
+    {
+      "path": "artifacts/acceptance/v2/completion.json",
+      "sha256": "8a42c8c6468eb9a98d00b1b12d516d2e8885583c65c6fb03e9f5c61e2fc6f9c6",
+      "bytes": 712,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/reference-quality.json",
+      "sha256": "f872f3150317b2f0e873864e44dfc0532b71e3f3560baac12cea2f39da1931d6",
+      "bytes": 25553,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/reference-results.json",
+      "sha256": "f92cace71a327ed358bd1aed84001996aa434ea91d094314fd2cbb1d4809d995",
+      "bytes": 21333,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/reference-results.json.metadata.json",
+      "sha256": "b6df1e945efafa8103e20fca2508af25b4071e7f71dccfbf8c0e657063a62a70",
+      "bytes": 12294,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/reference.command.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/reference.quality.log",
+      "sha256": "4d238bd90549f73cd2a626978ada9b452ac6da6dc34f5e395aec45881a1df849",
+      "bytes": 86,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/small-quality.json",
+      "sha256": "f1fc8d58dc414d05c9eff5e4d6c0fdfb55752987f258547b564a782f69d1e9d3",
+      "bytes": 25859,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/small-results.json",
+      "sha256": "09126141868fbd02313871aad7feecfa91f306ad64152ea7a253d0f67f41e73a",
+      "bytes": 20749,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/small-results.json.metadata.json",
+      "sha256": "1da58c69c060498567e5afda719c44c61271ccb0e7c6c29dc1ad71c2bda830bf",
+      "bytes": 12234,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/small.command.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/acceptance/v2/small.quality.log",
+      "sha256": "4d238bd90549f73cd2a626978ada9b452ac6da6dc34f5e395aec45881a1df849",
+      "bytes": 86,
+      "mode": "0o600"
+    }
+  ]
+}
