@@ -108,3 +108,14 @@ und [Aufruf-/Hostbeobachtung v2](../../tests/fixtures/corpus/paced-six-reference
 Binary-SHA256 `49c5991e5cc7adf39bfd4a4352177f6959a0e5fcfb4ff94e71b34c3d1490ffb3`;
 Parameter-SHA256 `ec18cb5d8291c3481cde54ac77a45b8c7bb584807de427301d4875e5739f0667`.
 Der Developer-Releasebuild endete erfolgreich nach 6,42 s; kein App-/DMG-Build.
+
+### Abschluss v2: erneut ungültiger Messaufbau
+
+Der nach Freezecommit 1f92e63 gestartete Originalprozess PID 88303 / Launcher
+30830 endete am 17.10.2026 um 15:48:00.061931 UTC mit Exit 1. Alle 181 Slots
+bleiben erhalten: 81 ok einschließlich Warm-up, ein invalid_setup, 99 unavailable.
+DE15-Lauf21 überschritt zweimal die feste 10-ms-Grenze, trotz bestätigtem
+QoS-Eintritt und -Ende. Alle Besitzer gejoint; keine Gesamt- oder Teilstatistik,
+L bleibt null. [Vollständiger Fehlversuch v2](paced-six-reference-v2.md) mit
+inhaltfreiem Zahlenbericht und Rohdateibindungen. Kein Neustart und keine
+Grenzwertänderung; weitere Arbeit benötigt gezielte Ursacheninstrumentierung.
