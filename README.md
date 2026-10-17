@@ -19,6 +19,11 @@ Geprüfte Ausgangsumgebung: macOS 27.0.1, arm64, Rust/Cargo 1.93.0, Node 22.23.1
 
 ## Aktuellen Entwicklungsstand ausprobieren
 
+Die lokalen P05-Werkzeuge für öffentlichen Prüfkorpus, Referenzparameter und
+WER-Auswertung sind im [Korpus-Leitfaden](tests/fixtures/corpus/README.md)
+dokumentiert. Dateibackend-Ergebnisse ersetzen keine Echtzeit- oder installierte
+App-Abnahme.
+
 Der lokale Release-Build liegt unter `target/aarch64-apple-darwin/release/bundle/`: als App im Unterordner `macos`, als DMG in `dmg`. Dieser direkte Entwicklungsstart ersetzt die noch offene Prüfung des heruntergeladenen, quarantänierten Installationsartefakts nicht.
 
 Beim Start wird nur der eigene Modellcache geprüft. Mit **Modell laden** lässt sich das vorläufige Referenzmodell `large-v3-turbo-q5_0` (574 MB) von der im Fenster verlinkten, festgelegten Hugging-Face-Revision herunterladen. Die App prüft Größe und SHA-256 vor dem Laden. **Einrichtung abbrechen** beendet den Vorgang; ein neuer Versuch muss ausdrücklich gestartet werden. Ein erfolgreicher Download samt Modellinitialisierung ist im nativen Bundle geprüft. Die endgültige Modellwahl folgt erst nach den Qualitäts- und Leistungsmessungen. Im aktuellen Quellstand sperren Prüfung eines vorhandenen Cacheordners und Download den betreffenden Modellbestand gegen parallele Einrichtung. Beim Neustart werden ausschließlich eindeutig zugehörige Teildateien nachweislich beendeter Prozesse entfernt; aktive oder unklare Dateien bleiben erhalten. Eine belegte Sperre wird mit bewusstem erneutem Versuch gemeldet.

@@ -1,0 +1,5177 @@
+{
+  "cases": [
+    {
+      "audio": {
+        "frames": 144000,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1510.wav",
+        "sampleRate": 16000,
+        "sha256": "42390b1d1694ebe382c4cdb73158f8ca9da7119fd082b99bc32d76859d4291c9"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1510",
+      "language": "de",
+      "reference": "Die Vereinten Nationen hoffen zudem, einen Fonds einrichten zu können, der den von der globalen Erwärmung betroffenen Ländern helfen soll, mit den Auswirkungen fertig zu werden.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "16425197982854817946.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1510,
+        "sha256": "b346aa2056867c656850fa6a45b0e0590358db0795955f47dc1a030e6fb8e802",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 216000,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1511.wav",
+        "sampleRate": 16000,
+        "sha256": "6e0d89e1af7ba3b83142d5b3b35d811ae34e4e2c11e42ef34b1d27ca4883cc76"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1511",
+      "language": "de",
+      "reference": "Bald betraten Polizisten, die mit Schutzanzügen ausgerüstet waren, das Gelände und drängten die Insassen mit Tränengas in die Ecke.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3895054676176812350.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1511,
+        "sha256": "a5f439d8525ad1570464214476b92ac50822644a8fad45e7e7c0b6708d1f0a22",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 448320,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1512.wav",
+        "sampleRate": 16000,
+        "sha256": "63c850e1a7aeb8b01a24db224403320a26a9f781bf20461634ef1762518a7a42"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1512",
+      "language": "de",
+      "reference": "Dieses neue Umfeld hat andere Ressourcen und andere Konkurrenten, so dass die neue Bevölkerung andere Merkmale oder Anpassungen benötigt, um ein starker Konkurrent zu sein, als das, was sie vorher gebraucht hat.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11447383195362139105.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1512,
+        "sha256": "d12de062a62f321b732612a8fa60fe8ba539044a224b92d1ede0fc227b5798ee",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 86400,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1513.wav",
+        "sampleRate": 16000,
+        "sha256": "6bde7e8faf46d53d6f99c0d12df0a94314dc9df76f29f08c17205c9fb271e2f9"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1513",
+      "language": "de",
+      "reference": "Argentinien ist bekannt dafür, dass sein Polo-Team und die Spieler zu den besten der Welt gehören.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "149437509380665175.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1513,
+        "sha256": "6303885f518777651404d6c72e120fe1ebcc294480172dba52928f535e2b056f",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 191040,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1514.wav",
+        "sampleRate": 16000,
+        "sha256": "7ad30249797d2b1545ab80075511ad23f242ac5d4fc66d02c69c5323f1276a39"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1514",
+      "language": "de",
+      "reference": "Als die Kämpfe nach dem Transport der Verwundeten ins Krankenhaus aufhörten, blieben etwa 40 der übrigen Insassen auf dem Hof ​​und weigerten sich, in ihre Zellen zurückzukehren.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "15157582824062732431.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1514,
+        "sha256": "9f00c16eda0be554b0d36ea2beee7c3254ded46d1eba0cdff5583efbbaca3ff1",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 115200,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1515.wav",
+        "sampleRate": 16000,
+        "sha256": "2858cc8a2b98f1c748fa086b9306b0422f4c1c420a38637c6e584208644075a6"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1515",
+      "language": "de",
+      "reference": "Es ist Martellys fünftes CEP innerhalb von vier Jahren.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10829590158907308643.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1515,
+        "sha256": "f7676192afa3397e822da436e16e8977fd7b63c9a299ab1fb2e8166e32047f10",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 212160,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1516.wav",
+        "sampleRate": 16000,
+        "sha256": "650db96286857120af9db07b66f6c57ac11b4d57deac6eb7bc53b1a7b064d77d"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1516",
+      "language": "de",
+      "reference": "Bitte behandeln Sie diese Stätte mit der Würde, der Ehrfurcht und dem Respekt, die ihr gebühren. Machen Sie keine Witze über den Holocaust oder die Nazis.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "14164803304062297838.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1516,
+        "sha256": "3bc1ab5cba50a75d311e4e10e4b1a621759b81be59d8fbd794de8e701ee23b64",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 168960,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1517.wav",
+        "sampleRate": 16000,
+        "sha256": "b892cf9dc80c437f0a78c6f261d83dda196252e31a1e415032981472d3ea9137"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1517",
+      "language": "de",
+      "reference": "Forschung im Bereich KI umfasst die Herstellung von Maschinen zur Automatisierung von Aufgaben, die intelligentes Verhalten erfordern.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11568009216104084779.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1517,
+        "sha256": "6410514864409de7362bd2de92c932d5d87711c291bf0a34ef3f3c26d187e5dc",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 214080,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1518.wav",
+        "sampleRate": 16000,
+        "sha256": "c0e1251805bb74de1b8c95ceedb1f45ee8d1b9ddca19e7045460d96eb9d1005c"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1518",
+      "language": "de",
+      "reference": "Ein ehemaliger philippinischer Polizist hat Touristen aus Hongkong als Geiseln genommen, indem er ihren Bus in Manila, der Hauptstadt der Philippinen, entführte.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11083586197548566977.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1518,
+        "sha256": "e501bae7da3900e726b3428d34300baccde84a3d6e138bd2fe71b60c27206cce",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 360000,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1519.wav",
+        "sampleRate": 16000,
+        "sha256": "d28d7d00c5d831ea5dc5aeabeb1ff3607b1c1be39ede62a197a2a71f9c8c2244"
+      },
+      "class": "clean",
+      "id": "fleurs-de-dev-1519",
+      "language": "de",
+      "reference": "In vielen Fällen, kann die Teilnahme in einem Auslands-Überbrückungsjahr-Programm Ihre Chancen auf eine Hochschulausbildung in Ihrem Heimatland tatsächlich verbessern.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "14565174356836630009.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1519,
+        "sha256": "c83eb2e8dd6fa8303d298555181ee9c0e614b6f887cb170273d45ead239294fa",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 144000,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1510-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "40baab82dc557a09f9e1c0e57af79a798f5ab779d813eac111aed4f0ca0a8445"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-dev-1510-quiet",
+      "language": "de",
+      "reference": "Die Vereinten Nationen hoffen zudem, einen Fonds einrichten zu können, der den von der globalen Erwärmung betroffenen Ländern helfen soll, mit den Auswirkungen fertig zu werden.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "16425197982854817946.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1510,
+        "sha256": "b346aa2056867c656850fa6a45b0e0590358db0795955f47dc1a030e6fb8e802",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 216000,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1511-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "86877936a055c05c09a7939c33399ec04de88534c0c3742512af12bff7ea5480"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-dev-1511-quiet",
+      "language": "de",
+      "reference": "Bald betraten Polizisten, die mit Schutzanzügen ausgerüstet waren, das Gelände und drängten die Insassen mit Tränengas in die Ecke.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3895054676176812350.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1511,
+        "sha256": "a5f439d8525ad1570464214476b92ac50822644a8fad45e7e7c0b6708d1f0a22",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 448320,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1512-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "4af4b724064571ce2558c3d63553a62c657a2423712ad6e87b08fb2ca47b1a2c"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-dev-1512-quiet",
+      "language": "de",
+      "reference": "Dieses neue Umfeld hat andere Ressourcen und andere Konkurrenten, so dass die neue Bevölkerung andere Merkmale oder Anpassungen benötigt, um ein starker Konkurrent zu sein, als das, was sie vorher gebraucht hat.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11447383195362139105.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1512,
+        "sha256": "d12de062a62f321b732612a8fa60fe8ba539044a224b92d1ede0fc227b5798ee",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 86400,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1513-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "26ca04f8cdbea9ed6f259ebe1e0dfd3ba691169a7075264a907d59f5bcaa8ce8"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-dev-1513-quiet",
+      "language": "de",
+      "reference": "Argentinien ist bekannt dafür, dass sein Polo-Team und die Spieler zu den besten der Welt gehören.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "149437509380665175.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1513,
+        "sha256": "6303885f518777651404d6c72e120fe1ebcc294480172dba52928f535e2b056f",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 191040,
+        "path": "artifacts/corpus/audio/fleurs-de-dev-1514-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "7a5649ae0660c398ba628b36a4d8c01cbdb735de53f7df260d3f3afa398c0968"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-dev-1514-quiet",
+      "language": "de",
+      "reference": "Als die Kämpfe nach dem Transport der Verwundeten ins Krankenhaus aufhörten, blieben etwa 40 der übrigen Insassen auf dem Hof ​​und weigerten sich, in ihre Zellen zurückzukehren.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "15157582824062732431.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1514,
+        "sha256": "9f00c16eda0be554b0d36ea2beee7c3254ded46d1eba0cdff5583efbbaca3ff1",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 166080,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1660.wav",
+        "sampleRate": 16000,
+        "sha256": "a66eaf81acafe0b195defc63ed17079e3ee4067837ec037f43189a8c07266f93"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1660",
+      "language": "de",
+      "reference": "Die Romantik hatte ein starkes, kulturell deterministisches Element, das sich aus Schriftstellern wie Goethe, Fichte und Schlegel schöpfte.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1191248392415945452.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1660,
+        "sha256": "7fedda3ac6a639187b484a968421f8c5f6abdcc7eb264ef8021ffca1014c99fa",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 106560,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1661.wav",
+        "sampleRate": 16000,
+        "sha256": "1106da01f1ba8e3eb876a433fa884265a1a057c332b90f36dfbc76e8d033a4f0"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1661",
+      "language": "de",
+      "reference": "Er nannte keine Zahl für die Kürzungen, sondern sagte, sie würden auf der Grundlage der Wirtschaftsleistung Chinas vorgenommen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1344636249392808118.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1661,
+        "sha256": "8430e54b4cc4cb48142266537213db2960d0308205c30384c7e84b4660fc77d9",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 375360,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1662.wav",
+        "sampleRate": 16000,
+        "sha256": "ee4d0708ee838307fa0a73a29667e830c732e01cba61a65dd2be27385a98e781"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1662",
+      "language": "de",
+      "reference": "Legierungen sind im Grunde eine Mischung aus zwei oder mehr Metallen. Vergessen Sie nicht, dass es viele Elemente im Periodensystem gibt.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11871610055270234526.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1662,
+        "sha256": "cb4108041c7b9ea6d0ae9109b810646b954646476225c632cf0fb5bd6467ac53",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 160000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1663.wav",
+        "sampleRate": 16000,
+        "sha256": "e86ac3cc846d6fb8655fbbdaa6906d8812810bcc03fedeb4c385b7d039d0b79d"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1663",
+      "language": "de",
+      "reference": "Das Cochamó-Tal – Chiles wichtigstes Kletterziel, bekannt als der Yosemite-Nationalpark von Südamerika, mit einer Vielzahl von großen Granitwänden und -klippen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "7488275135478003184.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1663,
+        "sha256": "538728d89645fe6c1abd6e090a03c5b34d43c97c754d056747190f36bb672439",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 3520,
+            "operation": "append_zero_frames"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "central",
+        "central-10s"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 139200,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1664.wav",
+        "sampleRate": 16000,
+        "sha256": "58898f88e5470d640487c22539d6f9726c2deb62447d584eecf723e8716a5acc"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1664",
+      "language": "de",
+      "reference": "Mischen Sie die zwei Trockenpulver zusammen und formen Sie sie dann mit sauberen, nassen Händen zu einem Ball.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3251613536890899752.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1664,
+        "sha256": "0f8201286de9de1b71ae601055f1845f24c64a0e79e02b89f3793b3ebd4061b1",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 170880,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1665.wav",
+        "sampleRate": 16000,
+        "sha256": "cacc73b9bc8f4dc2f5938f13592d41522aba683185eb4857a55c4a543377f75f"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1665",
+      "language": "de",
+      "reference": "Dem Leak zufolge bezieht sich das Dokument auf den Grenzstreit, in dem die Palästinenser ein Zurücksetzen der Grenzen in den Zustand vor dem Sechstagekrieg von 1967 fordern.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10534115037762380445.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1665,
+        "sha256": "7e5caa4feee3f52b1e071df3baed6aa9a09a0b220bebdf3825931b98a9a143f0",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 284160,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1666.wav",
+        "sampleRate": 16000,
+        "sha256": "bd37e0d2856a8b827af8d7f42c432e6e114f6eb1d5dd2ed3846f76893f2ab24e"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1666",
+      "language": "de",
+      "reference": "Sie können auch die Ratschläge anderer Regierungen als der Ihren konsultieren. Deren Hinweise sind jedoch auf ihre eigenen Staatsbürger zugeschnitten.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "4807927553917148837.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1666,
+        "sha256": "92bf64d2bd913444a9614aa2c73eb25e9403ba1634051074169cb2e05042c227",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 442560,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1667.wav",
+        "sampleRate": 16000,
+        "sha256": "ae2cc2fd5c40fc6ec00e0938a2eba23c7a110818f3b564cbca35ef4856fe00d7"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1667",
+      "language": "de",
+      "reference": "Im Allgemeinen können sich zwei Verhaltensweisen abzeichnen, wenn Manager beginnen, ihre ehemaligen Kollegen zu leiten. Das eine Ende des Spektrums ist der Versuch, „einer der Jungs“ (oder eines der Mädels) zu bleiben.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "14812431812112878039.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1667,
+        "sha256": "b782f85456f6990fb6af6be4fb565861b787da813e9d94f44f620b705bcefa89",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 240000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1668.wav",
+        "sampleRate": 16000,
+        "sha256": "27e005fc4ffab77389bda81861250b6a3616fb2e686e65ef366314bad791abf6"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1668",
+      "language": "de",
+      "reference": "Es kann sich auch lohnen, eine Wild Card zu kaufen, die Zutritt entweder zu ausgewählten Parks in Südafrika oder zu allen südafrikanischen Nationalparks gewährt.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "13631299328082055159.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1668,
+        "sha256": "45c68c4d33fb19c105d773777cac155056b02adf3bb7f27bb16c72ea5cc2d184",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 4800,
+            "operation": "append_zero_frames"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "central",
+        "central-15s"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 204480,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1669.wav",
+        "sampleRate": 16000,
+        "sha256": "d80f796a615341eea4ea84c38e56d2beea5b505080d67fe1bcd354a320238eb6"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1669",
+      "language": "de",
+      "reference": "Die Polizeipräsidentin Chandra Shekhar Solanki gab an, die Angeklagten seien mit bedeckten Gesichtern vor Gericht erschienen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3045631440446403419.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1669,
+        "sha256": "d2fcc27063dd3e509f7343133df25cb9f689294734b54e988d0addd98a1d996b",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 337920,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1670.wav",
+        "sampleRate": 16000,
+        "sha256": "218549b01ef27b749d8a5188266755d317a2b4dc6059836df38112eca5f6c616"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1670",
+      "language": "de",
+      "reference": "\"Ihr thermisches Verhalten ist nicht so gleichmäßig wie das großer Höhlen auf der Erde, die oft eine ziemlich konstante Temperatur haben, aber es stimmt damit überein, dass es sich um tiefe Löcher im Boden handelt\"\", sagte Glen Cushing vom Astrogeologie-Team des United States Geological Survey (USGS) und der Northern Arizona University in Flagstaff, Arizona.\"",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10844590730633377222.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1670,
+        "sha256": "a2671212059e0e1be57eb72678f056c613f40ceda0441c38527d14a5f9302799",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 459840,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1671.wav",
+        "sampleRate": 16000,
+        "sha256": "5c3702a82696c772446d83478803ed3e4c7c607b142eaf46eb4d287d8564696e"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1671",
+      "language": "de",
+      "reference": "Der Kongress begann im August 2005 mit der Finanzierung der anti-Obszönitätsinitiative und legte fest, dass das FBI 10 Agenten für die Erwachsenenpornographie einsetzen muss.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "5170221231862717273.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1671,
+        "sha256": "932757190246efb7c1fdda03447a010e4556630a7d10c5f3329d46aedb1f8fc8",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 168000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1672.wav",
+        "sampleRate": 16000,
+        "sha256": "47c5fd1658abfaffa2a24b7534cbc5199c8474f74fec8442cd73f5503d935249"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1672",
+      "language": "de",
+      "reference": "Geben Sie acht, dass der Stoff nicht zu heiß wird (das kann ihn schrumpfen lassen oder in extremen Fällen zu Verbrennungen führen).",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "13575465750037228802.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1672,
+        "sha256": "965301c762927c5e7d97cd4e509c66d5fe959c8bb756436f4e094e33cb174582",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 201600,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1673.wav",
+        "sampleRate": 16000,
+        "sha256": "85b87f2aa27a995e798da31cd6c2aa1ee00fdb168da9e06c4a1794b20802a7d9"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1673",
+      "language": "de",
+      "reference": "Während der Revolutionskämpfe formten die 13 Bundesstaaten auf Basis des Bundesvertrages zuerst eine schwache Zentralregierung, die nur aus dem Kongress bestand.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "722187693903532269.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1673,
+        "sha256": "99eb037011a6d2cbcb27c3d76447753d9a347463616faa1be3e95aae6e219891",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 192960,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1674.wav",
+        "sampleRate": 16000,
+        "sha256": "81eca22f5b771009d1d2e24fb8c5d3641bedeb1a5e4de3a03e50a6e6f06294d0"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1674",
+      "language": "de",
+      "reference": "In einigen Gebieten genügt es, Wasser eine Minute lang abzukochen, in anderen müssen es mehrere Minuten sein.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "16512809721737584620.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1674,
+        "sha256": "e36395dd8247a6e70acd8b9cf0f3ec3782f57fed0052f00785c3a9506628cf33",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 253440,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1675.wav",
+        "sampleRate": 16000,
+        "sha256": "76268a0036d64afe231afbf16a2c01df39e48165f4376c70cad131fcb0474905"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1675",
+      "language": "de",
+      "reference": "\"Alle Substantive beginnen neben dem Wort Sie für \"\"you\"\" immer mit einem Großbuchstaben, auch in der Mitte eines Satzes.\"",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "14670426878825582922.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1675,
+        "sha256": "915634c0101070693d0bc0c7b6ecf08833663b4f31c1a5c6e47b2439eb122d5e",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 96960,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1676.wav",
+        "sampleRate": 16000,
+        "sha256": "224c39bf03540bd1a5c30004d9991c18c12151b155b6a6b587b72f03d75f53b5"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1676",
+      "language": "de",
+      "reference": "Wie alle südafrikanischen Nationalparks erhebt der Park tägliche Schutz- und Eintrittsgebühren.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "4615504531997816530.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1676,
+        "sha256": "f638082bf1ba25dc2c5264511d2ca26b32ee5c5a7d14ca4ccbd066a4080373c7",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 86400,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1677.wav",
+        "sampleRate": 16000,
+        "sha256": "b299953f9d4f50393119d28774475ea7208d7fa4afc3eef3d63d440d2a97ead5"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1677",
+      "language": "de",
+      "reference": "Heute sind Libellen und Eintagsfliegen die einzigen Insekten, die ihre Flügel nicht zurückklappen können.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "15103956140943598688.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1677,
+        "sha256": "8e4a4fc89226f354a713bfd7c4e70569c1edf9aebfc571b7942d9b68b5b31bf9",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 256320,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1678.wav",
+        "sampleRate": 16000,
+        "sha256": "45a05c8b45f4baa25c5093e52ee8ce67df8c177a1f8a7da213d8dc18587cb4ae"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1678",
+      "language": "de",
+      "reference": "In seinem Artikel Die Rede des Präsidenten zeigte Oliver Sacks auf, wie Leute, die wegen eines Hirnschadens keine Sprache mehr verstehen können, trotzdem die Ehrlichkeit von Menschen richtig einschätzen können.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10271188615398617841.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1678,
+        "sha256": "240d285a0a7edbf7032404f999a800345e5d265e10d3c65e20caf2a4fad73e14",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 106560,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1679.wav",
+        "sampleRate": 16000,
+        "sha256": "4efa54c2de9100fb014ddc30da83b1fd70175fdef742614e81051408f0250ee7"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1679",
+      "language": "de",
+      "reference": "Aerosmith haben die noch ausstehenden Konzerte ihrer Tour abgesagt.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "16709463480506731825.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1679,
+        "sha256": "4a68c6405c0d0b9770ba0e0d0f078e1fff31e3ddef3f91f305f9ae50c33264d2",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 158400,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1680.wav",
+        "sampleRate": 16000,
+        "sha256": "c06ddc0f23b18bbea72418316b2e869aa01de388c19d7b5209e01ee17f5bb037"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1680",
+      "language": "de",
+      "reference": "Als vielseitiger Athlet kann der Tiger klettern (wenn auch nicht besonders gut), schwimmen, große Strecken springen und mit der fünffachen Kraft eines starken Menschen ziehen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "12533790649172855935.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1680,
+        "sha256": "2c313ff84277f3fe43b34c92cb1dbbf80a37f50e71d851d267afbc8cd58d7901",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 310080,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1682.wav",
+        "sampleRate": 16000,
+        "sha256": "4605ed38d8740156c0dcfa75419585752922b222a7d5bfec7c212d1dda9522ec"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1682",
+      "language": "de",
+      "reference": "Zwar weiß niemand mit Sicherheit, wer es geschrieben hat, es ist allerdings bekannt, dass das große Pergamentdokument (welches 29¾ Zoll x 24½ Zoll misst) zu Beginn seines Lebens zur Aufbewahrung zusammengerollt wurde.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11321324965961472908.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1682,
+        "sha256": "126ada10924efb0ca78c8bcbe00a785870a0997bc17920029e0ed80c2aa41152",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 170880,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1683.wav",
+        "sampleRate": 16000,
+        "sha256": "90c9e5da7736b3f5a7e87eb9322c151e7b496cd2a22a3e5719a8f530e5317976"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1683",
+      "language": "de",
+      "reference": "Es leben noch viele Männer und Frauen, die ihre Zeit hier überlebt haben, und viele weitere mit Angehörigen, die dort ermordet wurden oder sich zu Tode arbeiteten, Juden und Nichtjuden gleichermaßen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10030056357041867775.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1683,
+        "sha256": "fda294888110e8bc13a0e468033a21f3b0f2f6a6e7efe40c32583c4760a58f0e",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 197760,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1684.wav",
+        "sampleRate": 16000,
+        "sha256": "3ffc815d7bc4dba5ccf81f937bd2f1fa7cbe85a5a5cdabb2f76218ec0272a525"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1684",
+      "language": "de",
+      "reference": "Apia ist die auf der Insel Upolu liegende Hauptstadt von Samoa und weist eine Einwohnerzahl von knapp unter 40.000 auf.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1944992693724556567.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1684,
+        "sha256": "aaa15c83482fe77afec14cc22a4f8c72b5ea039f21296f59ccbe281659725951",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 353280,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1685.wav",
+        "sampleRate": 16000,
+        "sha256": "eb8932f65a6a0d872dfe9f90ec99b1bdab60f4ab4a7b0c3033bb66d13e12a6ad"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1685",
+      "language": "de",
+      "reference": "Zum Beispiel ist das weltweit am weitesten verbreitete Standbildformat 35 mm, was der vorherrschenden Filmgröße am Ende der Analogfilmära entspricht.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10712512202808338625.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1685,
+        "sha256": "2977612f2b5ec2f0b02db76235200c801575d6901f7742e2b4c4b4e2c072d2a0",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 151680,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1686.wav",
+        "sampleRate": 16000,
+        "sha256": "f552614ec20000c5b49d1a9be8c8ccca645c0efe41b108d79661dc07568dd9c8"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1686",
+      "language": "de",
+      "reference": "Im Ergebnis kann die gemeinschaftliche Arbeit einer Organisation an der Überwindung eines Hindernisses zu einem neuen innovativen Verfahren führen, auf das Kundenbedürfnis einzugehen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "14581722995429385558.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1686,
+        "sha256": "f57715ff39aa5841f76b5da000a449c7097522067f51755b7ce4d6cab9403d05",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 112320,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1687.wav",
+        "sampleRate": 16000,
+        "sha256": "a59c136aa0762de6ffe2064f5d5f6ca4df2edc709798b38ec5ff312053e6dcf6"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1687",
+      "language": "de",
+      "reference": "Segregation und Rekombination mischen die Variation zwischen den beiden Pools mit jeder Generation hin und her.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "18306148757630670005.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1687,
+        "sha256": "d8bfbf179e5654a53b2486a3f753d623b5c2421fe543c1ce324551c0418f76d6",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 271680,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1688.wav",
+        "sampleRate": 16000,
+        "sha256": "c3109ed6c1fcec23c00d0ec097ff9d99b3869b58457168b599f67916f6892bd1"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1688",
+      "language": "de",
+      "reference": "Die Aufgabe der Marine war traditionell sicherzustellen, dass ein Land in der Lage bleibt, Menschen und Güter zu befördern, und gleichzeitig die Fähigkeit des Feindes zur Beförderung von Menschen und Gütern zu behindern.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3665385397206262993.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1688,
+        "sha256": "741e5198a2eb80a7d8d6371a41855eb173e7734bad7b16bad3a7ea2bdafd19f4",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 289920,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1689.wav",
+        "sampleRate": 16000,
+        "sha256": "58925b17bbf08baf2bc0517b2f3b85bb941d7fb10b502691f610bb141524df3c"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1689",
+      "language": "de",
+      "reference": "Europa ist ein relativ kleiner Kontinent, hat aber zahlreiche unabhängige Länder. Normalerweise müsste man mehrfach Visa beantragen und mehrere Passkontrollen durchlaufen, wenn man durch mehrere Länder reisen möchte.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "13312661772833701108.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1689,
+        "sha256": "183ddd1b5ab938ae6285bd42f15c87d809228c065538fd787235e15e5f4db30a",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 233280,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1690.wav",
+        "sampleRate": 16000,
+        "sha256": "b94c30e0687482d99d30cf78249712e62bcc492710111857465ecb0e0f2679dc"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1690",
+      "language": "de",
+      "reference": "Wir stimmen mit der Aussage des USOC überein, dass den Interessen unserer Athleten und Vereine und ihres Sports besser gedient ist, wenn wir innerhalb unserer Organisation sinnvolle Veränderungen vorantreiben, anstatt eine Dezertifizierung vorzunehmen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11863178777922928400.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1690,
+        "sha256": "eb0beb4d72091ef5a3778e1cf8a3d32718f71bf930f18eee2cb9d9e792243821",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 132480,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1691.wav",
+        "sampleRate": 16000,
+        "sha256": "2ada4aefe5616f421916711bd445ded60857f88c8729ca389efe3eb3ef7f46cc"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1691",
+      "language": "de",
+      "reference": "Auf einigen Routen setzen die größeren Firmen ihre eigenen Flugzeuge ein, aber auf anderen Routen und bei kleineren Firmen traten Schwierigkeiten auf.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "7451112490045072794.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1691,
+        "sha256": "80b5b229f7dd92838e8d870255b7a18b0be46843cf06ae5f9348545449661773",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 184320,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1692.wav",
+        "sampleRate": 16000,
+        "sha256": "62afc8adc4a9dda6bdbd3adc90ab218232e2b1ec06dc6f49adedba8e3b2f06a9"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1692",
+      "language": "de",
+      "reference": "Der Nuklearbehörde von Japan zufolge wurden radioaktives Cäsium und Jod im Atomkraftwerk festgestellt.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "13785217042026043005.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1692,
+        "sha256": "a65986066a6fe4d3c0142437d1a82fac35730ab92196a2ed86b8e2e574fe654a",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 142080,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1693.wav",
+        "sampleRate": 16000,
+        "sha256": "7f6fb3f43ee5c56b44e20145aa99a819f398ad5344a6997a564056056c85c9ef"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1693",
+      "language": "de",
+      "reference": "Doch nach dem Verlust des Tors des Kapitäns erzielte Indien nur 36 Runden und verlor 7 Tore, womit die Innings beendet waren.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "14981520372734328553.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1693,
+        "sha256": "92580b597aab1754f1b6dd23cbaced1cd369064ed39e20605fa41c5303c06657",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 229440,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1694.wav",
+        "sampleRate": 16000,
+        "sha256": "27451986155a8d107c65651f6ee3482d7712574cab874181825e3fe3c5a93016"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1694",
+      "language": "de",
+      "reference": "Kinder werden aus einer Vielzahl von Gründen in Pflegefamilien untergebracht, und zwar aus verschiedenen Gründen, die von Vernachlässigung über Missbrauch bis hin zu Erpressung reichen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1125668419763970255.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1694,
+        "sha256": "3edac7b0d10f5983cb569925354a85d3eb3a959f2f75be9b22e6051e9636a130",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 192960,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1695.wav",
+        "sampleRate": 16000,
+        "sha256": "7e74f7dc2ab01fef6bdfb4f438d34b35c4fb98833510ded035628fc344ceb9f1"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1695",
+      "language": "de",
+      "reference": "Ein einfaches beliebtes Abendessen, besonders im Sommer, ist das Pa amb Oli: Brot mit Olivenöl, Tomaten und jeglicher gerade verfügbarer Zutat wie Käse, Thunfisch usw.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "406406391719507617.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1695,
+        "sha256": "1e154581fd3f1652f6ff5d532ea0ae14bba355edaae3533e5cc191be3f77d164",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 283200,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1696.wav",
+        "sampleRate": 16000,
+        "sha256": "b4ef3f6261ff21ec0fe8546fc449cd11480981685b80e1c412c9afb37e432591"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1696",
+      "language": "de",
+      "reference": "Die zwei Verbindungen reagieren miteinander und formen Kristalle, die laut Forschern der Hochschule die Nierentätigkeit behindern können.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "18208273162967463359.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1696,
+        "sha256": "048d24ccb82eee658dde47133aa3e3d32899edc21f32e858877e53b4658277a5",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 127680,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1697.wav",
+        "sampleRate": 16000,
+        "sha256": "33fd9c4122f75551cb59d22d4ce0e848d2a5bd2a916fdd5f97bbc79033e0b79c"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1697",
+      "language": "de",
+      "reference": "Er war nicht dazu in der Lage, die benötigten Medikamente einzunehmen, um seinen Schmerz zu überwinden, da sie bei den Commonwealth Games verboten sind.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "17060411328954606361.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1697,
+        "sha256": "ee1ad7a43b16af9466405d2c1c8c0c04af73f76ead34da20b1535e6de682b70e",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 360000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1698.wav",
+        "sampleRate": 16000,
+        "sha256": "c1196fa78010d4b1db1fdddbf6d645692f8c5c7300a04d47e6a0c889fb6187be"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1698",
+      "language": "de",
+      "reference": "Das Universum besteht in seiner Gesamtheit aus Materie. Sämtliche Materie besteht aus winzigen Teilchen, die Atome genannt werden.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "13918255098618291503.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1698,
+        "sha256": "57e0d2903b881ee73c4295769bda1522e38f24a1f6d5982059ba3d874222bc0a",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 165120,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1699.wav",
+        "sampleRate": 16000,
+        "sha256": "b9393a8a8dcd19a8082692078bf70678b6992f2f4ed0f69097fffd4cf62f1507"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1699",
+      "language": "de",
+      "reference": "\"Der Beschreibung eines Beobachters zufolge verfiel Bischkek mehr und mehr in einen Zustand der „Anarchie\"\", als Banden von Menschen durch die Straßen zogen und Konsumgüterläden plünderten.\"",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11380301437644450912.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1699,
+        "sha256": "4536d5d4f353f2899c81c108443539fef31d91ed5fc1d2d56769a88a5bedb903",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 117120,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1700.wav",
+        "sampleRate": 16000,
+        "sha256": "86ed2606de1afc1ca4f34073442eb1227c80f6e5f506000e5939db314c6caa0c"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1700",
+      "language": "de",
+      "reference": "Es ist dünner unter den Mare und dicker unter dem Hochland.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "7750368031118920128.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1700,
+        "sha256": "6b85ade9c2bcd234cff5a7fe1ad15d25907eeb20683b40ec00e4db8e00264830",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1736.wav",
+        "sampleRate": 16000,
+        "sha256": "67718418a15f877ec263f7c864e6b72fd41365afebeb78e915a4c97066bb6670"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1736",
+      "language": "de",
+      "reference": "Rolando Mendoza schoss mit seinem M16-Gewehr auf die Touristen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "14127459823697664767.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1736,
+        "sha256": "d92afa3786e46573fbe6419576c10a3ba4ea78152f52d39264c7d882f30cc677",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 14720,
+            "operation": "append_zero_frames"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "central",
+        "central-5s"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 166080,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1660-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "6af20bdab84f5b7b0ee47a59e9474626e76eaf5e1a7010066ea530161fd37abf"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-test-1660-quiet",
+      "language": "de",
+      "reference": "Die Romantik hatte ein starkes, kulturell deterministisches Element, das sich aus Schriftstellern wie Goethe, Fichte und Schlegel schöpfte.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1191248392415945452.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1660,
+        "sha256": "7fedda3ac6a639187b484a968421f8c5f6abdcc7eb264ef8021ffca1014c99fa",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 106560,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1661-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "39068797a6ffd78f857c0e5c881ef845f8029efc6a6aa56e2d1e4dd6c197b16a"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-test-1661-quiet",
+      "language": "de",
+      "reference": "Er nannte keine Zahl für die Kürzungen, sondern sagte, sie würden auf der Grundlage der Wirtschaftsleistung Chinas vorgenommen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1344636249392808118.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1661,
+        "sha256": "8430e54b4cc4cb48142266537213db2960d0308205c30384c7e84b4660fc77d9",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 375360,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1662-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "3fd4c1c4b8072dc17784234ab86292829c9765eee8e991c18a5d4620af70f8fb"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-test-1662-quiet",
+      "language": "de",
+      "reference": "Legierungen sind im Grunde eine Mischung aus zwei oder mehr Metallen. Vergessen Sie nicht, dass es viele Elemente im Periodensystem gibt.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11871610055270234526.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1662,
+        "sha256": "cb4108041c7b9ea6d0ae9109b810646b954646476225c632cf0fb5bd6467ac53",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 160000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1663-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "0cd0cf219d3bbdb9fd5edaa764813a9d837f5e0b26b9b5d619eca4ffc1558bdd"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-test-1663-quiet",
+      "language": "de",
+      "reference": "Das Cochamó-Tal – Chiles wichtigstes Kletterziel, bekannt als der Yosemite-Nationalpark von Südamerika, mit einer Vielzahl von großen Granitwänden und -klippen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "7488275135478003184.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1663,
+        "sha256": "538728d89645fe6c1abd6e090a03c5b34d43c97c754d056747190f36bb672439",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 3520,
+            "operation": "append_zero_frames"
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 139200,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1664-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "922b2b157744661d31fbe3ee4e603606f1b5b33251668771720f31f0184d348a"
+      },
+      "class": "challenging",
+      "id": "fleurs-de-test-1664-quiet",
+      "language": "de",
+      "reference": "Mischen Sie die zwei Trockenpulver zusammen und formen Sie sie dann mit sauberen, nassen Händen zu einem Ball.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3251613536890899752.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1664,
+        "sha256": "0f8201286de9de1b71ae601055f1845f24c64a0e79e02b89f3793b3ebd4061b1",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 126720,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1510.wav",
+        "sampleRate": 16000,
+        "sha256": "63b2188b0dc3bd9e7c7f502bf41dcf8cef261bedd0cf89a5aafca8d192457b4b"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1510",
+      "language": "en",
+      "reference": "The U.N. also hopes to finalize a fund to help countries affected by global warming to cope with the impacts.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1009709090964908274.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1510,
+        "sha256": "e5664ae10a6273fbe0009068e512f4c416cccbeff19d3d2d11e5fb8d72d03fb7",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 151680,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1511.wav",
+        "sampleRate": 16000,
+        "sha256": "634794ddabb9d5db58c851a009a5173240c52c81e0caa6301d71ad0b8dfbde61"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1511",
+      "language": "en",
+      "reference": "Soon, officers equipped with riot gear entered the yard and cornered the inmates with tear gas.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10927605878527486298.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1511,
+        "sha256": "a043fab2fffba982748b7cd3f74042cac7df8306c020cdd861d075c79754ce7e",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 170880,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1512.wav",
+        "sampleRate": 16000,
+        "sha256": "75e3eb17b6642890d64296f6c46837f3c50edb3106a118756efb653f33c4c0c2"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1512",
+      "language": "en",
+      "reference": "This new environment has different resources and different competitors, so the new population will need different features or adaptations to be a strong competitor than what they had needed before.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "12949536968068093150.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1512,
+        "sha256": "2f8bc090ecc9083640a0fb751cd057eb2aaf82fdcb65bebf828d6707e65a0394",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 119040,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1513.wav",
+        "sampleRate": 16000,
+        "sha256": "5535a47c473b35feb0e41ef4b837efc352c2a28777b495efb12725577ef908f8"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1513",
+      "language": "en",
+      "reference": "Argentina is well known for having one of the best polo teams and players in the world.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11771680184554370328.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1513,
+        "sha256": "da9ed01d55de84dd7afdfa6ce674d2bcfa9c7bd8d4010f5ba2fa2e64390c4e4a",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 164160,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1514.wav",
+        "sampleRate": 16000,
+        "sha256": "279d2fc7eb3c672fa8f21847324dfedeb4e5d91ff5707f9a02895a743926856e"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1514",
+      "language": "en",
+      "reference": "When the fighting ceased after the wounded were transported to the hospital, about 40 of the other remaining inmates stayed in the yard and refused to return to their cells.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1250175024747413359.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1514,
+        "sha256": "07350cffc21a2678f7a64bd253e3e26a565e7e1a7aa99b6f931a8f5e27b93f5e",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 109760,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1515.wav",
+        "sampleRate": 16000,
+        "sha256": "544ca943be70d2e9e7aa3120119bcce578bec16595fa7a4586eeacd9ec04e718"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1515",
+      "language": "en",
+      "reference": "It is Martelly's fifth CEP in four years.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1317055409880056194.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1515,
+        "sha256": "d4aab93c4b1d0da90413e4933e5bad8ad6574b0c620e7b33e1a090e1d1a1bce3",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 193920,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1516.wav",
+        "sampleRate": 16000,
+        "sha256": "1374146326b5aca94a988bbb53da429e77fae987f82845489a69f524fdee0de4"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1516",
+      "language": "en",
+      "reference": "Please treat the site with all of the dignity, solemnity and respect it deserves. Do not make jokes about the Holocaust or Nazis.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "17606651572533263873.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1516,
+        "sha256": "cedfe8d5a838e7d504032efa42e5bcc7ef841236e8f14071d7fd0eeefeda038a",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 112320,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1517.wav",
+        "sampleRate": 16000,
+        "sha256": "6eefdac6c3830016205f1a8773a0a0f029bacb3a302bf2eab881f1d930452824"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1517",
+      "language": "en",
+      "reference": "Research in AI involves making machines to automate tasks that require intelligent behavior.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10885549230041454053.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1517,
+        "sha256": "cce5614bd73b7f31748e06f23577542266b137b505fdb5cd4c51aac98045c60a",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 188160,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1518.wav",
+        "sampleRate": 16000,
+        "sha256": "7179e0a7e83bb6f2d86f34a904c8eb8cb05dfcca8e514e0c7c27575cb27e9d50"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1518",
+      "language": "en",
+      "reference": "A former Filipino policeman has kept Hong Kong tourists hostage by hijacking their bus in Manila, the capital of the Philippines.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10807778671969097912.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1518,
+        "sha256": "9d697e8cd1cb875329ae80dad34757cfe01cb580da07cd615e803a3271ece9d1",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 210880,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1519.wav",
+        "sampleRate": 16000,
+        "sha256": "fe006c9ccd888b1cbd70181aae6fd2590f54c921e559a9f5298c23977ae5a19f"
+      },
+      "class": "clean",
+      "id": "fleurs-en-dev-1519",
+      "language": "en",
+      "reference": "In many cases, enrolling on a gap-year course abroad can actually improve your chances of moving into higher education back in your home country.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1329002535244170064.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1519,
+        "sha256": "52e29bb27e35339263e2469054ca8fc21e8c62e0fa62a4bc560ab2689e32dabc",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 126720,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1510-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "9ed1f3fb8e59dcb3248a31e454af22bd8e7aaf1dc90bb6785813b8662087867d"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-dev-1510-quiet",
+      "language": "en",
+      "reference": "The U.N. also hopes to finalize a fund to help countries affected by global warming to cope with the impacts.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1009709090964908274.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1510,
+        "sha256": "e5664ae10a6273fbe0009068e512f4c416cccbeff19d3d2d11e5fb8d72d03fb7",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 151680,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1511-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "47c0165546a32af6c8cdafabacbaee1497222a818b880bb6948d2513244c9c19"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-dev-1511-quiet",
+      "language": "en",
+      "reference": "Soon, officers equipped with riot gear entered the yard and cornered the inmates with tear gas.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10927605878527486298.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1511,
+        "sha256": "a043fab2fffba982748b7cd3f74042cac7df8306c020cdd861d075c79754ce7e",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 170880,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1512-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "5ff81bccd42a90a60d1eb4afe0f9083bdb5d19d52e047241e947db1659b61a01"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-dev-1512-quiet",
+      "language": "en",
+      "reference": "This new environment has different resources and different competitors, so the new population will need different features or adaptations to be a strong competitor than what they had needed before.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "12949536968068093150.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1512,
+        "sha256": "2f8bc090ecc9083640a0fb751cd057eb2aaf82fdcb65bebf828d6707e65a0394",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 119040,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1513-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "4a4f4f0c719df47166bde67ac583af3c864a6542dce50ba49e7b7ec6b300b308"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-dev-1513-quiet",
+      "language": "en",
+      "reference": "Argentina is well known for having one of the best polo teams and players in the world.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11771680184554370328.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1513,
+        "sha256": "da9ed01d55de84dd7afdfa6ce674d2bcfa9c7bd8d4010f5ba2fa2e64390c4e4a",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 164160,
+        "path": "artifacts/corpus/audio/fleurs-en-dev-1514-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "b503c7fcb8abe64d467ab12d0c21db3ce00206791c2d25a94f53f66e4b47891a"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-dev-1514-quiet",
+      "language": "en",
+      "reference": "When the fighting ceased after the wounded were transported to the hospital, about 40 of the other remaining inmates stayed in the yard and refused to return to their cells.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1250175024747413359.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1514,
+        "sha256": "07350cffc21a2678f7a64bd253e3e26a565e7e1a7aa99b6f931a8f5e27b93f5e",
+        "split": "dev",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "calibration",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 170880,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1660.wav",
+        "sampleRate": 16000,
+        "sha256": "0f608e0e9e87ffca1289b5180322e7f88f532195820e4fdce53fc9ef5e67e4e7"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1660",
+      "language": "en",
+      "reference": "Romanticism had a large element of cultural determinism, drawn from writers such as Goethe, Fichte, and Schlegel.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "12742373433258665797.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1660,
+        "sha256": "f17abcd4a9abded45086642ab68174b5447b6e73dcb2c0fcf6a9b1f5e788688c",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 101760,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1661.wav",
+        "sampleRate": 16000,
+        "sha256": "779f912307ff0982dfe146e19366685e8d57976e221b3bef271d199361d769b8"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1661",
+      "language": "en",
+      "reference": "He did not set a figure for the cuts, saying they will be made based on China's economic output.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "6917907748364342404.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1661,
+        "sha256": "8a90dfd1aebb2b9c8315d8293c720223d7436079ace5299ad30a3ba552915081",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 134080,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1662.wav",
+        "sampleRate": 16000,
+        "sha256": "b4a5f1c4c1c3769c7344892db3996ea04eb842baf6fa28be28acb1e79a95f03d"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1662",
+      "language": "en",
+      "reference": "Alloys are basically a mixture of two or more metals. Don't forget that there are many elements on the periodic table.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10614481583312370701.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1662,
+        "sha256": "0f92f2bed63210286148e6947faf7ca90bb635ec7525bcb7f48bdedfe79b425d",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 193920,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1663.wav",
+        "sampleRate": 16000,
+        "sha256": "3fba7a13be7eba17263cb9e017c41a0040e7bb4ab8e84d454ce9858520aa1507"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1663",
+      "language": "en",
+      "reference": "Cochamó Valley - Chile's premier climbing destination, known as the Yosemite of South America, with a variety of granite big walls and crags.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3156459702070203007.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1663,
+        "sha256": "e2e96ea1e18d8b0bd44a61e51259820c87a4c11c304908a75c567086d00e9928",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 133760,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1664.wav",
+        "sampleRate": 16000,
+        "sha256": "702fa8c3cf5341589a026377caa98d463853a55d8e270b6f72856cbe1321b37e"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1664",
+      "language": "en",
+      "reference": "Swirl the two dry powders together and then, with clean wet hands, squeeze them into a ball.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "13031516147694203229.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1664,
+        "sha256": "f13d74d68688d73d07f7f2ac80e9731a95433332e94ad419bd2e99c5533a62c7",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 132480,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1665.wav",
+        "sampleRate": 16000,
+        "sha256": "7077b38c6e54cbfa42fea8acacc931ebac9d015ba63b94ed57d9408745df4edd"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1665",
+      "language": "en",
+      "reference": "The document, according to the leak, will refer to the borders dispute, which Palestine wants based on the borders before the 1967 Mideast War.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3364947814969998944.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1665,
+        "sha256": "e0d5a14a08db942a49abe3e607f0b27ccf1f618e375e9f17553447a7960af9ce",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 133440,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1666.wav",
+        "sampleRate": 16000,
+        "sha256": "9ea7d021fefc00b6569be88250913b2998933780fc900df664e45137de884a84"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1666",
+      "language": "en",
+      "reference": "You may also wish to consult the advice of governments other than your own, but their advice is designed for their citizens.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "13875708868701082683.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1666,
+        "sha256": "bbad04c9fb1db53228f77105d6eee8202a998f4227c08ec540889eb1f562113e",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 240000,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1667.wav",
+        "sampleRate": 16000,
+        "sha256": "7ccf8be690e39e04c1481bf1162e0b6efe8abfccbfa8e0bd5b103f502c2c4390"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1667",
+      "language": "en",
+      "reference": "Generally speaking, two behaviors can emerge as managers begin to lead their former peers. One end of the spectrum is trying to remain “one of the guys” (or gals).",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11554335886429174193.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1667,
+        "sha256": "6e8948a700c2ee114c7131b8e52a44897b3cf86cf86a1d89bf93b4ad10c802c0",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 12480,
+            "operation": "append_zero_frames"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "central",
+        "central-15s"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 213120,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1668.wav",
+        "sampleRate": 16000,
+        "sha256": "89293c36ea8a2b0065a632f6cd9af35fcbcb442eaf43909c1a5780a74897e902"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1668",
+      "language": "en",
+      "reference": "It may also be beneficial for one to buy a Wild Card, which provides entry to either selections of parks in South Africa or all of the South African National Parks.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "12519810849995407480.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1668,
+        "sha256": "d6ab97bb7e3232b60b61910d3ac7e1cf37acbcbfd062773b453c76217682f49e",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 115200,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1669.wav",
+        "sampleRate": 16000,
+        "sha256": "c19bbd275356b0310fa0d0687a4a736a6f59d7c503de2769ae5309b3ac676142"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1669",
+      "language": "en",
+      "reference": "Police superintendent Chandra Shekhar Solanki said the accused appeared in court with covered faces.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "15618717836108767541.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1669,
+        "sha256": "40d7e92df0355f4836e2b8fa2a88d7c7e047d0472f0845ca08f0c21257785390",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 468800,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1670.wav",
+        "sampleRate": 16000,
+        "sha256": "523a4c84775ad35c1ce474012b9f31368da2d3ea9ab10e99f35a59182d417902"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1670",
+      "language": "en",
+      "reference": "Their thermal behavior is not as steady as large caves on Earth that often maintain a fairly constant temperature, but it is consistent with these being deep holes in the ground,\" said Glen Cushing of the United States Geological Survey (USGS) Astrogeology Team and of Northern Arizona University located in Flagstaff, Arizona.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "2508559905589212221.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1670,
+        "sha256": "6dc676eae80109d088233f838226d4164f76befd8aafc772e1a6cb9eaa0d31df",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 160320,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1671.wav",
+        "sampleRate": 16000,
+        "sha256": "84845e2cb982b5d0e56c518c4e4bebdf071b0edce0726161347adca885c2202f"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1671",
+      "language": "en",
+      "reference": "Congress began funding the obscenity initiative in fiscal 2005 and specified that the FBI must devote 10 agents to adult pornography.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "12784232275162817860.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1671,
+        "sha256": "d60875a908926028d9f6f6821af974effbf091116400f6d52dc86e2cae96cd25",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 162560,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1672.wav",
+        "sampleRate": 16000,
+        "sha256": "9e11f406dde11a176e87d619600b5481af9a76b5669add902ef709238fe0f308"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1672",
+      "language": "en",
+      "reference": "Be careful not to allow fabric to become too hot (which can cause shrinkage, or in extreme cases, scorch).",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3337787499768294195.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1672,
+        "sha256": "cd58bbf4d2aff767cdfb29bc175a4c7ece18c7769248af337f68e6cb645ddc93",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 161280,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1673.wav",
+        "sampleRate": 16000,
+        "sha256": "48f640b35e2954d62f0d8abdade29b67b36af04e815aa61c4466363c1b4a6f00"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1673",
+      "language": "en",
+      "reference": "During the Revolutionary War, the thirteen states first formed a weak central government—with the Congress being its only component—under the Articles of Confederation.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "2637301866626572038.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1673,
+        "sha256": "1518970aa8eb571854f94481fb8bc1056b112ed4724021402ed608e3794a4de3",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 90240,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1674.wav",
+        "sampleRate": 16000,
+        "sha256": "a8b0dbfb163abcdfcd0c98112d06d471293f498c63be8dd200601495e0a6b2bf"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1674",
+      "language": "en",
+      "reference": "In some areas boiling water for a minute is enough, in others several minutes are needed.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10492135991603561867.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1674,
+        "sha256": "ed78d88661c8f76d7b8951665a3c2e9adea23828fe3e70fd9df95465cb8f8ede",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 140160,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1675.wav",
+        "sampleRate": 16000,
+        "sha256": "fd99727983733f9771077fe1a030fcc44ea7e16be1e9396cff525db2886a8f0f"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1675",
+      "language": "en",
+      "reference": "All nouns, alongside the word Sie for you, always begin with a capital letter, even in the middle of a sentence.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10052240106321793346.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1675,
+        "sha256": "7603cae3294309ef70d234180cefccc3b13865ee525262228a636069b9b62841",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 160000,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1676.wav",
+        "sampleRate": 16000,
+        "sha256": "afd053eebcc3c55cc883a0f4e18904609c75cc6c4b76890d674b9dbf9e1834cb"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1676",
+      "language": "en",
+      "reference": "As with all South African National Parks, there are daily conservation and entry fees for the park.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3236057319333367673.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1676,
+        "sha256": "82dffe62952ceca62fb92118b8c1226d3a45eaba7b95ccdb466b6656efec91f6",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 9280,
+            "operation": "append_zero_frames"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "central",
+        "central-10s"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 95040,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1677.wav",
+        "sampleRate": 16000,
+        "sha256": "6d4e9a0532459969ac13d6f16dc5099f93fb2a4d4637392a2a9c7e8ecb278cb7"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1677",
+      "language": "en",
+      "reference": "Today, the only insects that cannot fold back their wings are dragon flies and mayflies.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1731561740051730459.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1677,
+        "sha256": "5a5a12d06c0a6acaf0a0d737d7c980bce91ec3f652cfa537b3cbaf8e10845dbc",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 204480,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1678.wav",
+        "sampleRate": 16000,
+        "sha256": "4676663ad860d56c3b17f26f957fc2e86ee364111aa6e8b0c1430bb72006457d"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1678",
+      "language": "en",
+      "reference": "Oliver Sacks, in his paper The President's Speech, indicated how people who are unable to understand speech because of brain damage are nevertheless able to assess sincerity accurately.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1111475259790805601.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1678,
+        "sha256": "2ec0ade3595e05c1e91a751fc73811f69606b9682a23b2eeb48c6840e959bee9",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1679.wav",
+        "sampleRate": 16000,
+        "sha256": "a244c933384e8c3b15371039d1cfba04a02b97bb22c40381dcec557679666241"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1679",
+      "language": "en",
+      "reference": "Aerosmith have cancelled their remaining concerts on their tour.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "4937589470390171572.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1679,
+        "sha256": "5a580c9f1aeec5dda1e562f08c5cb534cc5407bf63d5f09bfc13327d291b03f3",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 9920,
+            "operation": "append_zero_frames"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "central",
+        "central-5s"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 163200,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1680.wav",
+        "sampleRate": 16000,
+        "sha256": "8d69bfff7fcabafcbc2a96974129aaad5441572368963a350d467e3921805062"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1680",
+      "language": "en",
+      "reference": "A well rounded athlete, the tiger can climb (though not well), swim, leap great distances and pull with five times the force of a strong human.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10894616243452123700.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1680,
+        "sha256": "7df2a964d8ce3931be897abeac59dd02669c709163fe23e928d917d31cf27601",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 319680,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1681.wav",
+        "sampleRate": 16000,
+        "sha256": "888ee8d39457730e1a8b22717084955eb971f9f5099bae090c49c28a4c9b6539"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1681",
+      "language": "en",
+      "reference": "It isn’t alone though, experimentation, and an experiment is a test that is used to eliminate one or more of the possible hypotheses, asking questions, and making observations also guide scientific research.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "4822858934027125258.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1681,
+        "sha256": "8752cda5cc51f24c718320f30ee0e4dcd86df3bb794c3bd122e391cca9516048",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 250240,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1682.wav",
+        "sampleRate": 16000,
+        "sha256": "9eaf2a82389a5a6025ce3b0d59efc3025779c0c6c58201dc8b2fd493ec4ef3c9"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1682",
+      "language": "en",
+      "reference": "While no one knows for certain who wrote it, it is known that early in its life, the large parchment document (it measures 29¾ inches by 24½ inches) was rolled up for storage.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "9924305423057523453.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1682,
+        "sha256": "7f8e2186df44065aba3331c5fc2f2af07402be60914d255747665be8075d0cb1",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 177600,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1683.wav",
+        "sampleRate": 16000,
+        "sha256": "873b09d81c8ef85d0ab72cb1e9485baeaf87d54fc772fe26e01c765251c2a4cd"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1683",
+      "language": "en",
+      "reference": "There are still many men and women alive who survived their time here, and many more who had loved ones who were murdered or worked to death there, Jews and non-Jews alike.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "14624695685248966546.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1683,
+        "sha256": "882820040d973122822e69b5f5db9cca935a3a24aeb6c1847110e2533c550599",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 175360,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1684.wav",
+        "sampleRate": 16000,
+        "sha256": "c788ee151ea8e0e9b7682521e4f2d901db0813138aabcbbeb6b2d5512dee6ae0"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1684",
+      "language": "en",
+      "reference": "Apia is the capital of Samoa. The town is on the island of Upolu and has a population of just under 40,000.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "4496786334735634498.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1684,
+        "sha256": "2a81fe33f2547f83618a74505ba92c18f55acfd7d41ef526b47921879d4510f4",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 222720,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1685.wav",
+        "sampleRate": 16000,
+        "sha256": "31db67c3bb01ffa42be033d2627da6e8dd301b99f5390f20e8be293cebba4cc4"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1685",
+      "language": "en",
+      "reference": "For example, the most common still image photography format in the world is 35mm, which was the dominant film size at the close of the analog film era.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "1045619486290403122.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1685,
+        "sha256": "b32ac05d6df3e023930ff5687e27634e5ca78a44474437e634a794158654a4de",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 193920,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1686.wav",
+        "sampleRate": 16000,
+        "sha256": "d400fd5253713eda5e5e0cc0b1711a9ac047f76843392311e8c480d7efed9a24"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1686",
+      "language": "en",
+      "reference": "As a result, the process of an organization working together to overcome an obstacle can lead to a new innovative process to serve the customer's need.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "8036301841859634130.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1686,
+        "sha256": "cc5df1ef02945cbae407b8879579e29a768309a0e953dcdaab5a3a47c932b677",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 184320,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1687.wav",
+        "sampleRate": 16000,
+        "sha256": "8cae96fd853a92d303bd8eb2e15d2bbe513aa29f28cef2973db3cea4324acd2c"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1687",
+      "language": "en",
+      "reference": "Segregation and recombination shuffle variation back and forth between the two pools with each generation.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "13888599635337906526.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1687,
+        "sha256": "8e0aa814569107c65a6cc0d7ba30cfcdc627ab81048b22d3b7bb82c0683f3201",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 279040,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1688.wav",
+        "sampleRate": 16000,
+        "sha256": "a7c88b00b6e6e8c5cc2fa422eeb4d4efe494277cf67a67ea302293d5e996c5d2"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1688",
+      "language": "en",
+      "reference": "The job of navies has traditionally been to ensure that your country maintains the ability to move your people and goods, while at the same time, interfering with your enemy's ability to move his people and goods.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3039867296204116367.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1688,
+        "sha256": "019fa0b6140813dc1e0c0041643c4859f184d30a2ddde6a97a6ac17a00736b46",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 332160,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1689.wav",
+        "sampleRate": 16000,
+        "sha256": "b75624f03ccffcb848380c4b86d60a505e020bb66e9d81dc4ec6bafbc8d8fbbe"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1689",
+      "language": "en",
+      "reference": "Europe is a continent that is relatively small but with many independent countries. Under normal circumstances, travelling through multiple countries would mean having to go through visa applications and passport control multiple times.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "14328568808003469713.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1689,
+        "sha256": "eacea6e74b92cf441c526e035a3c570454d2b99a08cdfc56a123f4f96aea7e0d",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 170880,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1660-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "107f5b79282db96178885f9673e6f3da5dd8f615a40cb49d00fd3d5fb6514cee"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-test-1660-quiet",
+      "language": "en",
+      "reference": "Romanticism had a large element of cultural determinism, drawn from writers such as Goethe, Fichte, and Schlegel.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "12742373433258665797.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1660,
+        "sha256": "f17abcd4a9abded45086642ab68174b5447b6e73dcb2c0fcf6a9b1f5e788688c",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 101760,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1661-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "7b037da04c013baa7b9c920150c47442932d5928aff049332b7a42e92e6abaf8"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-test-1661-quiet",
+      "language": "en",
+      "reference": "He did not set a figure for the cuts, saying they will be made based on China's economic output.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "6917907748364342404.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1661,
+        "sha256": "8a90dfd1aebb2b9c8315d8293c720223d7436079ace5299ad30a3ba552915081",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 134080,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1662-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "619f962c2f9ac054340256ec59f61600534a515b2233f02fe88675555dc6b707"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-test-1662-quiet",
+      "language": "en",
+      "reference": "Alloys are basically a mixture of two or more metals. Don't forget that there are many elements on the periodic table.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "10614481583312370701.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1662,
+        "sha256": "0f92f2bed63210286148e6947faf7ca90bb635ec7525bcb7f48bdedfe79b425d",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 193920,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1663-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "872b1b9e8e498e7e4b5a4b0153cc83068e0b7ffc099ebd30ff67375a8ad41872"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-test-1663-quiet",
+      "language": "en",
+      "reference": "Cochamó Valley - Chile's premier climbing destination, known as the Yosemite of South America, with a variety of granite big walls and crags.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3156459702070203007.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1663,
+        "sha256": "e2e96ea1e18d8b0bd44a61e51259820c87a4c11c304908a75c567086d00e9928",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 133760,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1664-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "17fe61a865b10963d15722a2ad6c6c8395086a254a23b2fda8f065c3e114834a"
+      },
+      "class": "challenging",
+      "id": "fleurs-en-test-1664-quiet",
+      "language": "en",
+      "reference": "Swirl the two dry powders together and then, with clean wet hands, squeeze them into a ball.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "13031516147694203229.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1664,
+        "sha256": "f13d74d68688d73d07f7f2ac80e9731a95433332e94ad419bd2e99c5533a62c7",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "gain": 0.05,
+            "operation": "pcm16_gain",
+            "rounding": "nearest-even"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "quiet"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/synthetic-de-silence-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec"
+      },
+      "class": "challenging",
+      "id": "synthetic-de-silence-5s",
+      "language": "de",
+      "reference": "",
+      "source": {
+        "dataset": "synthetic",
+        "filename": null,
+        "revision": "corpus-builder-v1",
+        "sentenceId": null,
+        "sha256": null,
+        "split": "acceptance",
+        "transformations": [
+          {
+            "frames": 80000,
+            "generator": "zero",
+            "operation": "generate_silence",
+            "seed": null,
+            "uniformAmplitude": 0
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "synthetic",
+        "silence",
+        "not-room-noise"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/synthetic-de-noise-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "2efadede2e96edaba4ffbed3a663d57e0c33f4763fb934caff82d8d14840125c"
+      },
+      "class": "challenging",
+      "id": "synthetic-de-noise-5s",
+      "language": "de",
+      "reference": "",
+      "source": {
+        "dataset": "synthetic",
+        "filename": null,
+        "revision": "corpus-builder-v1",
+        "sentenceId": null,
+        "sha256": null,
+        "split": "acceptance",
+        "transformations": [
+          {
+            "frames": 80000,
+            "generator": "xorshift32-v1",
+            "operation": "generate_noise",
+            "seed": 1163281746,
+            "uniformAmplitude": 0.04
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "synthetic",
+        "noise",
+        "not-room-noise"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/synthetic-en-silence-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec"
+      },
+      "class": "challenging",
+      "id": "synthetic-en-silence-5s",
+      "language": "en",
+      "reference": "",
+      "source": {
+        "dataset": "synthetic",
+        "filename": null,
+        "revision": "corpus-builder-v1",
+        "sentenceId": null,
+        "sha256": null,
+        "split": "acceptance",
+        "transformations": [
+          {
+            "frames": 80000,
+            "generator": "zero",
+            "operation": "generate_silence",
+            "seed": null,
+            "uniformAmplitude": 0
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "synthetic",
+        "silence",
+        "not-room-noise"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/synthetic-en-noise-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "2efadede2e96edaba4ffbed3a663d57e0c33f4763fb934caff82d8d14840125c"
+      },
+      "class": "challenging",
+      "id": "synthetic-en-noise-5s",
+      "language": "en",
+      "reference": "",
+      "source": {
+        "dataset": "synthetic",
+        "filename": null,
+        "revision": "corpus-builder-v1",
+        "sentenceId": null,
+        "sha256": null,
+        "split": "acceptance",
+        "transformations": [
+          {
+            "frames": 80000,
+            "generator": "xorshift32-v1",
+            "operation": "generate_noise",
+            "seed": 1163281746,
+            "uniformAmplitude": 0.04
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "synthetic",
+        "noise",
+        "not-room-noise"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 4800000,
+        "path": "artifacts/corpus/audio/constructed-de-masked-300s.wav",
+        "sampleRate": 16000,
+        "sha256": "ca2da7fb88fed220222002d631ab61c585ffb3f099ac3fc79ccc222d0e188e84"
+      },
+      "class": "challenging",
+      "id": "constructed-de-masked-300s",
+      "language": "de",
+      "reference": "Die Romantik hatte ein starkes, kulturell deterministisches Element, das sich aus Schriftstellern wie Goethe, Fichte und Schlegel schöpfte. Er nannte keine Zahl für die Kürzungen, sondern sagte, sie würden auf der Grundlage der Wirtschaftsleistung Chinas vorgenommen. Legierungen sind im Grunde eine Mischung aus zwei oder mehr Metallen. Vergessen Sie nicht, dass es viele Elemente im Periodensystem gibt. Das Cochamó-Tal – Chiles wichtigstes Kletterziel, bekannt als der Yosemite-Nationalpark von Südamerika, mit einer Vielzahl von großen Granitwänden und -klippen. Mischen Sie die zwei Trockenpulver zusammen und formen Sie sie dann mit sauberen, nassen Händen zu einem Ball. Dem Leak zufolge bezieht sich das Dokument auf den Grenzstreit, in dem die Palästinenser ein Zurücksetzen der Grenzen in den Zustand vor dem Sechstagekrieg von 1967 fordern. Sie können auch die Ratschläge anderer Regierungen als der Ihren konsultieren. Deren Hinweise sind jedoch auf ihre eigenen Staatsbürger zugeschnitten. Im Allgemeinen können sich zwei Verhaltensweisen abzeichnen, wenn Manager beginnen, ihre ehemaligen Kollegen zu leiten. Das eine Ende des Spektrums ist der Versuch, „einer der Jungs“ (oder eines der Mädels) zu bleiben. Es kann sich auch lohnen, eine Wild Card zu kaufen, die Zutritt entweder zu ausgewählten Parks in Südafrika oder zu allen südafrikanischen Nationalparks gewährt. Die Polizeipräsidentin Chandra Shekhar Solanki gab an, die Angeklagten seien mit bedeckten Gesichtern vor Gericht erschienen. \"Ihr thermisches Verhalten ist nicht so gleichmäßig wie das großer Höhlen auf der Erde, die oft eine ziemlich konstante Temperatur haben, aber es stimmt damit überein, dass es sich um tiefe Löcher im Boden handelt\"\", sagte Glen Cushing vom Astrogeologie-Team des United States Geological Survey (USGS) und der Northern Arizona University in Flagstaff, Arizona.\" Der Kongress begann im August 2005 mit der Finanzierung der anti-Obszönitätsinitiative und legte fest, dass das FBI 10 Agenten für die Erwachsenenpornographie einsetzen muss. Geben Sie acht, dass der Stoff nicht zu heiß wird (das kann ihn schrumpfen lassen oder in extremen Fällen zu Verbrennungen führen). Während der Revolutionskämpfe formten die 13 Bundesstaaten auf Basis des Bundesvertrages zuerst eine schwache Zentralregierung, die nur aus dem Kongress bestand. In einigen Gebieten genügt es, Wasser eine Minute lang abzukochen, in anderen müssen es mehrere Minuten sein. \"Alle Substantive beginnen neben dem Wort Sie für \"\"you\"\" immer mit einem Großbuchstaben, auch in der Mitte eines Satzes.\" Wie alle südafrikanischen Nationalparks erhebt der Park tägliche Schutz- und Eintrittsgebühren. Heute sind Libellen und Eintagsfliegen die einzigen Insekten, die ihre Flügel nicht zurückklappen können. In seinem Artikel Die Rede des Präsidenten zeigte Oliver Sacks auf, wie Leute, die wegen eines Hirnschadens keine Sprache mehr verstehen können, trotzdem die Ehrlichkeit von Menschen richtig einschätzen können. Aerosmith haben die noch ausstehenden Konzerte ihrer Tour abgesagt. Als vielseitiger Athlet kann der Tiger klettern (wenn auch nicht besonders gut), schwimmen, große Strecken springen und mit der fünffachen Kraft eines starken Menschen ziehen.",
+      "source": {
+        "clips": [
+          {
+            "filename": "1191248392415945452.wav",
+            "outputEndFrame": 166080,
+            "outputStartFrame": 0,
+            "sentenceId": 1660,
+            "sha256": "7fedda3ac6a639187b484a968421f8c5f6abdcc7eb264ef8021ffca1014c99fa",
+            "sourceEndFrame": 166080,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "1344636249392808118.wav",
+            "outputEndFrame": 272640,
+            "outputStartFrame": 166080,
+            "sentenceId": 1661,
+            "sha256": "8430e54b4cc4cb48142266537213db2960d0308205c30384c7e84b4660fc77d9",
+            "sourceEndFrame": 106560,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "11871610055270234526.wav",
+            "outputEndFrame": 648000,
+            "outputStartFrame": 272640,
+            "sentenceId": 1662,
+            "sha256": "cb4108041c7b9ea6d0ae9109b810646b954646476225c632cf0fb5bd6467ac53",
+            "sourceEndFrame": 375360,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "7488275135478003184.wav",
+            "outputEndFrame": 804480,
+            "outputStartFrame": 648000,
+            "sentenceId": 1663,
+            "sha256": "538728d89645fe6c1abd6e090a03c5b34d43c97c754d056747190f36bb672439",
+            "sourceEndFrame": 156480,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "3251613536890899752.wav",
+            "outputEndFrame": 943680,
+            "outputStartFrame": 804480,
+            "sentenceId": 1664,
+            "sha256": "0f8201286de9de1b71ae601055f1845f24c64a0e79e02b89f3793b3ebd4061b1",
+            "sourceEndFrame": 139200,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "10534115037762380445.wav",
+            "outputEndFrame": 1114560,
+            "outputStartFrame": 943680,
+            "sentenceId": 1665,
+            "sha256": "7e5caa4feee3f52b1e071df3baed6aa9a09a0b220bebdf3825931b98a9a143f0",
+            "sourceEndFrame": 170880,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "4807927553917148837.wav",
+            "outputEndFrame": 1398720,
+            "outputStartFrame": 1114560,
+            "sentenceId": 1666,
+            "sha256": "92bf64d2bd913444a9614aa2c73eb25e9403ba1634051074169cb2e05042c227",
+            "sourceEndFrame": 284160,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "14812431812112878039.wav",
+            "outputEndFrame": 1841280,
+            "outputStartFrame": 1398720,
+            "sentenceId": 1667,
+            "sha256": "b782f85456f6990fb6af6be4fb565861b787da813e9d94f44f620b705bcefa89",
+            "sourceEndFrame": 442560,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "13631299328082055159.wav",
+            "outputEndFrame": 2076480,
+            "outputStartFrame": 1841280,
+            "sentenceId": 1668,
+            "sha256": "45c68c4d33fb19c105d773777cac155056b02adf3bb7f27bb16c72ea5cc2d184",
+            "sourceEndFrame": 235200,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "3045631440446403419.wav",
+            "outputEndFrame": 2280960,
+            "outputStartFrame": 2076480,
+            "sentenceId": 1669,
+            "sha256": "d2fcc27063dd3e509f7343133df25cb9f689294734b54e988d0addd98a1d996b",
+            "sourceEndFrame": 204480,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "10844590730633377222.wav",
+            "outputEndFrame": 2618880,
+            "outputStartFrame": 2280960,
+            "sentenceId": 1670,
+            "sha256": "a2671212059e0e1be57eb72678f056c613f40ceda0441c38527d14a5f9302799",
+            "sourceEndFrame": 337920,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "5170221231862717273.wav",
+            "outputEndFrame": 3078720,
+            "outputStartFrame": 2618880,
+            "sentenceId": 1671,
+            "sha256": "932757190246efb7c1fdda03447a010e4556630a7d10c5f3329d46aedb1f8fc8",
+            "sourceEndFrame": 459840,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "13575465750037228802.wav",
+            "outputEndFrame": 3246720,
+            "outputStartFrame": 3078720,
+            "sentenceId": 1672,
+            "sha256": "965301c762927c5e7d97cd4e509c66d5fe959c8bb756436f4e094e33cb174582",
+            "sourceEndFrame": 168000,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "722187693903532269.wav",
+            "outputEndFrame": 3448320,
+            "outputStartFrame": 3246720,
+            "sentenceId": 1673,
+            "sha256": "99eb037011a6d2cbcb27c3d76447753d9a347463616faa1be3e95aae6e219891",
+            "sourceEndFrame": 201600,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "16512809721737584620.wav",
+            "outputEndFrame": 3641280,
+            "outputStartFrame": 3448320,
+            "sentenceId": 1674,
+            "sha256": "e36395dd8247a6e70acd8b9cf0f3ec3782f57fed0052f00785c3a9506628cf33",
+            "sourceEndFrame": 192960,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "14670426878825582922.wav",
+            "outputEndFrame": 3894720,
+            "outputStartFrame": 3641280,
+            "sentenceId": 1675,
+            "sha256": "915634c0101070693d0bc0c7b6ecf08833663b4f31c1a5c6e47b2439eb122d5e",
+            "sourceEndFrame": 253440,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "4615504531997816530.wav",
+            "outputEndFrame": 3991680,
+            "outputStartFrame": 3894720,
+            "sentenceId": 1676,
+            "sha256": "f638082bf1ba25dc2c5264511d2ca26b32ee5c5a7d14ca4ccbd066a4080373c7",
+            "sourceEndFrame": 96960,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "15103956140943598688.wav",
+            "outputEndFrame": 4078080,
+            "outputStartFrame": 3991680,
+            "sentenceId": 1677,
+            "sha256": "8e4a4fc89226f354a713bfd7c4e70569c1edf9aebfc571b7942d9b68b5b31bf9",
+            "sourceEndFrame": 86400,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "10271188615398617841.wav",
+            "outputEndFrame": 4334400,
+            "outputStartFrame": 4078080,
+            "sentenceId": 1678,
+            "sha256": "240d285a0a7edbf7032404f999a800345e5d265e10d3c65e20caf2a4fad73e14",
+            "sourceEndFrame": 256320,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "16709463480506731825.wav",
+            "outputEndFrame": 4440960,
+            "outputStartFrame": 4334400,
+            "sentenceId": 1679,
+            "sha256": "4a68c6405c0d0b9770ba0e0d0f078e1fff31e3ddef3f91f305f9ae50c33264d2",
+            "sourceEndFrame": 106560,
+            "sourceStartFrame": 0
+          },
+          {
+            "filename": "12533790649172855935.wav",
+            "outputEndFrame": 4599360,
+            "outputStartFrame": 4440960,
+            "sentenceId": 1680,
+            "sha256": "2c313ff84277f3fe43b34c92cb1dbbf80a37f50e71d851d267afbc8cd58d7901",
+            "sourceEndFrame": 158400,
+            "sourceStartFrame": 0
+          }
+        ],
+        "dataset": "google/fleurs+synthetic-noise",
+        "filename": null,
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": null,
+        "sha256": null,
+        "split": "test",
+        "transformations": [
+          {
+            "generator": "xorshift32-v1",
+            "measuredMinimumWindowRms": 0.015669140920758384,
+            "noiseSeed": 1163277056,
+            "noiseUniformAmplitude": 0.03,
+            "operation": "whole_clip_concat_masked_pauses",
+            "outputFrames": 4800000,
+            "paddingEndFrame": 4800000,
+            "paddingStartFrame": 4599360,
+            "requiredMinimumWindowRms": 0.005,
+            "rmsWindowFrames": 320,
+            "speechGain": 0.8
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "constructed",
+        "natural-source",
+        "masked-pauses",
+        "max-duration"
+      ]
+    },
+    {
+      "id": "hd-de-calibration-s00-t0-d8",
+      "language": "de",
+      "class": "clean",
+      "split": "calibration",
+      "reference": "acht",
+      "tags": [
+        "natural-short",
+        "digit-anchor",
+        "independent-class-label"
+      ],
+      "audio": {
+        "path": "artifacts/corpus/audio/hd-de-calibration-s00-t0-d8.wav",
+        "sha256": "075484445237ec7b1640184ec8af0376f9fe4763e23dc7158a2778c244a07669",
+        "frames": 11523,
+        "sampleRate": 16000
+      },
+      "source": {
+        "dataset": "Heidelberg Digits",
+        "version": "1.0",
+        "split": "train",
+        "filename": "audio/lang-german_speaker-00_trial-0_digit-8.flac",
+        "sha256": "84bbc624f92f603198fb125621e54787020f7921ad02b5ec523106f81fd4b0ff",
+        "frames": 34570,
+        "sampleRate": 48000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "speaker": 0,
+        "digit": 8,
+        "referenceProvenance": "filename digit/language class mapped to fixed word before inference",
+        "transformations": [
+          {
+            "operation": "full-file decode and resample",
+            "decoder": {
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "path": "/opt/homebrew/bin/ffmpeg"
+            },
+            "sampleRate": 16000,
+            "channels": 1,
+            "format": "PCM16",
+            "bitexact": true,
+            "mapMetadata": -1,
+            "trim": false,
+            "gainChange": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "hd-de-calibration-s01-t0-d9",
+      "language": "de",
+      "class": "clean",
+      "split": "calibration",
+      "reference": "neun",
+      "tags": [
+        "natural-short",
+        "digit-anchor",
+        "independent-class-label"
+      ],
+      "audio": {
+        "path": "artifacts/corpus/audio/hd-de-calibration-s01-t0-d9.wav",
+        "sha256": "55cc27500ead188a9d1c9cf4d2edc26a9a7827eb6bdcf98d0e77fa576a1432ee",
+        "frames": 11495,
+        "sampleRate": 16000
+      },
+      "source": {
+        "dataset": "Heidelberg Digits",
+        "version": "1.0",
+        "split": "train",
+        "filename": "audio/lang-german_speaker-01_trial-0_digit-9.flac",
+        "sha256": "7432b8819b16a638420c5eafbac0e8eb85013d2a9bd0e2f38426989195dd3a95",
+        "frames": 34484,
+        "sampleRate": 48000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "speaker": 1,
+        "digit": 9,
+        "referenceProvenance": "filename digit/language class mapped to fixed word before inference",
+        "transformations": [
+          {
+            "operation": "full-file decode and resample",
+            "decoder": {
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "path": "/opt/homebrew/bin/ffmpeg"
+            },
+            "sampleRate": 16000,
+            "channels": 1,
+            "format": "PCM16",
+            "bitexact": true,
+            "mapMetadata": -1,
+            "trim": false,
+            "gainChange": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "hd-de-acceptance-s04-t0-d8",
+      "language": "de",
+      "class": "clean",
+      "split": "acceptance",
+      "reference": "acht",
+      "tags": [
+        "natural-short",
+        "digit-anchor",
+        "independent-class-label"
+      ],
+      "audio": {
+        "path": "artifacts/corpus/audio/hd-de-acceptance-s04-t0-d8.wav",
+        "sha256": "351d1217d2ad656ee4825fd4168a3c61a25fac35a49b35e703044e592d0c2372",
+        "frames": 11406,
+        "sampleRate": 16000
+      },
+      "source": {
+        "dataset": "Heidelberg Digits",
+        "version": "1.0",
+        "split": "test",
+        "filename": "audio/lang-german_speaker-04_trial-0_digit-8.flac",
+        "sha256": "7fd11a83db6c93670bdb8151ea1d253cdf84763071cc455056218248259c460d",
+        "frames": 34217,
+        "sampleRate": 48000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "speaker": 4,
+        "digit": 8,
+        "referenceProvenance": "filename digit/language class mapped to fixed word before inference",
+        "transformations": [
+          {
+            "operation": "full-file decode and resample",
+            "decoder": {
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "path": "/opt/homebrew/bin/ffmpeg"
+            },
+            "sampleRate": 16000,
+            "channels": 1,
+            "format": "PCM16",
+            "bitexact": true,
+            "mapMetadata": -1,
+            "trim": false,
+            "gainChange": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "hd-de-acceptance-s05-t0-d9",
+      "language": "de",
+      "class": "clean",
+      "split": "acceptance",
+      "reference": "neun",
+      "tags": [
+        "natural-short",
+        "digit-anchor",
+        "independent-class-label"
+      ],
+      "audio": {
+        "path": "artifacts/corpus/audio/hd-de-acceptance-s05-t0-d9.wav",
+        "sha256": "1647291976869e97a5efee7d714e5f1fcfb4d004b4cd905d4f8d7b7e6334ccf0",
+        "frames": 9072,
+        "sampleRate": 16000
+      },
+      "source": {
+        "dataset": "Heidelberg Digits",
+        "version": "1.0",
+        "split": "test",
+        "filename": "audio/lang-german_speaker-05_trial-0_digit-9.flac",
+        "sha256": "cf2260832f55115054451aff3e04b81ab50ba063eaa8419cf0eb7fcea6bdfba5",
+        "frames": 27217,
+        "sampleRate": 48000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "speaker": 5,
+        "digit": 9,
+        "referenceProvenance": "filename digit/language class mapped to fixed word before inference",
+        "transformations": [
+          {
+            "operation": "full-file decode and resample",
+            "decoder": {
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "path": "/opt/homebrew/bin/ffmpeg"
+            },
+            "sampleRate": 16000,
+            "channels": 1,
+            "format": "PCM16",
+            "bitexact": true,
+            "mapMetadata": -1,
+            "trim": false,
+            "gainChange": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "hd-en-calibration-s00-t10-d8",
+      "language": "en",
+      "class": "clean",
+      "split": "calibration",
+      "reference": "eight",
+      "tags": [
+        "natural-short",
+        "digit-anchor",
+        "independent-class-label"
+      ],
+      "audio": {
+        "path": "artifacts/corpus/audio/hd-en-calibration-s00-t10-d8.wav",
+        "sha256": "0c82c4275abb47a5682bcc7786479f7af29428b3e85955d6f6ea04b9613ce0fd",
+        "frames": 9677,
+        "sampleRate": 16000
+      },
+      "source": {
+        "dataset": "Heidelberg Digits",
+        "version": "1.0",
+        "split": "train",
+        "filename": "audio/lang-english_speaker-00_trial-10_digit-8.flac",
+        "sha256": "2bbe06f344208c47375217027e40ccb02246829f2a59a4b7aa66d2c23efd936a",
+        "frames": 29031,
+        "sampleRate": 48000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "speaker": 0,
+        "digit": 8,
+        "referenceProvenance": "filename digit/language class mapped to fixed word before inference",
+        "transformations": [
+          {
+            "operation": "full-file decode and resample",
+            "decoder": {
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "path": "/opt/homebrew/bin/ffmpeg"
+            },
+            "sampleRate": 16000,
+            "channels": 1,
+            "format": "PCM16",
+            "bitexact": true,
+            "mapMetadata": -1,
+            "trim": false,
+            "gainChange": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "hd-en-calibration-s01-t0-d9",
+      "language": "en",
+      "class": "clean",
+      "split": "calibration",
+      "reference": "nine",
+      "tags": [
+        "natural-short",
+        "digit-anchor",
+        "independent-class-label"
+      ],
+      "audio": {
+        "path": "artifacts/corpus/audio/hd-en-calibration-s01-t0-d9.wav",
+        "sha256": "57053be81e28b1f5d46c46a826c50fad247e816985075686ff2d78e9a1af4cd6",
+        "frames": 10037,
+        "sampleRate": 16000
+      },
+      "source": {
+        "dataset": "Heidelberg Digits",
+        "version": "1.0",
+        "split": "train",
+        "filename": "audio/lang-english_speaker-01_trial-0_digit-9.flac",
+        "sha256": "03a01f22bc3ee4df34807ce2363f8c028fd1232e42181990a430206668bf98e9",
+        "frames": 30112,
+        "sampleRate": 48000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "speaker": 1,
+        "digit": 9,
+        "referenceProvenance": "filename digit/language class mapped to fixed word before inference",
+        "transformations": [
+          {
+            "operation": "full-file decode and resample",
+            "decoder": {
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "path": "/opt/homebrew/bin/ffmpeg"
+            },
+            "sampleRate": 16000,
+            "channels": 1,
+            "format": "PCM16",
+            "bitexact": true,
+            "mapMetadata": -1,
+            "trim": false,
+            "gainChange": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "hd-en-acceptance-s04-t0-d8",
+      "language": "en",
+      "class": "clean",
+      "split": "acceptance",
+      "reference": "eight",
+      "tags": [
+        "natural-short",
+        "digit-anchor",
+        "independent-class-label"
+      ],
+      "audio": {
+        "path": "artifacts/corpus/audio/hd-en-acceptance-s04-t0-d8.wav",
+        "sha256": "a8958e9d24bddb3893573b7902a06865001a6cbb3fb1b10fcd957ce3f041722c",
+        "frames": 9408,
+        "sampleRate": 16000
+      },
+      "source": {
+        "dataset": "Heidelberg Digits",
+        "version": "1.0",
+        "split": "test",
+        "filename": "audio/lang-english_speaker-04_trial-0_digit-8.flac",
+        "sha256": "bbff17afb5209858c001d28e16ad60985f1b6b0c90114294de54ca37c7529e17",
+        "frames": 28224,
+        "sampleRate": 48000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "speaker": 4,
+        "digit": 8,
+        "referenceProvenance": "filename digit/language class mapped to fixed word before inference",
+        "transformations": [
+          {
+            "operation": "full-file decode and resample",
+            "decoder": {
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "path": "/opt/homebrew/bin/ffmpeg"
+            },
+            "sampleRate": 16000,
+            "channels": 1,
+            "format": "PCM16",
+            "bitexact": true,
+            "mapMetadata": -1,
+            "trim": false,
+            "gainChange": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "hd-en-acceptance-s05-t0-d9",
+      "language": "en",
+      "class": "clean",
+      "split": "acceptance",
+      "reference": "nine",
+      "tags": [
+        "natural-short",
+        "digit-anchor",
+        "independent-class-label"
+      ],
+      "audio": {
+        "path": "artifacts/corpus/audio/hd-en-acceptance-s05-t0-d9.wav",
+        "sha256": "9f1803b9de4c00073f6db17def9423529b9812cbfa5f249dfe7724a990f03528",
+        "frames": 9976,
+        "sampleRate": 16000
+      },
+      "source": {
+        "dataset": "Heidelberg Digits",
+        "version": "1.0",
+        "split": "test",
+        "filename": "audio/lang-english_speaker-05_trial-0_digit-9.flac",
+        "sha256": "32b78298d2129f2003038de56590c09597e4cb808856ce47ed9d4ed52046dca3",
+        "frames": 29927,
+        "sampleRate": 48000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "speaker": 5,
+        "digit": 9,
+        "referenceProvenance": "filename digit/language class mapped to fixed word before inference",
+        "transformations": [
+          {
+            "operation": "full-file decode and resample",
+            "decoder": {
+              "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+              "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+              "path": "/opt/homebrew/bin/ffmpeg"
+            },
+            "sampleRate": 16000,
+            "channels": 1,
+            "format": "PCM16",
+            "bitexact": true,
+            "mapMetadata": -1,
+            "trim": false,
+            "gainChange": false
+          }
+        ]
+      }
+    }
+  ],
+  "dataset": "google/fleurs",
+  "requiredCoveragePending": [
+    "natural_continuous_de_300s_without_safe_pause",
+    "natural_room_noise",
+    "independent_listening_and_anchor_annotation_numbers_names_negations",
+    "real_microphone_hotkey_end_to_end",
+    "exact_30s_duration_cases"
+  ],
+  "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+  "schemaVersion": 1,
+  "selectionRules": {
+    "baseAcceptance": {
+      "de": 40,
+      "en": 30
+    },
+    "calibrationPerLanguage": 10,
+    "centralBand": "target-1 <= source seconds <= target; first unused canonical ID; zero-pad only",
+    "centralSecondsPerLanguage": [
+      5,
+      10,
+      15
+    ],
+    "deduplicate": "first filename per sentenceId after 4..30-second range filter",
+    "maxFrames": 4800000,
+    "quietGain": 0.05,
+    "quietPerLanguageAndSplit": 5,
+    "reusedReferencesAreNotIndependentCoverage": true,
+    "sort": [
+      "integer sentenceId",
+      "filename"
+    ],
+    "stressSelection": "complete canonical DE test prefix until the next whole clip would exceed the maximum; no cuts",
+    "syntheticNoiseAmplitude": 0.04,
+    "syntheticNoiseSeed": 1163281746,
+    "heidelbergDigits": {
+      "digits": [
+        8,
+        9
+      ],
+      "references": {
+        "de": {
+          "8": "acht",
+          "9": "neun"
+        },
+        "en": {
+          "8": "eight",
+          "9": "nine"
+        }
+      },
+      "durationSeconds": [
+        0.2,
+        1.0
+      ],
+      "splitLists": {
+        "calibration": "train_filenames.txt",
+        "acceptance": "test_filenames.txt"
+      },
+      "order": "language, split, digit; prefer acceptance speakers absent from train, then unused speaker per pair, then canonical filename",
+      "trim": false,
+      "referenceProvenance": "publisher filename digit/language classes; fixed word mapping before ASR; no model-generated labels"
+    }
+  },
+  "sources": [
+    {
+      "archive": {
+        "bytes": 227694463,
+        "filename": "de_de-dev.tar.gz",
+        "sha256": "72cac13bbddbddf674d8102a9e7b90a3b1db5d777ed92e88eccc5ae69cb8fc9d"
+      },
+      "key": "de_de-dev",
+      "language": "de",
+      "split": "dev",
+      "tsv": {
+        "bytes": 221691,
+        "filename": "de_de-dev.tsv",
+        "sha256": "055b6ddecc9ad493d9ead86babe3ebe225148dd3c174fa6f95cb83a4f9586e18"
+      }
+    },
+    {
+      "archive": {
+        "bytes": 568734559,
+        "filename": "de_de-test.tar.gz",
+        "sha256": "e86b42dfcdef749926cd92135045f87c25966c09e50d01c401adb04ee7d8628f"
+      },
+      "key": "de_de-test",
+      "language": "de",
+      "split": "test",
+      "tsv": {
+        "bytes": 559542,
+        "filename": "de_de-test.tsv",
+        "sha256": "82fab72c58a347345675c238f2492bb997105a4ab45d69e2a2b34ed29082fa97"
+      }
+    },
+    {
+      "archive": {
+        "bytes": 171250900,
+        "filename": "en_us-dev.tar.gz",
+        "sha256": "2658fda72f199e12676ecac9415094667a4e14e149b146e568ea00b2a2f0954c"
+      },
+      "key": "en_us-dev",
+      "language": "en",
+      "split": "dev",
+      "tsv": {
+        "bytes": 213065,
+        "filename": "en_us-dev.tsv",
+        "sha256": "9d57ee7e91e9d4c92edb39f6bbea668ef8dc2a3ff96eb510d5580b2ad05d17ec"
+      }
+    },
+    {
+      "archive": {
+        "bytes": 289851356,
+        "filename": "en_us-test.tar.gz",
+        "sha256": "d9c2e37b41aacd41bc283554a0a82b5476b36887049774ecb2819dcaaa55a356"
+      },
+      "key": "en_us-test",
+      "language": "en",
+      "split": "test",
+      "tsv": {
+        "bytes": 367864,
+        "filename": "en_us-test.tsv",
+        "sha256": "74c046239374deeb60fa63f258f907388093a32bcaa3140965f70ef05c79f7ca"
+      }
+    },
+    {
+      "sourceId": "heidelberg-digits-v1.0",
+      "dataset": "Heidelberg Digits original audio",
+      "version": "1.0",
+      "url": "https://zenkelab.org/datasets/shd/hd_audio.tar.gz",
+      "archiveBytes": 337342212,
+      "archiveSha256": "4980128f02deba417ad3592e37166b8af603e200e298dd6108c20c4ffaa2e610",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "archive README.md: spoken digits dataset",
+      "attribution": "Copyright 2019 Benjamin Cramer, Yannik Stradmann, Johannes Schemmel, Friedemann Zenke; doi:10.1109/TNNLS.2020.3044364",
+      "decoder": {
+        "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+        "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+        "path": "/opt/homebrew/bin/ffmpeg"
+      }
+    }
+  ],
+  "unicodeVersion": "13.0.0"
+}

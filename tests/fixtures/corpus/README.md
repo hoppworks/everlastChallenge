@@ -1,0 +1,82 @@
+# P05-Prüfkorpus und vollständige Referenzkonfiguration
+
+Dieser Korpus dient der lokalen Qualitätsmessung. Er ist noch keine bestandene
+P05-Abnahme. Die Audiodateien liegen ausschließlich im ignorierten Verzeichnis
+`artifacts/corpus`; private Benutzeraufnahmen gehören nicht zu dieser Auswahl.
+
+## Reproduktion
+
+Die festen Quellen, Downloadlinks, Hashes und Lizenzbelege stehen in
+[`docs/verification/corpus-sources.md`](../../../docs/verification/corpus-sources.md).
+Die vier FLEURS-Archive und TSVs heißen lokal
+`artifacts/corpus/source/{de_de,en_us}-{dev,test}.{tar.gz,tsv}`.
+Das Heidelberg-Archiv heißt `artifacts/corpus/source/hd_audio.tar.gz`.
+Beide Builder prüfen die fest im Quelltext hinterlegten Hashes vor Verwendung.
+
+```sh
+/usr/bin/python3 scripts/corpus.py --source artifacts/corpus/source --manifest artifacts/corpus/fleurs-base.json
+/usr/bin/python3 scripts/short_corpus.py artifacts/corpus/fleurs-base.json --source artifacts/corpus/source/hd_audio.tar.gz --output tests/fixtures/corpus/manifest.json
+npm run test:quality
+```
+
+Für die Auswertung ist Python mit Unicode-Datenbank **13.0.0** erforderlich;
+auf dem Prüfgerät ist das `/usr/bin/python3` (Python 3.9.6). Die HD-Konvertierung
+verwendet das vorhandene `/opt/homebrew/bin/ffmpeg`; Version und Binärhash stehen
+im erzeugten Manifest. Abweichende eingefrorene Dateien werden nicht ersetzt.
+Werkzeuge und Audiohashes müssen vor dem Modellvergleich festgeschrieben sein.
+
+## Auswahl und Grenzen
+
+Die Auswahl erfolgt deterministisch aus Metadaten, unabhängig von ASR-Ausgaben.
+FLEURS-dev dient der Kalibrierung, FLEURS-test der späteren Abnahme. Pro Sprache
+entstehen zentrale Fälle mit 5, 10 und 15 Sekunden durch ausschließlich hinten
+angefügte Nullframes. Leise Varianten verwenden unveränderte Referenzen und
+einen festen Verstärkungsfaktor. Sie sind keine zusätzlichen unabhängigen Sätze.
+HD ergänzt vollständige natürliche Kurzäußerungen für acht/neun beziehungsweise
+eight/nine mit den offiziellen getrennten Train-/Testlisten.
+
+Stille und synthetisches Rauschen haben leere Referenzen und keinen WER-Nenner.
+Der konstruierte deutsche 300-s-Fall verkettet vollständige Quellclips und
+maskiert Pausen mit deterministischem Rauschen. Er ersetzt keinen natürlichen
+fünfminütigen Monolog. Die Liste `requiredCoveragePending` hält verbleibende
+Lücken fest, insbesondere exakte 30-s-Fälle, unabhängiges Anhören, Inhaltsanker, Raumgeräusche
+und den echten Mikrofon-/Hotkey-Pfad.
+
+## Messung
+
+`reference-parameters-v1.json` dokumentiert die vollständige vorläufige
+Referenzkonfiguration. Kalibrierung erfolgt ausschließlich auf `calibration`.
+Parameteränderungen benötigen eine neue dokumentierte Konfiguration vor der
+Abnahme; Ergebnisse der Abnahmemenge dürfen die Kalibrierung nicht steuern.
+
+Der Entwickler-Probe akzeptiert ein Manifest mit ausgewählter Fallmenge:
+
+```sh
+EVERLAST_BENCHMARK_REVISION="$(git rev-parse HEAD)" cargo run -p everlast-dictation --release --example corpus_probe -- MODEL_PATH reference MANIFEST_JSON OUTPUT_JSON
+/usr/bin/python3 scripts/quality.py MANIFEST_JSON OUTPUT_JSON --output REPORT_JSON
+```
+
+Für das kleine Modell wird `small` übergeben. Ergebnisse und Metadaten sind neue
+lokale Dateien; bestehende Ausgaben werden nicht überschrieben. Fehlende oder
+fehlgeschlagene Fälle bleiben sichtbar. Ein erfolgreicher Werkzeugaufruf bedeutet
+nicht, dass WER-, Anker- oder Leistungsgrenzen bestanden wurden.
+
+Diese Probe misst den vollständigen Dateibackend-Pfad mit warmem Modelldienst.
+Sie misst **nicht** die in §13 definierte Echtzeitlatenz L: Dafür fehlen zeitgetreue
+Einspeisung vor Ring/DSP/Worker und Stop-bis-Text-Beobachtung. Auch Mikrofon,
+Textübergabe, Speicher-/Abbruchabnahme und die vorgeschriebenen Wiederholungen
+müssen separat nachgewiesen werden.
+
+## Rechte und Namensnennung
+
+Werkzeugcode bleibt unter der Projektlizenz. Die Korpusinhalte haben eigene
+Lizenzen: FLEURS-Aufnahmen von Alexis Conneau et al./Google unter
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); die enthaltenen
+FLORES-101-Referenztexte von Naman Goyal et al. unter
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+Die im Manifest gespeicherte Referenztextsammlung ist entsprechend unter
+CC BY-SA 4.0 weiterzugeben. Heidelberg Digits: Copyright 2019 Benjamin Cramer,
+Yannik Stradmann, Johannes Schemmel und Friedemann Zenke, CC BY 4.0.
+Quellenrevisionen und Transformationen sind je Fall ausgewiesen; Auswahl,
+Formatkonvertierung, Padding, Lautstärkeänderung und konstruierte Fälle stammen
+aus diesem Projekt. Details und Primärquellen stehen im verlinkten Quellenbericht.
