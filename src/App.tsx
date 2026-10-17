@@ -1,18 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppView } from "./features/app/AppView";
 import { command, connect, sessionCommand } from "./ipc";
 import type { Snapshot } from "./ipc";
-export function App() {
+export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsRequest = useRef(0);
+  const settingsHeading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (settingsOpen) settingsHeading.current?.focus();
+  }, [settingsOpen]);
   useEffect(() => {
     let disposed = false;
     let disconnect: (() => void) | undefined;
     connect(
       (value) => {
-        if (!disposed) setSnapshot(value);
+        if (!disposed) {
+          setSnapshot(value);
+          // Consume at the subscription boundary: React may batch several
+          // snapshots, including a newer request followed by an older value.
+          if (value.settingsRequest > settingsRequest.current) {
+            settingsRequest.current = value.settingsRequest;
+            setSettingsOpen(true);
+          }
+        }
       },
       (reason) => {
         if (!disposed) setError(String(reason));
@@ -40,8 +53,10 @@ export function App() {
   if (!snapshot)
     return (
       <main className="dictation-app">
-        <h1>Everlast Dictation</h1>
-        <p role="status">Anwendung wird gestartet …</p>
+        {!nativeHeader && <h1>Everlast Dictation</h1>}
+        <p role="status" aria-live="polite">
+          Anwendung wird gestartet …
+        </p>
         {error && <p role="alert">{error}</p>}
       </main>
     );
@@ -52,6 +67,7 @@ export function App() {
   return (
     <>
       <AppView
+        nativeHeader={nativeHeader}
         setup={{
           phase: snapshot.setup.phase,
           model: snapshot.setup.model,
@@ -86,7 +102,9 @@ export function App() {
       />
       {settingsOpen && (
         <section className="dictation-app" aria-label="Einstellungen">
-          <h2>Berechtigungen</h2>
+          <h2 ref={settingsHeading} tabIndex={-1}>
+            Berechtigungen
+          </h2>
           <p>
             Aufnahme und Spracherkennung erfolgen lokal. Zum automatischen
             Einfügen werden zusätzlich die Bedienungshilfen benötigt.

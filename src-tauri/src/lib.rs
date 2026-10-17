@@ -6,6 +6,7 @@ pub mod contracts;
 pub mod control;
 pub mod controller;
 pub mod desktop;
+pub mod header;
 pub mod hotkeys;
 pub mod inference_service;
 pub mod ipc;

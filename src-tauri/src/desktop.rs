@@ -30,6 +30,7 @@ struct Shared {
     client: Option<AppClient>,
     settings: Settings,
     action_error: Option<String>,
+    settings_requests: u32,
 }
 struct Inner {
     shared: Mutex<Shared>,
@@ -52,6 +53,7 @@ impl Desktop {
                 client: None,
                 settings: Settings::default(),
                 action_error: None,
+                settings_requests: 0,
             }),
             closing: AtomicBool::new(false),
             refresh: AtomicBool::new(true),
@@ -80,6 +82,63 @@ impl Desktop {
             .map_err(|_| "Desktop lock failed")?
             .view
             .clone())
+    }
+    /// Queue a persistent UI request, so a late renderer subscription cannot lose it.
+    pub fn request_settings(&self) -> Result<u32, String> {
+        if self.0.closing.load(Ordering::Acquire) {
+            return Err("Anwendung wird beendet".into());
+        }
+        let mut shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+        if shared.view.settings_busy {
+            return Err("Einstellungen sind momentan nicht verfügbar".into());
+        }
+        shared.settings_requests = shared
+            .settings_requests
+            .checked_add(1)
+            .ok_or("Einstellungsanfragen ausgeschöpft; Anwendung neu starten")?;
+        Ok(shared.settings_requests)
+    }
+    /// Read only the bounded native projection when its revision changes.
+    pub fn native_header_after(
+        &self,
+        revision: Option<u64>,
+    ) -> Result<Option<(u64, macos_integration::glass_header::HeaderState)>, String> {
+        let shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+        Ok((revision != Some(shared.view.revision))
+            .then(|| (shared.view.revision, crate::header::project(&shared.view))))
+    }
+    pub fn native_action(&self, action: macos_integration::glass_header::HeaderAction) {
+        use macos_integration::glass_header::HeaderAction;
+        if let Ok(mut shared) = self.0.shared.lock() {
+            shared.action_error = None;
+        }
+        let result = (|| {
+            match action {
+                HeaderAction::Settings => self.request_settings().map(|_| ()),
+                HeaderAction::Stop(session) => self.stop_recording(session.get()),
+                HeaderAction::Cancel(session) => self.cancel_recording(session.get()),
+                HeaderAction::Start => {
+                    // Bound acknowledgement waiters before spawning any task.
+                    let admission = self.ui_permit()?;
+                    let reply = self.start_request(None, false, false)?;
+                    let owner = self.clone();
+                    tauri::async_runtime::spawn(async move {
+                        let _admission = admission;
+                        if let Err(error) = reply
+                            .await
+                            .map_err(|_| "Aufnahmeanfrage beendet".to_owned())
+                            .and_then(|result| result)
+                        {
+                            owner.action_error(error);
+                        }
+                    });
+                    Ok(())
+                }
+            }
+        })();
+        if let Err(error) = result {
+            self.action_error(error);
+        }
     }
     pub fn refresh_permissions(&self) {
         self.0.refresh.store(true, Ordering::Release);
@@ -416,6 +475,7 @@ impl Desktop {
                 if let Some(native) = native {
                     next.permissions = permissions(native);
                 }
+                next.settings_request = shared.settings_requests;
                 next.error = shared.action_error.clone().or(next.error);
                 next.revision = shared.view.revision;
                 if next != shared.view {
@@ -531,6 +591,7 @@ fn initial() -> view::Snapshot {
             hotkey: "⌥D (physisch)".into(),
         },
         settings_busy: true,
+        settings_request: 0,
         error: None,
     }
 }
@@ -660,6 +721,7 @@ mod tests {
                 client: None,
                 settings: Settings::default(),
                 action_error: None,
+                settings_requests: 0,
             }),
             closing: AtomicBool::new(false),
             refresh: AtomicBool::new(false),
@@ -696,6 +758,109 @@ mod tests {
         assert!(desktop.set_suspended(false).is_ok());
         assert!(matches!(desktop.start_request(None, false, false),
             Err(message) if message == "Anwendung wird beendet"));
+    }
+    #[test]
+    fn native_settings_requests_are_monotone_and_respect_busy_and_shutdown()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let desktop = unstarted_desktop();
+        assert!(desktop.request_settings().is_err());
+        desktop
+            .0
+            .shared
+            .lock()
+            .map_err(|_| "lock")?
+            .view
+            .settings_busy = false;
+        assert_eq!(desktop.request_settings()?, 1);
+        assert_eq!(desktop.request_settings()?, 2);
+        desktop.shutdown();
+        assert!(desktop.request_settings().is_err());
+        Ok(())
+    }
+    #[test]
+    fn native_header_freezes_actions_to_the_displayed_session()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use macos_integration::glass_header::{HeaderPrimary, HeaderState};
+        let mut view = initial();
+        view.setup.phase = view::SetupPhase::Ready;
+        view.permissions.microphone = view::PermissionStatus::Granted;
+        view.settings_busy = false;
+        let ready = crate::header::project(&view);
+        assert_eq!(ready.primary, Some(HeaderPrimary::Start));
+        assert!(ready.settings_enabled);
+        view.session.phase = view::SessionPhase::Recording;
+        view.session.id = Some(7);
+        view.settings_busy = true;
+        let recording = crate::header::project(&view);
+        assert_eq!(recording.primary, Some(HeaderPrimary::Stop(7.try_into()?)));
+        assert_eq!(recording.cancel, 7.try_into().ok());
+        assert!(!recording.settings_enabled);
+        view.session.id = Some(8);
+        assert_ne!(recording, crate::header::project(&view));
+        assert_ne!(recording, HeaderState::default());
+        Ok(())
+    }
+    #[test]
+    fn native_header_never_promises_capture_before_readiness_or_after_shutdown() {
+        let mut view = initial();
+        assert!(crate::header::project(&view).primary.is_none());
+        view.setup.phase = view::SetupPhase::Ready;
+        view.settings_busy = false;
+        assert!(crate::header::project(&view).primary.is_none());
+        view.permissions.microphone = view::PermissionStatus::Granted;
+        assert!(crate::header::project(&view).primary.is_some());
+        view.session.phase = view::SessionPhase::Recording;
+        view.session.id = Some(0);
+        let missing = crate::header::project(&view);
+        assert!(missing.primary.is_none() && missing.cancel.is_none());
+        view.session.id = Some(7);
+        view.running = false;
+        let stopped = crate::header::project(&view);
+        assert!(stopped.primary.is_none() && stopped.cancel.is_none());
+        assert!(!stopped.settings_enabled);
+    }
+    #[test]
+    fn native_header_reads_only_changed_revisions_and_no_transcript_content()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let desktop = unstarted_desktop();
+        let (revision, state) = desktop.native_header_after(None)?.ok_or("missing header")?;
+        assert_eq!(state.status, "Modell wird geprüft");
+        assert!(desktop.native_header_after(Some(revision))?.is_none());
+        {
+            let mut shared = desktop.0.shared.lock().map_err(|_| "lock")?;
+            shared.view.revision += 1;
+            shared.view.session.text = "private dictated text".into();
+            shared.view.session.phase = view::SessionPhase::Recording;
+            shared.view.session.id = Some(2);
+            shared.view.session.maximum_warning = true;
+        }
+        let (_, state) = desktop
+            .native_header_after(Some(revision))?
+            .ok_or("missing update")?;
+        assert_eq!(state.status, "Aufnahme endet bei 5 Minuten");
+        assert!(!state.status.contains("private"));
+        Ok(())
+    }
+    #[test]
+    fn native_settings_counter_exhaustion_is_explicit_and_does_not_wrap()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let desktop = unstarted_desktop();
+        {
+            let mut shared = desktop.0.shared.lock().map_err(|_| "lock")?;
+            shared.view.settings_busy = false;
+            shared.settings_requests = u32::MAX;
+        }
+        assert!(desktop.request_settings().is_err());
+        assert_eq!(
+            desktop
+                .0
+                .shared
+                .lock()
+                .map_err(|_| "lock")?
+                .settings_requests,
+            u32::MAX
+        );
+        Ok(())
     }
     fn application() -> crate::application::Snapshot {
         crate::application::Snapshot {

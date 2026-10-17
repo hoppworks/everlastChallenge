@@ -1,6 +1,9 @@
 #![forbid(unsafe_code)]
 use everlast_dictation::{desktop::Desktop, ipc};
-use macos_integration::power::{PowerEvent, PowerObserver};
+use macos_integration::{
+    glass_header::GlassHeader,
+    power::{PowerEvent, PowerObserver},
+};
 use tauri::{
     Manager,
     menu::{Menu, MenuItem},
@@ -47,9 +50,6 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 tray = tray.icon(icon.clone());
             }
             tray.build(app)?;
-            if let Some(window) = app.get_webview_window("main") {
-                window.show()?;
-            }
             Ok(())
         })
         .on_window_event(|window, event| match event {
@@ -67,6 +67,23 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             _ => {}
         })
         .build(tauri::generate_context!())?;
+    let window = app
+        .get_webview_window("main")
+        .ok_or("The main dictation window is unavailable")?;
+    // Install native controls above Wry's unchanged, readable content root.
+    // The header owns this window handle until its explicit exit cleanup.
+    let native_desktop = app.state::<Desktop>().inner().clone();
+    let actions = native_desktop.clone();
+    let mut header = Some(GlassHeader::attach(window.clone(), move |action| {
+        actions.native_action(action);
+    })?);
+    let mut header_revision = None;
+    if let Some((revision, state)) = native_desktop.native_header_after(None)? {
+        if let Some(header) = &mut header {
+            header.update(state)?;
+        }
+        header_revision = Some(revision);
+    }
     // Tauri run exits the process directly. Remove native observers explicitly
     // on Exit, before its cleanup, rather than relying on a stack destructor.
     let power_desktop = app.state::<Desktop>().inner().clone();
@@ -79,9 +96,34 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             eprintln!("Power transition failed: {error}");
         }
     })?;
+    window.show()?;
     app.run(move |app, event| {
         if let tauri::RunEvent::Exit = event {
             power.remove();
+            if let Some(mut attachment) = header.take()
+                && let Err(error) = attachment.detach()
+            {
+                eprintln!("Native window cleanup failed: {error}");
+            }
+        }
+        if matches!(
+            event,
+            tauri::RunEvent::Ready | tauri::RunEvent::MainEventsCleared
+        ) && let Some(header) = &mut header
+        {
+            let updated = native_desktop
+                .native_header_after(header_revision)
+                .and_then(|next| {
+                    if let Some((revision, state)) = next {
+                        header.update(state).map_err(|error| error.to_string())?;
+                        header_revision = Some(revision);
+                    }
+                    Ok(())
+                });
+            if let Err(error) = updated {
+                eprintln!("Native window update failed: {error}");
+                app.exit(1);
+            }
         }
         if let tauri::RunEvent::ExitRequested { api, .. } = event
             && let Some(desktop) = app.try_state::<Desktop>()

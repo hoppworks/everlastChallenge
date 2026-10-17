@@ -22,6 +22,7 @@ function snapshot(): Snapshot {
     revision: 1,
     running: true,
     settingsBusy: false,
+    settingsRequest: 0,
     error: null,
     setup: {
       phase: "Ready",
@@ -55,7 +56,7 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-function connected(value = snapshot()) {
+function connected(value = snapshot(), nativeHeader = false) {
   let receive: ((snapshot: Snapshot) => void) | undefined;
   const unsubscribe = vi.fn<() => void>();
   ipc.connect.mockImplementation(
@@ -65,13 +66,46 @@ function connected(value = snapshot()) {
       return unsubscribe;
     },
   );
-  const view = render(<App />);
+  const view = render(<App nativeHeader={nativeHeader} />);
   return {
     ...view,
     unsubscribe,
     publish: (next: Snapshot) => act(() => receive?.(next)),
   };
 }
+
+test("native settings requests survive initial delivery and only reopen for a higher counter", async () => {
+  const initial = { ...snapshot(), settingsRequest: 7 };
+  const view = connected(initial, true);
+  expect(
+    await screen.findByRole("region", { name: "Einstellungen" }),
+  ).toBeDefined();
+  expect(screen.queryByRole("button", { name: "Einstellungen" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Aufnehmen" })).toBeNull();
+  expect(document.activeElement).toBe(
+    screen.getByRole("heading", { name: "Berechtigungen" }),
+  );
+  const permission = screen.getByRole("button", {
+    name: "Mikrofonzugriff anfragen",
+  });
+  permission.focus();
+  view.publish({ ...initial, revision: 2, settingsRequest: 8 });
+  expect(document.activeElement).toBe(permission);
+  fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+  view.publish({ ...initial, revision: 3, settingsRequest: 8 });
+  view.publish({ ...initial, revision: 4, settingsRequest: 6 });
+  expect(screen.queryByRole("region", { name: "Einstellungen" })).toBeNull();
+  act(() => {
+    view.publish({ ...initial, revision: 5, settingsRequest: 9 });
+    view.publish({ ...initial, revision: 6, settingsRequest: 8 });
+  });
+  expect(screen.getByRole("region", { name: "Einstellungen" })).toBeDefined();
+  fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+  view.publish({ ...initial, revision: 7, settingsRequest: 9 });
+  expect(screen.queryByRole("region", { name: "Einstellungen" })).toBeNull();
+  expect(ipc.command).not.toHaveBeenCalled();
+  expect(ipc.sessionCommand).not.toHaveBeenCalled();
+});
 
 test("renders startup without claiming readiness before the first native snapshot", () => {
   ipc.connect.mockReturnValue(new Promise(() => {}));
@@ -191,51 +225,61 @@ test("missing session identifiers never issue a targeted native action", async (
   expect(ipc.sessionCommand).not.toHaveBeenCalled();
 });
 
-test("copy and clear preserve displayed text until the native snapshot changes", async () => {
-  const value = snapshot();
-  value.session.text = "Der gespeicherte Text.";
-  const view = connected(value);
-  fireEvent.click(await screen.findByRole("button", { name: "Kopieren" }));
-  await waitFor(() =>
-    expect(ipc.command).toHaveBeenCalledWith("transcript_copy"),
-  );
-  await waitFor(() =>
-    expect(
-      (screen.getByRole("button", { name: "Löschen" }) as HTMLButtonElement)
-        .disabled,
-    ).toBe(false),
-  );
-  fireEvent.click(screen.getByRole("button", { name: "Löschen" }));
-  await waitFor(() =>
-    expect(ipc.command).toHaveBeenCalledWith("transcript_clear"),
-  );
-  expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
-    "Der gespeicherte Text.",
-  );
-  view.publish(snapshot());
-  expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("");
-});
+test.each([false, true])(
+  "copy and clear preserve displayed text until the native snapshot changes (native header %s)",
+  async (nativeHeader) => {
+    const value = snapshot();
+    value.session.text = "Der gespeicherte Text.";
+    const view = connected(value, nativeHeader);
+    fireEvent.click(await screen.findByRole("button", { name: "Kopieren" }));
+    await waitFor(() =>
+      expect(ipc.command).toHaveBeenCalledWith("transcript_copy"),
+    );
+    await waitFor(() =>
+      expect(
+        (screen.getByRole("button", { name: "Löschen" }) as HTMLButtonElement)
+          .disabled,
+      ).toBe(false),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Löschen" }));
+    await waitFor(() =>
+      expect(ipc.command).toHaveBeenCalledWith("transcript_clear"),
+    );
+    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
+      "Der gespeicherte Text.",
+    );
+    view.publish(snapshot());
+    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("");
+  },
+);
 
-test("download and cancellation forward explicit model commands", async () => {
-  const value = snapshot();
-  value.setup.phase = "Missing";
-  const view = connected(value);
-  fireEvent.click(await screen.findByRole("button", { name: "Modell laden" }));
-  await waitFor(() =>
-    expect(ipc.command).toHaveBeenCalledWith("model_download"),
-  );
-  value.setup = {
-    ...value.setup,
-    phase: "Downloading",
-    downloadedBytes: 123000000,
-    canCancel: true,
-  };
-  view.publish({ ...value, revision: 2 });
-  fireEvent.click(
-    screen.getByRole("button", { name: "Einrichtung abbrechen" }),
-  );
-  await waitFor(() => expect(ipc.command).toHaveBeenCalledWith("model_cancel"));
-});
+test.each([false, true])(
+  "download and cancellation forward explicit model commands (native header %s)",
+  async (nativeHeader) => {
+    const value = snapshot();
+    value.setup.phase = "Missing";
+    const view = connected(value, nativeHeader);
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Modell laden" }),
+    );
+    await waitFor(() =>
+      expect(ipc.command).toHaveBeenCalledWith("model_download"),
+    );
+    value.setup = {
+      ...value.setup,
+      phase: "Downloading",
+      downloadedBytes: 123000000,
+      canCancel: true,
+    };
+    view.publish({ ...value, revision: 2 });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Einrichtung abbrechen" }),
+    );
+    await waitFor(() =>
+      expect(ipc.command).toHaveBeenCalledWith("model_cancel"),
+    );
+  },
+);
 
 test("permission panel forwards user requests, respects busy, and can be closed", async () => {
   const view = connected();

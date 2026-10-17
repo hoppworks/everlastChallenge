@@ -27,6 +27,7 @@ export type SessionOutcome =
   | { kind: "held" | "failed"; message: string };
 
 export interface AppViewProps {
+  nativeHeader?: boolean;
   setup: {
     phase: SetupPhase;
     model: { name: string; downloadBytes: number; sourceUrl: string };
@@ -126,16 +127,18 @@ export function AppView(props: AppViewProps) {
 
   return (
     <main className="dictation-app" aria-label="Everlast Dictation">
-      <header className="app-header">
-        <h1>Everlast Dictation</h1>
-        <button
-          type="button"
-          onClick={props.onSettings}
-          disabled={props.settingsBusy}
-        >
-          Einstellungen
-        </button>
-      </header>
+      {!props.nativeHeader && (
+        <header className="app-header">
+          <h1>Everlast Dictation</h1>
+          <button
+            type="button"
+            onClick={props.onSettings}
+            disabled={props.settingsBusy}
+          >
+            Einstellungen
+          </button>
+        </header>
+      )}
       <section
         className="dictation-status"
         aria-labelledby="dictation-status-title"
@@ -267,7 +270,7 @@ export function AppView(props: AppViewProps) {
               Einrichtung abbrechen
             </button>
           )}
-          {!active && setup.phase === "Ready" && (
+          {!props.nativeHeader && !active && setup.phase === "Ready" && (
             <button
               className="primary-action"
               type="button"
@@ -277,7 +280,7 @@ export function AppView(props: AppViewProps) {
               {session.outcome ? "Erneut aufnehmen" : "Aufnehmen"}
             </button>
           )}
-          {session.phase === "Recording" && (
+          {!props.nativeHeader && session.phase === "Recording" && (
             <button
               className="primary-action"
               type="button"
@@ -286,7 +289,7 @@ export function AppView(props: AppViewProps) {
               Stoppen
             </button>
           )}
-          {active && session.phase !== "Cancelling" && (
+          {!props.nativeHeader && active && session.phase !== "Cancelling" && (
             <button type="button" onClick={props.onCancel}>
               Abbrechen
             </button>

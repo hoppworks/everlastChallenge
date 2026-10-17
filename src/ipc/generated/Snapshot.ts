@@ -12,5 +12,6 @@ export type Snapshot = {
   permissions: Permissions;
   labels: Labels;
   settingsBusy: boolean;
+  settingsRequest: number;
   error: string | null;
 };

@@ -22,5 +22,10 @@ name = "glass_contract"
 path = "tests/glass_contract.rs"
 harness = false
 
+[[test]]
+name = "glass_header_contract"
+path = "tests/glass_header_contract.rs"
+harness = false
+
 [lints]
 workspace = true

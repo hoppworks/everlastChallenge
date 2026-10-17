@@ -37,6 +37,58 @@ test("names the dictation utility and provides settings", () => {
   expect(screen.getByRole("button", { name: "Einstellungen" })).toBeDefined();
 });
 
+test("native header owns session controls while body keeps transcript and orientation", () => {
+  const props = fixture();
+  const view = render(<AppView {...props} nativeHeader />);
+  expect(
+    screen.queryByRole("heading", { name: "Everlast Dictation" }),
+  ).toBeNull();
+  expect(screen.queryByRole("button", { name: "Einstellungen" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Aufnehmen" })).toBeNull();
+  expect(screen.getByRole("status").getAttribute("aria-live")).toBe("polite");
+  for (const phase of [
+    "Starting",
+    "Recording",
+    "Finalizing",
+    "Delivering",
+    "Cancelling",
+  ] as const) {
+    view.rerender(
+      <AppView
+        {...props}
+        nativeHeader
+        session={{ phase, text: "Bleibt sichtbar" }}
+      />,
+    );
+    expect(screen.queryByRole("button", { name: "Stoppen" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Abbrechen" })).toBeNull();
+    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
+      "Bleibt sichtbar",
+    );
+    expect(screen.getByText("Standardmikrofon")).toBeDefined();
+    expect(screen.getByRole("button", { name: "Kopieren" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Löschen" })).toBeDefined();
+  }
+  view.rerender(
+    <AppView
+      {...props}
+      nativeHeader
+      setup={{ ...props.setup, phase: "Missing" }}
+    />,
+  );
+  expect(screen.getByRole("button", { name: "Modell laden" })).toBeDefined();
+  view.rerender(
+    <AppView
+      {...props}
+      nativeHeader
+      setup={{ ...props.setup, phase: "Downloading", canCancel: true }}
+    />,
+  );
+  expect(
+    screen.getByRole("button", { name: "Einrichtung abbrechen" }),
+  ).toBeDefined();
+});
+
 test("clicking start waits for native state and does not pretend recording", () => {
   const props = fixture();
   let starts = 0;

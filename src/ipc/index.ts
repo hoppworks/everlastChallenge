@@ -64,6 +64,7 @@ export function decodeSnapshot(value: unknown): Snapshot {
       "permissions",
       "labels",
       "settingsBusy",
+      "settingsRequest",
       "error",
     ])
   )
@@ -73,6 +74,8 @@ export function decodeSnapshot(value: unknown): Snapshot {
     !number(value.revision) ||
     typeof value.running !== "boolean" ||
     typeof value.settingsBusy !== "boolean" ||
+    !number(value.settingsRequest) ||
+    value.settingsRequest > 4_294_967_295 ||
     !optionalText(value.error) ||
     !object(setup, [
       "phase",

@@ -92,5 +92,6 @@ pub struct Snapshot {
     pub permissions: Permissions,
     pub labels: Labels,
     pub settings_busy: bool,
+    pub settings_request: u32,
     pub error: Option<String>,
 }

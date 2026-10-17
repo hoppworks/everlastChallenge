@@ -20,6 +20,7 @@ function snapshot(): Snapshot {
     revision: 1,
     running: true,
     settingsBusy: false,
+    settingsRequest: 0,
     error: null,
     setup: {
       phase: "Ready",
@@ -359,3 +360,19 @@ test("transcript limit counts UTF-8 bytes consistently with the native 256 KiB l
   value.session.text += "ä";
   expect(() => decodeSnapshot(value)).toThrow("Ungültiger Anwendungsstatus");
 });
+
+test("accepts the bounded native settings request counter", () => {
+  const value = snapshot();
+  expect(decodeSnapshot(value).settingsRequest).toBe(0);
+  value.settingsRequest = 4_294_967_295;
+  expect(decodeSnapshot(value).settingsRequest).toBe(4_294_967_295);
+});
+
+test.each([-1, 0.5, Number.NaN, 4_294_967_296])(
+  "rejects invalid native settings request counter %s",
+  (counter) => {
+    expect(() =>
+      decodeSnapshot({ ...snapshot(), settingsRequest: counter }),
+    ).toThrow("Ungültiger Anwendungsstatus");
+  },
+);
