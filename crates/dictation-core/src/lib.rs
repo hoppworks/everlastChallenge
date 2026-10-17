@@ -2,4 +2,5 @@
 //! Deterministic dictation rules. No operating system, network, UI or inference.
 
 pub mod audio;
+pub mod recording_limits;
 pub mod session;

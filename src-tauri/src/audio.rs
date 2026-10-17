@@ -5,7 +5,10 @@ use cpal::{
     traits::{DeviceTrait, HostTrait, StreamTrait},
 };
 use crossbeam_channel::{Receiver, Sender, TrySendError};
-use dictation_core::audio::{AudioError, AudioFormat, AudioProcessor, MAX_SECONDS};
+use dictation_core::{
+    audio::{AudioError, AudioFormat, AudioProcessor, MAX_SECONDS},
+    recording_limits::{LimitDecision, RecordingLimits},
+};
 use rtrb::{Consumer, Producer, RingBuffer};
 use std::sync::{
     Arc,
@@ -428,17 +431,18 @@ fn record(
         drop(stream);
         return Err(error);
     }
-    let mut warned = false;
+    let mut limits = RecordingLimits::default();
     let processing = (|| -> Result<(), CaptureError> {
         loop {
-            let elapsed = started.elapsed();
-            if !warned && elapsed >= Duration::from_secs((MAX_SECONDS - 30) as u64) {
-                send_event(events, CaptureEvent::MaximumWarning { session })?;
-                warned = true;
-            }
-            if elapsed >= Duration::from_secs(MAX_SECONDS as u64) || reader.maximum_reached() {
-                *maximum = true;
-                break;
+            match limits.advance(started.elapsed(), reader.maximum_reached()) {
+                LimitDecision::Continue => {}
+                LimitDecision::Warn => {
+                    send_event(events, CaptureEvent::MaximumWarning { session })?
+                }
+                LimitDecision::Stop => {
+                    *maximum = true;
+                    break;
+                }
             }
             if stop.load(Ordering::Acquire) {
                 break;
