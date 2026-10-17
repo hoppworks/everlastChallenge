@@ -11,10 +11,12 @@ pub fn template() -> Result<Value, serde_json::Error> {
         "../../../tests/fixtures/corpus/reference-parameters-v4.json"
     ))?;
     value["schemaVersion"] = json!(2);
-    value["configurationId"] = json!("paced-full-recording-reference-qos-v3");
-    // Preserve the v4 policy baseline except the diagnosed punctuation mask.
+    value["configurationId"] = json!("paced-full-recording-native-timestamps-qos-v4");
+    // Preserve the v4 baseline except diagnosed punctuation suppression and
+    // native-timestamp suppression; both correctness corrections are explicit.
     // Source pins below bind the actual decoder and probe implementation.
     value["runtime"]["fullParams"]["suppress_nst"] = json!(false);
+    value["runtime"]["fullParams"]["no_timestamps"] = json!(false);
     value["status"] = json!("measurement baseline; not a model, quality or latency qualification");
     value["preprocessing"]["mode"] = json!(
         "finite/bounds then energy-empty guard; full-recording VAD; unchanged outer energy-range ASR; no speculative segments"

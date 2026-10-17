@@ -186,7 +186,7 @@ fn main() -> Result<(), Error> {
             "utteranceMode":"complete-recording", "freshStatePerJob":true,
             "inputSegmentation":"energy-range", "energyStartRms":0.00005, "energyEndRms":0.000025,
             "energyFrameSamples":320, "prerollMillis":150, "tailMillis":200, "minimumBackendSamples":16000, "noContext":true, "translate":false, "detectLanguage":false,
-            "noTimestamps":!cli.native_timestamps, "printSpecial":false, "printProgress":false, "printRealtime":false, "printTimestamps":false,
+            "noTimestamps":false, "printSpecial":false, "printProgress":false, "printRealtime":false, "printTimestamps":false,
             "speechGate":gate_metadata },
         "cases": observations,
     });

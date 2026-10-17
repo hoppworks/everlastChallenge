@@ -9,7 +9,7 @@ use crate::{batch, input};
 use serde_json::{Value, json};
 pub fn template() -> Result<Value, serde_json::Error> {
     let mut value = baseline::template()?;
-    value["configurationId"] = json!("paced-six-case-complete-recording-reference-v1");
+    value["configurationId"] = json!("paced-six-case-native-timestamps-reference-v2");
     value["status"] = json!("six-case L measurement only; no quality or P05 qualification");
     value["limits"] = json!({"noNativeDelivery":true,"notMicrophoneAcceptance":true,"notFullP05Qualification":true,
         "aggregateLRequiresAll181RunsAndConfirmedJoin":true,"qualityAndAnchorReviewSeparate":true});

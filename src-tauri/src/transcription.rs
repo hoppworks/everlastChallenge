@@ -103,11 +103,12 @@ impl Engine {
     ) -> Result<String, InferenceError> {
         let Self { context, gate } = self;
         transcribe_with(samples, language, gate, |input, language| {
-            decode::<true, _>(context, input, language, &mut NoObservation)
+            decode::<false, _>(context, input, language, &mut NoObservation)
         })
     }
-    /// Developer-only accepted-segment observation on the same serial engine path.
-    /// Does not expose encoder windows that produced no accepted segment.
+    /// Legacy developer diagnostic with suppressed native timestamps (true),
+    /// retained for historical comparisons. Production uses false. Shares the
+    /// same preparation/decoder/text path; missing encoder windows stay unknown.
     #[cfg(feature = "measurement")]
     pub fn transcribe_observed(
         &mut self,
@@ -117,8 +118,8 @@ impl Engine {
         self.transcribe_observed_with::<true>(samples, language)
     }
 
-    /// Developer-only alternative: permit native timestamp tokens. This changes
-    /// decoding behavior and is not a production setting or alignment guarantee.
+    /// Developer observation with the production native-timestamp policy (false).
+    /// Native times are still not a verified word-alignment guarantee.
     #[cfg(feature = "measurement")]
     pub fn transcribe_timestamped_observed(
         &mut self,
@@ -517,5 +518,100 @@ mod tests {
             );
             assert!(matches!(result, Err(InferenceError::InvalidAudio)));
         }
+    }
+    /// Actual pinned local model regression, deliberately excluded from ordinary CI.
+    /// Run explicitly with EVERLAST_RUN_NATIVE_MODEL_REGRESSION=1 and --ignored.
+    /// Checks this paragraph's loss/duplication only, not general transcript fidelity.
+    #[test]
+    #[ignore = "requires the pinned local reference model and authorized weak-slice audio"]
+    fn production_engine_preserves_weak_paragraph_exactly_once()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use sha2::{Digest, Sha256};
+        use std::io::Read;
+        if std::env::var("EVERLAST_RUN_NATIVE_MODEL_REGRESSION").as_deref() != Ok("1") {
+            return Err(
+                "set EVERLAST_RUN_NATIVE_MODEL_REGRESSION=1 for this explicit native model test"
+                    .into(),
+            );
+        }
+        let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .ok_or("repository root unavailable")?;
+        let manifest_path = root.join("artifacts/diagnostic-speech/weak-slice-v1/manifest.json");
+        let mut manifest = Vec::new();
+        std::fs::File::open(manifest_path)?
+            .take(1_048_577)
+            .read_to_end(&mut manifest)?;
+        assert_eq!(
+            format!("{:x}", Sha256::digest(&manifest)),
+            "d3b743f0d589c90a74fda2b1bfc758c0ab1e43937136bf7cc10f37dab028826b",
+            "fixed independent fixture manifest changed"
+        );
+        let mut wav = Vec::new();
+        std::fs::File::open(
+            root.join("artifacts/diagnostic-speech/weak-slice-v1/de1662-weak-mask-exact-slice.wav"),
+        )?
+        .take(16 * 1024 * 1024 + 1)
+        .read_to_end(&mut wav)?;
+        assert_eq!(
+            format!("{:x}", Sha256::digest(&wav)),
+            "5c1235a48aa1387e53354108f9106b1328462a69cb929f92831027e4d40a9b02",
+            "fixed PCM fixture changed"
+        );
+        let mut reader = hound::WavReader::new(std::io::Cursor::new(wav))?;
+        let spec = reader.spec();
+        assert_eq!(
+            (
+                spec.channels,
+                spec.sample_rate,
+                spec.bits_per_sample,
+                spec.sample_format
+            ),
+            (1, 16000, 16, hound::SampleFormat::Int)
+        );
+        assert_eq!(reader.duration(), 375360);
+        let audio = reader
+            .samples::<i16>()
+            .map(|sample| sample.map(|v| f32::from(v) / 32768.0))
+            .collect::<Result<Vec<_>, _>>()?;
+        let model = root
+            .join("artifacts/models")
+            .join(crate::model::REFERENCE.file_name());
+        // Public loader verifies the same pinned reference model and sibling VAD.
+        crate::model::verify_file(&model, crate::model::REFERENCE)?;
+        let mut engine = Engine::load(&model, crate::model::REFERENCE)?;
+        let text = engine.transcribe(&audio, Language::German)?;
+        let words = |text: &str| {
+            text.split(|c: char| !c.is_alphanumeric())
+                .filter(|word| !word.is_empty())
+                .map(str::to_lowercase)
+                .collect::<Vec<_>>()
+        };
+        let expected = words(
+            "Legierungen sind im Grunde eine Mischung aus zwei oder mehr Metallen. Vergessen Sie nicht, dass es viele Elemente im Periodensystem gibt.",
+        );
+        let actual = words(&text);
+        let occurrences = |needle: &[String]| {
+            actual
+                .windows(needle.len())
+                .filter(|window| *window == needle)
+                .count()
+        };
+        assert_eq!(
+            occurrences(&expected),
+            1,
+            "whole expected paragraph must occur once; no raw transcript logged"
+        );
+        assert_eq!(
+            occurrences(&expected[..11]),
+            1,
+            "first sentence duplicated or lost"
+        );
+        assert_eq!(
+            occurrences(&expected[11..]),
+            1,
+            "negated reminder sentence duplicated or lost"
+        );
+        Ok(())
     }
 }

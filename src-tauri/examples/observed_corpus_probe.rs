@@ -113,9 +113,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "engineSourceSha256":input::digest(include_bytes!("../src/transcription.rs")),
         "observationSourceSha256":input::digest(include_bytes!("../src/transcription/observation.rs")),
         "limits":[
-            "Same production Engine preparation, parameters and segment join; direct serial owner, no InferenceService/controller/audio pipeline.",
+            "Shared Engine preparation and segment join; timestamp policy explicitly selected; direct serial owner, no InferenceService/controller/audio pipeline.",
             "Only accepted native segments after full(); missing or rejected windows, seek, prompt history and fallback temperature are unobserved.",
-            "Default no_timestamps=true; --native-timestamps is an explicit diagnostic alternative only. Native times are not verified word alignments; segment NSP may share a window value.",
+            "Legacy observation default no_timestamps=true; --native-timestamps observes the current production policy false. Native times are not verified word alignments; segment NSP may share a window value.",
             "At most four cases, 4096 segments and 256 KiB raw segment text per case; failures remain explicit.",
             "Private explicit exports only; no model-independent timing, real-time L, microphone or native paste qualification."
         ]

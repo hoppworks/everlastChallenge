@@ -8,7 +8,7 @@ use serde_json::{Value, json};
 pub fn template() -> Result<Value, serde_json::Error> {
     Ok(json!({
         "schemaVersion":1,
-        "configurationId":"runtime-lifecycle-resource-v1",
+        "configurationId":"runtime-lifecycle-resource-native-timestamps-v2",
         "runtimeBaseline":baseline::template()?,
         "baselineLatencyProtocolExecuted":false,
         "workload":{
