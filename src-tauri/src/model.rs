@@ -2,13 +2,13 @@
 
 use sha2::{Digest, Sha256};
 use std::{
-    fs::{self, File, OpenOptions},
-    io::{Read, Write},
+    fs::File,
+    io::Read,
     path::{Path, PathBuf},
-    sync::atomic::{AtomicU64, Ordering},
 };
 
-static PART_NONCE: AtomicU64 = AtomicU64::new(1);
+mod storage;
+use storage::VerifiedFile;
 pub const MODEL_REVISION: &str = "5359861c739e955e79d9a303bcbc70fb988958b1";
 
 fn redirect_allowed(url: &reqwest::Url, previous_hops: usize) -> bool {
@@ -109,52 +109,72 @@ pub fn download_model(
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()?;
-    runtime.block_on(async {
-        let client = reqwest::Client::builder()
-            .https_only(true)
-            .connect_timeout(std::time::Duration::from_secs(15))
-            .read_timeout(std::time::Duration::from_secs(60))
-            .timeout(std::time::Duration::from_secs(1_800))
-            .redirect(reqwest::redirect::Policy::custom(|attempt| {
-                if redirect_allowed(attempt.url(), attempt.previous().len()) {
-                    attempt.follow()
-                } else {
-                    attempt.error("model redirect policy")
-                }
-            }))
-            .build()
-            .map_err(network_error)?;
-        let mut response = tokio::select! {
+    let client = download_client_builder().build().map_err(network_error)?;
+    runtime.block_on(transfer(
+        directory,
+        definition,
+        cancel,
+        &mut progress,
+        &client,
+        &definition.url(),
+    ))
+}
+
+fn download_client_builder() -> reqwest::ClientBuilder {
+    reqwest::Client::builder()
+        .https_only(true)
+        .connect_timeout(std::time::Duration::from_secs(15))
+        .read_timeout(std::time::Duration::from_secs(60))
+        .timeout(std::time::Duration::from_secs(1_800))
+        .redirect(reqwest::redirect::Policy::custom(|attempt| {
+            if redirect_allowed(attempt.url(), attempt.previous().len()) {
+                attempt.follow()
+            } else {
+                attempt.error("model redirect policy")
+            }
+        }))
+}
+
+// The product caller always supplies the fixed manifest URL and HTTPS-only
+// client above. Local transport fixtures exercise this same response/body path.
+async fn transfer(
+    directory: &Path,
+    definition: ModelDefinition,
+    cancel: &tokio_util::sync::CancellationToken,
+    progress: &mut impl FnMut(u64),
+    client: &reqwest::Client,
+    source: &str,
+) -> Result<PathBuf, ModelError> {
+    let mut response = tokio::select! {
+        _=cancel.cancelled()=>return Err(ModelError::Cancelled),
+        response=client.get(source).send()=>response.map_err(network_error)?,
+    };
+    if !response.status().is_success() {
+        return Err(ModelError::Http(response.status().as_u16()));
+    }
+    if response
+        .content_length()
+        .is_some_and(|bytes| bytes != definition.bytes)
+    {
+        return Err(ModelError::Size);
+    }
+    let mut output = VerifiedFile::new(directory, definition)?;
+    progress(0);
+    loop {
+        let chunk = tokio::select! {
             _=cancel.cancelled()=>return Err(ModelError::Cancelled),
-            response=client.get(definition.url()).send()=>response.map_err(network_error)?,
+            chunk=response.chunk()=>chunk.map_err(network_error)?,
         };
-        if !response.status().is_success() {
-            return Err(ModelError::Http(response.status().as_u16()));
-        }
-        if response
-            .content_length()
-            .is_some_and(|bytes| bytes != definition.bytes)
-        {
-            return Err(ModelError::Size);
-        }
-        let mut output = VerifiedFile::new(directory, definition)?;
-        progress(0);
-        loop {
-            let chunk = tokio::select! {
-                _=cancel.cancelled()=>return Err(ModelError::Cancelled),
-                chunk=response.chunk()=>chunk.map_err(network_error)?,
-            };
-            let Some(chunk) = chunk else {
-                break;
-            };
-            output.write(&chunk)?;
-            progress(output.received);
-        }
-        if cancel.is_cancelled() {
-            return Err(ModelError::Cancelled);
-        }
-        output.finish()
-    })
+        let Some(chunk) = chunk else {
+            break;
+        };
+        output.write(&chunk)?;
+        progress(output.received());
+    }
+    if cancel.is_cancelled() {
+        return Err(ModelError::Cancelled);
+    }
+    output.finish()
 }
 
 fn hex_digest(digest: impl AsRef<[u8]>) -> String {
@@ -215,101 +235,10 @@ fn verify(
     Ok(())
 }
 
-struct VerifiedFile {
-    definition: ModelDefinition,
-    file: Option<File>,
-    partial: PathBuf,
-    target: PathBuf,
-    received: u64,
-    hasher: Sha256,
-    published: bool,
-}
-
-impl VerifiedFile {
-    fn new(directory: &Path, definition: ModelDefinition) -> Result<Self, ModelError> {
-        fs::create_dir_all(directory)?;
-        for _ in 0..8 {
-            let nonce = PART_NONCE.fetch_add(1, Ordering::Relaxed);
-            let partial = directory.join(format!(
-                "everlast-{}-{}-{nonce}.part",
-                definition.id,
-                std::process::id()
-            ));
-            match OpenOptions::new()
-                .write(true)
-                .create_new(true)
-                .open(&partial)
-            {
-                Ok(file) => {
-                    return Ok(Self {
-                        definition,
-                        file: Some(file),
-                        partial,
-                        target: directory.join(definition.file),
-                        received: 0,
-                        hasher: Sha256::new(),
-                        published: false,
-                    });
-                }
-                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
-                Err(error) => return Err(ModelError::Io(error)),
-            }
-        }
-        Err(ModelError::Io(std::io::Error::new(
-            std::io::ErrorKind::AlreadyExists,
-            "model temporary name collisions",
-        )))
-    }
-
-    fn write(&mut self, bytes: &[u8]) -> Result<(), ModelError> {
-        let next = self
-            .received
-            .checked_add(bytes.len() as u64)
-            .ok_or(ModelError::Size)?;
-        if next > self.definition.bytes {
-            return Err(ModelError::Size);
-        }
-        self.file
-            .as_mut()
-            .ok_or(ModelError::Closed)?
-            .write_all(bytes)?;
-        self.received = next;
-        self.hasher.update(bytes);
-        Ok(())
-    }
-
-    fn finish(mut self) -> Result<PathBuf, ModelError> {
-        if self.received != self.definition.bytes {
-            return Err(ModelError::Size);
-        }
-        if hex_digest(self.hasher.clone().finalize()) != self.definition.sha256 {
-            return Err(ModelError::Hash);
-        }
-        self.file.as_mut().ok_or(ModelError::Closed)?.flush()?;
-        self.file.as_ref().ok_or(ModelError::Closed)?.sync_all()?;
-        drop(self.file.take());
-        fs::rename(&self.partial, &self.target)?;
-        self.published = true;
-        Ok(self.target.clone())
-    }
-}
-
-impl Drop for VerifiedFile {
-    fn drop(&mut self) {
-        drop(self.file.take());
-        if !self.published {
-            match fs::remove_file(&self.partial) {
-                Ok(()) => {}
-                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-                Err(_) => eprintln!("model-part-cleanup-failed"),
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
 
     #[test]
     fn already_cancelled_setup_performs_no_network_or_file_mutation()
@@ -325,7 +254,7 @@ mod tests {
         Ok(())
     }
 
-    fn fixture() -> ModelDefinition {
+    pub(super) fn fixture() -> ModelDefinition {
         ModelDefinition {
             id: "fixture",
             file: "fixture.bin",
@@ -417,3 +346,6 @@ mod tests {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod transport_tests;

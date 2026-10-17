@@ -708,4 +708,251 @@ mod tests {
         assert!(matches!(setup.take_ready(), Err(SetupError::Closed)));
         Ok(())
     }
+
+    struct FailingBackend {
+        error: Mutex<Option<ModelError>>,
+        in_download: bool,
+        inspections: std::sync::atomic::AtomicUsize,
+        downloads: std::sync::atomic::AtomicUsize,
+        loads: std::sync::atomic::AtomicUsize,
+    }
+    impl FailingBackend {
+        fn failure(&self) -> ModelError {
+            self.error
+                .lock()
+                .ok()
+                .and_then(|mut error| error.take())
+                .unwrap_or(ModelError::Closed)
+        }
+    }
+    impl Backend for FailingBackend {
+        fn inspect(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            _: &CancellationToken,
+        ) -> Result<Option<PathBuf>, ModelError> {
+            self.inspections
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            if self.in_download {
+                Ok(None)
+            } else {
+                Err(self.failure())
+            }
+        }
+        fn download(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            _: &CancellationToken,
+            progress: &mut dyn FnMut(u64),
+        ) -> Result<PathBuf, ModelError> {
+            self.downloads
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            progress(123);
+            Err(self.failure())
+        }
+        fn load(&self, _: PathBuf, _: ModelDefinition) -> Result<InferenceService, Failure> {
+            self.loads.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            Err(Failure::Initialization)
+        }
+    }
+
+    #[test]
+    fn cache_and_download_failures_publish_classified_terminal_state_without_retry_or_load()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use std::{
+            io::{Error, ErrorKind},
+            sync::atomic::{AtomicUsize, Ordering},
+        };
+        for in_download in [false, true] {
+            for (error, expected) in [
+                (
+                    ModelError::Io(Error::from(ErrorKind::PermissionDenied)),
+                    Failure::Permission,
+                ),
+                (
+                    ModelError::Io(Error::from(ErrorKind::StorageFull)),
+                    Failure::DiskFull,
+                ),
+                (
+                    ModelError::Io(Error::other("controlled I/O failure")),
+                    Failure::Io,
+                ),
+                (ModelError::Size, Failure::Size),
+                (ModelError::Hash, Failure::Hash),
+                (ModelError::Timeout, Failure::Timeout),
+                (ModelError::Redirect, Failure::Redirect),
+                (ModelError::Network, Failure::NetworkOrTls),
+                (ModelError::Http(503), Failure::Http { status: 503 }),
+            ] {
+                let backend = Arc::new(FailingBackend {
+                    error: Mutex::new(Some(error)),
+                    in_download,
+                    inspections: AtomicUsize::new(0),
+                    downloads: AtomicUsize::new(0),
+                    loads: AtomicUsize::new(0),
+                });
+                let setup = SetupService::with_backend(
+                    PathBuf::from("controlled-failure"),
+                    model::REFERENCE,
+                    backend.clone(),
+                );
+                setup.start(in_download)?;
+                let state = finished(&setup)?;
+                assert_eq!(
+                    state.phase,
+                    Phase::Failed,
+                    "{expected:?}, download={in_download}"
+                );
+                assert_eq!(state.failure, Some(expected));
+                assert_eq!(state.received, if in_download { 123 } else { 0 });
+                assert_eq!(state.total, model::REFERENCE.bytes());
+                assert!(state.revision > 1);
+                assert!(setup.take_ready()?.is_none());
+                for _ in 0..3 {
+                    let observed = setup.snapshot()?;
+                    assert_eq!(observed.phase, Phase::Failed);
+                    assert_eq!(observed.revision, state.revision);
+                }
+                setup.shutdown()?;
+                assert_eq!(backend.inspections.load(Ordering::SeqCst), 1);
+                assert_eq!(
+                    backend.downloads.load(Ordering::SeqCst),
+                    usize::from(in_download)
+                );
+                assert_eq!(backend.loads.load(Ordering::SeqCst), 0);
+            }
+        }
+        Ok(())
+    }
+
+    struct RetryBackend {
+        inspect_gate: std::sync::atomic::AtomicBool,
+        entered: crossbeam_channel::Sender<()>,
+        release: crossbeam_channel::Receiver<()>,
+        inspections: std::sync::atomic::AtomicUsize,
+        downloads: std::sync::atomic::AtomicUsize,
+        loads: std::sync::atomic::AtomicUsize,
+    }
+    impl Backend for RetryBackend {
+        fn inspect(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            _: &CancellationToken,
+        ) -> Result<Option<PathBuf>, ModelError> {
+            use std::sync::atomic::Ordering;
+            self.inspections.fetch_add(1, Ordering::SeqCst);
+            if self.inspect_gate.swap(false, Ordering::AcqRel) {
+                self.entered.send(()).map_err(|_| ModelError::Closed)?;
+                self.release
+                    .recv_timeout(Duration::from_secs(2))
+                    .map_err(|_| ModelError::Closed)?;
+            }
+            Ok(None)
+        }
+        fn download(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            _: &CancellationToken,
+            progress: &mut dyn FnMut(u64),
+        ) -> Result<PathBuf, ModelError> {
+            progress(42);
+            if self
+                .downloads
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst)
+                == 0
+            {
+                Err(ModelError::Timeout)
+            } else {
+                Ok(PathBuf::from("retried-fixture"))
+            }
+        }
+        fn load(
+            &self,
+            path: PathBuf,
+            definition: ModelDefinition,
+        ) -> Result<InferenceService, Failure> {
+            self.loads.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            Fixture.load(path, definition)
+        }
+    }
+
+    fn start_after_previous_worker(
+        setup: &SetupService,
+        download: bool,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        let deadline = std::time::Instant::now() + Duration::from_secs(2);
+        loop {
+            match setup.start(download) {
+                Ok(()) => return Ok(()),
+                Err(SetupError::Busy) if std::time::Instant::now() < deadline => {
+                    thread::yield_now()
+                }
+                Err(error) => return Err(error.into()),
+            }
+        }
+    }
+
+    #[test]
+    fn failed_download_waits_for_explicit_retry_and_clears_failure_before_loading_once()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+        let (entered, began) = crossbeam_channel::bounded(1);
+        let (release, wait) = crossbeam_channel::bounded(1);
+        let backend = Arc::new(RetryBackend {
+            inspect_gate: AtomicBool::new(false),
+            entered,
+            release: wait,
+            inspections: AtomicUsize::new(0),
+            downloads: AtomicUsize::new(0),
+            loads: AtomicUsize::new(0),
+        });
+        let setup = SetupService::with_backend(
+            PathBuf::from("controlled-retry"),
+            model::REFERENCE,
+            backend.clone(),
+        );
+        setup.start(false)?;
+        assert_eq!(finished(&setup)?.phase, Phase::Missing);
+        assert_eq!(backend.downloads.load(Ordering::SeqCst), 0);
+        start_after_previous_worker(&setup, true)?;
+        let failed = finished(&setup)?;
+        assert_eq!(failed.phase, Phase::Failed);
+        assert_eq!(failed.failure, Some(Failure::Timeout));
+        assert_eq!(failed.received, 42);
+        assert_eq!(backend.downloads.load(Ordering::SeqCst), 1);
+        assert_eq!(backend.loads.load(Ordering::SeqCst), 0);
+        assert!(setup.take_ready()?.is_none());
+
+        backend.inspect_gate.store(true, Ordering::Release);
+        start_after_previous_worker(&setup, true)?;
+        began.recv_timeout(Duration::from_secs(1))?;
+        let checking = setup.snapshot()?;
+        assert_eq!(checking.phase, Phase::Checking);
+        assert_eq!(checking.failure, None);
+        assert_eq!(checking.received, 0);
+        assert!(checking.revision > failed.revision);
+        assert_eq!(backend.downloads.load(Ordering::SeqCst), 1);
+        assert!(matches!(setup.start(true), Err(SetupError::Busy)));
+        release.send(())?;
+
+        let ready = finished(&setup)?;
+        assert_eq!(ready.phase, Phase::Ready);
+        assert_eq!(ready.failure, None);
+        assert_eq!(ready.received, 42);
+        assert_eq!(backend.inspections.load(Ordering::SeqCst), 3);
+        assert_eq!(backend.downloads.load(Ordering::SeqCst), 2);
+        assert_eq!(backend.loads.load(Ordering::SeqCst), 1);
+        let service = setup
+            .take_ready()?
+            .ok_or("warm service missing after retry")?;
+        assert!(service.ready());
+        assert!(setup.take_ready()?.is_none());
+        service.shutdown()?;
+        setup.shutdown()?;
+        Ok(())
+    }
 }

@@ -922,6 +922,7 @@ dependencies = [
  "macos-integration",
  "reqwest 0.12.28",
  "rtrb",
+ "rustls",
  "serde",
  "serde_json",
  "sha2",
