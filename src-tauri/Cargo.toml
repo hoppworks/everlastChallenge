@@ -50,3 +50,7 @@ required-features = ["measurement"]
 [[example]]
 name = "runtime_resource_probe"
 required-features = ["measurement"]
+
+[[example]]
+name = "paced_reference_probe"
+required-features = ["measurement"]

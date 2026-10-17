@@ -1,0 +1,408 @@
+{
+  "dataset": "google/fleurs",
+  "requiredCoveragePending": [
+    "natural_continuous_de_300s_without_safe_pause",
+    "natural_room_noise",
+    "independent_listening_and_anchor_annotation_numbers_names_negations",
+    "real_microphone_hotkey_end_to_end",
+    "exact_30s_duration_cases"
+  ],
+  "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+  "schemaVersion": 1,
+  "selectionRules": {
+    "baseAcceptance": {
+      "de": 40,
+      "en": 30
+    },
+    "calibrationPerLanguage": 10,
+    "centralBand": "target-1 <= source seconds <= target; first unused canonical ID; zero-pad only",
+    "centralSecondsPerLanguage": [
+      5,
+      10,
+      15
+    ],
+    "deduplicate": "first filename per sentenceId after 4..30-second range filter",
+    "maxFrames": 4800000,
+    "quietGain": 0.05,
+    "quietPerLanguageAndSplit": 5,
+    "reusedReferencesAreNotIndependentCoverage": true,
+    "sort": [
+      "integer sentenceId",
+      "filename"
+    ],
+    "stressSelection": "complete canonical DE test prefix until the next whole clip would exceed the maximum; no cuts",
+    "syntheticNoiseAmplitude": 0.04,
+    "syntheticNoiseSeed": 1163281746,
+    "heidelbergDigits": {
+      "digits": [
+        8,
+        9
+      ],
+      "references": {
+        "de": {
+          "8": "acht",
+          "9": "neun"
+        },
+        "en": {
+          "8": "eight",
+          "9": "nine"
+        }
+      },
+      "durationSeconds": [
+        0.2,
+        1.0
+      ],
+      "splitLists": {
+        "calibration": "train_filenames.txt",
+        "acceptance": "test_filenames.txt"
+      },
+      "order": "language, split, digit; prefer acceptance speakers absent from train, then unused speaker per pair, then canonical filename",
+      "trim": false,
+      "referenceProvenance": "publisher filename digit/language classes; fixed word mapping before ASR; no model-generated labels"
+    }
+  },
+  "sources": [
+    {
+      "archive": {
+        "bytes": 227694463,
+        "filename": "de_de-dev.tar.gz",
+        "sha256": "72cac13bbddbddf674d8102a9e7b90a3b1db5d777ed92e88eccc5ae69cb8fc9d"
+      },
+      "key": "de_de-dev",
+      "language": "de",
+      "split": "dev",
+      "tsv": {
+        "bytes": 221691,
+        "filename": "de_de-dev.tsv",
+        "sha256": "055b6ddecc9ad493d9ead86babe3ebe225148dd3c174fa6f95cb83a4f9586e18"
+      }
+    },
+    {
+      "archive": {
+        "bytes": 568734559,
+        "filename": "de_de-test.tar.gz",
+        "sha256": "e86b42dfcdef749926cd92135045f87c25966c09e50d01c401adb04ee7d8628f"
+      },
+      "key": "de_de-test",
+      "language": "de",
+      "split": "test",
+      "tsv": {
+        "bytes": 559542,
+        "filename": "de_de-test.tsv",
+        "sha256": "82fab72c58a347345675c238f2492bb997105a4ab45d69e2a2b34ed29082fa97"
+      }
+    },
+    {
+      "archive": {
+        "bytes": 171250900,
+        "filename": "en_us-dev.tar.gz",
+        "sha256": "2658fda72f199e12676ecac9415094667a4e14e149b146e568ea00b2a2f0954c"
+      },
+      "key": "en_us-dev",
+      "language": "en",
+      "split": "dev",
+      "tsv": {
+        "bytes": 213065,
+        "filename": "en_us-dev.tsv",
+        "sha256": "9d57ee7e91e9d4c92edb39f6bbea668ef8dc2a3ff96eb510d5580b2ad05d17ec"
+      }
+    },
+    {
+      "archive": {
+        "bytes": 289851356,
+        "filename": "en_us-test.tar.gz",
+        "sha256": "d9c2e37b41aacd41bc283554a0a82b5476b36887049774ecb2819dcaaa55a356"
+      },
+      "key": "en_us-test",
+      "language": "en",
+      "split": "test",
+      "tsv": {
+        "bytes": 367864,
+        "filename": "en_us-test.tsv",
+        "sha256": "74c046239374deeb60fa63f258f907388093a32bcaa3140965f70ef05c79f7ca"
+      }
+    },
+    {
+      "sourceId": "heidelberg-digits-v1.0",
+      "dataset": "Heidelberg Digits original audio",
+      "version": "1.0",
+      "url": "https://zenkelab.org/datasets/shd/hd_audio.tar.gz",
+      "archiveBytes": 337342212,
+      "archiveSha256": "4980128f02deba417ad3592e37166b8af603e200e298dd6108c20c4ffaa2e610",
+      "license": "CC-BY-4.0",
+      "licenseEvidence": "archive README.md: spoken digits dataset",
+      "attribution": "Copyright 2019 Benjamin Cramer, Yannik Stradmann, Johannes Schemmel, Friedemann Zenke; doi:10.1109/TNNLS.2020.3044364",
+      "decoder": {
+        "version": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+        "sha256": "c8173e9755795978bce8e104f8d7044fabe7d6d84044aba37d3648c6f4e4e1a8",
+        "path": "/opt/homebrew/bin/ffmpeg"
+      }
+    }
+  ],
+  "unicodeVersion": "13.0.0",
+  "selectionOrigin": {
+    "path": "tests/fixtures/corpus/acceptance-v1.json",
+    "sha256": "7d7a25695ab77d9d4affe04b0bbc1ce5f8bc4b38a59b40763fd26884d090c67d",
+    "rule": "six cases already frozen before first acceptance inference in acceptance-reference-parameters-v1.json; DE then EN, each 5/10/15 seconds; unchanged case objects"
+  },
+  "cases": [
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1736.wav",
+        "sampleRate": 16000,
+        "sha256": "67718418a15f877ec263f7c864e6b72fd41365afebeb78e915a4c97066bb6670"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1736",
+      "language": "de",
+      "reference": "Rolando Mendoza schoss mit seinem M16-Gewehr auf die Touristen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "14127459823697664767.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1736,
+        "sha256": "d92afa3786e46573fbe6419576c10a3ba4ea78152f52d39264c7d882f30cc677",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 14720,
+            "operation": "append_zero_frames"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "central",
+        "central-5s"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 160000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1663.wav",
+        "sampleRate": 16000,
+        "sha256": "e86ac3cc846d6fb8655fbbdaa6906d8812810bcc03fedeb4c385b7d039d0b79d"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1663",
+      "language": "de",
+      "reference": "Das Cochamó-Tal – Chiles wichtigstes Kletterziel, bekannt als der Yosemite-Nationalpark von Südamerika, mit einer Vielzahl von großen Granitwänden und -klippen.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "7488275135478003184.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1663,
+        "sha256": "538728d89645fe6c1abd6e090a03c5b34d43c97c754d056747190f36bb672439",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 3520,
+            "operation": "append_zero_frames"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "central",
+        "central-10s"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 240000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1668.wav",
+        "sampleRate": 16000,
+        "sha256": "27e005fc4ffab77389bda81861250b6a3616fb2e686e65ef366314bad791abf6"
+      },
+      "class": "clean",
+      "id": "fleurs-de-test-1668",
+      "language": "de",
+      "reference": "Es kann sich auch lohnen, eine Wild Card zu kaufen, die Zutritt entweder zu ausgewählten Parks in Südafrika oder zu allen südafrikanischen Nationalparks gewährt.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "13631299328082055159.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1668,
+        "sha256": "45c68c4d33fb19c105d773777cac155056b02adf3bb7f27bb16c72ea5cc2d184",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 4800,
+            "operation": "append_zero_frames"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "central",
+        "central-15s"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1679.wav",
+        "sampleRate": 16000,
+        "sha256": "a244c933384e8c3b15371039d1cfba04a02b97bb22c40381dcec557679666241"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1679",
+      "language": "en",
+      "reference": "Aerosmith have cancelled their remaining concerts on their tour.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "4937589470390171572.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1679,
+        "sha256": "5a580c9f1aeec5dda1e562f08c5cb534cc5407bf63d5f09bfc13327d291b03f3",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 9920,
+            "operation": "append_zero_frames"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "central",
+        "central-5s"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 160000,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1676.wav",
+        "sampleRate": 16000,
+        "sha256": "afd053eebcc3c55cc883a0f4e18904609c75cc6c4b76890d674b9dbf9e1834cb"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1676",
+      "language": "en",
+      "reference": "As with all South African National Parks, there are daily conservation and entry fees for the park.",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "3236057319333367673.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1676,
+        "sha256": "82dffe62952ceca62fb92118b8c1226d3a45eaba7b95ccdb466b6656efec91f6",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 9280,
+            "operation": "append_zero_frames"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "central",
+        "central-10s"
+      ]
+    },
+    {
+      "audio": {
+        "frames": 240000,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1667.wav",
+        "sampleRate": 16000,
+        "sha256": "7ccf8be690e39e04c1481bf1162e0b6efe8abfccbfa8e0bd5b103f502c2c4390"
+      },
+      "class": "clean",
+      "id": "fleurs-en-test-1667",
+      "language": "en",
+      "reference": "Generally speaking, two behaviors can emerge as managers begin to lead their former peers. One end of the spectrum is trying to remain “one of the guys” (or gals).",
+      "source": {
+        "dataset": "google/fleurs",
+        "filename": "11554335886429174193.wav",
+        "revision": "70bb2e84b976b7e960aa89f1c648e09c59f894dd",
+        "sentenceId": 1667,
+        "sha256": "6e8948a700c2ee114c7131b8e52a44897b3cf86cf86a1d89bf93b4ad10c802c0",
+        "split": "test",
+        "transformations": [
+          {
+            "operation": "float32_to_pcm16",
+            "rounding": "nearest-even",
+            "sampleRate": 16000,
+            "saturation": [
+              -32768,
+              32767
+            ],
+            "scale": 32768
+          },
+          {
+            "frames": 12480,
+            "operation": "append_zero_frames"
+          }
+        ]
+      },
+      "split": "acceptance",
+      "tags": [
+        "fleurs",
+        "read-speech",
+        "central",
+        "central-15s"
+      ]
+    }
+  ]
+}
