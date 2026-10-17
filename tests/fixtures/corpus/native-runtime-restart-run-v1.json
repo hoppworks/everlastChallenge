@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "kind": "prospective-native-long-cancel-short-runtime-restart",
+  "qualified": false,
+  "sourceRevision": "66d918aea8b51e37514255f32416a027bfd696c5",
+  "createdBeforeModelWorkUtc": "2026-10-17T18:33:47.693838+00:00",
+  "binary": {
+    "path": "target/release/deps/everlast_dictation-bce8840c43bd9c35",
+    "sha256": "5a9fcda8fd4c8f4665e3dbe49fbb5c3b508ef69b388286f8d5c225ec8b160069",
+    "bytes": 10058608,
+    "mode": "0o755"
+  },
+  "sources": [
+    {
+      "path": "src-tauri/src/runtime/tests/restart_contract.rs",
+      "sha256": "0675951c68bec24139e59f4a6c64bcd0e452287aa5a0d105141af09cea4f47b8",
+      "bytes": 22058,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/runtime.rs",
+      "sha256": "04d2b763b7f4b2d8e82afa7288a46294fffb1b41a52c00a8fa98fec5984dc868",
+      "bytes": 92000,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/inference_service.rs",
+      "sha256": "886f40f2fbc9b0dbe43e008b7d17875e0cddbef5b7350d4754285fdee2beb083",
+      "bytes": 24335,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/controller.rs",
+      "sha256": "f95c0c2c3ad37f4cc1a0b9c9248ece3bfe87911b73d3053aae39953d9feeadf7",
+      "bytes": 19745,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/transcription.rs",
+      "sha256": "10da1b705f06903db515b4fd592375c6d2097f8a0c3e6f716393a69c9e22787c",
+      "bytes": 22442,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/transcription/speech_gate.rs",
+      "sha256": "4e6964540cbe78217cf6c5f6924c859d5240bd2ec9603f857113dea272da7f1f",
+      "bytes": 9418,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/model.rs",
+      "sha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2",
+      "bytes": 17435,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/dictation-core/src/audio.rs",
+      "sha256": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46",
+      "bytes": 7074,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/dictation-core/src/session.rs",
+      "sha256": "4c3d969f5d2e95923b1a00da9d9824a8c4e45b93a7837dccbdbe2750678ecaa1",
+      "bytes": 7474,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/src/delivery.rs",
+      "sha256": "e0be2653a4f2f2a260f94093a63969fa1cf9e2c38656d4b8bd24857244dc767d",
+      "bytes": 4792,
+      "mode": "0o644"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089",
+      "bytes": 129670,
+      "mode": "0o644"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230",
+      "bytes": 1104,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/Cargo.toml",
+      "sha256": "7696f89d6e3ece66139610e369d96242c070b6865e5faa9acc23c671fcd7e585",
+      "bytes": 1698,
+      "mode": "0o644"
+    },
+    {
+      "path": ".cargo/config.toml",
+      "sha256": "867049e39a2c207bba21bf98eb9858aef44b4e93adc5f766d2866748fe207b8b",
+      "bytes": 40,
+      "mode": "0o644"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/manifest.json",
+      "sha256": "d03a4aa23d2f5a5fe67671ddb298801b64af4368e8eab90510eafc30bcf2ed37",
+      "bytes": 12137,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/controlled-300s.wav",
+      "sha256": "80b79393de147e78e9b9a86bad3d88998dae4056a9fe10a080ef2468c92dc25b",
+      "bytes": 9600044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/neue-aufnahme.wav",
+      "sha256": "9a108246c7b1196e8203ee22ebacabe7927d18f7a37a5f2e7647437db7df069c",
+      "bytes": 262222,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/replay/neue-aufnahme-baseline.txt",
+      "sha256": "6e0700c02c1f08629895d05206fbeeb924afaea30fa6d3e49e3356136622cc67",
+      "bytes": 56,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+      "bytes": 574041195,
+      "mode": "0o644"
+    },
+    {
+      "path": "artifacts/models/ggml-silero-v5.1.2.bin",
+      "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+      "bytes": 885098,
+      "mode": "0o600"
+    }
+  ],
+  "command": [
+    "target/release/deps/everlast_dictation-bce8840c43bd9c35",
+    "runtime::tests::restart_contract::native_300s_cancel_admits_short_recording_before_old_decode_finishes",
+    "--ignored",
+    "--exact",
+    "--test-threads=1"
+  ],
+  "environment": {
+    "EVERLAST_RUN_NATIVE_RUNTIME_RESTART": "1"
+  },
+  "log": "artifacts/runtime-restart/native-v1/command.log",
+  "completion": "artifacts/runtime-restart/native-v1/completion.json",
+  "expected": {
+    "testsPassed": 1,
+    "longInputFrames": 4800000,
+    "shortInputFrames": 131072,
+    "actualDecoderCalls": 2,
+    "newRecordingBeforeOldRelease": true,
+    "newFinalizingBeforeOldRelease": true,
+    "onlySession2Delivery": true,
+    "oldAndNewDecodeMustSucceed": true,
+    "privateBaselineByteExact": true,
+    "audioAndDecoderOwnersReleased": true,
+    "joined": true
+  },
+  "host": {
+    "swVers": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+    "cpu": "Apple M5",
+    "memoryBytes": 34359738368,
+    "power": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23461987)\t82%; AC attached; not charging present: true\n"
+  },
+  "limits": [
+    "One native long plus one short decode, no warmup or repeated timing comparison.",
+    "Barrier is before the actual inner decode; no kernel interruption or claimed mid-kernel arrival.",
+    "Model initialized by test thread before move to serial worker; not production initialization-thread qualification.",
+    "Controlled audio/native boundaries, no capture/DSP timing, microphone, recipient, RSS or text-quality qualification.",
+    "Private short fixture baseline proves repeatability only; long content intentionally not asserted."
+  ],
+  "policy": {
+    "runs": 1,
+    "noConcurrentBuildTestsModels": true,
+    "noRetryUnchanged": true,
+    "retainFailure": true
+  }
+}
