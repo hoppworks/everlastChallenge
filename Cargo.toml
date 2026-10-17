@@ -40,3 +40,4 @@ strip = "none"
 [patch.crates-io]
 global-hotkey = { path = "vendor/global-hotkey" }
 whisper-rs-sys = { path = "vendor/whisper-rs-sys" }
+whisper-rs = { path = "vendor/whisper-rs" }

@@ -71,10 +71,12 @@ seriellen Inferenzworker. Die bestehende Tokeninvalidierung bleibt wirksam;
 höchstens ein alter vollständiger Workerauftrag darf auslaufen. Dieser Versuch
 misst keine sichtbare Cancel- oder Startlatenz und ersetzt ihre Abnahme nicht.
 
-Die im Quellenbericht benannte CString-Verluststelle des gewählten Rust-VAD-
-Konstruktors ist unverändert. Der warme Kontext vermeidet Wiederholung pro
-Diktat; vor vollständiger Modell-Lifecycle-/Heap-Freigabe muss diese Stelle
-bereinigt und geprüft werden. P05 bleibt auch deshalb offen.
+Zum Zeitpunkt dieser Messungen war die im Quellenbericht benannte CString-
+Verluststelle des Rust-VAD-Konstruktors unverändert. Am 17.10.2026 wurde sie
+separat korrigiert und mit Original-RED/Patched-GREEN sowie echten nativen
+Läufen geprüft; siehe [wrapper-lifetime-fix.md](wrapper-lifetime-fix.md).
+Die historischen Messwerte oben bleiben unverändert. Die vollständige
+Modell-Lifecycle-/Heap-Abnahme und P05 bleiben offen.
 
 ## Lokale Artefakte
 
