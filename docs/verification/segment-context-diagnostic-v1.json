@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "kind": "segment-context-diagnostic-summary-v1",
+  "qualified": false,
+  "L": null,
+  "independentReadback": {
+    "completed": true,
+    "findings": [],
+    "sliceRows": 10,
+    "observedRows": 4,
+    "allEightSlicesExactSourceRanges": true,
+    "allPrefix3SamplesExactZeroToCut3": true,
+    "allInputBindingsRehashed": true,
+    "sourceHashesVerifiedCurrentAndImmutable": true,
+    "preparedPcmHashesIndependentlyReconstructed": true,
+    "serviceCleanupVerified": true
+  },
+  "cases": [
+    {
+      "id": "fleurs-en-test-1660-quiet",
+      "wholeMatchesFrozenReference": true,
+      "joinedSlicesMatchFrozenCandidate": true,
+      "sliceCount": 4,
+      "nonemptySliceCount": 3,
+      "choppedEqualsWhole": false,
+      "cumulativePrefixTextEqualsWhole": true,
+      "preparedPcmEqual": false,
+      "prepared": [
+        {
+          "role": "whole",
+          "inputFrames": 170880,
+          "selectedRange": {
+            "end": 170880,
+            "start": 16480
+          },
+          "asrFrames": 154400,
+          "paddedFrames": 0,
+          "reconstructedPreparedFloat32LeSha256": "72ef690bc8647c16b5c01e300c5704b0544887b5bc9d753d5dc2c6b2e0e8d77d",
+          "textSha256": "4a9fddb493861c1f91705c957d61325aeb81a88b86f92886ac038f810409b09b"
+        },
+        {
+          "role": "prefix3",
+          "inputFrames": 138240,
+          "selectedRange": {
+            "end": 138240,
+            "start": 16480
+          },
+          "asrFrames": 121760,
+          "paddedFrames": 0,
+          "reconstructedPreparedFloat32LeSha256": "c1c372618599481c44549fe2d5ddd7752a7ded9e08cdc0197ecfc6b3e8ebcc7f",
+          "textSha256": "4a9fddb493861c1f91705c957d61325aeb81a88b86f92886ac038f810409b09b"
+        }
+      ]
+    },
+    {
+      "id": "fleurs-en-test-1663-quiet",
+      "wholeMatchesFrozenReference": true,
+      "joinedSlicesMatchFrozenCandidate": true,
+      "sliceCount": 4,
+      "nonemptySliceCount": 3,
+      "choppedEqualsWhole": false,
+      "cumulativePrefixTextEqualsWhole": true,
+      "preparedPcmEqual": true,
+      "prepared": [
+        {
+          "role": "whole",
+          "inputFrames": 193920,
+          "selectedRange": {
+            "end": 166720,
+            "start": 14240
+          },
+          "asrFrames": 152480,
+          "paddedFrames": 0,
+          "reconstructedPreparedFloat32LeSha256": "b4265fdeb9f33e089e68df4a2f69de860b44af653a651781daca689cafa646c8",
+          "textSha256": "5c8d1528d2ca6c88f9e701d7cc3ed6835157984c4a3ebf0122c936eff09b6b4d"
+        },
+        {
+          "role": "prefix3",
+          "inputFrames": 166720,
+          "selectedRange": {
+            "end": 166720,
+            "start": 14240
+          },
+          "asrFrames": 152480,
+          "paddedFrames": 0,
+          "reconstructedPreparedFloat32LeSha256": "b4265fdeb9f33e089e68df4a2f69de860b44af653a651781daca689cafa646c8",
+          "textSha256": "5c8d1528d2ca6c88f9e701d7cc3ed6835157984c4a3ebf0122c936eff09b6b4d"
+        }
+      ]
+    }
+  ],
+  "diagnosis": "Exact non-real-time slice replay reproduces both recorded quality regressions. Last cumulative prefixes recover whole-reference text. Equal text alone does not establish equal ASR PCM: only one of these two prefix/whole pairs has identical prepared PCM.",
+  "nextExperimentConstraints": [
+    "No inference result reuse merely because a final suffix is empty or text is similar.",
+    "Any exact-prepared-PCM cache must be session/generation isolated, and must preserve full fresh decode on cache miss.",
+    "Full-context-prefix hypothesis remains unqualified; production stays unchanged."
+  ],
+  "limits": [
+    "Replay uses original PCM16 samples at frozen job ranges; controller/pacing is absent.",
+    "Observed preparation runs directly on a serial developer main owner with production native timestamp flag false.",
+    "Reconstructed prepared PCM uses actual selected ranges and unchanged PCM conversion; no native kernel digest is claimed.",
+    "Different left/right context and preparation cannot be causally separated by text recovery alone.",
+    "No new quality gate or universal quality, latency, resource or P06 qualification."
+  ],
+  "bindings": [
+    {
+      "path": "artifacts/p06-segment-replay-v1/freeze.json",
+      "bytes": 7028,
+      "sha256": "b3bce65fb50a4cb03de68e8e9692f5e41cfc5adf2f9c027e9a0983e6a1a6c37a",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-segment-replay-v1/manifest.json",
+      "bytes": 3362,
+      "sha256": "0a5132591206eab373173a92c81ef62d3a741fb4d7c1a62dd04440f383702b86",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-segment-replay-v1/results.json",
+      "bytes": 1385,
+      "sha256": "91583aca3c52ccfb65f27f0254af269fc8ede418dbef26acdb9b7659cfed46b0",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-segment-replay-v1/results.json.metadata.json",
+      "bytes": 4553,
+      "sha256": "ec84ac651ffe2096705e7e3473c9981e569adc85d6a467d5e1dd7ca77a378c57",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-segment-replay-v1/observation.json",
+      "bytes": 1497,
+      "sha256": "b8148c84cbc503fd41e6b2d928f878b5bc57a86d06687a8d07158980bd4b8ba4",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-prefix-context-diagnostic-v1/freeze.json",
+      "bytes": 1562,
+      "sha256": "3dca34ff6030deb1f5d7db9394237b68a4274bfedba0137f9b4cb89474ed5e41",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-prefix-context-diagnostic-v1/manifest.json",
+      "bytes": 1386,
+      "sha256": "79c98868ac239a446caef631c871e4dda06463d8dc7c6c6508de16d51996cb9f",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-prefix-context-diagnostic-v1/observations.json",
+      "bytes": 866,
+      "sha256": "23040db501775c8e09b011dbb9e3ad3048ebd52e896cf998a0d529ddcc90c5b5",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-prefix-context-diagnostic-v1/observations.json.metadata.json",
+      "bytes": 5208,
+      "sha256": "2d50fa2353c494d1f5214e71ce921d1c6c45d6476bc496df401f68c50a75f26f",
+      "mode": "0o600"
+    }
+  ]
+}
