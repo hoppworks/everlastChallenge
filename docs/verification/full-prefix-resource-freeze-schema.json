@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Prospective FullPrefix resource workload v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "sourceRevision",
+    "launcherRevision",
+    "mode",
+    "binary",
+    "parameters",
+    "printedParameters",
+    "model",
+    "vad",
+    "fixture",
+    "fixtureCaseId",
+    "reference",
+    "preparedPcmSha256",
+    "qualityAuthorityRoot",
+    "resourceSourceRoot",
+    "qualityDecision",
+    "sourceTransfer",
+    "resourceMeasurementApproval",
+    "resourceSources",
+    "sources",
+    "outputDirectory",
+    "resourceQualified",
+    "L"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "kind": {
+      "const": "prospective-full-prefix-resource-v1"
+    },
+    "sourceRevision": {
+      "$ref": "#/$defs/revision"
+    },
+    "launcherRevision": {
+      "$ref": "#/$defs/revision"
+    },
+    "mode": {
+      "enum": [
+        "FullPrefixReference",
+        "FullPrefixCandidate"
+      ]
+    },
+    "binary": {
+      "$ref": "#/$defs/binding"
+    },
+    "parameters": {
+      "$ref": "#/$defs/binding"
+    },
+    "printedParameters": {
+      "$ref": "#/$defs/binding"
+    },
+    "model": {
+      "$ref": "#/$defs/binding"
+    },
+    "vad": {
+      "$ref": "#/$defs/binding"
+    },
+    "fixture": {
+      "$ref": "#/$defs/binding"
+    },
+    "reference": {
+      "$ref": "#/$defs/binding"
+    },
+    "preparedPcmSha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "qualityAuthorityRoot": {
+      "$ref": "#/$defs/privateRoot"
+    },
+    "resourceSourceRoot": {
+      "$ref": "#/$defs/privateRoot"
+    },
+    "qualityDecision": {
+      "$ref": "#/$defs/binding"
+    },
+    "sourceTransfer": {
+      "$ref": "#/$defs/binding"
+    },
+    "resourceMeasurementApproval": {
+      "$ref": "#/$defs/binding"
+    },
+    "resourceSources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/binding"
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/binding"
+      }
+    },
+    "outputDirectory": {
+      "type": "string",
+      "pattern": "^artifacts/"
+    },
+    "resourceQualified": {
+      "const": false
+    },
+    "L": {
+      "type": "null"
+    },
+    "fixtureCaseId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    }
+  },
+  "$defs": {
+    "revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "privateRoot": {
+      "type": "string",
+      "pattern": "^artifacts/"
+    },
+    "binding": {
+      "type": "object",
+      "required": [
+        "path",
+        "bytes",
+        "sha256",
+        "mode"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1073741824
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "mode": {
+          "type": "string",
+          "pattern": "^0o[0-7]{3}$"
+        }
+      }
+    }
+  },
+  "description": "Default CLI is preflight only, including the bound binary's model-free exact print branch. --execute starts exactly one owned resource process, /usr/bin/time -l BINARY MODEL reference WAV REFERENCE PARAMETERS NEW_OUTPUT MODEFLAG. Workload remains5 warmups+100 operations34/33/33. Fixed36000-second outer watchdog is runner liveness, never L/quality/resource threshold. No retry or subset summary. Output is a new0700 ignored artifacts directory with0600 freeze, host, workload, log, completion. Wrapper PID and workload host.processId are distinct. Actual fixture must independently support the candidate's early-prefix exercise; approval never follows from mode alone. Fixture selection/baseline must be prospectively frozen, not tuned from this run. No actual positive quality/resource approval is supplied by this schema.",
+  "authorityContract": {
+    "qualityAuthorityRoot": "A real separate canonical historical snapshot under artifacts. qualityDecision path is relative to this snapshot. Unmodified decision.validate rehashes all47 historical current source files there, and verifies bound complete400/800 numerical+external-semantic approval and its exact quality parameters. resourceSourceRoot is distinct and neither root may contain the other. No patch/skip/relax flag is provided; strict old validate must reject the derivative service source.",
+    "sourceTransfer": "Repo-root binding of schemaVersion1, kind full-prefix-resource-source-transfer-v1, historicalRevision, resourceRevision, qualityDecisionSha256, both root strings, sources:exact47 unique derivative bindings relative to resourceSourceRoot. Names exactly match all47 quality compiled pins;46 entire files byte-identical, service entire bytes equal historical bytes plus exactly the known reviewed measurement-only with_initializer insertion at its unique anchor. All source bytes also match their respective immutable Git revisions. Existing methods/Cargo/features are not edited. This proves only that transformation, not a new qualification.",
+    "resourceMeasurementApproval": "Independent external record, not generated here: schemaVersion1, kind full-prefix-resource-measurement-approval-v1, measurementAllowed:true, productionActivated:false, resourceQualified:false, qualityDecisionSha256, sourceTransferSha256, sourceRevision, binarySha256, parameterSha256, mode. It approves only this reviewed measurement derivative after real complete quality acceptance and technical readiness. Never synthesize semantic approval from numeric WER/text equality. Also binds fixtureSha256, referenceSha256, preparedPcmSha256. No approval is generated by this launcher. staticEligibilityCatalogue is a bound pre-existing static-confirmed-pause-input-catalogue-v1 record: selected ID/WAV SHA/frames/format must match and at least one ideal early cut has cut+4800 <= earliest complete publication < N. This verifies only static eligibility; actual early accepted/decode jobs remain mandatory in the resource report. It neither reruns signal analysis nor asserts continuous Runtime/ASR behavior.",
+    "sources": "Executing repo-root Python script/test/schema and reused process, remainder, old resource-host helper and strict decision sources are uniquely bound and immutable against launcherRevision. Actual executing helper bytes must match. resourceSources are separately relative to resourceSourceRoot, immutable against sourceRevision, and cover every recursively printed compiled resource pin. Every common compiled quality/resource pin matches its transformed file, while all47 source-transfer files remain mandatory even when a single-case wrapper is not an operative resource dependency. No fabricated claim that every quality wrapper executes in the resource binary.",
+    "readback": "Validate105 rows,39 Stop texts confirmed against independently supplied mode-specific exact baseline,66 Cancel rows without text,104 follow-start confirmations, scoped call/receipt/range/settlement consistency, final owned join and decoder idle/drop evidence,101 RSS observations and2 nonempty bounded vmmap summaries. Resource JSON is text-free; no hypotheses are copied. Feed admission/publication summaries are source-bound checks, not all-publication L or TC-policy evidence. RSS is not live heap/leak qualification. Cancel-held then release/next Start is not a native restart-while-held acceptance. Historical quality/binary reports remain unchanged. Baseline/diagnostic comparisons and source transfer do not waive current gates. No resourceQualified:true or aggregate latency claim is produced.",
+    "baseline": "fixtureCaseId selects exactly one German case in the immutable quality manifest, with identical WAV SHA and frame count. The two quality blocks of the chosen resource mode supply four bounded original result rows: warmup and measured-001 each. All four UTF8 byte strings must be identical to the prospectively bound supplied reference SHA. Raw paths are resolved through the corresponding frozen output and exact frozen argv output, then rehashed in the historical snapshot. This is repeatability provenance only, not accuracy. Canonical DE5 (80000 frames) is the current prospective selection; its static cut eligibility is separate from actual >=2-job/early-call resource validation. No actual fixture or approval is created here."
+  }
+}
