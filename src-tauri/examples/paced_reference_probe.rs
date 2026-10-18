@@ -23,33 +23,15 @@ mod runner;
 #[path = "paced_runtime_probe/statistics.rs"]
 mod statistics;
 use dictation_core::audio::AudioFormat;
-use everlast_dictation::{runtime::measurement::MeasuredRuntime, transcription::Language};
+use everlast_dictation::transcription::Language;
 use std::{path::Path, sync::Arc, time::Instant};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = std::env::args_os().skip(1).take(6).collect::<Vec<_>>();
     if args.len() == 1
-        && matches!(
-            args[0].to_str(),
-            Some(
-                "--print-parameters"
-                    | "--print-scheduling-parameters"
-                    | "--print-context-reference-parameters"
-                    | "--print-context-candidate-parameters"
-            )
-        )
+        && let Some(flag) = args[0].to_str()
+        && let Some(value) = parameters::print_template(flag)?
     {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&if args[0] == "--print-scheduling-parameters" {
-                parameters::scheduling_template()?
-            } else if args[0] == "--print-context-reference-parameters" {
-                parameters::context_template(false)?
-            } else if args[0] == "--print-context-candidate-parameters" {
-                parameters::context_template(true)?
-            } else {
-                parameters::template()?
-            })?
-        );
+        println!("{}", serde_json::to_string_pretty(&value)?);
         return Ok(());
     }
     let options = options::Options::parse(&args)?;
@@ -87,7 +69,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         failure = match runner::audio_context::load(options.model, options.definition, variant) {
             Ok((service, context_receipts)) => {
                 receipts = context_receipts;
-                match MeasuredRuntime::spawn(
+                match execution_mode.spawn_runtime(
                     service,
                     1,
                     AudioFormat {
@@ -119,7 +101,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 } else {
                     Language::English
                 };
-                if let Some(receipts) = &receipts {
+                if execution_mode.pretranscription().is_some() {
+                    runner::one_pretranscription(
+                        runtime,
+                        &samples[slot.fixture_index],
+                        language,
+                        slot.id.clone(),
+                        slot.warmup,
+                        None,
+                        runner::ExpectedOutcome::Local,
+                    )
+                } else if let Some(receipts) = &receipts {
                     runner::one_context(
                         runtime,
                         &samples[slot.fixture_index],
@@ -160,17 +152,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ),
         }
     });
+    let trace_reader = runtime.as_ref().map(|runtime| runtime.job_trace_handle());
     let cleanup = runtime.map(runner::cleanup);
+    let (job_trace_after_cleanup, job_trace_after_cleanup_error) =
+        match trace_reader.map(|reader| reader.snapshot()).transpose() {
+            Ok(trace) => {
+                let error = trace.as_ref().and_then(|trace| trace.error.clone());
+                (trace.filter(|trace| trace.enabled), error)
+            }
+            Err(error) => (None, Some(error.to_string())),
+        };
     let context_cleanup = receipts
         .as_ref()
         .map(runner::audio_context::Receipts::finalize);
-    if let Some(error) = context_cleanup.as_ref().and_then(|c| c.error.as_ref()) {
+    for error in context_cleanup
+        .as_ref()
+        .and_then(|c| c.error.as_ref())
+        .into_iter()
+        .chain(job_trace_after_cleanup_error.as_ref())
+    {
         failure.get_or_insert(error.clone());
-        if let Some(last) = rows.last_mut()
-            && last.output.observation.status == "ok"
-        {
-            last.output.observation.status = "failed";
-            last.output.observation.error = Some(error.clone());
+        if let Some(last) = rows.last_mut() {
+            if last.output.observation.status == "ok" {
+                last.output.observation.status = "failed";
+            }
+            last.output.observation.error = Some(match last.output.observation.error.take() {
+                Some(previous) => format!("{previous}; {error}"),
+                None => error.clone(),
+            });
         }
     }
     // Do not form statistics while an old inference/model owner could remain.
@@ -188,11 +197,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let fixtures=cases.iter().map(|case|serde_json::json!({"id":case.id,"language":case.language,"class":"clean","split":"acceptance","durationSeconds":case.seconds,
         "audioSha256":case.audio.sha256,"inputFrames":case.audio.frames,"sampleRate":case.audio.sample_rate,"referenceUtf8Sha256":input::digest(case.reference.as_bytes())})).collect::<Vec<_>>();
     let metadata = serde_json::json!({
-        "schemaVersion":1,"processId":std::process::id(),"kind":"paced-six-case-complete-recording-reference","measurementComplete":complete,
+        "schemaVersion":1,"processId":std::process::id(),"kind":if execution_mode.pretranscription().is_some(){"paced-six-case-pretranscription-experiment"}else{"paced-six-case-complete-recording-reference"},"measurementComplete":complete,
         "qualified":false,"p05Qualified":false,"qualityEvaluated":false,
         "sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
         "debugAssertions":cfg!(debug_assertions),"hostObservation":host,
-        "manifestSha256":input::digest(&manifest_bytes),"parameterDocumentSha256":input::digest(&parameter_bytes),"parameters":parameter_document,"contextCleanup":context_cleanup,
+        "manifestSha256":input::digest(&manifest_bytes),"parameterDocumentSha256":input::digest(&parameter_bytes),"parameters":parameter_document,"contextCleanup":context_cleanup,"pretranscriptionCandidate":execution_mode.pretranscription(),"jobTraceAfterCleanup":job_trace_after_cleanup,"jobTraceAfterCleanupError":job_trace_after_cleanup_error,
         "model":{"id":options.definition.id(),"sha256":options.definition.sha256()},
         "warmupRuns":1,"measuredRunsPerCase":batch::RUNS_PER_CASE,"requestedRows":batch::TOTAL_RUNS,"fixtures":fixtures,
         "loadMillis":load_millis,"initialFailure":failure,"runs":observations,"cleanup":cleanup,"statistics":summary,

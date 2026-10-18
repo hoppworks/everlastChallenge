@@ -2,6 +2,8 @@
 mod context_configuration;
 // Immutable parameter template tied to the actual compiled measurement sources.
 use crate::input;
+#[path = "pretranscription_configuration.rs"]
+mod pretranscription;
 use everlast_dictation::audio::replay::{
     clock::{FINAL_SPIN, MAXIMUM_SLEEP},
     schedule::JITTER_TOLERANCE,
@@ -87,6 +89,8 @@ pub enum ExecutionMode {
     TimeConstrained,
     ContextReference,
     ContextReduced,
+    PretransReference,
+    PretransCandidate,
 }
 pub fn scheduling_template() -> Result<Value, serde_json::Error> {
     use macos_integration::realtime;
@@ -117,20 +121,73 @@ pub fn context_template(reduced: bool) -> Result<Value, serde_json::Error> {
         reduced,
     ))
 }
+pub fn pretrans_template(candidate: bool) -> Result<Value, serde_json::Error> {
+    Ok(pretranscription::decorate(
+        scheduling_template()?,
+        candidate,
+    ))
+}
 impl ExecutionMode {
+    pub fn spawn_runtime(
+        self,
+        service: everlast_dictation::inference_service::InferenceService,
+        generation: u64,
+        format: dictation_core::audio::AudioFormat,
+    ) -> Result<
+        everlast_dictation::runtime::measurement::MeasuredRuntime,
+        everlast_dictation::runtime::RuntimeError,
+    > {
+        use everlast_dictation::runtime::measurement::MeasuredRuntime;
+        match self.pretranscription() {
+            Some(true) => MeasuredRuntime::spawn_pretranscription(service, generation, format),
+            Some(false) => {
+                MeasuredRuntime::spawn_pretranscription_reference(service, generation, format)
+            }
+            None => MeasuredRuntime::spawn(service, generation, format),
+        }
+    }
+
+    pub fn pretranscription(self) -> Option<bool> {
+        match self {
+            Self::PretransReference => Some(false),
+            Self::PretransCandidate => Some(true),
+            Self::Baseline
+            | Self::TimeConstrained
+            | Self::ContextReference
+            | Self::ContextReduced => None,
+        }
+    }
     pub fn context_reduced(self) -> Option<bool> {
         match self {
             Self::ContextReference => Some(false),
             Self::ContextReduced => Some(true),
-            Self::Baseline | Self::TimeConstrained => None,
+            Self::Baseline
+            | Self::TimeConstrained
+            | Self::PretransReference
+            | Self::PretransCandidate => None,
         }
     }
     pub fn scheduled(self) -> bool {
         match self {
             Self::Baseline => false,
-            Self::TimeConstrained | Self::ContextReference | Self::ContextReduced => true,
+            Self::TimeConstrained
+            | Self::ContextReference
+            | Self::ContextReduced
+            | Self::PretransReference
+            | Self::PretransCandidate => true,
         }
     }
+}
+pub fn print_template(flag: &str) -> Result<Option<Value>, serde_json::Error> {
+    Ok(Some(match flag {
+        "--print-parameters" => template()?,
+        "--print-scheduling-parameters" => scheduling_template()?,
+        "--print-context-reference-parameters" => context_template(false)?,
+        "--print-context-candidate-parameters" => context_template(true)?,
+        "--print-pretrans-reference-parameters" => pretrans_template(false)?,
+        "--print-pretrans-candidate-parameters" => pretrans_template(true)?,
+        _ => return Ok(None),
+    }))
 }
 pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
     if bytes.len() > 1024 * 1024 {
@@ -138,6 +195,14 @@ pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
     }
     let value: Value = serde_json::from_slice(bytes).map_err(|_| "invalid parameter JSON")?;
     for (template, mode) in [
+        (
+            pretrans_template(false).map_err(|e| e.to_string())?,
+            ExecutionMode::PretransReference,
+        ),
+        (
+            pretrans_template(true).map_err(|e| e.to_string())?,
+            ExecutionMode::PretransCandidate,
+        ),
         (
             template().map_err(|e| e.to_string())?,
             ExecutionMode::Baseline,
@@ -176,6 +241,14 @@ fn compiled_sources() -> Value {
         };
     }
     json!({
+        "pretransConfiguration":source!("src-tauri/examples/paced_runtime_probe/pretranscription_configuration.rs","pretranscription_configuration.rs"),
+        "pretransAudit":source!("src-tauri/examples/paced_runtime_probe/pretranscription.rs","pretranscription.rs"),
+        "jobTrace":source!("src-tauri/src/runtime/measurement/job_trace.rs","../../src/runtime/measurement/job_trace.rs"),
+        "workerObservation":source!("src-tauri/src/inference_service/observation.rs","../../src/inference_service/observation.rs"),
+        "pausePolicy":source!("crates/dictation-core/src/audio/pauses.rs","../../../crates/dictation-core/src/audio/pauses.rs"),
+        "prefixOwnership":source!("src-tauri/src/audio/pretranscription.rs","../../src/audio/pretranscription.rs"),
+        "controller":source!("src-tauri/src/controller.rs","../../src/controller.rs"),
+        "sessionLedger":source!("src-tauri/src/controller/pretranscription.rs","../../src/controller/pretranscription.rs"),
         "nativeRealtime":source!("crates/macos-integration/src/realtime.rs","../../../crates/macos-integration/src/realtime.rs"),
         "publisher":source!("src-tauri/examples/paced_runtime_probe/publisher.rs","publisher.rs"),
         "publisherQos":source!("crates/macos-integration/src/qos.rs","../../../crates/macos-integration/src/qos.rs"),
@@ -209,6 +282,24 @@ fn compiled_sources() -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn explicit_pretranscription_freezes_select_both_arms_without_context_or_legacy_fallback()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for (candidate, mode) in [
+            (false, ExecutionMode::PretransReference),
+            (true, ExecutionMode::PretransCandidate),
+        ] {
+            let frozen = pretrans_template(candidate)?;
+            assert_eq!(select(&serde_json::to_vec(&frozen)?)?.1, mode);
+            assert_eq!(mode.pretranscription(), Some(candidate));
+            assert!(mode.scheduled());
+            assert_eq!(mode.context_reduced(), None);
+            let mut mixed = frozen;
+            mixed["pretranscription"]["confirmationFrames"] = json!(7999);
+            assert!(select(&serde_json::to_vec(&mixed)?).is_err());
+        }
+        Ok(())
+    }
     #[test]
     fn publisher_qos_policy_and_native_sources_are_frozen_without_relaxing_deadlines()
     -> Result<(), Box<dyn std::error::Error>> {

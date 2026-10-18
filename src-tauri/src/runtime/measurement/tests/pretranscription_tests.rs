@@ -58,6 +58,19 @@ fn confirmed_pause_decodes_during_recording_and_final_rest_covers_every_frame() 
         let first = entries
             .recv_timeout(Duration::from_secs(2))
             .map_err(|_| "confirmed pause did not start a decoder before Stop")?;
+        let early_trace = runtime.job_trace()?;
+        assert!(
+            early_trace.enabled,
+            "candidate must retain a bounded actual-job trace"
+        );
+        assert_eq!(early_trace.jobs.len(), 1);
+        let early = &early_trace.jobs[0];
+        assert_eq!((early.timeline_start, early.timeline_end), (0, 19200));
+        assert_eq!((early.storage_start, early.storage_end), (0, 19200));
+        assert!(early.host_submit_offset_nanos.is_some());
+        assert!(early.worker_before_decode_offset_nanos.is_some());
+        assert_eq!(early.worker_after_decode_offset_nanos, None);
+        assert_eq!(early.result_adopted_offset_nanos, None);
         assert_eq!(first.len(), 19200);
         assert_eq!(first, original[..19200]);
         assert_eq!(runtime.snapshot()?.session.phase, Phase::Recording);
@@ -84,6 +97,24 @@ fn confirmed_pause_decodes_during_recording_and_final_rest_covers_every_frame() 
         assert_eq!(final_state.session.outcome, Some(Outcome::Local));
         assert!(runtime.timing()?.t_text.is_some());
         assert!(entries.is_empty());
+        let trace = runtime.job_trace()?;
+        assert_eq!(trace.jobs.len(), 2);
+        assert_eq!(trace.error, None);
+        let rest = &trace.jobs[1];
+        assert_eq!(
+            (rest.timeline_start, rest.timeline_end),
+            (19200, original.len())
+        );
+        for job in &trace.jobs {
+            assert_eq!(job.session, session);
+            assert_eq!(job.generation, 1);
+            assert_eq!(job.worker_outcome, Some("decoded-ok"));
+            assert_eq!(job.adoption, Some("accepted"));
+            assert!(job.host_submit_offset_nanos <= job.service_accepted_offset_nanos);
+            assert!(job.service_accepted_offset_nanos <= job.worker_before_decode_offset_nanos);
+            assert!(job.worker_before_decode_offset_nanos <= job.worker_after_decode_offset_nanos);
+            assert!(job.worker_after_decode_offset_nanos <= job.result_adopted_offset_nanos);
+        }
         Ok(())
     })
 }
@@ -209,6 +240,7 @@ fn cancelled_old_decoder_cannot_seal_new_recording_or_publish_its_text() -> Test
         entries,
         release,
     } = held_runtime()?;
+    let reader = runtime.job_trace_handle();
     guarded(runtime, release.clone(), |runtime| {
         wait_state(runtime, |s| s.model_ready)?;
         let first = await_value(runtime.start(settings())?)?.map_err(std::io::Error::other)?;
@@ -234,6 +266,15 @@ fn cancelled_old_decoder_cannot_seal_new_recording_or_publish_its_text() -> Test
             .session
             .ok_or("missing new SID")?;
         assert!(second > first);
+        let current = runtime.job_trace()?;
+        assert_eq!(current.session, Some(second));
+        assert!(current.jobs.is_empty());
+        let retired = current
+            .retired_job
+            .ok_or("old active job evidence not retired")?;
+        assert_eq!(retired.session, first);
+        assert!(retired.worker_before_decode_offset_nanos.is_some());
+        assert_eq!(retired.worker_after_decode_offset_nanos, None);
         let mut next = runtime.input.recv_timeout(Duration::from_secs(2))?;
         feed(&mut next.port, &voice);
         assert!(
@@ -249,8 +290,28 @@ fn cancelled_old_decoder_cannot_seal_new_recording_or_publish_its_text() -> Test
         let ended = wait_state(runtime, |s| s.session.phase == Phase::Idle)?;
         assert_eq!(ended.session.text.as_deref(), Some("second second"));
         assert_eq!(ended.session.outcome, Some(Outcome::Local));
+        let current = runtime.job_trace()?;
+        assert_eq!(current.error, None);
+        assert!(current.jobs.iter().all(|job| job.session == second));
+        assert_eq!(
+            current
+                .retired_job
+                .as_ref()
+                .and_then(|job| job.worker_outcome),
+            Some("cancelled-after-decode")
+        );
         Ok(())
-    })
+    })?;
+    let after_join = reader.snapshot()?;
+    assert!(
+        after_join
+            .retired_job
+            .as_ref()
+            .and_then(|job| job.worker_after_decode_offset_nanos)
+            .is_some()
+    );
+    assert_eq!(after_join.error, None);
+    Ok(())
 }
 
 #[test]
@@ -438,4 +499,151 @@ fn text_budget_rejection_does_not_adopt_rejected_job_timing_or_a_final_text_cloc
         );
         Ok(())
     })
+}
+
+#[test]
+fn bounded_job_trace_overflow_keeps_prior_record_and_rejected_identity() -> TestResult {
+    let HeldFixture {
+        runtime,
+        entries,
+        release,
+    } = held_runtime()?;
+    runtime
+        .trace
+        .jobs
+        .as_ref()
+        .ok_or("missing ledger")?
+        .lock()
+        .map_err(|_| "ledger poisoned")?
+        .limit_for_test(1);
+    guarded(runtime, release.clone(), |runtime| {
+        wait_state(runtime, |s| s.model_ready)?;
+        let sid = await_value(runtime.start(settings())?)?.map_err(std::io::Error::other)?;
+        let mut input = runtime.take_input(Duration::from_secs(2))?;
+        let mut source = vec![0.1; 16000];
+        source.resize(24000, 0.0);
+        feed(&mut input.port, &source);
+        entries.recv_timeout(Duration::from_secs(2))?;
+        runtime.stop(sid)?;
+        release.send(())?;
+        entries.recv_timeout(Duration::from_secs(2))?;
+        wait_state(runtime, |s| s.session.phase == Phase::Idle)?;
+        let trace = runtime.job_trace()?;
+        assert_eq!(trace.jobs.len(), 1);
+        assert_eq!(trace.jobs[0].timeline_end, 19200);
+        assert!(trace.jobs[0].result_adopted_offset_nanos.is_some());
+        assert!(trace.overflow_events > 0);
+        assert!(
+            trace
+                .error
+                .as_deref()
+                .is_some_and(|error| error.contains("overflow"))
+        );
+        let rejected = trace
+            .first_overflow_job
+            .ok_or("overflow identity was lost")?;
+        assert_eq!(
+            (
+                rejected.session,
+                rejected.timeline_start,
+                rejected.timeline_end
+            ),
+            (sid, 19200, 24000)
+        );
+        Ok(())
+    })
+}
+
+#[test]
+fn accepted_old_job_before_decoder_entry_is_retired_and_late_skip_survives_join() -> TestResult {
+    struct Entered(Sender<usize>);
+    impl Decoder for Entered {
+        fn decode(&mut self, audio: &[f32], _: Language) -> Result<String, InferenceError> {
+            self.0
+                .try_send(audio.len())
+                .map_err(|_| InferenceError::Decode)?;
+            Ok("new session".into())
+        }
+    }
+    let (entered, entries) = bounded(2);
+    let service = InferenceService::with_decoder(Entered(entered))?;
+    let (reached, paused) = bounded(1);
+    let (release, released) = bounded(1);
+    service.pause_before_decode(reached, released)?;
+    let runtime = MeasuredRuntime::spawn_pretranscription(
+        service,
+        1,
+        AudioFormat {
+            sample_rate: 16000,
+            channels: 1,
+        },
+    )?;
+    let reader = runtime.job_trace_handle();
+    guarded(runtime, release.clone(), |runtime| {
+        wait_state(runtime, |s| s.model_ready)?;
+        let old = await_value(runtime.start(settings())?)?.map_err(std::io::Error::other)?;
+        let mut input = runtime.take_input(Duration::from_secs(2))?;
+        let mut source = vec![0.1; 16000];
+        source.resize(24000, 0.0);
+        feed(&mut input.port, &source);
+        paused.recv_timeout(Duration::from_secs(2))?;
+        let queued = runtime.job_trace()?;
+        assert!(queued.jobs[0].service_accepted_offset_nanos.is_some());
+        assert_eq!(queued.jobs[0].worker_before_decode_offset_nanos, None);
+        runtime.cancel(old)?;
+        wait_state(runtime, |s| s.session.phase == Phase::Idle)?;
+        await_value(
+            runtime
+                .runtime
+                .client
+                .start(settings(), None, false, false)?,
+        )?
+        .map_err(std::io::Error::other)?;
+        wait_state(runtime, |s| s.session.phase == Phase::Recording)?;
+        let mut new_input = runtime.input.recv_timeout(Duration::from_secs(2))?;
+        let retired = runtime
+            .job_trace()?
+            .retired_job
+            .ok_or("accepted/dequeued old identity lost on reset")?;
+        assert_eq!(retired.session, old);
+        assert_eq!(retired.worker_before_decode_offset_nanos, None);
+        release.send(())?;
+        let deadline = Instant::now() + Duration::from_secs(2);
+        loop {
+            let trace = runtime.job_trace()?;
+            if trace
+                .retired_job
+                .as_ref()
+                .and_then(|job| job.worker_settled_offset_nanos)
+                .is_some()
+            {
+                break;
+            }
+            if Instant::now() >= deadline {
+                return Err("late skipped worker evidence missing".into());
+            }
+            thread::sleep(Duration::from_millis(1));
+        }
+        assert!(entries.is_empty(), "cancelled job must not call Decoder");
+        feed(&mut new_input.port, &[0.2; 320]);
+        let sid = runtime
+            .snapshot()?
+            .session
+            .session
+            .ok_or("new SID absent")?;
+        runtime.runtime.client.stop(sid)?;
+        assert_eq!(entries.recv_timeout(Duration::from_secs(2))?, 320);
+        wait_state(runtime, |s| s.session.phase == Phase::Idle)?;
+        Ok(())
+    })?;
+    let after = reader.snapshot()?;
+    assert_eq!(after.error, None);
+    let retired = after
+        .retired_job
+        .ok_or("retired job missing after owner join")?;
+    assert_eq!(retired.worker_outcome, Some("cancelled-before-decode"));
+    assert_eq!(retired.worker_before_decode_offset_nanos, None);
+    assert_eq!(retired.worker_after_decode_offset_nanos, None);
+    assert!(retired.worker_settled_offset_nanos.is_some());
+    Ok(())
 }

@@ -722,6 +722,13 @@ impl<A: AudioDriver> Actor<A> {
         if self.controller.snapshot().session != snapshot.session {
             self.maximum_warning = false;
             self.maximum_reached = false;
+            #[cfg(feature = "measurement")]
+            if let Some(trace) = &admission.timing
+                && trace.jobs_enabled()
+                && let Some(session) = self.controller.snapshot().session
+            {
+                trace.reset(session)?;
+            }
         }
         // Register before dispatch: cancellation and shutdown can see a session
         // even while its first native command is being sent.
@@ -782,6 +789,27 @@ impl<A: AudioDriver> Actor<A> {
         #[cfg(feature = "measurement")]
         let decode_timing = decode_timing.filter(|timing| matches!(&event,
             Event::InferenceFinished { sample_range, .. } if timing.input_frames == sample_range.len()));
+        #[cfg(feature = "measurement")]
+        let observed = if let Event::InferenceFinished {
+            session,
+            generation,
+            job_id,
+            sample_range,
+            timeline_range,
+            ..
+        } = &event
+        {
+            Some(Event::InferenceFinished {
+                session: *session,
+                generation: *generation,
+                job_id: *job_id,
+                sample_range: sample_range.clone(),
+                timeline_range: timeline_range.clone(),
+                result: Ok(String::new()),
+            })
+        } else {
+            None
+        };
         let actions = self.controller.accept(event)?;
         #[cfg(feature = "measurement")]
         {
@@ -789,6 +817,19 @@ impl<A: AudioDriver> Actor<A> {
             // action dispatch, publication, or any observer's polling interval.
             let adopted = Instant::now();
             if let Some(trace) = &_admission.timing {
+                if let Some(event) = &observed {
+                    let next = self.controller.snapshot();
+                    let kept = matches!(next.phase, Phase::Recording | Phase::Finalizing)
+                        || (next.phase == Phase::Idle
+                            && matches!(
+                                next.outcome,
+                                Some(
+                                    dictation_core::session::Outcome::Local
+                                        | dictation_core::session::Outcome::Empty
+                                )
+                            ));
+                    trace.adopt_job(event, adopted, candidate && kept);
+                }
                 trace
                     .accepted(
                         &previous,
@@ -887,6 +928,16 @@ impl<A: AudioDriver> Actor<A> {
                     }
                 }
                 Action::Transcribe(job) => {
+                    #[cfg(feature = "measurement")]
+                    if let Some(trace) = self
+                        .shared
+                        .lock()
+                        .map_err(|_| RuntimeError::Synchronization)?
+                        .timing
+                        .as_ref()
+                    {
+                        trace.submit_job(&job, self.controller.audio_is_unreleased(job.session));
+                    }
                     let session = job.session;
                     let result = self
                         .inference

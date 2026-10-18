@@ -16,34 +16,15 @@ mod runner;
 mod statistics;
 
 use dictation_core::audio::AudioFormat;
-use everlast_dictation::runtime::measurement::MeasuredRuntime;
 use std::{io::Cursor, path::Path, sync::Arc, time::Instant};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arguments = std::env::args_os().skip(1).take(9).collect::<Vec<_>>();
     if arguments.len() == 1
-        && matches!(
-            arguments[0].to_str(),
-            Some(
-                "--print-parameters"
-                    | "--print-scheduling-parameters"
-                    | "--print-context-reference-parameters"
-                    | "--print-context-candidate-parameters"
-            )
-        )
+        && let Some(flag) = arguments[0].to_str()
+        && let Some(value) = parameters::print_template(flag)?
     {
-        println!(
-            "{}",
-            serde_json::to_string_pretty(&if arguments[0] == "--print-scheduling-parameters" {
-                parameters::scheduling_template()?
-            } else if arguments[0] == "--print-context-reference-parameters" {
-                parameters::context_template(false)?
-            } else if arguments[0] == "--print-context-candidate-parameters" {
-                parameters::context_template(true)?
-            } else {
-                parameters::template()?
-            })?
-        );
+        println!("{}", serde_json::to_string_pretty(&value)?);
         return Ok(());
     }
     let options = options::Options::parse(&arguments)?;
@@ -85,7 +66,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         match runner::audio_context::load(options.model, options.definition, variant) {
             Ok((service, context_receipts)) => {
                 receipts = context_receipts;
-                match MeasuredRuntime::spawn(
+                match execution_mode.spawn_runtime(
                     service,
                     1,
                     AudioFormat {
@@ -116,7 +97,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut output = if let Some(error) = &unavailable {
             runner::unavailable(id, index == 0, error.clone())
         } else if let Some(measured) = &runtime {
-            if let Some(receipts) = &receipts {
+            if execution_mode.pretranscription().is_some() {
+                runner::one_pretranscription(
+                    measured,
+                    &samples,
+                    options.language,
+                    id,
+                    index == 0,
+                    reference,
+                    options.expected_outcome,
+                )
+            } else if let Some(receipts) = &receipts {
                 runner::one_context(
                     measured,
                     &samples,
@@ -190,19 +181,36 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         })
         .collect::<Vec<_>>();
+    let trace_reader = runtime.as_ref().map(|runtime| runtime.job_trace_handle());
     let cleanup = runtime.map(runner::cleanup);
+    let (job_trace_after_cleanup, job_trace_after_cleanup_error) =
+        match trace_reader.map(|reader| reader.snapshot()).transpose() {
+            Ok(trace) => {
+                let error = trace.as_ref().and_then(|trace| trace.error.clone());
+                (trace.filter(|trace| trace.enabled), error)
+            }
+            Err(error) => (None, Some(error.to_string())),
+        };
     let context_cleanup = receipts
         .as_ref()
         .map(runner::audio_context::Receipts::finalize);
-    if let Some(error) = context_cleanup.as_ref().and_then(|c| c.error.as_ref()) {
+    for error in context_cleanup
+        .as_ref()
+        .and_then(|c| c.error.as_ref())
+        .into_iter()
+        .chain(job_trace_after_cleanup_error.as_ref())
+    {
         unavailable.get_or_insert(error.clone());
-        if let Some(last) = observations.last_mut()
-            && last.status == "ok"
-        {
-            last.status = "failed";
-            last.error = Some(error.clone());
+        if let Some(last) = observations.last_mut() {
+            if last.status == "ok" {
+                last.status = "failed";
+            }
+            last.error = Some(match last.error.take() {
+                Some(previous) => format!("{previous}; {error}"),
+                None => error.clone(),
+            });
             if let Some(result) = results.last_mut() {
-                result["status"] = serde_json::json!("failed");
+                result["status"] = serde_json::json!(last.status);
             }
         }
     }
@@ -263,7 +271,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "fixtureSha256":declared.sha256,"inputFrames":samples.len(),"sampleRate":16000,"channels":1,
         "model":{"id":options.definition.id(),"sha256":options.definition.sha256()},
         "language":options.language.code(),"parameterDocumentSha256":input::digest(&parameter_bytes),
-        "parameters":parameter_document,"contextCleanup":context_cleanup,"hostObservation":host,
+        "parameters":parameter_document,"contextCleanup":context_cleanup,"pretranscriptionCandidate":execution_mode.pretranscription(),"jobTraceAfterCleanup":job_trace_after_cleanup,"jobTraceAfterCleanupError":job_trace_after_cleanup_error,"hostObservation":host,
         "referenceSha256":reference_bytes.as_ref().map(|data| input::digest(data)),
         "referenceComparison":"trimmed exact text only; provenance and independent WER are separate",
         "warmupRuns":1,"measuredRunsRequested":options.runs,"loadMillis":load_millis,"loadError":load_error,

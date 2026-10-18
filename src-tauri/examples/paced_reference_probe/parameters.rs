@@ -90,12 +90,49 @@ pub fn context_template(reduced: bool) -> Result<Value, serde_json::Error> {
     });
     Ok(value)
 }
+pub fn pretrans_template(candidate: bool) -> Result<Value, serde_json::Error> {
+    let mut value = baseline::pretrans_template(candidate)?;
+    let batch = template()?;
+    let publisher = value["measurement"]["publisherThread"].clone();
+    value["measurement"] = batch["measurement"].clone();
+    if let Some(m) = value["measurement"].as_object_mut() {
+        m.remove("publisherQos");
+    }
+    value["measurement"]["publisherThread"] = publisher;
+    value["measurement"]["mode"] = json!("paced-runtime-pretranscription-experiment");
+    value["measurement"]["variant"] = json!(if candidate {
+        "confirmed-pause-pretranscription"
+    } else {
+        "matched-full-recording-reference"
+    });
+    value["batchSources"] = sources();
+    value["limits"] = batch["limits"].clone();
+    value["configurationId"] = json!(if candidate {
+        "p06-six-case-pretranscription-candidate-v1"
+    } else {
+        "p06-six-case-pretranscription-reference-v1"
+    });
+    Ok(value)
+}
+pub fn print_template(flag: &str) -> Result<Option<Value>, serde_json::Error> {
+    Ok(Some(match flag {
+        "--print-parameters" => template()?,
+        "--print-scheduling-parameters" => scheduling_template()?,
+        "--print-context-reference-parameters" => context_template(false)?,
+        "--print-context-candidate-parameters" => context_template(true)?,
+        "--print-pretrans-reference-parameters" => pretrans_template(false)?,
+        "--print-pretrans-candidate-parameters" => pretrans_template(true)?,
+        _ => return Ok(None),
+    }))
+}
 pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
     if bytes.len() > 1024 * 1024 {
         return Err("parameter document exceeds1MiB".into());
     }
     let value: Value = serde_json::from_slice(bytes).map_err(|_| "invalid parameter JSON")?;
     for (expected, mode) in [
+        (pretrans_template(false), ExecutionMode::PretransReference),
+        (pretrans_template(true), ExecutionMode::PretransCandidate),
         (template(), ExecutionMode::Baseline),
         (scheduling_template(), ExecutionMode::TimeConstrained),
         (context_template(false), ExecutionMode::ContextReference),
@@ -110,6 +147,34 @@ pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn pretranscription_print_freezes_keep_six_case_protocol_and_exact_typed_selection()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for (flag, candidate, mode) in [
+            (
+                "--print-pretrans-reference-parameters",
+                false,
+                ExecutionMode::PretransReference,
+            ),
+            (
+                "--print-pretrans-candidate-parameters",
+                true,
+                ExecutionMode::PretransCandidate,
+            ),
+        ] {
+            let frozen = print_template(flag)?.ok_or("missing explicit print template")?;
+            assert_eq!(select(&serde_json::to_vec(&frozen)?)?.1, mode);
+            assert_eq!(mode.pretranscription(), Some(candidate));
+            assert!(mode.scheduled());
+            assert_eq!(frozen["measurement"]["totalRows"], 181);
+            assert_eq!(frozen["measurement"]["measuredRunsPerCase"], 30);
+            let mut altered = frozen;
+            altered["pretranscription"]["tailFrames"] = json!(3199);
+            assert!(select(&serde_json::to_vec(&altered)?).is_err());
+        }
+        assert!(print_template("--print-pretrans-unknown")?.is_none());
+        Ok(())
+    }
     #[test]
     fn freeze_rejects_changed_counts_model_parameters_sources_and_timing_budget()
     -> Result<(), Box<dyn std::error::Error>> {

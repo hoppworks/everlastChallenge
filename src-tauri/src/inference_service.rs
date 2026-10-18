@@ -15,6 +15,9 @@ use std::{
     thread::{self, JoinHandle},
 };
 
+#[cfg(feature = "measurement")]
+pub(crate) mod observation;
+
 pub trait Decoder: Send + 'static {
     fn decode(&mut self, audio: &[f32], language: Language) -> Result<String, InferenceError>;
 }
@@ -117,8 +120,12 @@ struct Shared {
     ready: AtomicBool,
     shutdown: AtomicBool,
     slots: Mutex<Slots>,
+    #[cfg(feature = "measurement")]
+    observer: Mutex<Option<Arc<dyn observation::Observer>>>,
     #[cfg(test)]
     completion_barrier: Mutex<Option<CompletionBarrier>>,
+    #[cfg(test)]
+    before_decode_barrier: Mutex<Option<CompletionBarrier>>,
 }
 #[cfg(test)]
 struct CompletionBarrier {
@@ -174,6 +181,39 @@ impl InferenceService {
         })
     }
 
+    #[cfg(feature = "measurement")]
+    pub(crate) fn observe_jobs(
+        &self,
+        observer: Arc<dyn observation::Observer>,
+    ) -> Result<(), ServiceError> {
+        let slots = self
+            .shared
+            .slots
+            .lock()
+            .map_err(|_| ServiceError::Poisoned)?;
+        if slots.pending.is_some() || slots.active.is_some() || slots.completed.is_some() {
+            return Err(ServiceError::Busy);
+        }
+        *self
+            .shared
+            .observer
+            .lock()
+            .map_err(|_| ServiceError::Poisoned)? = Some(observer);
+        Ok(())
+    }
+    #[cfg(all(test, feature = "measurement"))]
+    pub(crate) fn pause_before_decode(
+        &self,
+        reached: Sender<()>,
+        release: Receiver<()>,
+    ) -> Result<(), ServiceError> {
+        *self
+            .shared
+            .before_decode_barrier
+            .lock()
+            .map_err(|_| ServiceError::Poisoned)? = Some(CompletionBarrier { reached, release });
+        Ok(())
+    }
     pub fn ready(&self) -> bool {
         self.shared.ready.load(Ordering::Acquire) && !self.shared.shutdown.load(Ordering::Acquire)
     }
@@ -220,6 +260,8 @@ impl InferenceService {
         {
             return Err(ServiceError::Busy);
         }
+        #[cfg(feature = "measurement")]
+        self.shared.observe(&job, observation::Edge::Queued);
         slots.pending = Some(job);
         drop(slots);
         self.notify()
@@ -240,6 +282,9 @@ impl InferenceService {
             && let Some(job) = slots.pending.take()
         {
             job.token.cancel();
+            #[cfg(feature = "measurement")]
+            self.shared
+                .observe(&job, observation::Edge::CancelledPending);
         }
         if let Some((active, token)) = &slots.active
             && *active == session
@@ -285,6 +330,9 @@ impl InferenceService {
             .map_err(|_| ServiceError::Poisoned)?;
         if let Some(job) = slots.pending.take() {
             job.token.cancel();
+            #[cfg(feature = "measurement")]
+            self.shared
+                .observe(&job, observation::Edge::CancelledPending);
         }
         if let Some((_, token)) = &slots.active {
             token.cancel();
@@ -344,12 +392,29 @@ fn inference_loop(
             wake.recv().map_err(|_| ServiceError::Stopped)?;
             continue;
         };
+        #[cfg(test)]
+        if let Some(barrier) = shared
+            .before_decode_barrier
+            .lock()
+            .map_err(|_| ServiceError::Poisoned)?
+            .take()
+        {
+            barrier
+                .reached
+                .send(())
+                .map_err(|_| ServiceError::Stopped)?;
+            barrier
+                .release
+                .recv_timeout(std::time::Duration::from_secs(3))
+                .map_err(|_| ServiceError::Stopped)?;
+        }
         #[cfg(feature = "measurement")]
         let mut decode_timing = None;
         let result = if job.token.is_valid() {
             let input = &job.audio[job.sample_range.clone()];
             #[cfg(feature = "measurement")]
             {
+                shared.observe(&job, observation::Edge::BeforeDecode);
                 let started = std::time::Instant::now();
                 let result = decoder.decode(input, job.language);
                 decode_timing = Some(DecodeTiming {
@@ -363,6 +428,23 @@ fn inference_loop(
         } else {
             Ok(String::new())
         };
+        #[cfg(feature = "measurement")]
+        shared.observe(
+            &job,
+            observation::Edge::AfterDecode(if !job.token.is_valid() {
+                if decode_timing.is_some() {
+                    "cancelled-after-decode"
+                } else {
+                    "cancelled-before-decode"
+                }
+            } else if shared.shutdown.load(Ordering::Acquire) {
+                "discarded-closing"
+            } else if result.is_ok() {
+                "decoded-ok"
+            } else {
+                "decode-failed"
+            }),
+        );
         // Release the actual PCM before advertising completion or idle.
         drop(job.audio);
         let mut slots = shared.slots.lock().map_err(|_| ServiceError::Poisoned)?;

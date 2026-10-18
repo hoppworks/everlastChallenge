@@ -13,6 +13,8 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
+#[path = "pretranscription.rs"]
+mod pretranscription;
 #[path = "publisher.rs"]
 mod publisher;
 
@@ -29,6 +31,7 @@ struct Expectation<'a> {
     outcome: ExpectedOutcome,
     reference: Option<&'a str>,
     context: Option<&'a audio_context::Receipts>,
+    trace: bool,
 }
 
 #[derive(Serialize)]
@@ -59,6 +62,7 @@ pub struct Observation {
     pub publisher_joined: Option<bool>,
     pub publisher: Option<serde_json::Value>,
     pub audio_context: Option<serde_json::Value>,
+    pub job_trace: Option<serde_json::Value>,
 }
 pub struct Output {
     pub observation: Observation,
@@ -91,6 +95,7 @@ fn observation(id: String, warmup: bool) -> Observation {
         publisher_joined: None,
         publisher: None,
         audio_context: None,
+        job_trace: None,
     }
 }
 pub fn unavailable(id: String, warmup: bool, error: String) -> Output {
@@ -222,6 +227,7 @@ pub fn one_expected(
             outcome: expected,
             reference,
             context: None,
+            trace: false,
         },
         || macos_integration::qos::PublisherQos::enter().map_err(|error| error.to_string()),
     )
@@ -248,6 +254,32 @@ pub fn one_scheduled(
             outcome: expected,
             reference,
             context: None,
+            trace: false,
+        },
+        || publisher::Native::spawn(std::sync::Arc::clone(samples)),
+    )
+}
+/// Fixed pretranscription/control experiment, using the identical TC publisher.
+pub fn one_pretranscription(
+    runtime: &MeasuredRuntime,
+    samples: &std::sync::Arc<Vec<f32>>,
+    language: Language,
+    id: String,
+    warmup: bool,
+    reference: Option<&str>,
+    expected: ExpectedOutcome,
+) -> Output {
+    one_scheduled_with(
+        runtime,
+        samples,
+        language,
+        id,
+        warmup,
+        Expectation {
+            outcome: expected,
+            reference,
+            context: None,
+            trace: true,
         },
         || publisher::Native::spawn(std::sync::Arc::clone(samples)),
     )
@@ -276,6 +308,7 @@ pub fn one_context(
             outcome: context.outcome,
             reference: context.reference,
             context: Some(context.receipts),
+            trace: false,
         },
         || publisher::Native::spawn(std::sync::Arc::clone(samples)),
     )
@@ -364,6 +397,40 @@ fn one_scheduled_with<P: publisher::Publisher>(
         }
         output.observation.status = "invalid_setup";
         output.observation.error = Some(errors.join("; "));
+    }
+    if expectation.trace {
+        match runtime.job_trace() {
+            Ok(trace) if output.observation.session.is_some() => {
+                let evidence = pretranscription::audit(
+                    trace,
+                    output.observation.feed.as_ref(),
+                    output.observation.session,
+                    samples.len(),
+                    language,
+                );
+                if let Some(error) = &evidence.error {
+                    if output.observation.status == "ok" {
+                        output.observation.status = "invalid_setup";
+                    }
+                    output.observation.error = Some(match output.observation.error.take() {
+                        Some(old) => format!("{old}; {error}"),
+                        None => error.clone(),
+                    });
+                }
+                output.observation.job_trace = Some(serde_json::json!(evidence));
+            }
+            Ok(_) => {
+                output.observation.job_trace =
+                    Some(serde_json::json!({"error":"no admitted session; no job trace assigned"}));
+            }
+            Err(error) => {
+                output.observation.status = "failed";
+                output.observation.error = Some(match output.observation.error.take() {
+                    Some(old) => format!("{old}; {error}"),
+                    None => error.to_string(),
+                });
+            }
+        }
     }
     if let Some(receipts) = expectation.context {
         let collection = receipts.collect(output.observation.session, samples.len(), language);
@@ -718,6 +785,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
                 context: None,
+                trace: false,
             },
             || Err("controlled QoS enter failure".into()),
         );
@@ -750,6 +818,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
                 context: None,
+                trace: false,
             },
             || {
                 Ok(FakeScope {
@@ -789,6 +858,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
                 context: None,
+                trace: false,
             },
             || {
                 Ok(FakeScope {
@@ -835,6 +905,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: Some("controlled words"),
                 context: None,
+                trace: false,
             },
             || {
                 Ok(FakeScope {
@@ -883,6 +954,7 @@ mod tests {
                 outcome: ExpectedOutcome::Empty,
                 reference: None,
                 context: None,
+                trace: false,
             },
             || {
                 Ok(FakeScope {
@@ -946,6 +1018,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
                 context: None,
+                trace: false,
             },
             || {
                 Ok(FakeScope {
@@ -966,6 +1039,226 @@ mod tests {
                 .as_deref()
                 .is_some_and(|value| value.contains("nonempty"))
         );
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+#[allow(
+    dead_code,
+    reason = "shared runner tests select exact pretranscription parameters independently of the embedding example"
+)]
+#[path = "parameters.rs"]
+mod pretranscription_test_parameters;
+
+#[cfg(test)]
+mod pretranscription_tests {
+    use super::*;
+    use crossbeam_channel::{Receiver, Sender, bounded};
+    use everlast_dictation::{
+        inference_service::{Decoder, InferenceService},
+        transcription::InferenceError,
+    };
+    use std::{sync::Arc, thread::JoinHandle};
+    struct Words;
+    impl Decoder for Words {
+        fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+            Ok("part".into())
+        }
+    }
+    struct PlainPublisher {
+        ready: Receiver<()>,
+        input: Option<Sender<publisher::Input>>,
+        done: Receiver<publisher::Published>,
+        child: Option<JoinHandle<()>>,
+    }
+    impl PlainPublisher {
+        fn spawn(samples: Arc<Vec<f32>>, post_failure: bool) -> Result<Self, String> {
+            let (send_input, input) = bounded::<publisher::Input>(1);
+            let (send_ready, ready) = bounded(1);
+            let (send_done, done) = bounded(1);
+            let child = thread::spawn(move || {
+                let _sent = send_ready.try_send(());
+                let mut result = publisher::Published::default();
+                if let Ok(mut input) = input.recv_timeout(Duration::from_secs(2)) {
+                    result.t0 = Some(input.source.started);
+                    match feed(&mut input.source, &samples) {
+                        Ok(feed) => result.feed = Some(feed),
+                        Err(error) => result.errors.push(error.to_string()),
+                    }
+                    match input.stop.stop() {
+                        Ok(stop) => result.stopped = Some(stop),
+                        Err(error) => result.errors.push(error.to_string()),
+                    }
+                    drop(input.source.port);
+                } else {
+                    result
+                        .errors
+                        .push("controlled publisher input unavailable".into());
+                }
+                if post_failure {
+                    result
+                        .errors
+                        .push("controlled post-readback failure".into());
+                }
+                let _sent = send_done.try_send(result);
+            });
+            Ok(Self {
+                ready,
+                input: Some(send_input),
+                done,
+                child: Some(child),
+            })
+        }
+    }
+    impl publisher::Publisher for PlainPublisher {
+        fn ready(&mut self) -> Result<(), String> {
+            self.ready
+                .recv_timeout(Duration::from_secs(2))
+                .map_err(|e| e.to_string())
+        }
+        fn submit(&mut self, input: publisher::Input) -> Result<(), String> {
+            self.input
+                .as_ref()
+                .ok_or("controlled input closed")?
+                .try_send(input)
+                .map_err(|e| e.to_string())
+        }
+        fn close(&mut self) {
+            drop(self.input.take());
+        }
+        fn join(&mut self, budget: Duration) -> publisher::Published {
+            let Ok(mut result) = self.done.recv_timeout(budget) else {
+                return publisher::Published {
+                    errors: vec!["controlled join timeout".into()],
+                    ..Default::default()
+                };
+            };
+            let Some(child) = self.child.take() else {
+                return result;
+            };
+            let deadline = Instant::now() + budget;
+            while !child.is_finished() && Instant::now() < deadline {
+                thread::sleep(Duration::from_millis(1));
+            }
+            if child.is_finished() {
+                result.joined = child.join().is_ok();
+            }
+            result
+        }
+    }
+    #[test]
+    fn selected_pretranscription_modes_run_actual_pipeline_and_complete_publication_proof_without_os_policy()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for (candidate, post_failure) in [(false, false), (true, false), (true, true)] {
+            let document = super::pretranscription_test_parameters::pretrans_template(candidate)?;
+            let mode =
+                super::pretranscription_test_parameters::select(&serde_json::to_vec(&document)?)?.1;
+            let runtime = mode.spawn_runtime(
+                InferenceService::with_decoder(Words)?,
+                1,
+                dictation_core::audio::AudioFormat {
+                    sample_rate: 16000,
+                    channels: 1,
+                },
+            )?;
+            wait_ready(&runtime)?;
+            let mut voice = vec![0.1; 320];
+            voice.resize(11520, 0.0);
+            let samples = Arc::new(voice);
+            let output = one_scheduled_with(
+                &runtime,
+                &samples,
+                Language::German,
+                "controlled".into(),
+                false,
+                Expectation {
+                    outcome: ExpectedOutcome::Local,
+                    reference: None,
+                    context: None,
+                    trace: true,
+                },
+                || PlainPublisher::spawn(Arc::clone(&samples), post_failure),
+            );
+            let actual_trace = runtime.job_trace()?;
+            let count = if candidate { 2 } else { 1 };
+            let mut future = actual_trace.clone();
+            future.jobs[0].host_submit_offset_nanos = Some(0);
+            let invalid = pretranscription::audit(
+                future,
+                output.observation.feed.as_ref(),
+                output.observation.session,
+                samples.len(),
+                Language::German,
+            );
+            assert!(invalid.error.is_some());
+            assert_eq!(invalid.trace.jobs[0].host_submit_offset_nanos, Some(0));
+            let mut missing = actual_trace.clone();
+            missing.jobs[0].worker_before_decode_offset_nanos = None;
+            let invalid = pretranscription::audit(
+                missing,
+                output.observation.feed.as_ref(),
+                output.observation.session,
+                samples.len(),
+                Language::German,
+            );
+            assert!(invalid.error.is_some());
+            assert_eq!(
+                invalid.trace.jobs[0].worker_before_decode_offset_nanos,
+                None
+            );
+            let mut wrong = actual_trace;
+            wrong.jobs[0].generation += 1;
+            let invalid = pretranscription::audit(
+                wrong,
+                output.observation.feed.as_ref(),
+                output.observation.session,
+                samples.len(),
+                Language::German,
+            );
+            assert!(invalid.error.is_some());
+            assert_eq!(invalid.trace.jobs[0].generation, 2);
+            let cleanup = cleanup(runtime);
+            assert!(cleanup.joined);
+            assert_eq!(
+                output.observation.status,
+                if post_failure { "invalid_setup" } else { "ok" },
+                "{:?}",
+                output.observation.error
+            );
+            if post_failure {
+                assert!(
+                    output
+                        .observation
+                        .error
+                        .as_deref()
+                        .is_some_and(|error| error.contains("controlled post-readback failure"))
+                );
+                assert!(
+                    output.text.is_some(),
+                    "post failure must retain actual final output separately"
+                );
+            }
+            let evidence = output
+                .observation
+                .job_trace
+                .ok_or("trace missing from actual caller")?;
+            assert_eq!(
+                evidence["trace"]["jobs"]
+                    .as_array()
+                    .ok_or("jobs not array")?
+                    .len(),
+                count
+            );
+            assert_eq!(evidence["error"], serde_json::Value::Null);
+            assert_eq!(
+                evidence["inputProofs"]
+                    .as_array()
+                    .ok_or("proofs not array")?
+                    .len(),
+                count
+            );
+        }
         Ok(())
     }
 }

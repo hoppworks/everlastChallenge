@@ -1,7 +1,9 @@
 //! Developer-only Runtime measurement. Never enables native capture or delivery.
 use super::*;
+pub mod job_trace;
 use crate::audio::replay::ReplayInput;
 use dictation_core::{audio::AudioFormat, session::Outcome};
+use job_trace::JobTraceSnapshot;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MeasuredTerminal {
@@ -23,6 +25,7 @@ pub struct TimingSnapshot {
 }
 pub(super) struct Trace {
     value: Mutex<TimingSnapshot>,
+    jobs: Option<Mutex<job_trace::Ledger>>,
     #[cfg(test)]
     on_text: Mutex<Option<Sender<Instant>>>,
 }
@@ -30,6 +33,7 @@ impl Trace {
     fn new() -> Self {
         Self {
             value: Mutex::new(TimingSnapshot::default()),
+            jobs: None,
             #[cfg(test)]
             on_text: Mutex::new(None),
         }
@@ -40,7 +44,12 @@ impl Trace {
             .lock()
             .map_err(|_| RuntimeError::Synchronization)?)
     }
-    fn reset(&self, session: u64) -> Result<(), RuntimeError> {
+    pub(super) fn reset(&self, session: u64) -> Result<(), RuntimeError> {
+        if let Some(jobs) = &self.jobs {
+            jobs.lock()
+                .map_err(|_| RuntimeError::Synchronization)?
+                .reset(session);
+        }
         *self
             .value
             .lock()
@@ -265,6 +274,22 @@ impl MeasuredStopHandle {
     }
 }
 
+/// Evidence reader only: owns neither Runtime nor audio/model storage.
+#[derive(Clone)]
+pub struct MeasuredJobTrace {
+    trace: Arc<Trace>,
+}
+impl MeasuredJobTrace {
+    pub fn snapshot(&self) -> Result<JobTraceSnapshot, RuntimeError> {
+        Ok(match &self.trace.jobs {
+            None => JobTraceSnapshot::default(),
+            Some(jobs) => jobs
+                .lock()
+                .map_err(|_| RuntimeError::Synchronization)?
+                .snapshot(),
+        })
+    }
+}
 impl MeasuredRuntime {
     /// Experimental confirmed-pause pretranscription; never selected by app starts.
     pub fn spawn_pretranscription(
@@ -272,24 +297,42 @@ impl MeasuredRuntime {
         generation: u64,
         format: AudioFormat,
     ) -> Result<Self, RuntimeError> {
-        Self::spawn_inner(inference, generation, format, true)
+        Self::spawn_inner(inference, generation, format, true, true)
+    }
+    /// Full-recording control with exactly the same bounded job observations.
+    pub fn spawn_pretranscription_reference(
+        inference: InferenceService,
+        generation: u64,
+        format: AudioFormat,
+    ) -> Result<Self, RuntimeError> {
+        Self::spawn_inner(inference, generation, format, false, true)
     }
     pub fn spawn(
         inference: InferenceService,
         generation: u64,
         format: AudioFormat,
     ) -> Result<Self, RuntimeError> {
-        Self::spawn_inner(inference, generation, format, false)
+        Self::spawn_inner(inference, generation, format, false, false)
     }
     fn spawn_inner(
         inference: InferenceService,
         generation: u64,
         format: AudioFormat,
         pretranscription: bool,
+        jobs: bool,
     ) -> Result<Self, RuntimeError> {
         format.validate().map_err(service_error)?;
         let (ready, input) = bounded(1);
-        let trace = Arc::new(Trace::new());
+        let mut trace = Trace::new();
+        if jobs {
+            trace.jobs = Some(Mutex::new(job_trace::Ledger::new()?));
+        }
+        let trace = Arc::new(trace);
+        if jobs {
+            inference
+                .observe_jobs(trace.clone())
+                .map_err(service_error)?;
+        }
         let (native, endpoint) = native_mailbox();
         let audio = ReplayAudio {
             owner: CpalAudio::default(),
@@ -353,6 +396,14 @@ impl MeasuredRuntime {
             ));
         }
         Ok(input)
+    }
+    pub fn job_trace_handle(&self) -> MeasuredJobTrace {
+        MeasuredJobTrace {
+            trace: Arc::clone(&self.trace),
+        }
+    }
+    pub fn job_trace(&self) -> Result<JobTraceSnapshot, RuntimeError> {
+        self.job_trace_handle().snapshot()
     }
     pub fn stop_handle(&self, session: u64) -> MeasuredStopHandle {
         MeasuredStopHandle {
