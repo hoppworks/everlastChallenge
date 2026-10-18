@@ -32,7 +32,7 @@ sofortigen Abbruch eines bereits laufenden nativen Decoders.
 | Hotkey, Glas und System | [hotkeys.rs](../src-tauri/src/hotkeys.rs), [keyboard.rs](../crates/macos-integration/src/keyboard.rs), [glass.rs](../crates/macos-integration/src/glass.rs), [power.rs](../crates/macos-integration/src/power.rs) | Registrierungsbesitz und Fehler, physische Taste/Layout, Main-Thread-/View-Lebensdauer, Observer entfernen, FFI-Sicherheitsargumente |
 | Aktive Layoutbeschriftung | [Layouttabelle](../crates/macos-integration/src/keyboard/labels.rs), [TIS-Observer](../crates/macos-integration/src/keyboard/observer.rs), [Hostprojektion](../src-tauri/src/hotkey_labels.rs) | aktuelles Layout gegenüber physischer Registrierung, Plain-/Command-Ebene, atomare Tabelle, Fallback, Hauptthread und explizites Entfernen |
 | Menüleisten-Rückmeldung | [Feedbackprojektion](../src-tauri/src/feedback.rs), [Desktop](../src-tauri/src/desktop.rs), [nativer Ton](../crates/macos-integration/src/feedback.rs) | begrenzte zuletzt zurückgehaltene Sitzungs-ID statt Textdeduplizierung, Status vor Ton, Aufnahmezulassung während Tonanforderung sperren, kein Fenster/Fokus; Aufruf ist keine Hör- oder Playback-Endquittung |
-| Entwickler-Messwerkzeug | [Replay-Runner](../src-tauri/examples/paced_runtime_probe/runner.rs), [Parameterbindung](../src-tauri/examples/paced_runtime_probe/parameters.rs), [QoS-Besitz](../crates/macos-integration/src/qos.rs) | feste Zeitgrenzen, exakt einmaliger Overridebesitz, Fehler invalidieren Messungen, Ende vor Beobachtung; keine Echtzeitgarantie |
+| Entwickler-Messwerkzeug | [Replay-Runner](../src-tauri/examples/paced_runtime_probe/runner.rs), [Parameterbindung](../src-tauri/examples/paced_runtime_probe/parameters.rs), [TC-Publisher](../crates/macos-integration/src/realtime.rs), [historischer QoS-Pfad](../crates/macos-integration/src/qos.rs), [serieller Executor](../scripts/run-paced-remainder.py) | feste Zeitgrenzen und identische Samples, Policy nur im eigenen neuen Thread, Admission vor Aufnahme, diskrete Policy-/CPU-Beobachtungen, Publisher- und Runtimejoin; keine kontinuierliche Echtzeitgarantie |
 | Einstellungen und IPC | [settings.rs](../src-tauri/src/settings.rs), [preferences.rs](../src-tauri/src/preferences.rs), [startup_settings.rs](../src-tauri/src/startup_settings.rs), [ipc.rs](../src-tauri/src/ipc.rs) | validierte Eingaben, atomare private Speicherung/Rücknahme, Recovery, sitzungsgebundene Kommandos und gesperrte Änderungen während Arbeit |
 | Oberfläche und Zustandsvertrag | [App.tsx](../src/App.tsx), [IPC-Client](../src/ipc/index.ts), [AppView](../src/features/app/AppView.tsx), [SettingsView](../src/features/settings/SettingsView.tsx), [RecoveryView](../src/features/settings/RecoveryView.tsx), [Vertrag](../src-tauri/src/contracts.rs) | neuere Snapshots statt zweiter Sitzungszustandsmaschine, Abmeldung/verspätete Antworten, Fehler-/Busyzustände und Bedienbarkeit |
 | Übernommenes SDK | [whisper-rs-Patches](../vendor/whisper-rs/PATCHES.md), [sys-/C++-Patches](../vendor/whisper-rs-sys/PATCHES.md), [Hotkey-Patch](../vendor/global-hotkey/PATCHES.md) | echte Herkunft/Lizenzen, unveränderte gegenüber eigenen Teilen, C-/Rust-Grenze, Pointerlebensdauer und Grenze der lokalen Regressionen |
@@ -54,3 +54,14 @@ sofortigen Abbruch eines bereits laufenden nativen Decoders.
   [Echtzeitprotokoll](verification/paced-reference-protocol.md) enthalten die
   jeweiligen Laufbelege und Grenzen. Die private Audiodatei wird nicht als
   unabhängige Goldreferenz ausgegeben.
+
+Für den aktuellen Inferenzpfad zusätzlich `Engine::transcribe` bis
+`decode::<false, _>` verfolgen: Der produktive Decoder erlaubt interne
+Timestamp-Tokens; die historischen Beobachtungsläufe mit unterdrückten
+Timestamp-Tokens bleiben getrennte Vergleichsbelege. Das ist keine nachträgliche
+Textdeduplizierung. Im Messpfad besitzt `MeasuredStopHandle` nur Client,
+Sitzungs-ID und Trace, keinen Runtimeowner. Sein Zeitstempel entsteht vor den
+Locks; ein noch gehaltener Stophandle darf das Runtimejoin nicht verhindern.
+Die [zentrale TC-Messung](verification/paced-six-reference-v4.md) dokumentiert
+auch die verfehlte absolute Latenzgrenze. Ein gültiger Einspeisetakt ersetzt
+weder Textqualität noch reale Mikrofon-, Hotkey- oder Empfängerabnahmen.
