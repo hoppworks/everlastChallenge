@@ -8,7 +8,7 @@ use macos_integration::{
     main_delivery::{self, Command, Environment, Reply},
     target::{
         HoldReason, ProcessIdentity, TargetApproval, TargetError,
-        worker::{TargetEvent, TargetWorker},
+        worker::{TargetEvent, TargetWorker, WorkerError},
     },
 };
 use std::{
@@ -222,17 +222,15 @@ impl NativeBackend {
     fn event(&self, token: &DeliveryToken, deadline: Instant) -> Result<TargetEvent, NativeError> {
         loop {
             if !token.is_pending() {
-                return Err("Target request cancelled".into());
+                return Err("Die Zielprüfung wurde beendet.".into());
             }
-            if let Some(event) = self
-                .target
-                .next_event()
-                .map_err(|error| error.to_string())?
-            {
+            if let Some(event) = self.target.next_event().map_err(target_worker_message)? {
                 return Ok(event);
             }
             if Instant::now() >= deadline {
-                return Err("Target request timed out".into());
+                return Err(
+                    "Die Zielprüfung konnte nicht rechtzeitig abgeschlossen werden.".into(),
+                );
             }
             thread::sleep(TICK);
         }
@@ -303,6 +301,78 @@ fn target_capture_message(error: TargetError) -> String {
     format!("Startziel nicht erfasst: {reason} {next_step}")
 }
 
+// Same worker error family can reach capture and approval. Keep this context
+// neutral: it states neither a recording outcome nor a native send result.
+fn target_worker_message(error: WorkerError) -> String {
+    let reason = match error {
+        WorkerError::Busy => "Die Zielprüfung ist derzeit ausgelastet.",
+        WorkerError::Stopped | WorkerError::Thread => {
+            "Die Zielprüfung ist derzeit nicht verfügbar."
+        }
+        WorkerError::Backpressure => {
+            "Die Rückmeldungen der Zielprüfung konnten nicht verarbeitet werden."
+        }
+        WorkerError::Token => "Diese Anfrage zur Zielprüfung ist nicht mehr gültig.",
+    };
+    format!("{reason} Prüfe das gewünschte Textfeld vor dem nächsten Diktat.")
+}
+
+// Approval checks the original captured field. A failed check is not a claim
+// that capture was missing or that cleanup/send/recording had a given outcome.
+fn target_approval_message(error: TargetError) -> String {
+    let (reason, next_step) = match error {
+        TargetError::Permission => (
+            "Bedienungshilfen sind nicht freigegeben.",
+            "Prüfe vor dem nächsten Diktat die Freigabe für diese App in den Systemeinstellungen unter Datenschutz & Sicherheit > Bedienungshilfen.",
+        ),
+        TargetError::SecureInput => (
+            "macOS schützt die aktuelle Eingabe durch die sichere Tastatureingabe.",
+            "Wähle nach der geschützten Eingabe für das nächste Diktat ein normales, beschreibbares Textfeld.",
+        ),
+        TargetError::Field(HoldReason::SecureField) => (
+            "Das ursprüngliche Textfeld ist geschützt.",
+            "Wähle für das nächste Diktat ein normales, beschreibbares Textfeld.",
+        ),
+        TargetError::Process => (
+            "Die Ziel-App konnte nicht zuverlässig bestätigt werden.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Changed => (
+            "Die Ziel-App oder das ursprüngliche Textfeld hat sich während der Prüfung geändert.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Accessibility(_) => (
+            "Das ursprüngliche Textfeld konnte über die Bedienungshilfen nicht geprüft werden.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Value => (
+            "Die Ziel-App liefert keine eindeutigen Angaben zum ursprünglichen Textfeld.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Field(HoldReason::UnconfirmedField) => (
+            "Das ursprüngliche Ziel konnte nicht als geeignetes Textfeld bestätigt werden.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Field(HoldReason::NotEditable) => (
+            "Das ursprüngliche Textfeld ist deaktiviert oder nicht beschreibbar.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Field(HoldReason::UnknownEditability) => (
+            "Ob das ursprüngliche Textfeld beschreibbar ist, konnte nicht bestätigt werden.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::StaleApproval => (
+            "Die Zielprüfung ist nicht mehr gültig.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Cancelled => (
+            "Die Prüfung des ursprünglichen Textfelds wurde beendet.",
+            "Prüfe das gewünschte Textfeld vor dem nächsten Diktat.",
+        ),
+    };
+    format!("Zielprüfung vor der Übergabe nicht bestätigt: {reason} {next_step}")
+}
+
 impl Backend for NativeBackend {
     type Approval = TargetApproval;
     type Backup = Snapshot;
@@ -314,7 +384,7 @@ impl Backend for NativeBackend {
     ) -> Result<(), NativeError> {
         self.target
             .capture(session, process, token.clone())
-            .map_err(|error| error.to_string())?;
+            .map_err(target_worker_message)?;
         // Up to eight old replies may remain after a cancelled wait.
         let deadline = Instant::now() + STEP_LIMIT;
         for _ in 0..9 {
@@ -327,7 +397,7 @@ impl Backend for NativeBackend {
                 return result.map_err(target_capture_message);
             }
         }
-        Err("Target capture reply did not match session".into())
+        Err("Das Startziel konnte für diese Anfrage nicht eindeutig bestätigt werden.".into())
     }
     fn environment(
         &mut self,
@@ -356,7 +426,7 @@ impl Backend for NativeBackend {
             NonZeroU64::new(self.next_request).ok_or("Invalid native request identifier")?;
         self.target
             .approve(session, request, process)
-            .map_err(|error| error.to_string())?;
+            .map_err(target_worker_message)?;
         let deadline = Instant::now() + STEP_LIMIT;
         for _ in 0..9 {
             if let TargetEvent::Approved {
@@ -367,10 +437,10 @@ impl Backend for NativeBackend {
                 && id == session
                 && tag == request
             {
-                return result.map_err(|error| error.to_string());
+                return result.map_err(target_approval_message);
             }
         }
-        Err("Target approval did not match request".into())
+        Err("Das ursprüngliche Textfeld konnte für diese Übergabe nicht eindeutig bestätigt werden.".into())
     }
     fn backup(&mut self, name: &str, token: &DeliveryToken) -> Result<Snapshot, NativeError> {
         capture_bounded(&self.helper, name, token).map_err(|error| error.to_string())
