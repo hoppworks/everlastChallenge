@@ -1,4 +1,6 @@
-//! Run orchestration and retained failures at the public measured-runtime seam.
+#[path = "../shared/audio_context.rs"]
+pub mod audio_context;
+// Run orchestration and retained failures at the public measured-runtime seam.
 use everlast_dictation::{
     audio::replay::clock::{FeedEvidence, feed},
     audio::replay::schedule::JITTER_TOLERANCE,
@@ -22,9 +24,11 @@ pub enum ExpectedOutcome {
     Empty,
 }
 
+#[derive(Clone, Copy)]
 struct Expectation<'a> {
     outcome: ExpectedOutcome,
     reference: Option<&'a str>,
+    context: Option<&'a audio_context::Receipts>,
 }
 
 #[derive(Serialize)]
@@ -54,6 +58,7 @@ pub struct Observation {
     pub qos_error: Option<String>,
     pub publisher_joined: Option<bool>,
     pub publisher: Option<serde_json::Value>,
+    pub audio_context: Option<serde_json::Value>,
 }
 pub struct Output {
     pub observation: Observation,
@@ -85,6 +90,7 @@ fn observation(id: String, warmup: bool) -> Observation {
         qos_error: None,
         publisher_joined: None,
         publisher: None,
+        audio_context: None,
     }
 }
 pub fn unavailable(id: String, warmup: bool, error: String) -> Output {
@@ -215,6 +221,7 @@ pub fn one_expected(
         Expectation {
             outcome: expected,
             reference,
+            context: None,
         },
         || macos_integration::qos::PublisherQos::enter().map_err(|error| error.to_string()),
     )
@@ -240,10 +247,40 @@ pub fn one_scheduled(
         Expectation {
             outcome: expected,
             reference,
+            context: None,
         },
         || publisher::Native::spawn(std::sync::Arc::clone(samples)),
     )
 }
+pub struct ContextRun<'a> {
+    pub receipts: &'a audio_context::Receipts,
+    pub reference: Option<&'a str>,
+    pub outcome: ExpectedOutcome,
+}
+/// Same scheduled orchestration, with receipt admission after the actual Start ACK.
+pub fn one_context(
+    runtime: &MeasuredRuntime,
+    samples: &std::sync::Arc<Vec<f32>>,
+    language: Language,
+    id: String,
+    warmup: bool,
+    context: ContextRun<'_>,
+) -> Output {
+    one_scheduled_with(
+        runtime,
+        samples,
+        language,
+        id,
+        warmup,
+        Expectation {
+            outcome: context.outcome,
+            reference: context.reference,
+            context: Some(context.receipts),
+        },
+        || publisher::Native::spawn(std::sync::Arc::clone(samples)),
+    )
+}
+
 fn one_scheduled_with<P: publisher::Publisher>(
     runtime: &MeasuredRuntime,
     samples: &std::sync::Arc<Vec<f32>>,
@@ -288,6 +325,12 @@ fn one_scheduled_with<P: publisher::Publisher>(
         || {
             let (session, source) =
                 start_input(runtime, language, &mut row).map_err(|e| e.to_string())?;
+            if let Some(receipts) = expectation.context
+                && let Err(error) = receipts.arm(session, 1, session, samples.len(), language)
+            {
+                let cancelled = runtime.cancel(session).err().map(|e| e.to_string());
+                return Err(format!("{error}; cancellation error: {cancelled:?}"));
+            }
             Ok(publisher::Input {
                 source,
                 stop: runtime.stop_handle(session),
@@ -321,6 +364,19 @@ fn one_scheduled_with<P: publisher::Publisher>(
         }
         output.observation.status = "invalid_setup";
         output.observation.error = Some(errors.join("; "));
+    }
+    if let Some(receipts) = expectation.context {
+        let collection = receipts.collect(output.observation.session, samples.len(), language);
+        if let Some(error) = &collection.error {
+            if output.observation.status == "ok" {
+                output.observation.status = "failed";
+            }
+            output.observation.error = Some(match output.observation.error.take() {
+                Some(old) => format!("{old}; {error}"),
+                None => error.clone(),
+            });
+        }
+        output.observation.audio_context = Some(serde_json::json!(collection));
     }
     output
 }
@@ -661,6 +717,7 @@ mod tests {
             Expectation {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
+                context: None,
             },
             || Err("controlled QoS enter failure".into()),
         );
@@ -692,6 +749,7 @@ mod tests {
             Expectation {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
+                context: None,
             },
             || {
                 Ok(FakeScope {
@@ -730,6 +788,7 @@ mod tests {
             Expectation {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
+                context: None,
             },
             || {
                 Ok(FakeScope {
@@ -775,6 +834,7 @@ mod tests {
             Expectation {
                 outcome: ExpectedOutcome::Local,
                 reference: Some("controlled words"),
+                context: None,
             },
             || {
                 Ok(FakeScope {
@@ -822,6 +882,7 @@ mod tests {
             Expectation {
                 outcome: ExpectedOutcome::Empty,
                 reference: None,
+                context: None,
             },
             || {
                 Ok(FakeScope {
@@ -884,6 +945,7 @@ mod tests {
             Expectation {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
+                context: None,
             },
             || {
                 Ok(FakeScope {

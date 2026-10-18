@@ -1,4 +1,6 @@
-//! Immutable parameter template tied to the actual compiled measurement sources.
+#[path = "../shared/context_configuration.rs"]
+mod context_configuration;
+// Immutable parameter template tied to the actual compiled measurement sources.
 use crate::input;
 use everlast_dictation::audio::replay::{
     clock::{FINAL_SPIN, MAXIMUM_SLEEP},
@@ -83,6 +85,8 @@ pub fn template() -> Result<Value, serde_json::Error> {
 pub enum ExecutionMode {
     Baseline,
     TimeConstrained,
+    ContextReference,
+    ContextReduced,
 }
 pub fn scheduling_template() -> Result<Value, serde_json::Error> {
     use macos_integration::realtime;
@@ -107,31 +111,62 @@ pub fn scheduling_template() -> Result<Value, serde_json::Error> {
         "failurePolicy":"retain feed/stop/policy/text/Engine evidence when available; failed policy invalidates run; next rows unavailable; no retry"});
     Ok(value)
 }
-pub fn validate(bytes: &[u8]) -> Result<Value, String> {
+pub fn context_template(reduced: bool) -> Result<Value, serde_json::Error> {
+    Ok(context_configuration::decorate(
+        scheduling_template()?,
+        reduced,
+    ))
+}
+impl ExecutionMode {
+    pub fn context_reduced(self) -> Option<bool> {
+        match self {
+            Self::ContextReference => Some(false),
+            Self::ContextReduced => Some(true),
+            Self::Baseline | Self::TimeConstrained => None,
+        }
+    }
+    pub fn scheduled(self) -> bool {
+        match self {
+            Self::Baseline => false,
+            Self::TimeConstrained | Self::ContextReference | Self::ContextReduced => true,
+        }
+    }
+}
+pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
     if bytes.len() > 1024 * 1024 {
         return Err("parameter document exceeds1MiB".into());
     }
-    let supplied: Value =
-        serde_json::from_slice(bytes).map_err(|_| "invalid bounded parameter JSON")?;
-    if supplied == template().map_err(|_| "compiled parameter template is invalid")? {
-        return Ok(supplied);
+    let value: Value = serde_json::from_slice(bytes).map_err(|_| "invalid parameter JSON")?;
+    for (template, mode) in [
+        (
+            template().map_err(|e| e.to_string())?,
+            ExecutionMode::Baseline,
+        ),
+        (
+            scheduling_template().map_err(|e| e.to_string())?,
+            ExecutionMode::TimeConstrained,
+        ),
+        (
+            context_template(false).map_err(|e| e.to_string())?,
+            ExecutionMode::ContextReference,
+        ),
+        (
+            context_template(true).map_err(|e| e.to_string())?,
+            ExecutionMode::ContextReduced,
+        ),
+    ] {
+        if value == template {
+            return Ok((value, mode));
+        }
     }
-    if supplied == scheduling_template().map_err(|_| "compiled scheduling template is invalid")? {
-        return Ok(supplied);
-    }
-    Err(
-        "parameter document differs from both exact compiled configurations; freeze before running"
-            .into(),
-    )
+    Err("parameter document differs from all exact compiled configurations".into())
 }
-pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
-    let supplied = validate(bytes)?;
-    let mode = if supplied["measurement"].get("publisherThread").is_some() {
-        ExecutionMode::TimeConstrained
-    } else {
-        ExecutionMode::Baseline
-    };
-    Ok((supplied, mode))
+#[allow(
+    dead_code,
+    reason = "legacy validation entry point is also reused by other developer executables; this executable selects a typed configuration"
+)]
+pub fn validate(bytes: &[u8]) -> Result<Value, String> {
+    select(bytes).map(|(v, _)| v)
 }
 
 fn compiled_sources() -> Value {
@@ -233,6 +268,25 @@ mod tests {
         let mut changed = scheduled;
         changed["measurement"]["publisherThread"]["constraintNanos"] = json!(2_000_000);
         assert!(select(&serde_json::to_vec(&changed)?).is_err());
+        Ok(())
+    }
+    #[test]
+    fn context_modes_are_explicit_exact_tc_and_cannot_select_legacy()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let reference = context_template(false)?;
+        let reduced = context_template(true)?;
+        assert_ne!(reference, reduced);
+        assert_eq!(
+            select(&serde_json::to_vec(&reference)?)?.1,
+            ExecutionMode::ContextReference
+        );
+        assert_eq!(
+            select(&serde_json::to_vec(&reduced)?)?.1,
+            ExecutionMode::ContextReduced
+        );
+        let mut wrong = reduced;
+        wrong["audioContextExperiment"]["maximumPreparedFrames"] = json!(320001);
+        assert!(select(&serde_json::to_vec(&wrong)?).is_err());
         Ok(())
     }
 }

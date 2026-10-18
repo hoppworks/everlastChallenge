@@ -23,20 +23,29 @@ mod runner;
 #[path = "paced_runtime_probe/statistics.rs"]
 mod statistics;
 use dictation_core::audio::AudioFormat;
-use everlast_dictation::{
-    inference_service::InferenceService, runtime::measurement::MeasuredRuntime,
-    transcription::Language,
-};
+use everlast_dictation::{runtime::measurement::MeasuredRuntime, transcription::Language};
 use std::{path::Path, sync::Arc, time::Instant};
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = std::env::args_os().skip(1).take(6).collect::<Vec<_>>();
     if args.len() == 1
-        && (args[0] == "--print-parameters" || args[0] == "--print-scheduling-parameters")
+        && matches!(
+            args[0].to_str(),
+            Some(
+                "--print-parameters"
+                    | "--print-scheduling-parameters"
+                    | "--print-context-reference-parameters"
+                    | "--print-context-candidate-parameters"
+            )
+        )
     {
         println!(
             "{}",
             serde_json::to_string_pretty(&if args[0] == "--print-scheduling-parameters" {
                 parameters::scheduling_template()?
+            } else if args[0] == "--print-context-reference-parameters" {
+                parameters::context_template(false)?
+            } else if args[0] == "--print-context-candidate-parameters" {
+                parameters::context_template(true)?
             } else {
                 parameters::template()?
             })?
@@ -66,28 +75,39 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut runtime = None;
     let load_started = Instant::now();
     let mut failure = samples.as_ref().err().cloned();
+    let mut receipts = None;
+    let variant = execution_mode.context_reduced().map(|reduced| {
+        if reduced {
+            runner::audio_context::Variant::Reduced
+        } else {
+            runner::audio_context::Variant::Reference
+        }
+    });
     if failure.is_none() {
-        failure = match InferenceService::load(options.model, options.definition) {
-            Ok(service) => match MeasuredRuntime::spawn(
-                service,
-                1,
-                AudioFormat {
-                    sample_rate: 16000,
-                    channels: 1,
-                },
-            ) {
-                Ok(measured) => {
-                    let result = runner::wait_ready(&measured);
-                    runtime = Some(measured);
-                    result.err()
+        failure = match runner::audio_context::load(options.model, options.definition, variant) {
+            Ok((service, context_receipts)) => {
+                receipts = context_receipts;
+                match MeasuredRuntime::spawn(
+                    service,
+                    1,
+                    AudioFormat {
+                        sample_rate: 16000,
+                        channels: 1,
+                    },
+                ) {
+                    Ok(measured) => {
+                        let result = runner::wait_ready(&measured);
+                        runtime = Some(measured);
+                        result.err()
+                    }
+                    Err(error) => Some(error.to_string()),
                 }
-                Err(error) => Some(error.to_string()),
-            },
+            }
             Err(error) => Some(error.to_string()),
         };
     }
     let load_millis = load_started.elapsed().as_millis();
-    let rows = batch::run(&cases, failure.as_deref(), |slot| {
+    let mut rows = batch::run(&cases, failure.as_deref(), |slot| {
         eprintln!(
             "paced reference slot {} fixture={} run={} warmup={}",
             slot.id, slot.fixture_id, slot.run_index, slot.warmup
@@ -99,7 +119,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 } else {
                     Language::English
                 };
-                if execution_mode == parameters::ExecutionMode::TimeConstrained {
+                if let Some(receipts) = &receipts {
+                    runner::one_context(
+                        runtime,
+                        &samples[slot.fixture_index],
+                        language,
+                        slot.id.clone(),
+                        slot.warmup,
+                        runner::ContextRun {
+                            receipts,
+                            reference: None,
+                            outcome: runner::ExpectedOutcome::Local,
+                        },
+                    )
+                } else if execution_mode.scheduled() {
                     runner::one_scheduled(
                         runtime,
                         &samples[slot.fixture_index],
@@ -128,6 +161,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
     let cleanup = runtime.map(runner::cleanup);
+    let context_cleanup = receipts
+        .as_ref()
+        .map(runner::audio_context::Receipts::finalize);
+    if let Some(error) = context_cleanup.as_ref().and_then(|c| c.error.as_ref()) {
+        failure.get_or_insert(error.clone());
+        if let Some(last) = rows.last_mut()
+            && last.output.observation.status == "ok"
+        {
+            last.output.observation.status = "failed";
+            last.output.observation.error = Some(error.clone());
+        }
+    }
     // Do not form statistics while an old inference/model owner could remain.
     let summary = batch::aggregate(
         &cases,
@@ -147,7 +192,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "qualified":false,"p05Qualified":false,"qualityEvaluated":false,
         "sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
         "debugAssertions":cfg!(debug_assertions),"hostObservation":host,
-        "manifestSha256":input::digest(&manifest_bytes),"parameterDocumentSha256":input::digest(&parameter_bytes),"parameters":parameter_document,
+        "manifestSha256":input::digest(&manifest_bytes),"parameterDocumentSha256":input::digest(&parameter_bytes),"parameters":parameter_document,"contextCleanup":context_cleanup,
         "model":{"id":options.definition.id(),"sha256":options.definition.sha256()},
         "warmupRuns":1,"measuredRunsPerCase":batch::RUNS_PER_CASE,"requestedRows":batch::TOTAL_RUNS,"fixtures":fixtures,
         "loadMillis":load_millis,"initialFailure":failure,"runs":observations,"cleanup":cleanup,"statistics":summary,

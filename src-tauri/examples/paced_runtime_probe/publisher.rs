@@ -503,6 +503,7 @@ mod tests {
             Expectation {
                 outcome: ExpectedOutcome::Local,
                 reference: Some("controlled words"),
+                context: None,
             },
             || Ok(fake_thread(child_samples, false, false)),
         );
@@ -536,6 +537,7 @@ mod tests {
             Expectation {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
+                context: None,
             },
             || Ok(fake_thread(child_samples, true, false)),
         );
@@ -568,6 +570,7 @@ mod tests {
             Expectation {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
+                context: None,
             },
             || Ok(fake_thread(child_samples, false, true)),
         );
@@ -735,5 +738,83 @@ mod tests {
                 "a required TC observation escaped validation"
             );
         }
+    }
+    #[test]
+    fn context_receipt_is_bound_after_start_ack_before_real_capture_decode()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (service, receipts) = super::super::audio_context::controlled_service(
+            super::super::audio_context::Variant::Reduced,
+        )?;
+        let runtime = MeasuredRuntime::spawn(
+            service,
+            1,
+            AudioFormat {
+                sample_rate: 16000,
+                channels: 1,
+            },
+        )?;
+        wait_ready(&runtime)?;
+        let samples = Arc::new(vec![0.125; 320]);
+        let output = one_scheduled_with(
+            &runtime,
+            &samples,
+            Language::German,
+            "context-job".into(),
+            false,
+            Expectation {
+                outcome: ExpectedOutcome::Local,
+                reference: None,
+                context: Some(&receipts),
+            },
+            || Ok(fake_thread(Arc::clone(&samples), false, false)),
+        );
+        let joined = cleanup(runtime);
+        assert!(joined.joined);
+        assert_eq!(output.observation.status, "ok");
+        let evidence = output.observation.audio_context.ok_or("missing receipt")?;
+        assert!(evidence["error"].is_null());
+        assert_eq!(
+            evidence["receipt"]["identity"]["session"].as_u64(),
+            output.observation.session
+        );
+        assert_eq!(evidence["receipt"]["identity"]["endFrame"], 320);
+        assert_eq!(
+            evidence["receipt"]["observation"]["audioCtxParameter"],
+            1024
+        );
+        assert!(receipts.finalize().error.is_none());
+        Ok(())
+    }
+
+    #[test]
+    fn missing_context_receipt_invalidates_real_runtime_output_and_next_admission()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let runtime = runtime()?;
+        let receipts = super::super::audio_context::Receipts::default();
+        let samples = Arc::new(vec![0.125; 320]);
+        let output = one_scheduled_with(
+            &runtime,
+            &samples,
+            Language::German,
+            "missing-context".into(),
+            false,
+            Expectation {
+                outcome: ExpectedOutcome::Local,
+                reference: None,
+                context: Some(&receipts),
+            },
+            || Ok(fake_thread(Arc::clone(&samples), false, false)),
+        );
+        assert!(cleanup(runtime).joined);
+        assert_eq!(output.observation.status, "failed");
+        assert!(
+            output
+                .observation
+                .audio_context
+                .ok_or("missing error evidence")?["error"]
+                .is_string()
+        );
+        assert!(receipts.arm(2, 1, 2, 320, Language::German).is_err());
+        Ok(())
     }
 }

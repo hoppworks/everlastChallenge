@@ -72,29 +72,40 @@ pub fn scheduling_template() -> Result<Value, serde_json::Error> {
         baseline::scheduling_template()?["measurement"]["publisherThread"].clone();
     Ok(value)
 }
-pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
-    let value = validate(bytes)?;
-    let mode = if value["measurement"].get("publisherThread").is_some() {
-        ExecutionMode::TimeConstrained
+pub fn context_template(reduced: bool) -> Result<Value, serde_json::Error> {
+    let mut value = baseline::context_template(reduced)?;
+    let batch = template()?;
+    value["measurement"] = batch["measurement"].clone();
+    if let Some(m) = value["measurement"].as_object_mut() {
+        m.remove("publisherQos");
+    }
+    value["measurement"]["publisherThread"] =
+        scheduling_template()?["measurement"]["publisherThread"].clone();
+    value["batchSources"] = sources();
+    value["limits"] = batch["limits"].clone();
+    value["configurationId"] = json!(if reduced {
+        "p06-six-case-context-reduced-v1"
     } else {
-        ExecutionMode::Baseline
-    };
-    Ok((value, mode))
+        "p06-six-case-context-reference-v1"
+    });
+    Ok(value)
 }
-
-pub fn validate(bytes: &[u8]) -> Result<Value, String> {
+pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
     if bytes.len() > 1024 * 1024 {
         return Err("parameter document exceeds1MiB".into());
     }
-    let supplied: Value = serde_json::from_slice(bytes).map_err(|_| "invalid parameter JSON")?;
-    let actual = template().map_err(|_| "compiled parameter template is invalid")?;
-    if supplied != actual
-        && supplied
-            != scheduling_template().map_err(|_| "compiled scheduling template is invalid")?
-    {
-        return Err("parameter document differs from this compiled six-case protocol; freeze before model work".into());
+    let value: Value = serde_json::from_slice(bytes).map_err(|_| "invalid parameter JSON")?;
+    for (expected, mode) in [
+        (template(), ExecutionMode::Baseline),
+        (scheduling_template(), ExecutionMode::TimeConstrained),
+        (context_template(false), ExecutionMode::ContextReference),
+        (context_template(true), ExecutionMode::ContextReduced),
+    ] {
+        if value == expected.map_err(|e| e.to_string())? {
+            return Ok((value, mode));
+        }
     }
-    Ok(supplied)
+    Err("parameter document differs from all compiled six-case configurations".into())
 }
 #[cfg(test)]
 mod tests {
@@ -103,7 +114,7 @@ mod tests {
     fn freeze_rejects_changed_counts_model_parameters_sources_and_timing_budget()
     -> Result<(), Box<dyn std::error::Error>> {
         let expected = template()?;
-        assert!(validate(&serde_json::to_vec(&expected)?).is_ok());
+        assert!(select(&serde_json::to_vec(&expected)?).is_ok());
         assert_eq!(expected["measurement"]["warmupRuns"], 1);
         assert_eq!(expected["measurement"]["totalRows"], 181);
         for field in ["warmup", "runs", "jitter", "decoder", "source"] {
@@ -115,10 +126,10 @@ mod tests {
                 "decoder" => wrong["runtime"]["fullParams"]["n_threads"] = json!(1),
                 _ => wrong["batchSources"]["batch"]["sha256"] = json!("changed"),
             }
-            assert!(validate(&serde_json::to_vec(&wrong)?).is_err());
+            assert!(select(&serde_json::to_vec(&wrong)?).is_err());
         }
-        assert!(validate(b"{}").is_err());
-        assert!(validate(b"invalid").is_err());
+        assert!(select(b"{}").is_err());
+        assert!(select(b"invalid").is_err());
         Ok(())
     }
     #[test]
@@ -140,6 +151,23 @@ mod tests {
         let mut mixed = scheduled;
         mixed["configurationId"] = original["configurationId"].clone();
         assert!(select(&serde_json::to_vec(&mixed)?).is_err());
+        Ok(())
+    }
+    #[test]
+    fn six_case_context_freezes_select_tc_variants_and_bind_full_counts()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for (reduced, mode) in [
+            (false, ExecutionMode::ContextReference),
+            (true, ExecutionMode::ContextReduced),
+        ] {
+            let value = context_template(reduced)?;
+            assert_eq!(select(&serde_json::to_vec(&value)?)?.1, mode);
+            assert!(mode.scheduled());
+            assert_eq!(mode.context_reduced(), Some(reduced));
+            let mut wrong = value;
+            wrong["measurement"]["totalRows"] = json!(180);
+            assert!(select(&serde_json::to_vec(&wrong)?).is_err());
+        }
         Ok(())
     }
 }

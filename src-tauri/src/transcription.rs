@@ -133,6 +133,26 @@ impl Engine {
         )
     }
 
+    /// Instrumented reference for the isolated context experiment. Same record
+    /// and preparation overhead as the candidate; native timestamps stay enabled.
+    #[cfg(feature = "measurement")]
+    pub fn transcribe_reference_context(
+        &mut self,
+        samples: &[f32],
+        language: Language,
+    ) -> reduced_context::Transcription {
+        let Self { context, gate } = self;
+        reduced_context::transcribe_reference(
+            samples,
+            language,
+            gate,
+            context.n_audio_ctx(),
+            |input, language, ctx, record| {
+                decode_with_audio_ctx::<false, _>(context, input, language, record, ctx)
+            },
+        )
+    }
+
     /// Legacy developer diagnostic with suppressed native timestamps (true),
     /// retained for historical comparisons. Production uses false. Shares the
     /// same preparation/decoder/text path; missing encoder windows stay unknown.

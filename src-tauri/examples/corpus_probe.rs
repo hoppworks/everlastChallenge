@@ -1,4 +1,10 @@
 //! Explicit private corpus export; file-backend timing is not real-time L.
+#[cfg(feature = "measurement")]
+#[path = "shared/audio_context.rs"]
+mod audio_context;
+#[cfg(feature = "measurement")]
+#[path = "corpus_probe/context_parameters.rs"]
+mod context_parameters;
 #[path = "corpus_probe/input.rs"]
 mod input;
 use everlast_dictation::{
@@ -29,6 +35,8 @@ struct Observation {
     status: &'static str,
     job_millis: Option<u128>,
     error: Option<String>,
+    audio_context: Option<serde_json::Value>,
+    execution_status: &'static str,
 }
 
 struct Cli {
@@ -37,37 +45,41 @@ struct Cli {
     manifest: PathBuf,
     output: PathBuf,
     native_timestamps: bool,
+    context_reduced: Option<bool>,
+    context_parameters: Option<PathBuf>,
 }
 
 fn parse_arguments(arguments: Vec<std::ffi::OsString>) -> Result<Cli, Error> {
-    if !(4..=5).contains(&arguments.len()) {
-        return Err(
-            "usage: corpus_probe MODEL_PATH reference|small MANIFEST_JSON OUTPUT_JSON [--native-timestamps]".into(),
-        );
+    if !(4..=6).contains(&arguments.len()) {
+        return Err("usage: corpus_probe MODEL reference|small MANIFEST OUTPUT [--native-timestamps | --context-reference PARAMETERS | --context-candidate PARAMETERS]".into());
     }
     if arguments
         .iter()
-        .any(|argument| argument.is_empty() || argument.as_encoded_bytes().len() > 4096)
+        .any(|a| a.is_empty() || a.as_encoded_bytes().len() > 4096)
+        || arguments[..4]
+            .iter()
+            .any(|a| a.as_encoded_bytes().starts_with(b"--"))
     {
-        return Err("invalid bounded CLI arguments".into());
+        return Err("invalid bounded CLI arguments or misplaced flag".into());
     }
-    if arguments[..4]
-        .iter()
-        .any(|argument| argument.as_encoded_bytes().starts_with(b"--"))
-    {
-        return Err("flags are allowed only as the optional fifth argument".into());
-    }
-    let native_timestamps = if let Some(flag) = arguments.get(4) {
-        if flag != "--native-timestamps" {
-            return Err("unknown corpus probe flag".into());
+    let mut native_timestamps = false;
+    let mut context_reduced = None;
+    let mut context_parameters = None;
+    if let Some(flag) = arguments.get(4) {
+        match flag.to_str() {
+            Some("--native-timestamps") if arguments.len() == 5 => native_timestamps = true,
+            Some("--context-reference" | "--context-candidate")
+                if arguments.len() == 6 && !arguments[5].as_encoded_bytes().starts_with(b"--") =>
+            {
+                context_reduced = Some(flag == "--context-candidate");
+                context_parameters = Some(PathBuf::from(&arguments[5]));
+            }
+            _ => return Err("unknown or incomplete corpus probe mode".into()),
         }
         if !cfg!(feature = "measurement") {
-            return Err("--native-timestamps requires the measurement feature".into());
+            return Err("diagnostic mode requires the measurement feature".into());
         }
-        true
-    } else {
-        false
-    };
+    }
     let definition = match arguments[1].to_str() {
         Some("reference") => REFERENCE,
         Some("small") => SMALL,
@@ -79,11 +91,34 @@ fn parse_arguments(arguments: Vec<std::ffi::OsString>) -> Result<Cli, Error> {
         manifest: PathBuf::from(&arguments[2]),
         output: PathBuf::from(&arguments[3]),
         native_timestamps,
+        context_reduced,
+        context_parameters,
     })
 }
 
 fn main() -> Result<(), Error> {
-    let cli = parse_arguments(std::env::args_os().skip(1).take(6).collect())?;
+    let args = std::env::args_os().skip(1).take(7).collect::<Vec<_>>();
+    if args.len() == 1
+        && matches!(
+            args[0].to_str(),
+            Some("--print-context-reference-parameters" | "--print-context-candidate-parameters")
+        )
+    {
+        #[cfg(feature = "measurement")]
+        {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(&context_parameters::template(
+                    args[0] == "--print-context-candidate-parameters"
+                )?)?
+            );
+            return Ok(());
+        }
+        #[cfg(not(feature = "measurement"))]
+        return Err("context experiment requires the measurement feature".into());
+    }
+    let cli = parse_arguments(args)?;
+    let context_document = context_document(&cli)?;
     let definition = cli.definition;
     let bytes = input::bounded_read(&cli.manifest, input::MAX_MANIFEST)?;
     let corpus_hash = input::digest(&bytes);
@@ -93,7 +128,29 @@ fn main() -> Result<(), Error> {
         .ok_or("repository root unavailable")?;
     let started = Instant::now();
     let mut service = None;
-    let mut unavailable = match load_service(cli.model, definition, cli.native_timestamps) {
+    #[cfg(feature = "measurement")]
+    let mut context_receipts = None;
+    #[cfg(feature = "measurement")]
+    let loaded = (|| -> Result<InferenceService, Error> {
+        #[cfg(feature = "measurement")]
+        if let Some(reduced) = cli.context_reduced {
+            let (worker, receipts) = audio_context::load(
+                cli.model,
+                definition,
+                Some(if reduced {
+                    audio_context::Variant::Reduced
+                } else {
+                    audio_context::Variant::Reference
+                }),
+            )?;
+            context_receipts = receipts;
+            return Ok(worker);
+        }
+        load_service(cli.model, definition, cli.native_timestamps)
+    })();
+    #[cfg(not(feature = "measurement"))]
+    let loaded = load_service(cli.model, definition, cli.native_timestamps);
+    let mut unavailable = match loaded {
         Ok(worker) => {
             let result = wait_ready(&worker);
             service = Some(worker);
@@ -106,7 +163,12 @@ fn main() -> Result<(), Error> {
     let mut results = Vec::with_capacity(manifest.cases.len());
     let mut observations = Vec::with_capacity(manifest.cases.len());
     for (index, case) in manifest.cases.iter().enumerate() {
+        let was_unavailable = unavailable.is_some();
         let mut job_millis = None;
+        #[cfg(feature = "measurement")]
+        let mut context_observation = None;
+        #[cfg(not(feature = "measurement"))]
+        let context_observation: Option<serde_json::Value> = None;
         let outcome = if let Some(reason) = &unavailable {
             Err(format!("inference service unavailable: {reason}"))
         } else {
@@ -115,16 +177,25 @@ fn main() -> Result<(), Error> {
                 Ok(samples) => {
                     let worker = service.as_ref().ok_or("inference owner unavailable")?;
                     let tick = Instant::now();
-                    let result = infer(
+                    let language = if case.language == "de" {
+                        Language::German
+                    } else {
+                        Language::English
+                    };
+                    #[cfg(feature = "measurement")]
+                    let (result, context_record) = infer_context(
                         worker,
                         index as u64 + 1,
                         samples,
-                        if case.language == "de" {
-                            Language::German
-                        } else {
-                            Language::English
-                        },
+                        language,
+                        context_receipts.as_ref(),
                     );
+                    #[cfg(feature = "measurement")]
+                    {
+                        context_observation = context_record;
+                    }
+                    #[cfg(not(feature = "measurement"))]
+                    let result = infer(worker, index as u64 + 1, samples, language);
                     job_millis = Some(tick.elapsed().as_millis());
                     match result {
                         Ok(text) => Ok(text),
@@ -153,6 +224,12 @@ fn main() -> Result<(), Error> {
             status,
             job_millis,
             error,
+            audio_context: context_observation,
+            execution_status: if cli.context_reduced.is_some() && was_unavailable {
+                "unavailable"
+            } else {
+                status
+            },
         });
     }
     // Observation timeouts cancel admission, but do not claim a hard backend
@@ -163,31 +240,53 @@ fn main() -> Result<(), Error> {
         .and_then(|worker| worker.shutdown().err())
         .map(|error| error.to_string());
     let cleanup_millis = cleanup_started.elapsed().as_millis();
+    #[cfg(feature = "measurement")]
+    let context_cleanup = context_receipts
+        .as_ref()
+        .map(audio_context::Receipts::finalize);
+    #[cfg(not(feature = "measurement"))]
+    let context_cleanup: Option<serde_json::Value> = None;
+    #[cfg(feature = "measurement")]
+    if let Some(error) = context_cleanup.as_ref().and_then(|c| c.error.as_ref()) {
+        unavailable.get_or_insert(error.clone());
+        if let Some(last) = observations.last_mut()
+            && last.status == "ok"
+        {
+            last.status = "failed";
+            last.execution_status = "failed";
+            last.error = Some(error.clone());
+            if let Some(result) = results.last_mut() {
+                result.status = "failed";
+            }
+        }
+    }
     let gate_metadata = serde_json::json!({"modelId":VAD.id(),"modelSha256":VAD.sha256(),"modelBytes":VAD.bytes(),"useGpu":false,"threads":1,
                 "windowSamples":512,"mode":"whole-recording-admission; ASR PCM unchanged","peakTarget":0.95,"zeroPeakGain":1.0,
                 "positiveThreshold":0.5,"aggregation":"any finite window >= threshold; all windows validated first",
                 "maximumScratchSamples":4800000,"failurePolicy":"error; never silence"});
+    let engine = serde_json::json!({ "threads":4, "samplingStrategy":"greedy", "bestOf":1, "useGpu":true, "flashAttention":false,
+            "suppressNonSpeechTokens":false, "noSpeechThreshold":0.6, "logprobThreshold":-1.0, "entropyThreshold":2.4,
+            "utteranceMode":"complete-recording", "freshStatePerJob":true,
+            "inputSegmentation":"energy-range", "energyStartRms":0.00005, "energyEndRms":0.000025,
+            "energyFrameSamples":320, "prerollMillis":150, "tailMillis":200, "minimumBackendSamples":16000, "noContext":true, "translate":false, "detectLanguage":false,
+            "noTimestamps":false, "printSpecial":false, "printProgress":false, "printRealtime":false, "printTimestamps":false,
+            "speechGate":gate_metadata });
     let metadata = serde_json::json!({
-        "schemaVersion": 1, "referenceKind": "file-backend-only", "corpusFileSha256": corpus_hash,
+        "schemaVersion": 1, "processId":std::process::id(), "referenceKind": "file-backend-only", "corpusFileSha256": corpus_hash,
         "sourceRevision": std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
         "model": { "id": definition.id(), "sha256": definition.sha256() },
         "loadMillis": load_millis, "loadError": load_error, "serviceError": unavailable, "cleanupMillis": cleanup_millis, "cleanupError": cleanup_error,
         "observationTimeoutMillis": WAIT_LIMIT.as_millis(), "timeoutIsHardAbort": false,
         "nativeTimestampDiagnostic": {
             "enabled": cli.native_timestamps,
-            "modelInitializationOwner": if cli.native_timestamps { "developer-main-before-serial-worker" } else { "serial-inference-worker" },
-            "candidateInitializationDifference": cli.native_timestamps,
+            "modelInitializationOwner": if cli.native_timestamps || cli.context_reduced.is_some() { "developer-main-before-serial-worker" } else { "serial-inference-worker" },
+            "candidateInitializationDifference": cli.native_timestamps || cli.context_reduced.is_some(),
             "boundedAcceptedSegmentObservationAllocatedPerJob": cli.native_timestamps,
             "sharedInferenceServiceJobLifecycle": true,
             "resourceQualified": false, "realTimeLatencyProtocolExecuted": false
         },
-        "engine": { "threads":4, "samplingStrategy":"greedy", "bestOf":1, "useGpu":true, "flashAttention":false,
-            "suppressNonSpeechTokens":false, "noSpeechThreshold":0.6, "logprobThreshold":-1.0, "entropyThreshold":2.4,
-            "utteranceMode":"complete-recording", "freshStatePerJob":true,
-            "inputSegmentation":"energy-range", "energyStartRms":0.00005, "energyEndRms":0.000025,
-            "energyFrameSamples":320, "prerollMillis":150, "tailMillis":200, "minimumBackendSamples":16000, "noContext":true, "translate":false, "detectLanguage":false,
-            "noTimestamps":false, "printSpecial":false, "printProgress":false, "printRealtime":false, "printTimestamps":false,
-            "speechGate":gate_metadata },
+        "engine": engine,
+        "audioContextParameters":context_document,"contextCleanup":context_cleanup,
         "cases": observations,
     });
     input::write_reports(
@@ -195,11 +294,68 @@ fn main() -> Result<(), Error> {
         &serde_json::to_vec_pretty(&results)?,
         &serde_json::to_vec_pretty(&metadata)?,
     )?;
-    if results.iter().any(|row| row.status == "failed") || cleanup_error.is_some() {
+    if results.iter().any(|row| row.status == "failed")
+        || cleanup_error.is_some()
+        || metadata["contextCleanup"]["error"].is_string()
+    {
         return Err("corpus probe recorded failures; inspect private output and metadata".into());
     }
     Ok(())
 }
+fn context_document(cli: &Cli) -> Result<Option<serde_json::Value>, Error> {
+    match (cli.context_reduced, cli.context_parameters.as_deref()) {
+        (None, None) => Ok(None),
+        (Some(reduced), Some(path)) => {
+            #[cfg(feature = "measurement")]
+            {
+                let bytes = input::bounded_read(path, 1024 * 1024)?;
+                let document = context_parameters::validate(&bytes, reduced)?;
+                Ok(Some(
+                    serde_json::json!({"sha256":input::digest(&bytes),"document":document}),
+                ))
+            }
+            #[cfg(not(feature = "measurement"))]
+            {
+                let _ = (reduced, path);
+                Err("context mode requires the measurement feature".into())
+            }
+        }
+        _ => Err("context mode requires explicit frozen parameters".into()),
+    }
+}
+#[cfg(feature = "measurement")]
+fn infer_context(
+    service: &InferenceService,
+    id: u64,
+    samples: Vec<f32>,
+    language: Language,
+    receipts: Option<&audio_context::Receipts>,
+) -> (Result<String, (String, bool)>, Option<serde_json::Value>) {
+    let Some(receipts) = receipts else {
+        return (infer(service, id, samples, language), None);
+    };
+    let frames = samples.len();
+    if let Err(error) = receipts.arm(id, 1, id, frames, language) {
+        return (
+            Err((error, true)),
+            Some(serde_json::json!(receipts.collect(
+                Some(id),
+                frames,
+                language
+            ))),
+        );
+    }
+    let result = infer(service, id, samples, language);
+    let observed = receipts.collect(Some(id), frames, language);
+    let result = match (&observed.error, result) {
+        (Some(error), Err((original, _))) => Err((format!("{original}; {error}"), true)),
+        (Some(error), Ok(_)) => Err((error.clone(), true)),
+        (None, Err((error, _))) => Err((error, true)),
+        (None, ok) => ok,
+    };
+    (result, Some(serde_json::json!(observed)))
+}
+
 #[cfg(feature = "measurement")]
 struct NativeTimestampDecoder(everlast_dictation::transcription::Engine);
 
@@ -419,5 +575,53 @@ mod tests {
         args[3] = "x".repeat(4097).into();
         assert!(parse_arguments(args).is_err());
         assert!(parse_arguments(Vec::new()).is_err());
+    }
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn explicit_context_cli_requires_variant_and_parameter_path() -> Result<(), Error> {
+        let candidate = parse_arguments(cli_args(&["--context-candidate", "freeze.json"]))?;
+        assert_eq!(candidate.context_reduced, Some(true));
+        assert_eq!(
+            candidate.context_parameters,
+            Some(PathBuf::from("freeze.json"))
+        );
+        assert!(!candidate.native_timestamps);
+        let reference = parse_arguments(cli_args(&["--context-reference", "freeze.json"]))?;
+        assert_eq!(reference.context_reduced, Some(false));
+        assert!(parse_arguments(cli_args(&["--context-candidate"])).is_err());
+        assert!(
+            parse_arguments(cli_args(&["--context-reference", "--native-timestamps"])).is_err()
+        );
+        Ok(())
+    }
+
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn corpus_context_jobs_keep_exact_current_identity_and_receipts() -> Result<(), Error> {
+        let (service, receipts) =
+            audio_context::controlled_service(audio_context::Variant::Reduced)?;
+        wait_ready(&service)?;
+        let (result, record) = infer_context(
+            &service,
+            1,
+            vec![0.1; 320],
+            Language::German,
+            Some(&receipts),
+        );
+        assert_eq!(result.map_err(|(e, _)| e)?, "controlled words");
+        let record = record.ok_or("missing corpus receipt")?;
+        assert_eq!(record["receipt"]["identity"]["session"], 1);
+        assert_eq!(record["receipt"]["identity"]["endFrame"], 320);
+        assert!(record["error"].is_null());
+        service.shutdown()?;
+        assert!(receipts.finalize().error.is_none());
+        Ok(())
+    }
+    #[cfg(not(feature = "measurement"))]
+    #[test]
+    fn context_modes_without_feature_are_rejected_without_model_or_file_access() {
+        for mode in ["--context-reference", "--context-candidate"] {
+            assert!(parse_arguments(cli_args(&[mode, "freeze.json"])).is_err());
+        }
     }
 }

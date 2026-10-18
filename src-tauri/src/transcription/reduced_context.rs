@@ -54,6 +54,26 @@ pub(super) fn transcribe<D: speech_gate::Detector>(
     model_audio_ctx: i32,
     decode: impl FnOnce(&[f32], Language, i32, &mut ObservationRecord) -> Result<String, InferenceError>,
 ) -> Transcription {
+    transcribe_policy::<true, D>(samples, language, gate, model_audio_ctx, decode)
+}
+
+pub(super) fn transcribe_reference<D: speech_gate::Detector>(
+    samples: &[f32],
+    language: Language,
+    gate: &mut speech_gate::SpeechGate<D>,
+    model_audio_ctx: i32,
+    decode: impl FnOnce(&[f32], Language, i32, &mut ObservationRecord) -> Result<String, InferenceError>,
+) -> Transcription {
+    transcribe_policy::<false, D>(samples, language, gate, model_audio_ctx, decode)
+}
+
+fn transcribe_policy<const REDUCED: bool, D: speech_gate::Detector>(
+    samples: &[f32],
+    language: Language,
+    gate: &mut speech_gate::SpeechGate<D>,
+    model_audio_ctx: i32,
+    decode: impl FnOnce(&[f32], Language, i32, &mut ObservationRecord) -> Result<String, InferenceError>,
+) -> Transcription {
     let mut observation = ObservationRecord {
         input_frames: samples.len(),
         prepared_frames: 0,
@@ -76,7 +96,7 @@ pub(super) fn transcribe<D: speech_gate::Detector>(
         gate,
         &mut observation,
         |input, lang, record| {
-            let ctx = if input.len() <= MAX_PREPARED_FRAMES {
+            let ctx = if REDUCED && input.len() <= MAX_PREPARED_FRAMES {
                 REDUCED_AUDIO_CTX
             } else {
                 0
@@ -310,5 +330,27 @@ mod tests {
         assert_eq!(output.observation.audio_ctx_parameter, Some(1024));
         assert_eq!(output.observation.effective_audio_ctx, Some(1024));
         assert!(output.observation.decode_attempted);
+    }
+    #[test]
+    fn reference_receipt_uses_same_prepared_pcm_with_model_default() -> Result<(), InferenceError> {
+        let mut gate = speech_gate::SpeechGate::from_detector(Positive(Vec::new()));
+        let output = transcribe_reference(
+            &[0.02; 3200],
+            Language::English,
+            &mut gate,
+            1500,
+            |pcm, language, ctx, record| {
+                assert_eq!(pcm.len(), 16000);
+                assert_eq!(language, Language::English);
+                assert_eq!(ctx, 0);
+                record.full_started();
+                Ok("reference text".into())
+            },
+        );
+        assert_eq!(output.result?, "reference text");
+        assert_eq!(output.observation.audio_ctx_parameter, Some(0));
+        assert_eq!(output.observation.effective_audio_ctx, Some(1500));
+        assert!(output.observation.decode_attempted);
+        Ok(())
     }
 }

@@ -16,20 +16,30 @@ mod runner;
 mod statistics;
 
 use dictation_core::audio::AudioFormat;
-use everlast_dictation::{
-    inference_service::InferenceService, runtime::measurement::MeasuredRuntime,
-};
+use everlast_dictation::runtime::measurement::MeasuredRuntime;
 use std::{io::Cursor, path::Path, sync::Arc, time::Instant};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let arguments = std::env::args_os().skip(1).take(9).collect::<Vec<_>>();
     if arguments.len() == 1
-        && (arguments[0] == "--print-parameters" || arguments[0] == "--print-scheduling-parameters")
+        && matches!(
+            arguments[0].to_str(),
+            Some(
+                "--print-parameters"
+                    | "--print-scheduling-parameters"
+                    | "--print-context-reference-parameters"
+                    | "--print-context-candidate-parameters"
+            )
+        )
     {
         println!(
             "{}",
             serde_json::to_string_pretty(&if arguments[0] == "--print-scheduling-parameters" {
                 parameters::scheduling_template()?
+            } else if arguments[0] == "--print-context-reference-parameters" {
+                parameters::context_template(false)?
+            } else if arguments[0] == "--print-context-candidate-parameters" {
+                parameters::context_template(true)?
             } else {
                 parameters::template()?
             })?
@@ -63,24 +73,36 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let host = host_observation();
     let load_started = Instant::now();
     let mut runtime = None;
-    let mut unavailable = match InferenceService::load(options.model, options.definition) {
-        Ok(service) => match MeasuredRuntime::spawn(
-            service,
-            1,
-            AudioFormat {
-                sample_rate: 16_000,
-                channels: 1,
-            },
-        ) {
-            Ok(measured) => {
-                let ready = runner::wait_ready(&measured);
-                runtime = Some(measured);
-                ready.err()
+    let variant = execution_mode.context_reduced().map(|reduced| {
+        if reduced {
+            runner::audio_context::Variant::Reduced
+        } else {
+            runner::audio_context::Variant::Reference
+        }
+    });
+    let mut receipts = None;
+    let mut unavailable =
+        match runner::audio_context::load(options.model, options.definition, variant) {
+            Ok((service, context_receipts)) => {
+                receipts = context_receipts;
+                match MeasuredRuntime::spawn(
+                    service,
+                    1,
+                    AudioFormat {
+                        sample_rate: 16_000,
+                        channels: 1,
+                    },
+                ) {
+                    Ok(measured) => {
+                        let ready = runner::wait_ready(&measured);
+                        runtime = Some(measured);
+                        ready.err()
+                    }
+                    Err(error) => Some(error.to_string()),
+                }
             }
             Err(error) => Some(error.to_string()),
-        },
-        Err(error) => Some(error.to_string()),
-    };
+        };
     let load_millis = load_started.elapsed().as_millis();
     let load_error = unavailable.clone();
     let mut results = Vec::new();
@@ -94,7 +116,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut output = if let Some(error) = &unavailable {
             runner::unavailable(id, index == 0, error.clone())
         } else if let Some(measured) = &runtime {
-            if execution_mode == parameters::ExecutionMode::TimeConstrained {
+            if let Some(receipts) = &receipts {
+                runner::one_context(
+                    measured,
+                    &samples,
+                    options.language,
+                    id,
+                    index == 0,
+                    runner::ContextRun {
+                        receipts,
+                        reference,
+                        outcome: options.expected_outcome,
+                    },
+                )
+            } else if execution_mode.scheduled() {
                 runner::one_scheduled(
                     measured,
                     &samples,
@@ -156,6 +191,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .collect::<Vec<_>>();
     let cleanup = runtime.map(runner::cleanup);
+    let context_cleanup = receipts
+        .as_ref()
+        .map(runner::audio_context::Receipts::finalize);
+    if let Some(error) = context_cleanup.as_ref().and_then(|c| c.error.as_ref()) {
+        unavailable.get_or_insert(error.clone());
+        if let Some(last) = observations.last_mut()
+            && last.status == "ok"
+        {
+            last.status = "failed";
+            last.error = Some(error.clone());
+            if let Some(result) = results.last_mut() {
+                result["status"] = serde_json::json!("failed");
+            }
+        }
+    }
     let passed = unavailable.is_none() && cleanup.as_ref().is_some_and(|value| value.joined);
     let summary = if passed && options.expected_outcome == runner::ExpectedOutcome::Local {
         statistics::summarize(&latencies)
@@ -213,7 +263,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "fixtureSha256":declared.sha256,"inputFrames":samples.len(),"sampleRate":16000,"channels":1,
         "model":{"id":options.definition.id(),"sha256":options.definition.sha256()},
         "language":options.language.code(),"parameterDocumentSha256":input::digest(&parameter_bytes),
-        "parameters":parameter_document,"hostObservation":host,
+        "parameters":parameter_document,"contextCleanup":context_cleanup,"hostObservation":host,
         "referenceSha256":reference_bytes.as_ref().map(|data| input::digest(data)),
         "referenceComparison":"trimmed exact text only; provenance and independent WER are separate",
         "warmupRuns":1,"measuredRunsRequested":options.runs,"loadMillis":load_millis,"loadError":load_error,
