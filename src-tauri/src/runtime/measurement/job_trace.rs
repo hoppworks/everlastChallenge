@@ -1,9 +1,10 @@
 //! Bounded text/PCM-free observations; never called by the RT publisher.
 use super::*;
 use crate::inference_service::{
-    Job,
+    Completed, Job,
     observation::{Edge, Identity, Observer},
 };
+use crate::transcription::prefix_cache::PreparedReuse;
 use serde::Serialize;
 use std::time::Instant;
 
@@ -28,6 +29,10 @@ pub struct JobTraceRecord {
     pub worker_after_decode_offset_nanos: Option<u128>,
     pub worker_settled_offset_nanos: Option<u128>,
     pub result_adopted_offset_nanos: Option<u128>,
+    /// Runtime actually collected Completed, even if its optional receipt is absent.
+    pub completion_observed_offset_nanos: Option<u128>,
+    /// Raw receipt, including foreign tags; never repaired into current identity.
+    pub prepared_reuse: Option<PreparedReuse>,
     pub worker_outcome: Option<&'static str>,
     pub adoption: Option<&'static str>,
 }
@@ -54,6 +59,8 @@ struct Record {
     end: Option<Instant>,
     settled: Option<Instant>,
     adopted: Option<Instant>,
+    completed: Option<Instant>,
+    prepared_reuse: Option<PreparedReuse>,
     worker_outcome: Option<&'static str>,
     adoption: Option<&'static str>,
 }
@@ -70,6 +77,8 @@ impl Record {
             end: None,
             settled: None,
             adopted: None,
+            completed: None,
+            prepared_reuse: None,
             worker_outcome: None,
             adoption: None,
         }
@@ -99,6 +108,8 @@ impl Record {
             worker_after_decode_offset_nanos: offset(self.end),
             worker_settled_offset_nanos: offset(self.settled),
             result_adopted_offset_nanos: offset(self.adopted),
+            completion_observed_offset_nanos: offset(self.completed),
+            prepared_reuse: self.prepared_reuse.clone(),
             worker_outcome: self.worker_outcome,
             adoption: self.adoption,
         }
@@ -234,6 +245,46 @@ impl Trace {
             } else {
                 Some(job.timeline_range.end)
             };
+        }
+    }
+    pub(in crate::runtime) fn completed_job(&self, done: &Completed) {
+        let Some(ledger) = &self.jobs else {
+            return;
+        };
+        let at = Instant::now();
+        let mut ledger = ledger.lock().unwrap_or_else(|p| p.into_inner());
+        // Completed carries no language; use only an already admitted record,
+        // matching every available service identity tag. Receipt tags are data,
+        // never the authority selecting the record (including a retired job).
+        let matches = |record: &&mut Record| {
+            let identity = &record.identity;
+            identity.session == done.session
+                && identity.generation == done.generation
+                && identity.job == done.job_id
+                && identity.storage == done.sample_range
+                && identity.timeline == done.timeline_range
+        };
+        let Ledger {
+            records,
+            retired,
+            error,
+            ..
+        } = &mut *ledger;
+        let Some(record) = records.iter_mut().chain(retired.iter_mut()).find(matches) else {
+            error.get_or_insert("completed result has no exact admitted trace identity");
+            return;
+        };
+        if !once(&mut record.completed, at) {
+            error.get_or_insert("duplicate completed result observation");
+            return;
+        }
+        record.prepared_reuse = done.prepared_reuse.clone();
+        if record.prepared_reuse.as_ref().is_some_and(|receipt| {
+            receipt.session != done.session
+                || receipt.generation != done.generation
+                || receipt.job_id != done.job_id
+        }) {
+            error.get_or_insert("completed result contains foreign prepared-reuse receipt");
         }
     }
     pub(in crate::runtime) fn adopt_job(&self, event: &Event, at: Instant, accepted: bool) {

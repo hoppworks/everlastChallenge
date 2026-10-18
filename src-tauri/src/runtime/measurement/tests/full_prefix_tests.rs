@@ -363,3 +363,227 @@ fn backlog_coalesces_to_one_later_cumulative_prefix_without_repeating_silence() 
         Ok(())
     })
 }
+
+#[derive(Clone, Copy)]
+enum ReceiptKind {
+    Current,
+    Missing,
+    Foreign(u8),
+}
+struct ReceiptDecoder {
+    kind: ReceiptKind,
+    receipt: Option<crate::transcription::prefix_cache::PreparedReuse>,
+}
+impl Decoder for ReceiptDecoder {
+    fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+        Err(InferenceError::InvalidDecodeContext)
+    }
+    fn decode_with_context(
+        &mut self,
+        samples: &[f32],
+        _: Language,
+        context: &crate::inference_service::DecodeContext,
+    ) -> Result<String, InferenceError> {
+        self.receipt = Some(crate::transcription::prefix_cache::PreparedReuse {
+            session: context.session,
+            generation: context.generation,
+            job_id: context.job_id,
+            outcome: crate::transcription::prefix_cache::ReuseOutcome::Decoded,
+            origin_job_id: Some(context.job_id),
+            prepared_frames: Some(samples.len()),
+            prepared_pcm_sha256: Some([17; 32]),
+            decoder_invoked: true,
+            native_full_attempted: false,
+        });
+        match self.kind {
+            ReceiptKind::Current => {}
+            ReceiptKind::Missing => self.receipt = None,
+            ReceiptKind::Foreign(which) => {
+                if let Some(receipt) = &mut self.receipt {
+                    match which {
+                        0 => receipt.session += 100,
+                        1 => receipt.generation += 100,
+                        _ => receipt.job_id += 100,
+                    }
+                }
+            }
+        }
+        Ok("controlled current result".into())
+    }
+    fn take_prepared_reuse(&mut self) -> Option<crate::transcription::prefix_cache::PreparedReuse> {
+        self.receipt.take()
+    }
+}
+#[test]
+fn actual_runtime_retains_current_completed_receipt_before_result_adoption() -> TestResult {
+    let runtime = MeasuredRuntime::spawn_full_prefix_revision(
+        InferenceService::with_decoder(ReceiptDecoder {
+            kind: ReceiptKind::Current,
+            receipt: None,
+        })?,
+        1,
+        AudioFormat {
+            sample_rate: 16000,
+            channels: 1,
+        },
+    )?;
+    let (release, _unused) = bounded(1);
+    guarded(runtime, release, |runtime| {
+        wait_state(runtime, |s| s.model_ready)?;
+        let sid = await_value(runtime.start(settings())?)?.map_err(std::io::Error::other)?;
+        let mut input = runtime.take_input(Duration::from_secs(2))?;
+        feed(&mut input.port, &[0.1; 320]);
+        runtime.stop(sid)?;
+        let end = wait_state(runtime, |s| s.session.phase == Phase::Idle)?;
+        assert_eq!(end.session.outcome, Some(Outcome::Local));
+        let trace = runtime.job_trace()?;
+        assert_eq!(trace.jobs.len(), 1);
+        let job = &trace.jobs[0];
+        let exported = serde_json::to_value(job)?;
+        let receipt = &exported["preparedReuse"];
+        assert!(
+            receipt.is_object(),
+            "actual worker receipt must survive Runtime adoption"
+        );
+        assert_eq!(receipt["session"], sid);
+        assert_eq!(receipt["generation"], 1);
+        assert_eq!(receipt["jobId"], job.job_id);
+        assert_eq!(receipt["preparedFrames"], 320);
+        assert_eq!(
+            receipt["preparedPcmSha256"],
+            serde_json::to_value([17_u8; 32])?
+        );
+        assert_eq!(
+            receipt["nativeFullAttempted"], false,
+            "controlled worker did not enter native full"
+        );
+        let collected = exported["completionObservedOffsetNanos"]
+            .as_u64()
+            .ok_or("missing actual completion observation")? as u128;
+        assert!(
+            job.worker_after_decode_offset_nanos
+                .is_some_and(|at| at <= collected)
+        );
+        assert!(
+            job.result_adopted_offset_nanos
+                .is_some_and(|at| collected <= at)
+        );
+        assert_eq!(trace.error, None);
+        Ok(())
+    })
+}
+
+#[test]
+fn actual_runtime_preserves_foreign_receipt_on_the_completed_current_identity() -> TestResult {
+    for which in 0..3 {
+        let runtime = MeasuredRuntime::spawn_full_prefix_revision(
+            InferenceService::with_decoder(ReceiptDecoder {
+                kind: ReceiptKind::Foreign(which),
+                receipt: None,
+            })?,
+            1,
+            AudioFormat {
+                sample_rate: 16000,
+                channels: 1,
+            },
+        )?;
+        let (release, _unused) = bounded(1);
+        guarded(runtime, release, |runtime| {
+            wait_state(runtime, |s| s.model_ready)?;
+            let sid = await_value(runtime.start(settings())?)?.map_err(std::io::Error::other)?;
+            let mut input = runtime.take_input(Duration::from_secs(2))?;
+            feed(&mut input.port, &[0.1; 320]);
+            runtime.stop(sid)?;
+            let end = wait_state(runtime, |s| s.session.phase == Phase::Idle)?;
+            assert!(matches!(end.session.outcome, Some(Outcome::Failed(_))));
+            assert_eq!(end.session.text, None);
+            let trace = runtime.job_trace()?;
+            assert_eq!(
+                trace.jobs.len(),
+                1,
+                "foreign receipt must not create a foreign trace record"
+            );
+            let job = &trace.jobs[0];
+            assert_eq!(
+                (
+                    job.session,
+                    job.generation,
+                    job.timeline_start,
+                    job.timeline_end
+                ),
+                (sid, 1, 0, 320)
+            );
+            let exported = serde_json::to_value(job)?;
+            let receipt = &exported["preparedReuse"];
+            assert!(
+                receipt.is_object(),
+                "actual foreign evidence must not disappear"
+            );
+            assert_eq!(receipt["session"], sid + if which == 0 { 100 } else { 0 });
+            assert_eq!(receipt["generation"], 1 + if which == 1 { 100 } else { 0 });
+            assert_eq!(
+                receipt["jobId"],
+                job.job_id + if which == 2 { 100 } else { 0 }
+            );
+            assert_eq!(job.adoption, Some("rejected"));
+            assert_eq!(job.worker_outcome, Some("decode-failed"));
+            assert!(exported["completionObservedOffsetNanos"].is_number());
+            assert!(
+                trace
+                    .error
+                    .as_deref()
+                    .is_some_and(|error| error.contains("foreign"))
+            );
+            Ok(())
+        })?;
+    }
+    Ok(())
+}
+
+#[test]
+fn actual_completed_without_optional_receipt_stays_explicitly_missing() -> TestResult {
+    let runtime = MeasuredRuntime::spawn_full_prefix_revision(
+        InferenceService::with_decoder(ReceiptDecoder {
+            kind: ReceiptKind::Missing,
+            receipt: None,
+        })?,
+        1,
+        AudioFormat {
+            sample_rate: 16000,
+            channels: 1,
+        },
+    )?;
+    let (release, _unused) = bounded(1);
+    guarded(runtime, release, |runtime| {
+        wait_state(runtime, |s| s.model_ready)?;
+        let sid = await_value(runtime.start(settings())?)?.map_err(std::io::Error::other)?;
+        let mut input = runtime.take_input(Duration::from_secs(2))?;
+        feed(&mut input.port, &[0.1; 320]);
+        runtime.stop(sid)?;
+        let end = wait_state(runtime, |s| s.session.phase == Phase::Idle)?;
+        assert_eq!(
+            end.session.outcome,
+            Some(Outcome::Local),
+            "optional measurement evidence does not rewrite product behavior"
+        );
+        let trace = runtime.job_trace()?;
+        assert_eq!(trace.jobs.len(), 1);
+        let exported = serde_json::to_value(&trace.jobs[0])?;
+        assert!(
+            exported
+                .as_object()
+                .is_some_and(|record| record.contains_key("preparedReuse"))
+        );
+        assert_eq!(exported["preparedReuse"], serde_json::Value::Null);
+        assert!(
+            exported["completionObservedOffsetNanos"].is_number(),
+            "None is an observed missing receipt, not an unobserved worker completion"
+        );
+        assert_eq!(trace.jobs[0].adoption, Some("accepted"));
+        assert_eq!(
+            trace.error, None,
+            "generic optional evidence remains optional; strict mode validation belongs to the new probe"
+        );
+        Ok(())
+    })
+}

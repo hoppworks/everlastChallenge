@@ -1069,6 +1069,16 @@ impl<A: AudioDriver> Actor<A> {
         if let Some(service) = &self.inference
             && let Some(done) = service.take_result().map_err(service_error)?
         {
+            #[cfg(feature = "measurement")]
+            if let Some(trace) = self
+                .shared
+                .lock()
+                .map_err(|_| RuntimeError::Synchronization)?
+                .timing
+                .as_ref()
+            {
+                trace.completed_job(&done);
+            }
             let actions = self
                 .accept_with_timing(
                     Event::InferenceFinished {
