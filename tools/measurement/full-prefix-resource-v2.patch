@@ -1,0 +1,2002 @@
+diff --git a/src-tauri/examples/runtime_resource_probe.rs b/src-tauri/examples/runtime_resource_probe.rs
+index 307c5ed..b51d0d2 100644
+--- a/src-tauri/examples/runtime_resource_probe.rs
++++ b/src-tauri/examples/runtime_resource_probe.rs
+@@ -46,16 +46,50 @@ fn write_report(path: &Path, bytes: &[u8]) -> Result<(), Error> {
+     temporary.persist_noclobber(path)?;
+     Ok(())
+ }
++fn pcm_digest(samples: &[f32]) -> String {
++    use sha2::{Digest, Sha256};
++    let mut hash = Sha256::new();
++    for sample in samples {
++        hash.update(sample.to_le_bytes());
++    }
++    format!("{:x}", hash.finalize())
++}
+ fn main() -> Result<(), Error> {
+-    let args = std::env::args_os().skip(1).take(7).collect::<Vec<_>>();
+-    if args.len() == 1 && args[0] == "--print-parameters" {
++    let args = std::env::args_os().skip(1).take(8).collect::<Vec<_>>();
++    if args.len() == 1
++        && matches!(
++            args[0].to_str(),
++            Some(
++                "--print-parameters"
++                    | "--print-reference-trace-parameters"
++                    | "--print-candidate-measurement-parameters"
++                    | "--print-full-prefix-reference-parameters"
++                    | "--print-full-prefix-candidate-parameters"
++            )
++        )
++    {
++        let mode = match args[0].to_str() {
++            Some("--print-reference-trace-parameters") => runner::Mode::ReferenceTrace,
++            Some("--print-candidate-measurement-parameters") => runner::Mode::CandidateMeasurement,
++            Some("--print-full-prefix-reference-parameters") => runner::Mode::FullPrefixReference,
++            Some("--print-full-prefix-candidate-parameters") => runner::Mode::FullPrefixCandidate,
++            _ => runner::Mode::Baseline,
++        };
+         println!(
+             "{}",
+-            serde_json::to_string_pretty(&parameters::template()?)?
++            serde_json::to_string_pretty(&parameters::template_for(mode)?)?
+         );
+         return Ok(());
+     }
+-    if args.len() != 6
++    let mode = if args.len() == 7 {
++        args[6]
++            .to_str()
++            .and_then(runner::Mode::parse)
++            .ok_or("unknown resource experiment mode")?
++    } else {
++        runner::Mode::Baseline
++    };
++    if !(args.len() == 6 || args.len() == 7)
+         || args
+             .iter()
+             .any(|arg| arg.is_empty() || arg.as_encoded_bytes().len() > 4096)
+@@ -72,7 +106,11 @@ fn main() -> Result<(), Error> {
+         return Err("output must be a new path".into());
+     }
+     let parameter_bytes = input::bounded_read(Path::new(&args[4]), 1024 * 1024)?;
+-    let parameter_document = parameters::validate(&parameter_bytes)?;
++    let parameter_document = if mode == runner::Mode::Baseline {
++        parameters::validate(&parameter_bytes)?
++    } else {
++        parameters::validate_for(&parameter_bytes, mode)?
++    };
+     let wav_bytes = input::bounded_read(Path::new(&args[2]), input::MAX_AUDIO)?;
+     let wav = hound::WavReader::new(Cursor::new(&wav_bytes))?;
+     let audio = input::Audio {
+@@ -85,6 +123,39 @@ fn main() -> Result<(), Error> {
+     if samples.len() < 320 {
+         return Err("resource fixture must contain at least one full20ms chunk".into());
+     }
++    let prepared: std::sync::Arc<[f32]> = if mode == runner::Mode::Baseline {
++        std::sync::Arc::clone(&samples)
++    } else {
++        let mut producer = dictation_core::audio::AudioProcessor::new(AudioFormat {
++            sample_rate: 16000,
++            channels: 1,
++        })?;
++        for chunk in samples.chunks(320) {
++            producer.push_interleaved(chunk)?;
++        }
++        let prepared = producer.finish()?;
++        if prepared.len() != samples.len()
++            || !prepared
++                .iter()
++                .zip(samples.iter())
++                .all(|(a, b)| a.to_bits() == b.to_bits())
++        {
++            return Err("resource reference producer changed actual 16k mono PCM; adapter cannot assume timeline correspondence".into());
++        }
++        prepared.into()
++    };
++    let hold_budget = if mode == runner::Mode::Baseline {
++        runner::WAIT
++    } else {
++        if samples.len() > dictation_core::audio::MAX_SAMPLES {
++            return Err("resource fixture exceeds bound".into());
++        }
++        runner::WAIT
++            .checked_add(std::time::Duration::from_secs(
++                samples.len().div_ceil(16000) as u64,
++            ))
++            .ok_or("resource hold budget overflow")?
++    };
+     let reference_bytes = input::bounded_read(Path::new(&args[3]), 256 * 1024)?;
+     let reference = std::str::from_utf8(&reference_bytes)?;
+     if reference.trim().is_empty() {
+@@ -93,67 +164,132 @@ fn main() -> Result<(), Error> {
+     let config = runner::Config::production();
+     let load_started = Instant::now();
+     let initialized = (|| -> Result<_, String> {
+-        let engine = Engine::load(Path::new(&args[0]), definition).map_err(|e| e.to_string())?;
+-        let (decoder, control) =
+-            runner::controlled(engine, std::sync::Arc::clone(&samples), runner::WAIT);
+-        let service = InferenceService::with_decoder(decoder).map_err(|e| e.to_string())?;
+-        let runtime = MeasuredRuntime::spawn(
+-            service,
+-            1,
+-            AudioFormat {
+-                sample_rate: 16000,
+-                channels: 1,
+-            },
+-        )
++        let (service, control) = if mode.full_prefix() {
++            let (created, receive) = crossbeam_channel::bounded(1);
++            let path = std::path::PathBuf::from(&args[0]);
++            let expected = std::sync::Arc::clone(&prepared);
++            let service = InferenceService::with_initializer(move || {
++                let decoder =
++                    everlast_dictation::transcription::prefix_cache::PrefixCacheDecoder::load(
++                        &path, definition,
++                    )?;
++                let (decoder, control) =
++                    runner::controlled_observed(decoder, expected, hold_budget, mode);
++                created
++                    .send(control)
++                    .map_err(|_| everlast_dictation::transcription::InferenceError::Decode)?;
++                Ok(decoder)
++            })
++            .map_err(|e| e.to_string())?;
++            let control = match receive.recv_timeout(hold_budget) {
++                Ok(control) => control,
++                Err(error) => {
++                    let cleanup = service.shutdown();
++                    return Err(format!(
++                        "resource initializer/control failed: {error}; cleanup={cleanup:?}"
++                    ));
++                }
++            };
++            (service, control)
++        } else {
++            let engine =
++                Engine::load(Path::new(&args[0]), definition).map_err(|e| e.to_string())?;
++            let (decoder, control) = if mode == runner::Mode::Baseline {
++                runner::controlled(engine, std::sync::Arc::clone(&samples), runner::WAIT)
++            } else {
++                runner::controlled_observed(
++                    engine,
++                    std::sync::Arc::clone(&prepared),
++                    hold_budget,
++                    mode,
++                )
++            };
++            let service = InferenceService::with_decoder(decoder).map_err(|e| e.to_string())?;
++            (service, control)
++        };
++        let format = AudioFormat {
++            sample_rate: 16000,
++            channels: 1,
++        };
++        let runtime = match mode {
++            runner::Mode::Baseline => MeasuredRuntime::spawn(service, 1, format),
++            runner::Mode::FullPrefixReference => {
++                MeasuredRuntime::spawn_pretranscription_reference(service, 1, format)
++            }
++            runner::Mode::FullPrefixCandidate => {
++                MeasuredRuntime::spawn_full_prefix_revision(service, 1, format)
++            }
++            runner::Mode::ReferenceTrace => {
++                MeasuredRuntime::spawn_pretranscription_reference(service, 1, format)
++            }
++            runner::Mode::CandidateMeasurement => {
++                MeasuredRuntime::spawn_pretranscription(service, 1, format)
++            }
++        }
+         .map_err(|e| e.to_string())?;
++        if mode != runner::Mode::Baseline {
++            control.attach_trace(runtime.job_trace_handle())?;
++        }
+         Ok((runtime, control))
+     })();
+     let load_micros = load_started.elapsed().as_micros();
+     let mut checkpoints = Vec::new();
+     let mut baseline_rss = None;
+     let mut metric_errors = 0;
+-    let (workload, cleanup, load_error, decoder_after_cleanup) = match initialized {
+-        Ok((runtime, control)) => {
+-            let ready = shared::wait_ready(&runtime);
+-            let workload = match ready {
+-                Ok(()) => {
+-                    runner::workload(&runtime, &control, &samples, reference, config, |point| {
+-                        let observation = metrics::observe(std::process::id(), point.include_vmmap);
+-                        if observation.rss_error.is_some() || observation.vmmap_error.is_some() {
+-                            metric_errors += 1;
+-                        }
+-                        if checkpoints.is_empty() {
+-                            baseline_rss = observation.rss_bytes;
+-                        }
+-                        let delta = observation
+-                            .rss_bytes
+-                            .zip(baseline_rss)
+-                            .map(|(now, first)| i128::from(now) - i128::from(first));
+-                        eprintln!(
+-                            "checkpoint {} status={} rssBytes={:?} rssError={:?} vmmapError={:?}",
+-                            point.after_id,
+-                            point.status,
+-                            observation.rss_bytes,
+-                            observation.rss_error,
+-                            observation.vmmap_error
+-                        );
+-                        checkpoints.push(serde_json::json!({"checkpoint":point,"metrics":observation,"rssDeltaFromWarmupBytes":delta}));
+-                    })
+-                }
+-                Err(error) => runner::unavailable(error, config),
+-            };
+-            let cleanup = shared::cleanup(runtime);
+-            let diagnostics = control.diagnostics();
+-            (workload, Some(cleanup), None, Some(diagnostics))
+-        }
+-        Err(error) => (
+-            runner::unavailable(error.clone(), config),
+-            None,
+-            Some(error),
+-            None,
+-        ),
+-    };
+-    let passed = workload.behavior_passed
++    let (workload, cleanup, load_error, decoder_after_cleanup, observation_after_cleanup) =
++        match initialized {
++            Ok((runtime, control)) => {
++                let ready = shared::wait_ready(&runtime);
++                let workload = match ready {
++                    Ok(()) => {
++                        runner::workload(&runtime, &control, &samples, reference, config, |point| {
++                            let observation =
++                                metrics::observe(std::process::id(), point.include_vmmap);
++                            if observation.rss_error.is_some() || observation.vmmap_error.is_some()
++                            {
++                                metric_errors += 1;
++                            }
++                            if checkpoints.is_empty() {
++                                baseline_rss = observation.rss_bytes;
++                            }
++                            let delta = observation
++                                .rss_bytes
++                                .zip(baseline_rss)
++                                .map(|(now, first)| i128::from(now) - i128::from(first));
++                            eprintln!(
++                                "checkpoint {} status={} rssBytes={:?} rssError={:?} vmmapError={:?}",
++                                point.after_id,
++                                point.status,
++                                observation.rss_bytes,
++                                observation.rss_error,
++                                observation.vmmap_error
++                            );
++                            checkpoints.push(serde_json::json!({"checkpoint":point,"metrics":observation,"rssDeltaFromWarmupBytes":delta}));
++                        })
++                    }
++                    Err(error) => runner::unavailable(error, config),
++                };
++                let cleanup = shared::cleanup(runtime);
++                let diagnostics = control.diagnostics();
++                let observation = control.observation_after_cleanup();
++                (
++                    workload,
++                    Some(cleanup),
++                    None,
++                    Some(diagnostics),
++                    observation,
++                )
++            }
++            Err(error) => (
++                runner::unavailable(error.clone(), config),
++                None,
++                Some(error),
++                None,
++                serde_json::Value::Null,
++            ),
++        };
++    let passed = (mode == runner::Mode::Baseline || observation_after_cleanup["valid"] == true)
++        && workload.behavior_passed
+         && cleanup.as_ref().is_some_and(|c| c.joined)
+         && decoder_after_cleanup.as_ref().is_some_and(|d| {
+             d.as_ref().is_ok_and(|d| {
+@@ -165,27 +301,31 @@ fn main() -> Result<(), Error> {
+             })
+         });
+     let metadata = serde_json::json!({
+-        "schemaVersion":1,"kind":"runtime-lifecycle-resource-workload","behaviorPassed":passed,"resourceQualified":false,"setupTimingPassed":workload.setup_timing_passed,
++        "schemaVersion":1,"experimentalMode":mode,"observationAfterCleanup":observation_after_cleanup,"preparedFixtureFrames":prepared.len(),"preparedFixturePcmF32LeSha256":if mode==runner::Mode::Baseline {None} else {Some(pcm_digest(&prepared))},"entryHoldBudgetSeconds":hold_budget.as_secs(),"kind":"runtime-lifecycle-resource-workload","behaviorPassed":passed,"resourceQualified":false,"setupTimingPassed":workload.setup_timing_passed,
+         "sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
+         "parameters":parameter_document,"parameterDocumentSha256":input::digest(&parameter_bytes),
+         "model":{"id":definition.id(),"sha256":definition.sha256(),"bytes":definition.bytes()},
+         "fixture":{"sha256":audio.sha256,"frames":samples.len(),"sampleRate":16000,"channels":1},
+-        "retainedInputPayloadBytes":{"encodedWav":wav_bytes.len(),"normalizedPcm":samples.len()*std::mem::size_of::<f32>(),"referenceUtf8":reference_bytes.len(),"parameterUtf8":parameter_bytes.len()},
+-        "referenceSha256":input::digest(&reference_bytes),"referenceComparison":"exact UTF8, no trimming; prior baseline repeatability only",
++        "retainedInputPayloadBytes":{"encodedWav":wav_bytes.len(),"normalizedPcm":samples.len()*std::mem::size_of::<f32>(),"additionalPreparedPcm":if mode==runner::Mode::Baseline {0} else {prepared.len()*std::mem::size_of::<f32>()},"referenceUtf8":reference_bytes.len(),"parameterUtf8":parameter_bytes.len()},
++        "referenceSha256":input::digest(&reference_bytes),"referenceComparison":if mode==runner::Mode::CandidateMeasurement {"exact supplied candidate-specific Stop baseline; distinct hash binding, no accuracy/qualification inferred and no full-recording equality asserted"} else {"exact UTF8, no trimming; supplied baseline repeatability only"},
+         "host":{"architecture":std::env::consts::ARCH,"os":std::env::consts::OS,"processId":std::process::id(),"debugAssertions":cfg!(debug_assertions),"availableParallelism":std::thread::available_parallelism().ok().map(|n|n.get())},
+         "decoderAfterCleanup":decoder_after_cleanup.as_ref().and_then(|d|d.as_ref().ok()),
+         "decoderDiagnosticsError":decoder_after_cleanup.as_ref().and_then(|d|d.as_ref().err()),
+         "setupTimingScope":"feed publication summaries only, no Stop ingress budget or L qualification",
+         "loadMicros":load_micros,"loadError":load_error,"workload":workload,"checkpoints":checkpoints,"metricsErrorCount":metric_errors,"cleanup":cleanup,
+-        "limits":["developer replay only: no microphone, GUI, paste or bundle rebuild",
++        "limits":["experimental modes add a prepared PCM Arc plus bounded receipts and job snapshots; overhead belongs to harness, not native allocation attribution",
++            "real Engine/Whisper resources under controlled entry and publisher orchestration; this workload alone is not final P06 qualification",
++            "candidate requires an observed early prefix and final job (complete 0..N in FullPrefix) for every Stop row; activation alone does not pass",
++            "CancelDecoderEntry is after full feed with first actual decoder entry held; no early cancel-latency claim",
++            "developer replay only: no microphone, GUI, paste or bundle rebuild",
+             "wrapper entry barrier precedes native decode; no native-kernel interruption or strict cancellation latency claim",
+             "cancelled native decode may finish; next actor StartACK confirms previous audio/inference ownership is free",
+             "checkpoints follow ControllerIdle and wrapper idle; job-local allocations may survive to the worker loop boundary",
+             "last measured case is StopComplete; adopted completion and explicit join provide final owner evidence",
+             "RSS observations and diagnostic deltas are not live-heap proof, leak qualification or an arbitrary threshold pass",
+             "pacing evidence retained as summaries, not L raw data; setupTimingPassed is independent of behaviorPassed",
+-            "one shared original fixture Arc and encoded input/reference/parameter bytes stay resident; payload sizes exclude allocator/header overhead; no per-cycle expected-audio copies",
+-            "exact full-fixture decoder input is checked for StopComplete and CancelDecoderEntry; CancelCapture has no decoder input/sample-equality claim",
++            "one shared original fixture Arc and encoded input/reference/parameter bytes stay resident; experimental modes additionally retain one prepared Arc and bounded text-free job/receipt data; no per-cycle PCM copies",
++            "baseline checks full-fixture input; experimental modes check exact identified global prepared ranges; CancelCapture has no decoder input claim",
+             "synchronous Engine initialization and OS calls have no hard real-time preemption"]
+     });
+     write_report(output, &serde_json::to_vec_pretty(&metadata)?)?;
+diff --git a/src-tauri/examples/runtime_resource_probe/identity.rs b/src-tauri/examples/runtime_resource_probe/identity.rs
+new file mode 100644
+index 0000000..3a0fff3
+--- /dev/null
++++ b/src-tauri/examples/runtime_resource_probe/identity.rs
+@@ -0,0 +1,473 @@
++//! Pure, bounded identity/coverage checks for the developer resource adapter.
++#[derive(Clone, Debug, PartialEq, Eq)]
++pub struct Identity {
++    pub session: u64,
++    pub generation: u64,
++    pub job: u64,
++    pub storage_start: usize,
++    pub storage_end: usize,
++    pub timeline_start: usize,
++    pub timeline_end: usize,
++    pub frames: usize,
++    pub language: Option<&'static str>,
++}
++impl Identity {
++    /// Every actual FullPrefix invocation must use zero-based cumulative PCM.
++    pub fn compare_prefix(
++        &self,
++        actual: &[f32],
++        language: &str,
++        prepared: &[f32],
++        released: Option<bool>,
++    ) -> Result<(), &'static str> {
++        if self.timeline_start != 0
++            || self.storage_start != 0
++            || self.storage_end != self.timeline_end
++            || self.frames != self.timeline_end
++            || self.frames == 0
++            || self.frames > prepared.len()
++            || released.is_none()
++            || (released == Some(true) && self.timeline_end != prepared.len())
++        {
++            return Err("actual FullPrefix invocation is not cumulative or released whole input");
++        }
++        self.compare(actual, language, prepared)
++    }
++    pub fn compare(
++        &self,
++        actual: &[f32],
++        language: &str,
++        prepared: &[f32],
++    ) -> Result<(), &'static str> {
++        let count = self
++            .timeline_end
++            .checked_sub(self.timeline_start)
++            .ok_or("reversed timeline")?;
++        if count == 0
++            || self.storage_end.checked_sub(self.storage_start) != Some(count)
++            || self.frames != count
++            || self.language != Some(language)
++        {
++            return Err("decoder identity/range/language mismatch");
++        }
++        let expected = prepared
++            .get(self.timeline_start..self.timeline_end)
++            .ok_or("timeline exceeds prepared input")?;
++        if actual.len() != count
++            || !actual
++                .iter()
++                .zip(expected)
++                .all(|(a, b)| a.to_bits() == b.to_bits())
++        {
++            return Err("actual decoder PCM differs from identified prepared range");
++        }
++        Ok(())
++    }
++}
++pub fn unique_active<T>(
++    records: impl IntoIterator<Item = T>,
++    mut active: impl FnMut(&T) -> bool,
++) -> Result<T, &'static str> {
++    let mut selected = None;
++    for record in records {
++        if active(&record) {
++            if selected.is_some() {
++                return Err("ambiguous actual decoder identity");
++            }
++            selected = Some(record);
++        }
++    }
++    selected.ok_or("missing actual decoder identity")
++}
++pub fn coverage<'a>(
++    records: impl IntoIterator<Item = &'a Identity>,
++    session: u64,
++    frames: usize,
++) -> Result<(), &'static str> {
++    let mut end = 0;
++    let mut generation = None;
++    let mut previous_job = None;
++    for record in records {
++        if generation.is_some_and(|g| g != record.generation)
++            || record.session != session
++            || record.timeline_start != end
++            || record.timeline_end <= end
++            || previous_job.is_some_and(|old| record.job <= old)
++        {
++            return Err("Stop coverage has gap/overlap/stale identity/order");
++        }
++        generation = Some(record.generation);
++        end = record.timeline_end;
++        previous_job = Some(record.job);
++    }
++    if end != frames {
++        return Err("Stop coverage is incomplete");
++    }
++    Ok(())
++}
++pub fn stable(
++    required: usize,
++    submitted: u128,
++    publications: impl IntoIterator<Item = (usize, u128)>,
++) -> Result<(), &'static str> {
++    let available = publications
++        .into_iter()
++        .filter(|(_, after)| *after <= submitted)
++        .map(|(end, _)| end)
++        .max()
++        .unwrap_or(0);
++    if required > available {
++        return Err("job admitted before actual publication stabilized its frames");
++    }
++    Ok(())
++}
++pub fn settlement(
++    before: bool,
++    after: bool,
++    settled: bool,
++    receipts: usize,
++    returned: bool,
++    exact: bool,
++) -> Result<bool, &'static str> {
++    if !settled {
++        if after {
++            return Err("worker after-decode lacks settlement");
++        }
++        return Ok(false);
++    }
++    if before {
++        if !after || receipts != 1 || !returned || !exact {
++            return Err("settled actual decode lacks matching after/receipt/PCM evidence");
++        }
++    } else if after || receipts != 0 {
++        return Err("non-decoded cancelled job has fabricated decode evidence");
++    }
++    Ok(true)
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    fn key(start: usize, end: usize, job: u64) -> Identity {
++        Identity {
++            session: 9,
++            generation: 3,
++            job,
++            storage_start: 0,
++            storage_end: end - start,
++            timeline_start: start,
++            timeline_end: end,
++            frames: end - start,
++            language: Some("de"),
++        }
++    }
++    #[test]
++    fn range_identity_is_not_discovered_by_hash_or_local_storage() {
++        let audio = [0.1, 0.2, 0.3, 0.4];
++        let id = key(2, 4, 11);
++        assert!(id.compare(&audio[2..], "de", &audio).is_ok());
++        assert!(id.compare(&audio[..2], "de", &audio).is_err());
++        assert!(id.compare(&audio[2..], "en", &audio).is_err());
++    }
++    #[test]
++    fn exactly_one_current_or_retired_active_call() {
++        assert!(unique_active([0, 1, 0], |x| *x == 1).is_ok());
++        assert!(unique_active([0, 0], |x| *x == 1).is_err());
++        assert!(unique_active([1, 1], |x| *x == 1).is_err());
++    }
++    #[test]
++    fn stop_coverage_requires_every_frame_and_monotone_jobs() {
++        let good = [key(0, 2, 7), key(2, 4, 8)];
++        assert!(coverage(good.iter(), 9, 4).is_ok());
++        assert!(coverage(good.iter(), 9, 5).is_err());
++        assert!(coverage(good.iter(), 10, 4).is_err());
++        assert!(coverage([key(0, 2, 7), key(1, 4, 8)].iter(), 9, 4).is_err());
++        assert!(coverage([key(0, 2, 7), key(2, 4, 7)].iter(), 9, 4).is_err());
++    }
++    #[test]
++    fn before_publish_is_not_stable_evidence() {
++        assert!(stable(320, 11, [(320, 12)]).is_err());
++        assert!(stable(320, 12, [(320, 12)]).is_ok());
++        assert!(stable(640, 12, [(320, 12)]).is_err());
++    }
++}
++
++#[cfg(test)]
++mod settlement_tests {
++    use super::*;
++    #[test]
++    fn actual_decode_requires_after_and_matching_returned_receipt() {
++        assert!(settlement(true, false, true, 1, true, true).is_err());
++        assert!(settlement(true, true, true, 0, false, false).is_err());
++        assert!(settlement(true, true, true, 2, true, true).is_err());
++        assert!(settlement(true, true, true, 1, false, true).is_err());
++        assert!(settlement(true, true, true, 1, true, false).is_err());
++        assert_eq!(settlement(true, true, true, 1, true, true), Ok(true));
++    }
++    #[test]
++    fn cancelled_pending_never_fabricates_decoder_receipt() {
++        assert_eq!(settlement(false, false, false, 0, false, false), Ok(false));
++        assert_eq!(settlement(false, false, true, 0, false, false), Ok(true));
++        assert!(settlement(false, false, true, 1, true, true).is_err());
++        assert!(settlement(false, true, true, 0, false, false).is_err());
++    }
++}
++
++#[cfg(test)]
++mod admission_mutation_tests {
++    use super::*;
++    #[test]
++    fn zero_marker_cannot_hide_future_prefix_audio() {
++        assert!(admission(320, Some(false), Some(0), 6400, Some(10), [(6400, 11)]).is_err());
++    }
++    #[test]
++    fn missing_role_cannot_masquerade_as_final_audio() {
++        assert!(admission(320, None, Some(320), 6400, Some(10), [(6400, 9)]).is_err());
++    }
++    #[test]
++    fn correct_marker_still_requires_actual_after_publication() {
++        assert!(admission(320, Some(false), Some(5120), 6400, Some(10), [(5120, 11)]).is_err());
++        assert!(admission(320, Some(false), Some(5120), 6400, Some(11), [(5120, 11)]).is_ok());
++        assert!(admission(6400, Some(true), Some(6400), 6400, Some(11), [(6400, 11)]).is_ok());
++    }
++    #[test]
++    fn prefix_guard_must_fit_fixture_and_checked_arithmetic() {
++        assert!(admission(6400, Some(false), Some(11200), 6400, Some(11), [(11200, 9)]).is_err());
++        assert!(admission(usize::MAX, Some(false), Some(0), usize::MAX, Some(11), []).is_err());
++        assert!(admission(6401, Some(true), Some(6401), 6400, Some(11), [(6401, 9)]).is_err());
++    }
++}
++/// Reconstruct the fixed producer guard independently of its trace marker.
++pub fn admission(
++    end: usize,
++    released: Option<bool>,
++    marker: Option<usize>,
++    fixture: usize,
++    submitted: Option<u128>,
++    publications: impl IntoIterator<Item = (usize, u128)>,
++) -> Result<(), &'static str> {
++    let submitted = submitted.ok_or("service-accepted job has no observed host submission")?;
++    if end == 0 || end > fixture {
++        return Err("job endpoint exceeds the bound prepared fixture");
++    }
++    let required = match released {
++        Some(true) => end,
++        Some(false) => end.checked_add(4800).ok_or("prefix guard overflow")?,
++        None => return Err("job submission role missing"),
++    };
++    if required > fixture || marker != Some(required) {
++        return Err(
++            "trace stable-frame marker differs from independently reconstructed role guard",
++        );
++    }
++    stable(required, submitted, publications)
++}
++
++#[cfg(test)]
++mod missing_submission_test {
++    use super::*;
++    #[test]
++    fn accepted_job_without_host_submission_cannot_bypass_admission() {
++        assert!(admission(320, Some(false), Some(5120), 6400, None, [(6400, 1)]).is_err());
++    }
++}
++
++/// Full-prefix Stop: revisions overlap at zero; only the released last job is final.
++pub fn prefix_coverage<'a>(
++    records: impl IntoIterator<Item = (&'a Identity, Option<bool>)>,
++    session: u64,
++    frames: usize,
++    candidate: bool,
++) -> Result<(), &'static str> {
++    let records = records.into_iter().take(602).collect::<Vec<_>>();
++    if records.is_empty()
++        || records.len() > 601
++        || (!candidate && records.len() != 1)
++        || (candidate && records.len() < 2)
++    {
++        return Err("full-prefix resource Stop did not exercise its selected mode");
++    }
++    let mut previous_job = 0;
++    let mut previous_cut = 0;
++    let generation = records[0].0.generation;
++    for (index, (record, released)) in records.iter().enumerate() {
++        let final_job = index + 1 == records.len();
++        if record.session != session
++            || record.generation != generation
++            || generation == 0
++            || record.job <= previous_job
++            || record.storage_start != 0
++            || record.timeline_start != 0
++            || record.storage_end != record.timeline_end
++            || record.frames != record.timeline_end
++            || record.frames == 0
++            || record.frames > frames
++            || *released != Some(final_job)
++            || (final_job && record.frames != frames)
++            || (!final_job && record.frames <= previous_cut)
++        {
++            return Err("full-prefix Stop has stale/order/role/range or final coverage mismatch");
++        }
++        previous_job = record.job;
++        previous_cut = record.frames;
++    }
++    Ok(())
++}
++#[cfg(test)]
++mod prefix_tests {
++    use super::*;
++    fn key(end: usize, job: u64) -> Identity {
++        Identity {
++            session: 9,
++            generation: 3,
++            job,
++            storage_start: 0,
++            storage_end: end,
++            timeline_start: 0,
++            timeline_end: end,
++            frames: end,
++            language: Some("de"),
++        }
++    }
++    #[test]
++    fn cumulative_revisions_cover_whole_final_without_append_or_disjoint_rule() {
++        let prefix = key(19200, 7);
++        let final_job = key(24000, 8);
++        assert!(
++            prefix_coverage(
++                [(&prefix, Some(false)), (&final_job, Some(true))],
++                9,
++                24000,
++                true
++            )
++            .is_ok()
++        );
++        assert!(prefix_coverage([(&final_job, Some(true))], 9, 24000, false).is_ok());
++        assert!(prefix_coverage([(&prefix, Some(false))], 9, 24000, true).is_err());
++        assert!(
++            prefix_coverage([(&prefix, Some(false)), (&final_job, None)], 9, 24000, true).is_err()
++        );
++    }
++}
++
++/// Validate the shape of an actual worker receipt without inventing preparation.
++pub fn reuse_shape(
++    outcome: &str,
++    prepared: Option<usize>,
++    hash: Option<&[u8; 32]>,
++    origin: Option<u64>,
++    invoked: bool,
++    native: bool,
++    job: u64,
++) -> Result<(), &'static str> {
++    if job == 0
++        || prepared.is_some() != hash.is_some()
++        || prepared.is_some_and(|n| !(16000..=4_800_000).contains(&n))
++        || (native && !invoked)
++    {
++        return Err("invalid partial preparation/native receipt");
++    }
++    let valid = match outcome {
++        "decoded" => prepared.is_some() && origin == Some(job) && invoked && native,
++        "hit" => {
++            prepared.is_some() && origin.is_some_and(|id| id > 0 && id < job) && !invoked && !native
++        }
++        "not-admitted" => prepared.is_none() && origin.is_none() && !invoked && !native,
++        "failed" | "invalid-context" | "revoked" => origin.is_none(),
++        _ => false,
++    };
++    if valid {
++        Ok(())
++    } else {
++        Err("inconsistent scoped reuse outcome")
++    }
++}
++#[cfg(test)]
++mod reuse_tests {
++    use super::*;
++    #[test]
++    fn receipts_do_not_invent_native_work_or_missing_preparation() {
++        let hash = [1; 32];
++        assert!(reuse_shape("decoded", Some(16000), Some(&hash), Some(7), true, false, 7).is_err());
++        assert!(reuse_shape("decoded", Some(16000), Some(&hash), Some(7), true, true, 7).is_ok());
++        assert!(reuse_shape("not-admitted", None, None, None, false, false, 7).is_ok());
++        assert!(
++            reuse_shape(
++                "not-admitted",
++                Some(16000),
++                Some(&hash),
++                None,
++                false,
++                false,
++                7
++            )
++            .is_err()
++        );
++        assert!(reuse_shape("hit", Some(16000), Some(&hash), Some(7), false, false, 7).is_err());
++        assert!(reuse_shape("revoked", None, None, None, false, false, 7).is_ok());
++    }
++}
++
++#[cfg(test)]
++mod prefix_invocation_tests {
++    use super::*;
++    #[test]
++    fn cancelled_actual_invocation_cannot_use_disjoint_slice_geometry() {
++        let prepared = vec![0.125; 16000];
++        let disjoint = Identity {
++            session: 9,
++            generation: 1,
++            job: 7,
++            storage_start: 0,
++            storage_end: 6080,
++            timeline_start: 320,
++            timeline_end: 6400,
++            frames: 6080,
++            language: Some("de"),
++        };
++        // This is a valid legacy suffix; admission/settlement also succeed.
++        assert!(
++            disjoint
++                .compare(&prepared[320..6400], "de", &prepared)
++                .is_ok()
++        );
++        assert!(admission(6400, Some(false), Some(11200), 16000, Some(2), [(16000, 1)]).is_ok());
++        assert_eq!(settlement(true, true, true, 1, true, true), Ok(true));
++        assert!(
++            disjoint
++                .compare_prefix(&prepared[320..6400], "de", &prepared, Some(false))
++                .is_err()
++        );
++        let prefix = Identity {
++            timeline_start: 0,
++            storage_end: 6400,
++            frames: 6400,
++            ..disjoint.clone()
++        };
++        assert!(
++            prefix
++                .compare_prefix(&prepared[..6400], "de", &prepared, Some(false))
++                .is_ok()
++        );
++        assert!(
++            prefix
++                .compare_prefix(&prepared[..6400], "de", &prepared, Some(true))
++                .is_err()
++        );
++        assert!(
++            prefix
++                .compare_prefix(&prepared[..6400], "de", &prepared, None)
++                .is_err()
++        );
++        let whole = Identity {
++            storage_end: 16000,
++            timeline_end: 16000,
++            frames: 16000,
++            ..prefix
++        };
++        assert!(
++            whole
++                .compare_prefix(&prepared, "de", &prepared, Some(true))
++                .is_ok()
++        );
++    }
++}
+diff --git a/src-tauri/examples/runtime_resource_probe/observed.rs b/src-tauri/examples/runtime_resource_probe/observed.rs
+new file mode 100644
+index 0000000..9b42618
+--- /dev/null
++++ b/src-tauri/examples/runtime_resource_probe/observed.rs
+@@ -0,0 +1,337 @@
++//! Text/PCM-free actual worker identities for the resource experiment only.
++use super::identity;
++use everlast_dictation::runtime::measurement::{
++    MeasuredJobTrace,
++    job_trace::{JobTraceRecord, JobTraceSnapshot, MAX_JOBS},
++};
++use serde::Serialize;
++use std::sync::{Mutex, OnceLock};
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum Mode {
++    Baseline,
++    ReferenceTrace,
++    CandidateMeasurement,
++    FullPrefixReference,
++    FullPrefixCandidate,
++}
++impl Mode {
++    pub fn full_prefix(self) -> bool {
++        matches!(self, Self::FullPrefixReference | Self::FullPrefixCandidate)
++    }
++    pub fn candidate(self) -> bool {
++        matches!(self, Self::CandidateMeasurement | Self::FullPrefixCandidate)
++    }
++    pub fn parse(flag: &str) -> Option<Self> {
++        match flag {
++            "--reference-trace" => Some(Self::ReferenceTrace),
++            "--candidate-measurement" => Some(Self::CandidateMeasurement),
++            "--full-prefix-reference" => Some(Self::FullPrefixReference),
++            "--full-prefix-candidate" => Some(Self::FullPrefixCandidate),
++            _ => None,
++        }
++    }
++}
++#[derive(Clone, Serialize)]
++#[serde(rename_all = "camelCase")]
++pub struct Receipt {
++    pub ordinal: u64,
++    pub identity: JobTraceRecord,
++    pub pcm_exact: bool,
++    pub decoder_returned: bool,
++    pub decode_context: Option<(u64, u64, u64)>,
++    pub decoder_error: Option<String>,
++    pub prepared_reuse: Option<everlast_dictation::transcription::prefix_cache::PreparedReuse>,
++}
++const MAX_RECEIPTS: usize =
++    (super::WARMUP_RUNS as usize + super::MEASURED_RUNS as usize) * (MAX_JOBS + 1);
++
++pub struct Observation {
++    pub mode: Mode,
++    reader: OnceLock<MeasuredJobTrace>,
++    receipts: Mutex<Vec<Receipt>>,
++}
++pub fn key(record: &JobTraceRecord) -> identity::Identity {
++    identity::Identity {
++        session: record.session,
++        generation: record.generation,
++        job: record.job_id,
++        storage_start: record.storage_start,
++        storage_end: record.storage_end,
++        timeline_start: record.timeline_start,
++        timeline_end: record.timeline_end,
++        frames: record.input_frames,
++        language: record.language,
++    }
++}
++pub fn healthy(snapshot: &JobTraceSnapshot) -> Result<(), String> {
++    if !snapshot.enabled
++        || snapshot.maximum_jobs != MAX_JOBS
++        || snapshot.error.is_some()
++        || snapshot.overflow_events != 0
++        || snapshot.first_overflow_job.is_some()
++        || snapshot.jobs.len() > MAX_JOBS
++    {
++        return Err("resource job trace unavailable, invalid or overflowed".into());
++    }
++    Ok(())
++}
++impl Observation {
++    pub fn new(mode: Mode) -> Self {
++        Self {
++            mode,
++            reader: OnceLock::new(),
++            receipts: Mutex::new(Vec::new()),
++        }
++    }
++    pub fn attach(&self, reader: MeasuredJobTrace) -> Result<(), String> {
++        self.reader
++            .set(reader)
++            .map_err(|_| "resource trace already attached".into())
++    }
++    pub fn snapshot(&self) -> Result<JobTraceSnapshot, String> {
++        let result = self
++            .reader
++            .get()
++            .ok_or("resource trace not attached")?
++            .snapshot()
++            .map_err(|_| "resource trace snapshot failed")?;
++        Ok(result)
++    }
++    pub fn enter(
++        &self,
++        ordinal: u64,
++        audio: &[f32],
++        language: &str,
++        expected: &[f32],
++    ) -> Result<(), String> {
++        let snapshot = self.snapshot()?;
++        healthy(&snapshot)?;
++        let active =
++            identity::unique_active(snapshot.jobs.into_iter().chain(snapshot.retired_job), |r| {
++                r.worker_before_decode_offset_nanos.is_some()
++                    && r.worker_after_decode_offset_nanos.is_none()
++                    && r.worker_settled_offset_nanos.is_none()
++            })?;
++        // Snapshot owns no PCM; release its other records before any gate wait.
++        let exact = if self.mode.full_prefix() {
++            key(&active).compare_prefix(audio, language, expected, active.audio_released_at_submit)
++        } else {
++            key(&active).compare(audio, language, expected)
++        };
++        let mut receipts = self
++            .receipts
++            .lock()
++            .map_err(|_| "resource receipt lock poisoned")?;
++        if receipts.last().is_some_and(|last| {
++            last.ordinal.checked_add(1) != Some(ordinal) || last.identity.job_id >= active.job_id
++        }) {
++            return Err("actual worker invocation ordinal/global job order changed".into());
++        }
++        if receipts.len() >= MAX_RECEIPTS
++            || receipts.iter().any(|r| key(&r.identity) == key(&active))
++        {
++            return Err("resource receipt limit or duplicate actual invocation".into());
++        }
++        receipts
++            .try_reserve(1)
++            .map_err(|_| "resource receipt allocation failed")?;
++        receipts.push(Receipt {
++            ordinal,
++            identity: active,
++            pcm_exact: exact.is_ok(),
++            decoder_returned: false,
++            decode_context: None,
++            decoder_error: None,
++            prepared_reuse: None,
++        });
++        exact.map_err(str::to_owned)
++    }
++    pub fn context(
++        &self,
++        ordinal: u64,
++        context: &everlast_dictation::inference_service::DecodeContext,
++    ) -> Result<(), String> {
++        let mut receipts = self
++            .receipts
++            .lock()
++            .map_err(|_| "resource receipt lock poisoned")?;
++        let receipt = receipts.last_mut().ok_or("missing scoped invocation")?;
++        if receipt.ordinal != ordinal
++            || (
++                receipt.identity.session,
++                receipt.identity.generation,
++                receipt.identity.job_id,
++            ) != (context.session, context.generation, context.job_id)
++        {
++            return Err("actual scoped context differs from worker trace".into());
++        }
++        receipt.decode_context = Some((context.session, context.generation, context.job_id));
++        Ok(())
++    }
++    pub fn returned_result(&self, ordinal: u64, error: Option<String>) -> Result<(), String> {
++        self.returned(ordinal)?;
++        let mut receipts = self
++            .receipts
++            .lock()
++            .map_err(|_| "resource receipt lock poisoned")?;
++        let receipt = receipts
++            .last_mut()
++            .ok_or("missing returned scoped invocation")?;
++        if receipt.ordinal != ordinal {
++            return Err("stale returned scoped invocation".into());
++        }
++        receipt.decoder_error = error;
++        Ok(())
++    }
++    pub fn prepared_reuse(
++        &self,
++        value: Option<everlast_dictation::transcription::prefix_cache::PreparedReuse>,
++    ) -> Result<(), String> {
++        let mut receipts = self
++            .receipts
++            .lock()
++            .map_err(|_| "resource receipt lock poisoned")?;
++        let receipt = receipts.last_mut().ok_or("missing scoped reuse owner")?;
++        let value = value.ok_or("missing actual scoped reuse receipt")?;
++        if receipt.prepared_reuse.is_some()
++            || !receipt.decoder_returned
++            || receipt.decode_context != Some((value.session, value.generation, value.job_id))
++        {
++            return Err("foreign/duplicate/missing scoped reuse receipt".into());
++        }
++        receipt.prepared_reuse = Some(value);
++        Ok(())
++    }
++    pub fn returned(&self, ordinal: u64) -> Result<(), String> {
++        let mut receipts = self
++            .receipts
++            .lock()
++            .map_err(|_| "resource receipt lock poisoned")?;
++        let receipt = receipts
++            .iter_mut()
++            .find(|r| r.ordinal == ordinal)
++            .ok_or("resource decoder receipt missing")?;
++        if receipt.decoder_returned {
++            return Err("resource decoder returned twice".into());
++        }
++        receipt.decoder_returned = true;
++        Ok(())
++    }
++    pub fn is_early_prefix(&self, ordinal: u64) -> Result<bool, String> {
++        let receipts = self
++            .receipts
++            .lock()
++            .map_err(|_| "resource receipt lock poisoned")?;
++        Ok(receipts
++            .iter()
++            .find(|r| r.ordinal == ordinal)
++            .is_some_and(|r| r.identity.audio_released_at_submit == Some(false)))
++    }
++    pub fn receipts(&self) -> Result<Vec<Receipt>, String> {
++        Ok(self
++            .receipts
++            .lock()
++            .map_err(|_| "resource receipt lock poisoned")?
++            .clone())
++    }
++    pub fn reconciled(&self, snapshot: &JobTraceSnapshot) -> Result<bool, String> {
++        healthy(snapshot)?;
++        let receipts = self
++            .receipts
++            .lock()
++            .map_err(|_| "resource receipt lock poisoned")?;
++        for record in snapshot.jobs.iter().chain(snapshot.retired_job.iter()) {
++            let matching: Vec<_> = receipts
++                .iter()
++                .filter(|r| key(&r.identity) == key(record))
++                .collect();
++            if record.service_accepted_offset_nanos.is_none() {
++                return Err("resource host job was not service-accepted".into());
++            }
++            let settled = identity::settlement(
++                record.worker_before_decode_offset_nanos.is_some(),
++                record.worker_after_decode_offset_nanos.is_some(),
++                record.worker_settled_offset_nanos.is_some(),
++                matching.len(),
++                matching.first().is_some_and(|r| r.decoder_returned),
++                matching.first().is_some_and(|r| r.pcm_exact),
++            )?;
++            if !settled {
++                return Ok(false);
++            }
++            if self.mode.full_prefix() && record.worker_before_decode_offset_nanos.is_some() {
++                let receipt = matching.first().ok_or("missing full-prefix actual call")?;
++                let reuse = receipt
++                    .prepared_reuse
++                    .as_ref()
++                    .ok_or("missing full-prefix actual reuse receipt")?;
++                use everlast_dictation::transcription::prefix_cache::ReuseOutcome;
++                if (reuse.session, reuse.generation, reuse.job_id)
++                    != (record.session, record.generation, record.job_id)
++                {
++                    return Err("full-prefix receipt changed scope".into());
++                }
++                let outcome = match reuse.outcome {
++                    ReuseOutcome::Decoded => "decoded",
++                    ReuseOutcome::Hit => "hit",
++                    ReuseOutcome::NotAdmitted => "not-admitted",
++                    ReuseOutcome::Failed => "failed",
++                    ReuseOutcome::InvalidContext => "invalid-context",
++                    ReuseOutcome::Revoked => "revoked",
++                };
++                identity::reuse_shape(
++                    outcome,
++                    reuse.prepared_frames,
++                    reuse.prepared_pcm_sha256.as_ref(),
++                    reuse.origin_job_id,
++                    reuse.decoder_invoked,
++                    reuse.native_full_attempted,
++                    reuse.job_id,
++                )?;
++                match reuse.outcome {
++                    ReuseOutcome::Decoded
++                        if !reuse.decoder_invoked
++                            || !reuse.native_full_attempted
++                            || reuse.origin_job_id != Some(record.job_id) =>
++                    {
++                        return Err("decoded receipt lacks actual native call".into());
++                    }
++                    ReuseOutcome::Hit
++                        if !self.mode.candidate()
++                            || reuse.decoder_invoked
++                            || reuse.native_full_attempted
++                            || !receipts
++                                .iter()
++                                .take_while(|old| old.ordinal < receipt.ordinal)
++                                .filter(|old| {
++                                    old.identity.session == record.session
++                                        && old.identity.generation == record.generation
++                                })
++                                .filter_map(|old| old.prepared_reuse.as_ref())
++                                .fold(None, |live, prior| match prior.outcome {
++                                    ReuseOutcome::Decoded => Some(prior),
++                                    ReuseOutcome::Hit => live,
++                                    _ => None,
++                                })
++                                .is_some_and(|prior| {
++                                    prior.job_id < reuse.job_id
++                                        && Some(prior.job_id) == reuse.origin_job_id
++                                        && prior.prepared_frames == reuse.prepared_frames
++                                        && prior.prepared_pcm_sha256 == reuse.prepared_pcm_sha256
++                                }) =>
++                    {
++                        return Err("cache hit lacks actual current-scope native origin".into());
++                    }
++                    ReuseOutcome::Failed | ReuseOutcome::InvalidContext | ReuseOutcome::Revoked
++                        if record.worker_outcome == Some("decoded-ok") =>
++                    {
++                        return Err("accepted job has failed/revoked cache receipt".into());
++                    }
++                    _ => {}
++                }
++            }
++        }
++        Ok(true)
++    }
++}
+diff --git a/src-tauri/examples/runtime_resource_probe/parameters.rs b/src-tauri/examples/runtime_resource_probe/parameters.rs
+index 2c2e5d7..d5145ac 100644
+--- a/src-tauri/examples/runtime_resource_probe/parameters.rs
++++ b/src-tauri/examples/runtime_resource_probe/parameters.rs
+@@ -9,6 +9,83 @@ mod baseline;
+ use crate::{input, runner};
+ use serde_json::{Value, json};
+ 
++pub fn template_for(mode: runner::Mode) -> Result<Value, serde_json::Error> {
++    let mut document = template()?;
++    if mode != runner::Mode::Baseline {
++        document["configurationId"] = json!(match mode {
++            runner::Mode::ReferenceTrace => "runtime-resource-pretranscription-reference-trace-v1",
++            runner::Mode::FullPrefixReference => "runtime-resource-full-prefix-reference-v1",
++            runner::Mode::FullPrefixCandidate => "runtime-resource-full-prefix-candidate-v1",
++            _ => "runtime-resource-pretranscription-candidate-v1",
++        });
++        document["experimentalResourceAdapter"] = json!({
++            "mode":mode,
++            "identity":"exactly one actual worker BeforeDecode without AfterDecode/Settled, current plus retired",
++            "decoderPcm":"bit-exact known global timeline slice of full AudioProcessor output; never infer range from hashes",
++            "entryHoldBudget":"ceil(bound fixture frames / 16000) seconds + 120 seconds; maximum 420 seconds",
++            "cancelPhase":"first actual decode held while complete fixture is published; Cancel after feed and Stop; no early Cancel latency proof",
++            "stopCoverage":"global 0..preparedFrames disjoint monotone jobs; every accepted job settled and adopted; candidate requires early prefix plus final rest",
++            "referenceBinding":"supplied mode-specific qualified Stop text hash; candidate is not asserted equal to full-recording reference",
++            "qualification":false,
++            "sources":{
++                "identity":source("src-tauri/examples/runtime_resource_probe/identity.rs",include_bytes!("identity.rs")),
++                "observed":source("src-tauri/examples/runtime_resource_probe/observed.rs",include_bytes!("observed.rs")),
++                "runtimeMeasurement":source("src-tauri/src/runtime/measurement.rs",include_bytes!("../../src/runtime/measurement.rs")),
++                "actualWorker":source("src-tauri/src/inference_service.rs",include_bytes!("../../src/inference_service.rs")),
++                "workerObservation":source("src-tauri/src/inference_service/observation.rs",include_bytes!("../../src/inference_service/observation.rs")),
++                "jobTrace":source("src-tauri/src/runtime/measurement/job_trace.rs",include_bytes!("../../src/runtime/measurement/job_trace.rs"))
++            }
++        });
++        if mode.full_prefix() {
++            if let Some(state) = document["runtimeBaseline"]["state"].as_object_mut() {
++                state.remove("freshWhisperStateEachJob");
++                state.insert("freshWhisperStateEachNativeDecode".into(), json!(true));
++                state.insert("cacheHitCreatesWhisperState".into(), json!(false));
++            }
++            document["experimentalResourceAdapter"]["stopCoverage"] = json!(
++                "strictly increasing early 0..cut revisions; final released job exactly 0..N; every accepted job settled/adopted; candidate must exercise an actual early prefix"
++            );
++            document["experimentalResourceAdapter"]["initialization"] = json!(
++                "same serial local-inference owner initializes PrefixCacheDecoder then wraps controlled scoped invocations; no Engine algorithm change"
++            );
++            document["experimentalResourceAdapter"]["scopedReceipts"] = json!(
++                "actual DecodeContext forwarded and prepared receipt retained; revoked errors retained as cancelled evidence, not inferred success"
++            );
++            document["experimentalResourceAdapter"]["sources"]["cache"] = source(
++                "src-tauri/src/transcription/prefix_cache.rs",
++                include_bytes!("../../src/transcription/prefix_cache.rs"),
++            );
++            document["experimentalResourceAdapter"]["sources"]["cacheReceipt"] = source(
++                "src-tauri/src/transcription/prefix_cache/evidence.rs",
++                include_bytes!("../../src/transcription/prefix_cache/evidence.rs"),
++            );
++            document["experimentalResourceAdapter"]["sources"]["fullPrefixAudio"] = source(
++                "src-tauri/src/audio/full_prefix.rs",
++                include_bytes!("../../src/audio/full_prefix.rs"),
++            );
++            document["experimentalResourceAdapter"]["sources"]["fullPrefixController"] = source(
++                "src-tauri/src/controller/full_prefix.rs",
++                include_bytes!("../../src/controller/full_prefix.rs"),
++            );
++            document["experimentalResourceAdapter"]["sources"]["pipeline"] = source(
++                "src-tauri/src/pipeline.rs",
++                include_bytes!("../../src/pipeline.rs"),
++            );
++        }
++        document["workload"]["decoderInputCheck"] = json!(
++            "all actual invocation receipts match full identity and exact prepared global range; cancelled pending jobs have no invented invocation"
++        );
++        document["workload"]["textCheck"] =
++            json!("Stop equals supplied mode-specific qualified text; no accuracy claim");
++        document["workload"]["fixtureOwnership"] = json!(
++            "one original fixture plus one prepared fixture Arc, bounded receipt and trace snapshots retained; no per-call PCM copies"
++        );
++        document["workload"]["decoderCancellation"] = json!(
++            "hold first actual prefix/full decode; publish full fixture; Stop then cancel; release and discard, no native preemption"
++        );
++    }
++    Ok(document)
++}
+ pub fn template() -> Result<Value, serde_json::Error> {
+     Ok(json!({
+         "schemaVersion":1,
+@@ -50,12 +127,26 @@ fn source(filename: &str, bytes: &[u8]) -> Value {
+ }
+ 
+ pub fn validate(bytes: &[u8]) -> Result<Value, String> {
++    validate_for(bytes, runner::Mode::Baseline)
++}
++pub fn validate_for(bytes: &[u8], mode: runner::Mode) -> Result<Value, String> {
+     let supplied: Value =
+         serde_json::from_slice(bytes).map_err(|_| "invalid bounded resource parameter JSON")?;
+-    let runtime_bytes = serde_json::to_vec(&supplied["runtimeBaseline"])
++    let runtime_value = if mode.full_prefix() {
++        let mut value = supplied["runtimeBaseline"].clone();
++        if let Some(state) = value["state"].as_object_mut() {
++            state.remove("freshWhisperStateEachNativeDecode");
++            state.remove("cacheHitCreatesWhisperState");
++            state.insert("freshWhisperStateEachJob".into(), json!(true));
++        }
++        value
++    } else {
++        supplied["runtimeBaseline"].clone()
++    };
++    let runtime_bytes = serde_json::to_vec(&runtime_value)
+         .map_err(|_| "resource runtime configuration could not be encoded")?;
+     baseline::validate(&runtime_bytes)?;
+-    let actual = template().map_err(|_| "compiled resource template is invalid")?;
++    let actual = template_for(mode).map_err(|_| "compiled resource template is invalid")?;
+     if supplied != actual {
+         return Err("resource parameter document differs from this compiled workload; freeze a new document before running".into());
+     }
+@@ -86,3 +177,39 @@ mod tests {
+         Ok(())
+     }
+ }
++
++#[cfg(test)]
++mod experimental_tests {
++    use super::*;
++    #[test]
++    fn mode_specific_templates_fail_closed_before_model_io()
++    -> Result<(), Box<dyn std::error::Error>> {
++        for mode in [
++            runner::Mode::ReferenceTrace,
++            runner::Mode::CandidateMeasurement,
++            runner::Mode::FullPrefixReference,
++            runner::Mode::FullPrefixCandidate,
++        ] {
++            let document = template_for(mode)?;
++            let bytes = serde_json::to_vec(&document)?;
++            assert!(validate_for(&bytes, mode).is_ok());
++            assert!(validate(&bytes).is_err());
++            let other = if mode == runner::Mode::ReferenceTrace {
++                runner::Mode::CandidateMeasurement
++            } else {
++                runner::Mode::ReferenceTrace
++            };
++            assert!(validate_for(&bytes, other).is_err());
++            let mut corrupted = document.clone();
++            corrupted["experimentalResourceAdapter"]["sources"]["identity"]["sha256"] =
++                json!("changed");
++            assert!(validate_for(&serde_json::to_vec(&corrupted)?, mode).is_err());
++        }
++        assert_eq!(
++            runner::Mode::parse("--candidate-measurement"),
++            Some(runner::Mode::CandidateMeasurement)
++        );
++        assert_eq!(runner::Mode::parse("--candidate"), None);
++        Ok(())
++    }
++}
+diff --git a/src-tauri/examples/runtime_resource_probe/runner.rs b/src-tauri/examples/runtime_resource_probe/runner.rs
+index 4054031..ac988ab 100644
+--- a/src-tauri/examples/runtime_resource_probe/runner.rs
++++ b/src-tauri/examples/runtime_resource_probe/runner.rs
+@@ -1,5 +1,11 @@
+ //! Serial resource workload at the actual measured-runtime boundary.
+ 
++#[path = "identity.rs"]
++mod identity;
++#[path = "observed.rs"]
++mod observed;
++pub use observed::Mode;
++
+ use crossbeam_channel::{Receiver, Sender, bounded};
+ use dictation_core::session::Phase;
+ use everlast_dictation::{
+@@ -65,6 +71,7 @@ pub struct Row {
+     pub terminal: Option<String>,
+     pub reference_match: Option<bool>,
+     pub text_absent: bool,
++    pub held_decoder_ordinal: Option<u64>,
+     pub decoder_started: u64,
+     pub decoder_completed: u64,
+     pub decoder_compared: u64,
+@@ -73,6 +80,9 @@ pub struct Row {
+     pub controller_idle_and_wrapper_idle: bool,
+     pub owner_free_confirmed_by_next_start: bool,
+     pub feed_frames: usize,
++    pub job_trace: Option<everlast_dictation::runtime::measurement::job_trace::JobTraceSnapshot>,
++    pub full_stop_coverage: Option<bool>,
++    pub actual_publication_admission_valid: Option<bool>,
+     pub publication_count: usize,
+     pub feed_timing_valid: Option<bool>,
+     pub maximum_publication_deviation_nanos: Option<u128>,
+@@ -105,6 +115,7 @@ struct State {
+     compared: AtomicU64,
+     mismatches: AtomicU64,
+     error: std::sync::Mutex<Option<(u64, String)>>,
++    observation: std::sync::OnceLock<observed::Observation>,
+ }
+ pub struct Controlled<D> {
+     inner: D,
+@@ -119,6 +130,21 @@ pub struct DecoderControl {
+     entered: Receiver<u64>,
+     release: Sender<()>,
+ }
++pub fn controlled_observed<D: Decoder>(
++    inner: D,
++    expected: Arc<[f32]>,
++    timeout: Duration,
++    mode: Mode,
++) -> (Controlled<D>, DecoderControl) {
++    let (decoder, control) = controlled(inner, expected, timeout);
++    // This constructor runs before the decoder is transferred to its worker.
++    let inserted = control
++        .state
++        .observation
++        .set(observed::Observation::new(mode));
++    debug_assert!(inserted.is_ok());
++    (decoder, control)
++}
+ pub fn controlled<D: Decoder>(
+     inner: D,
+     expected: Arc<[f32]>,
+@@ -156,6 +182,11 @@ impl<D: Decoder> Decoder for Controlled<D> {
+         let _active = Active(&self.state);
+         let call = self.state.started.fetch_add(1, Ordering::AcqRel) + 1;
+         let result = (|| {
++            if let Some(observed) = self.state.observation.get() {
++                observed
++                    .enter(call, audio, language.code(), &self.expected)
++                    .map_err(|_| InferenceError::InvalidAudio)?;
++            }
+             if self.state.armed.swap(false, Ordering::AcqRel) {
+                 self.entered
+                     .try_send(call)
+@@ -165,13 +196,24 @@ impl<D: Decoder> Decoder for Controlled<D> {
+                     .map_err(|_| InferenceError::Decode)?;
+             }
+             self.state.compared.fetch_add(1, Ordering::AcqRel);
+-            if audio != self.expected.as_ref() {
++            if self.state.observation.get().is_none() && audio != self.expected.as_ref() {
+                 self.state.mismatches.fetch_add(1, Ordering::AcqRel);
+                 Err(InferenceError::InvalidAudio)
+             } else {
+                 self.inner.decode(audio, language)
+             }
+         })();
++        if let Some(observed) = self.state.observation.get() {
++            if observed.returned(call).is_err() {
++                *self
++                    .state
++                    .error
++                    .lock()
++                    .map_err(|_| InferenceError::Decode)? =
++                    Some((call, "resource decoder receipt completion failed".into()));
++                return Err(InferenceError::Decode);
++            }
++        }
+         if let Err(error) = &result {
+             *self
+                 .state
+@@ -181,7 +223,73 @@ impl<D: Decoder> Decoder for Controlled<D> {
+         }
+         result
+     }
++    fn decode_with_context(
++        &mut self,
++        audio: &[f32],
++        language: Language,
++        context: &everlast_dictation::inference_service::DecodeContext,
++    ) -> Result<String, InferenceError> {
++        if self
++            .state
++            .observation
++            .get()
++            .is_none_or(|o| !o.mode.full_prefix())
++        {
++            return self.decode(audio, language);
++        }
++        self.state.active.store(true, Ordering::Release);
++        let _active = Active(&self.state);
++        let call = self.state.started.fetch_add(1, Ordering::AcqRel) + 1;
++        let result = (|| {
++            let observed = self.state.observation.get().ok_or(InferenceError::Decode)?;
++            observed
++                .enter(call, audio, language.code(), &self.expected)
++                .map_err(|_| InferenceError::InvalidAudio)?;
++            observed
++                .context(call, context)
++                .map_err(|_| InferenceError::InvalidDecodeContext)?;
++            if self.state.armed.swap(false, Ordering::AcqRel) {
++                self.entered
++                    .try_send(call)
++                    .map_err(|_| InferenceError::Decode)?;
++                self.release
++                    .recv_timeout(self.timeout)
++                    .map_err(|_| InferenceError::Decode)?;
++            }
++            self.state.compared.fetch_add(1, Ordering::AcqRel);
++            self.inner.decode_with_context(audio, language, context)
++        })();
++        if let Some(observed) = self.state.observation.get() {
++            observed
++                .returned_result(call, result.as_ref().err().map(ToString::to_string))
++                .map_err(|_| InferenceError::Decode)?;
++        }
++        if let Err(error) = &result
++            && context.is_valid()
++        {
++            *self
++                .state
++                .error
++                .lock()
++                .map_err(|_| InferenceError::Decode)? = Some((call, error.to_string()));
++        }
++        result
++    }
++    fn take_prepared_reuse(
++        &mut self,
++    ) -> Option<everlast_dictation::transcription::prefix_cache::PreparedReuse> {
++        let receipt = self.inner.take_prepared_reuse();
++        if let Some(observed) = self.state.observation.get()
++            && observed.mode.full_prefix()
++            && let Err(error) = observed.prepared_reuse(receipt.clone())
++            && let Ok(mut state) = self.state.error.lock()
++        {
++            *state = Some((self.state.started.load(Ordering::Acquire), error));
++        }
++        receipt
++    }
+ }
++
+ struct Release<'a>(&'a DecoderControl);
+ impl Drop for Release<'_> {
+     fn drop(&mut self) {
+@@ -201,6 +309,36 @@ pub struct DecoderDiagnostics {
+     pub last_error: Option<(u64, String)>,
+ }
+ impl DecoderControl {
++    pub fn attach_trace(
++        &self,
++        reader: everlast_dictation::runtime::measurement::MeasuredJobTrace,
++    ) -> Result<(), String> {
++        self.state
++            .observation
++            .get()
++            .ok_or("resource observation not enabled")?
++            .attach(reader)
++    }
++    pub fn observation_after_cleanup(&self) -> serde_json::Value {
++        let Some(observation) = self.state.observation.get() else {
++            return serde_json::Value::Null;
++        };
++        let snapshot = observation.snapshot();
++        let receipts = observation.receipts();
++        let validation = match (&snapshot, &receipts) {
++            (Ok(snapshot), Ok(receipts)) => observation.reconciled(snapshot).and_then(|settled| {
++                if !settled || receipts.iter().any(|r| !r.decoder_returned || !r.pcm_exact) {
++                    Err("resource decode receipts/jobs incomplete after join".into())
++                } else {
++                    Ok(())
++                }
++            }),
++            _ => Err("resource after-join evidence unavailable".into()),
++        };
++        serde_json::json!({"mode":observation.mode,"valid":validation.is_ok(),"validationError":validation.err(),
++            "afterJoinTrace":snapshot.as_ref().ok(),"afterJoinTraceError":snapshot.as_ref().err(),
++            "actualDecoderReceipts":receipts.as_ref().ok(),"receiptReadError":receipts.as_ref().err()})
++    }
+     pub fn diagnostics(&self) -> Result<DecoderDiagnostics, String> {
+         let last_error = self
+             .state
+@@ -244,6 +382,7 @@ fn row(id: String, warmup: bool, operation: Operation) -> Row {
+         terminal: None,
+         reference_match: None,
+         text_absent: false,
++        held_decoder_ordinal: None,
+         decoder_started: 0,
+         decoder_completed: 0,
+         decoder_compared: 0,
+@@ -252,6 +391,9 @@ fn row(id: String, warmup: bool, operation: Operation) -> Row {
+         controller_idle_and_wrapper_idle: false,
+         owner_free_confirmed_by_next_start: false,
+         feed_frames: 0,
++        job_trace: None,
++        full_stop_coverage: None,
++        actual_publication_admission_valid: None,
+         publication_count: 0,
+         feed_timing_valid: None,
+         maximum_publication_deviation_nanos: None,
+@@ -373,11 +515,17 @@ fn one(
+     } else {
+         samples
+     };
+-    record_feed(
+-        row,
+-        feed(&mut source, input).map_err(|e| e.to_string())?,
+-        input.len(),
+-    );
++    let feed_evidence = feed(&mut source, input).map_err(|e| e.to_string())?;
++    let publication_endpoints = if control.state.observation.get().is_some() {
++        feed_evidence
++            .publications
++            .iter()
++            .map(|p| (p.end_frame, p.after_publish_nanos))
++            .collect::<Vec<_>>()
++    } else {
++        Vec::new()
++    };
++    record_feed(row, feed_evidence, input.len());
+     match row.operation {
+         Operation::StopComplete => {
+             runtime.stop(session).map_err(|e| e.to_string())?;
+@@ -385,10 +533,17 @@ fn one(
+         Operation::CancelCapture => runtime.cancel(session).map_err(|e| e.to_string())?,
+         Operation::CancelDecoderEntry => {
+             runtime.stop(session).map_err(|e| e.to_string())?;
+-            control
++            let held = control
+                 .entered
+                 .recv_timeout(timeout)
+                 .map_err(|e| format!("decoder entry observation failed: {e}"))?;
++            row.held_decoder_ordinal = Some(held);
++            if let Some(observation) = control.state.observation.get()
++                && observation.mode.candidate()
++                && !observation.is_early_prefix(held)?
++            {
++                return Err("candidate entry Cancel did not exercise an early prefix".into());
++            }
+             runtime.cancel(session).map_err(|e| e.to_string())?;
+         }
+     }
+@@ -405,8 +560,16 @@ fn one(
+         }
+         row.terminal = timing.terminal.map(|t| format!("{t:?}"));
+         row.text_absent = state.session.text.is_none();
++        let reconciled = if let Some(observation) = control.state.observation.get() {
++            let snapshot = observation.snapshot()?;
++            row.job_trace = Some(snapshot);
++            observation.reconciled(row.job_trace.as_ref().ok_or("resource job trace missing")?)?
++        } else {
++            true
++        };
+         if state.session.phase == Phase::Idle
+             && timing.terminal.is_some()
++            && reconciled
+             && !control.state.active.load(Ordering::Acquire)
+         {
+             row.controller_idle_and_wrapper_idle = true;
+@@ -424,10 +587,21 @@ fn one(
+             if let Some(error) = &row.decoder_error {
+                 return Err(format!("decoder failure: {error}"));
+             }
+-            if row.decoder_started != expected
+-                || row.decoder_completed != expected
+-                || row.decoder_compared != expected
+-            {
++            let expected_counts = match control.state.observation.get().map(|v| v.mode) {
++                Some(Mode::CandidateMeasurement | Mode::FullPrefixCandidate)
++                    if row.operation == Operation::StopComplete =>
++                {
++                    row.decoder_started > 0
++                        && row.decoder_completed == row.decoder_started
++                        && row.decoder_compared == row.decoder_started
++                }
++                _ => {
++                    row.decoder_started == expected
++                        && row.decoder_completed == expected
++                        && row.decoder_compared == expected
++                }
++            };
++            if !expected_counts {
+                 return Err("decoder call/completion/input-comparison count differs from the operation contract".into());
+             }
+             if let Some(error) = state.error {
+@@ -437,6 +611,78 @@ fn one(
+             {
+                 return Err(format!("controller failure: {message}"));
+             }
++            if let Some(snapshot) = &row.job_trace {
++                let mut admission = true;
++                for job in &snapshot.jobs {
++                    if job.session != session || job.generation != 1 {
++                        return Err("resource trace changed session/generation".into());
++                    }
++                    if identity::admission(
++                        job.timeline_end,
++                        job.audio_released_at_submit,
++                        job.required_stable_frames,
++                        samples.len(),
++                        job.host_submit_offset_nanos,
++                        publication_endpoints.iter().copied(),
++                    )
++                    .is_err()
++                    {
++                        admission = false;
++                    }
++                }
++                row.actual_publication_admission_valid = Some(admission);
++                if !admission {
++                    return Err("resource job admitted before its actual publication".into());
++                }
++                if row.operation == Operation::StopComplete {
++                    let keys = snapshot.jobs.iter().map(observed::key).collect::<Vec<_>>();
++                    let coverage = if control
++                        .state
++                        .observation
++                        .get()
++                        .is_some_and(|o| o.mode.full_prefix())
++                    {
++                        identity::prefix_coverage(
++                            keys.iter()
++                                .zip(snapshot.jobs.iter().map(|j| j.audio_released_at_submit)),
++                            session,
++                            samples.len(),
++                            control
++                                .state
++                                .observation
++                                .get()
++                                .is_some_and(|o| o.mode.candidate()),
++                        )
++                    } else {
++                        identity::coverage(keys.iter(), session, samples.len())
++                    };
++                    let complete = coverage.is_ok()
++                        && snapshot
++                            .jobs
++                            .last()
++                            .is_some_and(|r| r.audio_released_at_submit == Some(true))
++                        && (control
++                            .state
++                            .observation
++                            .get()
++                            .is_none_or(|o| !o.mode.candidate())
++                            || (snapshot.jobs.len() >= 2
++                                && snapshot
++                                    .jobs
++                                    .iter()
++                                    .any(|r| r.audio_released_at_submit == Some(false))))
++                        && snapshot.jobs.iter().all(|r| {
++                            r.adoption == Some("accepted") && r.worker_outcome == Some("decoded-ok")
++                        });
++                    row.full_stop_coverage = Some(complete);
++                    if !complete {
++                        return Err(
++                            "resource Stop lacks complete settled/adopted global job coverage"
++                                .into(),
++                        );
++                    }
++                }
++            }
+             match row.operation {
+                 Operation::StopComplete => {
+                     row.reference_match =
+@@ -884,3 +1130,271 @@ mod tests {
+         Ok(())
+     }
+ }
++
++// Source-only on the remote preparation host: requires the real macOS crate
++// to compile/run after import. No Engine/model is loaded by this test.
++#[cfg(test)]
++mod observed_adapter_tests {
++    use super::*;
++    use dictation_core::audio::AudioFormat;
++    use everlast_dictation::inference_service::InferenceService;
++    fn pause_fixture() -> Arc<[f32]> {
++        let mut samples = vec![0.125; 6400];
++        samples.extend(vec![0.0; 16000]);
++        samples.extend(vec![0.125; 9600]);
++        samples.into()
++    }
++    struct Part;
++    impl Decoder for Part {
++        fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
++            Ok("part".into())
++        }
++    }
++    #[test]
++    fn actual_runtime_reference_and_prefix_candidate_bind_every_worker_input()
++    -> Result<(), Box<dyn std::error::Error>> {
++        let samples = pause_fixture();
++        for mode in [Mode::ReferenceTrace, Mode::CandidateMeasurement] {
++            let (decoder, control) =
++                controlled_observed(Part, Arc::clone(&samples), Duration::from_secs(5), mode);
++            let service = InferenceService::with_decoder(decoder)?;
++            let format = AudioFormat {
++                sample_rate: 16000,
++                channels: 1,
++            };
++            let runtime = match mode {
++                Mode::ReferenceTrace => {
++                    MeasuredRuntime::spawn_pretranscription_reference(service, 1, format)?
++                }
++                _ => MeasuredRuntime::spawn_pretranscription(service, 1, format)?,
++            };
++            control.attach_trace(runtime.job_trace_handle())?;
++            crate::shared::wait_ready(&runtime)?;
++            let report = workload(
++                &runtime,
++                &control,
++                &samples,
++                if mode == Mode::CandidateMeasurement {
++                    "part part"
++                } else {
++                    "part"
++                },
++                Config {
++                    warmups: 0,
++                    cycles: 1,
++                    timeout: Duration::from_secs(5),
++                },
++                |_| {},
++            );
++            let cleanup = crate::shared::cleanup(runtime);
++            let final_evidence = control.observation_after_cleanup();
++            assert!(cleanup.joined);
++            assert!(report.behavior_passed, "{:?}", report.first_error);
++            assert_eq!(report.rows[0].full_stop_coverage, Some(true));
++            assert_eq!(
++                report.rows[0].actual_publication_admission_valid,
++                Some(true)
++            );
++            assert_eq!(final_evidence["valid"], true);
++            assert!(
++                final_evidence["actualDecoderReceipts"]
++                    .as_array()
++                    .is_some_and(|r| r.len()
++                        == if mode == Mode::CandidateMeasurement {
++                            2
++                        } else {
++                            1
++                        })
++            );
++        }
++        Ok(())
++    }
++    #[test]
++    fn actual_prefix_entry_cancel_settles_and_releases_fixture_owner()
++    -> Result<(), Box<dyn std::error::Error>> {
++        let samples = pause_fixture();
++        let (decoder, control) = controlled_observed(
++            Part,
++            Arc::clone(&samples),
++            Duration::from_secs(6),
++            Mode::CandidateMeasurement,
++        );
++        let runtime = MeasuredRuntime::spawn_pretranscription(
++            InferenceService::with_decoder(decoder)?,
++            1,
++            AudioFormat {
++                sample_rate: 16000,
++                channels: 1,
++            },
++        )?;
++        control.attach_trace(runtime.job_trace_handle())?;
++        crate::shared::wait_ready(&runtime)?;
++        let report = workload(
++            &runtime,
++            &control,
++            &samples,
++            "part part",
++            Config {
++                warmups: 0,
++                cycles: 3,
++                timeout: Duration::from_secs(5),
++            },
++            |_| {},
++        );
++        let cleanup = crate::shared::cleanup(runtime);
++        let evidence = control.observation_after_cleanup();
++        assert!(cleanup.joined);
++        assert!(report.behavior_passed, "{:?}", report.first_error);
++        assert_eq!(report.rows[2].operation, Operation::CancelDecoderEntry);
++        assert_eq!(report.rows[2].terminal.as_deref(), Some("Cancelled"));
++        assert!(report.rows[2].held_decoder_ordinal.is_some());
++        assert_eq!(report.rows[2].decoder_started, 1);
++        assert!(report.rows[2].text_absent);
++        assert!(
++            report.rows[..2]
++                .iter()
++                .all(|r| r.owner_free_confirmed_by_next_start)
++        );
++        assert_eq!(evidence["valid"], true);
++        // This witnesses the expected-fixture wrapper Arc only, not product
++        // journal Weak ownership (covered by separate production tests).
++        assert_eq!(Arc::strong_count(&samples), 1);
++        Ok(())
++    }
++}
++
++// SOURCE-ONLY until the Mac integration check. Receipt/native flags below are
++// deterministic test doubles, never actual backend or resource evidence.
++#[cfg(test)]
++mod full_prefix_contract_tests {
++    use super::*;
++    use dictation_core::audio::AudioFormat;
++    use everlast_dictation::{
++        inference_service::{DecodeContext, InferenceService},
++        transcription::prefix_cache::{PreparedReuse, ReuseOutcome},
++    };
++    struct Scoped {
++        receipt: Option<PreparedReuse>,
++        dropped: Arc<AtomicBool>,
++    }
++    impl Drop for Scoped {
++        fn drop(&mut self) {
++            self.dropped.store(true, Ordering::Release);
++        }
++    }
++    impl Decoder for Scoped {
++        fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
++            Err(InferenceError::InvalidDecodeContext)
++        }
++        fn decode_with_context(
++            &mut self,
++            pcm: &[f32],
++            _: Language,
++            scope: &DecodeContext,
++        ) -> Result<String, InferenceError> {
++            let valid = scope.is_valid();
++            self.receipt = Some(PreparedReuse {
++                session: scope.session,
++                generation: scope.generation,
++                job_id: scope.job_id,
++                outcome: if valid {
++                    ReuseOutcome::Decoded
++                } else {
++                    ReuseOutcome::InvalidContext
++                },
++                origin_job_id: valid.then_some(scope.job_id),
++                prepared_frames: valid.then_some(pcm.len().max(16000)),
++                prepared_pcm_sha256: valid.then_some([3; 32]),
++                decoder_invoked: valid,
++                native_full_attempted: valid,
++            });
++            if valid {
++                Ok(if pcm.len() == 32000 {
++                    "whole"
++                } else {
++                    "revision"
++                }
++                .into())
++            } else {
++                Err(InferenceError::InvalidDecodeContext)
++            }
++        }
++        fn take_prepared_reuse(&mut self) -> Option<PreparedReuse> {
++            self.receipt.take()
++        }
++    }
++    #[test]
++    fn full_prefix_resource_stop_cancel_settlement_and_owned_drop_are_retained()
++    -> Result<(), Box<dyn std::error::Error>> {
++        for mode in [Mode::FullPrefixReference, Mode::FullPrefixCandidate] {
++            let mut pcm = vec![0.125; 16000];
++            pcm.resize(32000, 0.0);
++            let samples: Arc<[f32]> = pcm.into();
++            let expected = Arc::clone(&samples);
++            let dropped = Arc::new(AtomicBool::new(false));
++            let marker = Arc::clone(&dropped);
++            let (send, receive) = bounded(1);
++            let service = InferenceService::with_initializer(move || {
++                let (decoder, control) = controlled_observed(
++                    Scoped {
++                        receipt: None,
++                        dropped: marker,
++                    },
++                    expected,
++                    Duration::from_secs(6),
++                    mode,
++                );
++                send.send(control).map_err(|_| InferenceError::Decode)?;
++                Ok(decoder)
++            })?;
++            let control = receive.recv_timeout(Duration::from_secs(2))?;
++            let format = AudioFormat {
++                sample_rate: 16000,
++                channels: 1,
++            };
++            let runtime = if mode.candidate() {
++                MeasuredRuntime::spawn_full_prefix_revision(service, 1, format)?
++            } else {
++                MeasuredRuntime::spawn_pretranscription_reference(service, 1, format)?
++            };
++            control.attach_trace(runtime.job_trace_handle())?;
++            crate::shared::wait_ready(&runtime)?;
++            let report = workload(
++                &runtime,
++                &control,
++                &samples,
++                "whole",
++                Config {
++                    warmups: 1,
++                    cycles: 3,
++                    timeout: Duration::from_secs(5),
++                },
++                |_| {},
++            );
++            let cleanup = crate::shared::cleanup(runtime);
++            let observed = control.observation_after_cleanup();
++            assert!(cleanup.joined);
++            assert!(dropped.load(Ordering::Acquire));
++            assert!(report.behavior_passed, "{:?}", report.first_error);
++            assert_eq!(report.rows.len(), 4);
++            assert_eq!(report.rows[3].terminal.as_deref(), Some("Cancelled"));
++            assert!(report.rows[3].held_decoder_ordinal.is_some());
++            assert!(report.rows[3].text_absent);
++            assert!(
++                report.rows[..3]
++                    .iter()
++                    .all(|row| row.owner_free_confirmed_by_next_start)
++            );
++            assert_eq!(observed["valid"], true);
++            assert!(
++                observed["actualDecoderReceipts"]
++                    .as_array()
++                    .is_some_and(|receipts| receipts
++                        .iter()
++                        .any(|receipt| receipt["decoderError"].is_string()
++                            && receipt["preparedReuse"]["outcome"] == "invalid-context"))
++            );
++        }
++        Ok(())
++    }
++}
+diff --git a/src-tauri/src/inference_service.rs b/src-tauri/src/inference_service.rs
+index 44e9746..e82fcb8 100644
+--- a/src-tauri/src/inference_service.rs
++++ b/src-tauri/src/inference_service.rs
+@@ -216,6 +216,14 @@ impl InferenceService {
+         Self::load_with_policy(path, definition, crate::pipeline::Policy::FullPrefix)
+     }
+ 
++    /// Developer resource instrumentation constructed on the same serial owner.
++    #[cfg(feature = "measurement")]
++    pub fn with_initializer<D: Decoder>(
++        initialize: impl FnOnce() -> Result<D, InferenceError> + Send + 'static,
++    ) -> Result<Self, ServiceError> {
++        Self::spawn(initialize)
++    }
++
+     /// Controlled decoder seam for deterministic worker/lifecycle verification.
+     pub fn with_decoder(decoder: impl Decoder) -> Result<Self, ServiceError> {
+         Self::spawn(move || Ok(decoder))

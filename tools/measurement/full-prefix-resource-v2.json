@@ -1,0 +1,447 @@
+{
+  "schemaVersion": 1,
+  "kind": "full-prefix-resource-v2-source-patch",
+  "baseCommit": "ab7b67d4e83e3b30aa8801be2b36502d312e197c",
+  "historicalQualitySourceRevision": "301fee4cea4d9c87023bf949838d3468ecba2e95",
+  "patch": {
+    "path": "tools/measurement/full-prefix-resource-v2.patch",
+    "bytes": 86477,
+    "sha256": "f77771bc8edad7dd8209c3d3c4168ad38c4347621c430bd7b41929acc430f86b"
+  },
+  "reviewedCodeArchiveSha256": "72645fe1407444e35a1442346cdd5721ea0b712a0a2b65c1fe53ef5e85f40132",
+  "payloads": [
+    {
+      "path": "src-tauri/examples/runtime_resource_probe.rs",
+      "base": {
+        "bytes": 10421,
+        "sha256": "d1f0cd6e232dae9af8366dcbaf5a9db7565abd16738b84a7c6ceb643dd62f47d"
+      },
+      "target": {
+        "bytes": 17276,
+        "sha256": "db865ab4e9dde01936314f2cc0a1c60a3881f031e499dc1d5f96bfbc9c6e52f0"
+      },
+      "mode": "100644"
+    },
+    {
+      "path": "src-tauri/examples/runtime_resource_probe/identity.rs",
+      "base": null,
+      "target": {
+        "bytes": 16188,
+        "sha256": "195ea985a22f2a0c1d2bab7fe6c3db4a2b05e2907983b03d41bd7849706c0a99"
+      },
+      "mode": "100644"
+    },
+    {
+      "path": "src-tauri/examples/runtime_resource_probe/observed.rs",
+      "base": null,
+      "target": {
+        "bytes": 13463,
+        "sha256": "4ec758f05ed3a6f97c279af7c70fc63e6a79dc63ca43345b0a5432802e7efbbd"
+      },
+      "mode": "100644"
+    },
+    {
+      "path": "src-tauri/examples/runtime_resource_probe/parameters.rs",
+      "base": {
+        "bytes": 4525,
+        "sha256": "dea80ae347eadb6f29a22fb36349e32864420d27e5abf7f181007ed0b88097f6"
+      },
+      "target": {
+        "bytes": 11908,
+        "sha256": "d47d05ff1faac5feee6f02d52dec5d72ffc446639d1ad8ad3e6e7171b6ce2935"
+      },
+      "mode": "100644"
+    },
+    {
+      "path": "src-tauri/examples/runtime_resource_probe/runner.rs",
+      "base": {
+        "bytes": 30407,
+        "sha256": "cdf3b63a39cf5792c1186d0090ef0fbdd45fb2d3c81412dc31b6a66b65c27564"
+      },
+      "target": {
+        "bytes": 51203,
+        "sha256": "d7ee29566d436875c5ad0bed4ce049be5af0fc92253349c0822939d2dc234d59"
+      },
+      "mode": "100644"
+    },
+    {
+      "path": "src-tauri/src/inference_service.rs",
+      "base": {
+        "bytes": 44677,
+        "sha256": "f51915382161d372d04d3e8280434d1a5bb14b818f44063bad6c4a60fb958c97"
+      },
+      "target": {
+        "bytes": 44993,
+        "sha256": "e0c48ba4db176f0c1e58dc5eb28e4eb7c082f3f9d11709bf782fe187846c5d64"
+      },
+      "mode": "100644"
+    }
+  ],
+  "initializer": {
+    "path": "src-tauri/src/inference_service.rs",
+    "sha256": "e7d711d9ac757fb6c611e67fb3e17045574df8861e3ac19b1efee20067c1a1a2",
+    "bytes": 316,
+    "lines": 8,
+    "scope": "cfg(feature=measurement); delegates directly to existing Self::spawn; exact removal restores complete historical file"
+  },
+  "sourceTransfer": {
+    "commonSources": 47,
+    "baseByteIdenticalToHistorical": 47,
+    "targetByteIdentical": 46,
+    "targetKnownServiceInsertion": 1,
+    "sources": [
+      {
+        "path": ".cargo/config.toml",
+        "historicalSha256": "867049e39a2c207bba21bf98eb9858aef44b4e93adc5f766d2866748fe207b8b",
+        "baseSha256": "867049e39a2c207bba21bf98eb9858aef44b4e93adc5f766d2866748fe207b8b",
+        "targetSha256": "867049e39a2c207bba21bf98eb9858aef44b4e93adc5f766d2866748fe207b8b",
+        "change": "byte-identical"
+      },
+      {
+        "path": "Cargo.lock",
+        "historicalSha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089",
+        "baseSha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089",
+        "targetSha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089",
+        "change": "byte-identical"
+      },
+      {
+        "path": "Cargo.toml",
+        "historicalSha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230",
+        "baseSha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230",
+        "targetSha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230",
+        "change": "byte-identical"
+      },
+      {
+        "path": "crates/dictation-core/src/audio.rs",
+        "historicalSha256": "4b45e24678529d3e12914173b3d99395e8a2b7e2dcfffe077aec48d2b2ed9aeb",
+        "baseSha256": "4b45e24678529d3e12914173b3d99395e8a2b7e2dcfffe077aec48d2b2ed9aeb",
+        "targetSha256": "4b45e24678529d3e12914173b3d99395e8a2b7e2dcfffe077aec48d2b2ed9aeb",
+        "change": "byte-identical"
+      },
+      {
+        "path": "crates/dictation-core/src/audio/pauses.rs",
+        "historicalSha256": "6a0c631df9ec9e27f0c2c0895e3b704b33e73241293bfe488829efaf1c370afa",
+        "baseSha256": "6a0c631df9ec9e27f0c2c0895e3b704b33e73241293bfe488829efaf1c370afa",
+        "targetSha256": "6a0c631df9ec9e27f0c2c0895e3b704b33e73241293bfe488829efaf1c370afa",
+        "change": "byte-identical"
+      },
+      {
+        "path": "crates/macos-integration/Cargo.toml",
+        "historicalSha256": "14be4d5bc3c6528b345b5631459329d4b851385967fa6fb7eacd9a5d3c60f8b9",
+        "baseSha256": "14be4d5bc3c6528b345b5631459329d4b851385967fa6fb7eacd9a5d3c60f8b9",
+        "targetSha256": "14be4d5bc3c6528b345b5631459329d4b851385967fa6fb7eacd9a5d3c60f8b9",
+        "change": "byte-identical"
+      },
+      {
+        "path": "crates/macos-integration/src/lib.rs",
+        "historicalSha256": "dff30163bc5a1d60e440c5a09b38049d8f9601f14355e61ef362e124445336d5",
+        "baseSha256": "dff30163bc5a1d60e440c5a09b38049d8f9601f14355e61ef362e124445336d5",
+        "targetSha256": "dff30163bc5a1d60e440c5a09b38049d8f9601f14355e61ef362e124445336d5",
+        "change": "byte-identical"
+      },
+      {
+        "path": "crates/macos-integration/src/qos.rs",
+        "historicalSha256": "09308c2d9280aed0f61e98b124fa42501514abb3befe47a6669bd8009a160772",
+        "baseSha256": "09308c2d9280aed0f61e98b124fa42501514abb3befe47a6669bd8009a160772",
+        "targetSha256": "09308c2d9280aed0f61e98b124fa42501514abb3befe47a6669bd8009a160772",
+        "change": "byte-identical"
+      },
+      {
+        "path": "crates/macos-integration/src/realtime.rs",
+        "historicalSha256": "ab04deb53f86b8821e73097acacfa07da566bb4f609fcc7f80511b34ed5708fc",
+        "baseSha256": "ab04deb53f86b8821e73097acacfa07da566bb4f609fcc7f80511b34ed5708fc",
+        "targetSha256": "ab04deb53f86b8821e73097acacfa07da566bb4f609fcc7f80511b34ed5708fc",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/Cargo.toml",
+        "historicalSha256": "d087a55345bdea6e08e4c2233f4f794f7a3d39eed0d78a8110d70471b3d9f62a",
+        "baseSha256": "d087a55345bdea6e08e4c2233f4f794f7a3d39eed0d78a8110d70471b3d9f62a",
+        "targetSha256": "d087a55345bdea6e08e4c2233f4f794f7a3d39eed0d78a8110d70471b3d9f62a",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/examples/corpus_probe/input.rs",
+        "historicalSha256": "91143edc2a8202bae0f015dfa55f8142ca576ed98051c6b5b0d53829b17c32e9",
+        "baseSha256": "91143edc2a8202bae0f015dfa55f8142ca576ed98051c6b5b0d53829b17c32e9",
+        "targetSha256": "91143edc2a8202bae0f015dfa55f8142ca576ed98051c6b5b0d53829b17c32e9",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/examples/paced_runtime_probe.rs",
+        "historicalSha256": "f0f5b05cee2056e04b0b68af46f1a005b3436041315037d827ede89b405878ad",
+        "baseSha256": "f0f5b05cee2056e04b0b68af46f1a005b3436041315037d827ede89b405878ad",
+        "targetSha256": "f0f5b05cee2056e04b0b68af46f1a005b3436041315037d827ede89b405878ad",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/examples/paced_runtime_probe/full_prefix.rs",
+        "historicalSha256": "470b3ccdb210e91f6fb0fb63b5a90e124bcb6dc7024c0241f6205c6d7d3fc4df",
+        "baseSha256": "470b3ccdb210e91f6fb0fb63b5a90e124bcb6dc7024c0241f6205c6d7d3fc4df",
+        "targetSha256": "470b3ccdb210e91f6fb0fb63b5a90e124bcb6dc7024c0241f6205c6d7d3fc4df",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/examples/paced_runtime_probe/full_prefix_configuration.rs",
+        "historicalSha256": "9b0b281460d97fa46d81ad805956091dccd5753260307a0d5bd3b811850cefb4",
+        "baseSha256": "9b0b281460d97fa46d81ad805956091dccd5753260307a0d5bd3b811850cefb4",
+        "targetSha256": "9b0b281460d97fa46d81ad805956091dccd5753260307a0d5bd3b811850cefb4",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/examples/paced_runtime_probe/options.rs",
+        "historicalSha256": "2b34798c449dcf8413008d14a0941b8e8d020f9eabe3f3c46697079ea2d202a9",
+        "baseSha256": "2b34798c449dcf8413008d14a0941b8e8d020f9eabe3f3c46697079ea2d202a9",
+        "targetSha256": "2b34798c449dcf8413008d14a0941b8e8d020f9eabe3f3c46697079ea2d202a9",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/examples/paced_runtime_probe/parameters.rs",
+        "historicalSha256": "f98b99ac30d607f7e95010d90e4afb91f198fe465bd24ac52385b8ed327e1753",
+        "baseSha256": "f98b99ac30d607f7e95010d90e4afb91f198fe465bd24ac52385b8ed327e1753",
+        "targetSha256": "f98b99ac30d607f7e95010d90e4afb91f198fe465bd24ac52385b8ed327e1753",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/examples/paced_runtime_probe/pretranscription.rs",
+        "historicalSha256": "64c7750494c92532dac6f33e7cbe230366df61a713462b9d8f7ad535989451c5",
+        "baseSha256": "64c7750494c92532dac6f33e7cbe230366df61a713462b9d8f7ad535989451c5",
+        "targetSha256": "64c7750494c92532dac6f33e7cbe230366df61a713462b9d8f7ad535989451c5",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/examples/paced_runtime_probe/pretranscription_configuration.rs",
+        "historicalSha256": "3d96ffd628b74450b279becadc447f2209b355fabae2120e431c14899009dd9d",
+        "baseSha256": "3d96ffd628b74450b279becadc447f2209b355fabae2120e431c14899009dd9d",
+        "targetSha256": "3d96ffd628b74450b279becadc447f2209b355fabae2120e431c14899009dd9d",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/examples/paced_runtime_probe/publisher.rs",
+        "historicalSha256": "751a24636e61e1a7f9de4e5687c60d7054b6621d320f2291336079ba83b11ce8",
+        "baseSha256": "751a24636e61e1a7f9de4e5687c60d7054b6621d320f2291336079ba83b11ce8",
+        "targetSha256": "751a24636e61e1a7f9de4e5687c60d7054b6621d320f2291336079ba83b11ce8",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/examples/paced_runtime_probe/runner.rs",
+        "historicalSha256": "814a1ed9b37ad6b31fb7cc7101f30403a21fdc3673a5bc8244214a0ff19bb55e",
+        "baseSha256": "814a1ed9b37ad6b31fb7cc7101f30403a21fdc3673a5bc8244214a0ff19bb55e",
+        "targetSha256": "814a1ed9b37ad6b31fb7cc7101f30403a21fdc3673a5bc8244214a0ff19bb55e",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/examples/paced_runtime_probe/statistics.rs",
+        "historicalSha256": "c7c4d986deba4386afac48305616651570f5e59ce6f76ab5c7a7cac75c562ae7",
+        "baseSha256": "c7c4d986deba4386afac48305616651570f5e59ce6f76ab5c7a7cac75c562ae7",
+        "targetSha256": "c7c4d986deba4386afac48305616651570f5e59ce6f76ab5c7a7cac75c562ae7",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/audio.rs",
+        "historicalSha256": "ce340e1a85c2d161b6101c1ae962740b51e06a5fb57021bffb2d29950d95bd70",
+        "baseSha256": "ce340e1a85c2d161b6101c1ae962740b51e06a5fb57021bffb2d29950d95bd70",
+        "targetSha256": "ce340e1a85c2d161b6101c1ae962740b51e06a5fb57021bffb2d29950d95bd70",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/audio/full_prefix.rs",
+        "historicalSha256": "4fb582ec5966388b6c9197aa79b19d85f3fe4fe36e066a1da600c11611b3c9d9",
+        "baseSha256": "4fb582ec5966388b6c9197aa79b19d85f3fe4fe36e066a1da600c11611b3c9d9",
+        "targetSha256": "4fb582ec5966388b6c9197aa79b19d85f3fe4fe36e066a1da600c11611b3c9d9",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/audio/pretranscription.rs",
+        "historicalSha256": "2acc551a63bba28e1d2ac94652946837e285e20b9562d2e326ab2a6d68b20846",
+        "baseSha256": "2acc551a63bba28e1d2ac94652946837e285e20b9562d2e326ab2a6d68b20846",
+        "targetSha256": "2acc551a63bba28e1d2ac94652946837e285e20b9562d2e326ab2a6d68b20846",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/audio/replay.rs",
+        "historicalSha256": "2a9b41798327cb2860f962fc11d5bd619fe00e68f6ffa7849f0dc1d7f896b6be",
+        "baseSha256": "2a9b41798327cb2860f962fc11d5bd619fe00e68f6ffa7849f0dc1d7f896b6be",
+        "targetSha256": "2a9b41798327cb2860f962fc11d5bd619fe00e68f6ffa7849f0dc1d7f896b6be",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/audio/replay/clock.rs",
+        "historicalSha256": "c5cb28a620b0222a01f6b658665199eae94f8df2117466964eeff9164599c17b",
+        "baseSha256": "c5cb28a620b0222a01f6b658665199eae94f8df2117466964eeff9164599c17b",
+        "targetSha256": "c5cb28a620b0222a01f6b658665199eae94f8df2117466964eeff9164599c17b",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/audio/replay/schedule.rs",
+        "historicalSha256": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b",
+        "baseSha256": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b",
+        "targetSha256": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/controller.rs",
+        "historicalSha256": "f256286ae7f3cdfead6819b9dc307d0e5d8b4fe0c55e84d08499758de4dff3e6",
+        "baseSha256": "f256286ae7f3cdfead6819b9dc307d0e5d8b4fe0c55e84d08499758de4dff3e6",
+        "targetSha256": "f256286ae7f3cdfead6819b9dc307d0e5d8b4fe0c55e84d08499758de4dff3e6",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/controller/full_prefix.rs",
+        "historicalSha256": "4836369cca56413b97020d4d807caa9b56c1068739d59cd214f53777ac6bf849",
+        "baseSha256": "4836369cca56413b97020d4d807caa9b56c1068739d59cd214f53777ac6bf849",
+        "targetSha256": "4836369cca56413b97020d4d807caa9b56c1068739d59cd214f53777ac6bf849",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/controller/pretranscription.rs",
+        "historicalSha256": "cc9475c50ffb293b60657b20ef1a12ec134f3de97c2f64e11d407766ae76f50c",
+        "baseSha256": "cc9475c50ffb293b60657b20ef1a12ec134f3de97c2f64e11d407766ae76f50c",
+        "targetSha256": "cc9475c50ffb293b60657b20ef1a12ec134f3de97c2f64e11d407766ae76f50c",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/inference_service.rs",
+        "historicalSha256": "f51915382161d372d04d3e8280434d1a5bb14b818f44063bad6c4a60fb958c97",
+        "baseSha256": "f51915382161d372d04d3e8280434d1a5bb14b818f44063bad6c4a60fb958c97",
+        "targetSha256": "e0c48ba4db176f0c1e58dc5eb28e4eb7c082f3f9d11709bf782fe187846c5d64",
+        "change": "known-measurement-only-insertion"
+      },
+      {
+        "path": "src-tauri/src/inference_service/observation.rs",
+        "historicalSha256": "f15fe0cf0df9a7fc18e315341adbbb6d344f159426f06ac0c203794b6fc2ecb3",
+        "baseSha256": "f15fe0cf0df9a7fc18e315341adbbb6d344f159426f06ac0c203794b6fc2ecb3",
+        "targetSha256": "f15fe0cf0df9a7fc18e315341adbbb6d344f159426f06ac0c203794b6fc2ecb3",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/lib.rs",
+        "historicalSha256": "4135187b02fb9317f3aacc3185e970c811788a03d9d71f34a9ffc2cb2bfb44c7",
+        "baseSha256": "4135187b02fb9317f3aacc3185e970c811788a03d9d71f34a9ffc2cb2bfb44c7",
+        "targetSha256": "4135187b02fb9317f3aacc3185e970c811788a03d9d71f34a9ffc2cb2bfb44c7",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/model.rs",
+        "historicalSha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2",
+        "baseSha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2",
+        "targetSha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/pipeline.rs",
+        "historicalSha256": "4b7286ae91fc923c495e574d1a7986b80bec56ac082f9900974f1fcb0f40210c",
+        "baseSha256": "4b7286ae91fc923c495e574d1a7986b80bec56ac082f9900974f1fcb0f40210c",
+        "targetSha256": "4b7286ae91fc923c495e574d1a7986b80bec56ac082f9900974f1fcb0f40210c",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/runtime.rs",
+        "historicalSha256": "a347f23fcea770e7b0cfc2e8a67b4894f45a49692ef49ae97e005ed455896a93",
+        "baseSha256": "a347f23fcea770e7b0cfc2e8a67b4894f45a49692ef49ae97e005ed455896a93",
+        "targetSha256": "a347f23fcea770e7b0cfc2e8a67b4894f45a49692ef49ae97e005ed455896a93",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/runtime/measurement.rs",
+        "historicalSha256": "a8d02b0cc0616554ee2b2d4ca1d54b6884751beff40704a6c0d32012f29d8b45",
+        "baseSha256": "a8d02b0cc0616554ee2b2d4ca1d54b6884751beff40704a6c0d32012f29d8b45",
+        "targetSha256": "a8d02b0cc0616554ee2b2d4ca1d54b6884751beff40704a6c0d32012f29d8b45",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/runtime/measurement/job_trace.rs",
+        "historicalSha256": "e903b07287800ba1292d97f804869b7644d4b56bc1f60d693642b770f641ddea",
+        "baseSha256": "e903b07287800ba1292d97f804869b7644d4b56bc1f60d693642b770f641ddea",
+        "targetSha256": "e903b07287800ba1292d97f804869b7644d4b56bc1f60d693642b770f641ddea",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/transcription.rs",
+        "historicalSha256": "066433cff9911eb0a187f0949330988b2ae8379e7347e6bd4b5065e664518a86",
+        "baseSha256": "066433cff9911eb0a187f0949330988b2ae8379e7347e6bd4b5065e664518a86",
+        "targetSha256": "066433cff9911eb0a187f0949330988b2ae8379e7347e6bd4b5065e664518a86",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/transcription/observation.rs",
+        "historicalSha256": "79be331c6c2eea395a8c28cdf948302c5d14db3fde8d07bc0f96b28d05a77cfc",
+        "baseSha256": "79be331c6c2eea395a8c28cdf948302c5d14db3fde8d07bc0f96b28d05a77cfc",
+        "targetSha256": "79be331c6c2eea395a8c28cdf948302c5d14db3fde8d07bc0f96b28d05a77cfc",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/transcription/phase.rs",
+        "historicalSha256": "9dcf72b29cf058466714e04b18ee27697dbb7080b0e8f384f5d85b71196e4a6b",
+        "baseSha256": "9dcf72b29cf058466714e04b18ee27697dbb7080b0e8f384f5d85b71196e4a6b",
+        "targetSha256": "9dcf72b29cf058466714e04b18ee27697dbb7080b0e8f384f5d85b71196e4a6b",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/transcription/prefix_cache.rs",
+        "historicalSha256": "dec3804ea91675db1889e70226862be5d0f2c5cdc1bf8f65e3e29eff74cc33fe",
+        "baseSha256": "dec3804ea91675db1889e70226862be5d0f2c5cdc1bf8f65e3e29eff74cc33fe",
+        "targetSha256": "dec3804ea91675db1889e70226862be5d0f2c5cdc1bf8f65e3e29eff74cc33fe",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/transcription/prefix_cache/evidence.rs",
+        "historicalSha256": "6d0c58ca0059f3f44512ddb4ec6f938ffb07365bf3fa5e4beff012b38f697021",
+        "baseSha256": "6d0c58ca0059f3f44512ddb4ec6f938ffb07365bf3fa5e4beff012b38f697021",
+        "targetSha256": "6d0c58ca0059f3f44512ddb4ec6f938ffb07365bf3fa5e4beff012b38f697021",
+        "change": "byte-identical"
+      },
+      {
+        "path": "src-tauri/src/transcription/speech_gate.rs",
+        "historicalSha256": "63448fa2d9afc7ae68031b9f7d505b693548cb975a2dc25c0b01c30908803d89",
+        "baseSha256": "63448fa2d9afc7ae68031b9f7d505b693548cb975a2dc25c0b01c30908803d89",
+        "targetSha256": "63448fa2d9afc7ae68031b9f7d505b693548cb975a2dc25c0b01c30908803d89",
+        "change": "byte-identical"
+      },
+      {
+        "path": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+        "historicalSha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e",
+        "baseSha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e",
+        "targetSha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e",
+        "change": "byte-identical"
+      },
+      {
+        "path": "vendor/whisper-rs/src/whisper_params.rs",
+        "historicalSha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8",
+        "baseSha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8",
+        "targetSha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8",
+        "change": "byte-identical"
+      },
+      {
+        "path": "vendor/whisper-rs/src/whisper_vad.rs",
+        "historicalSha256": "a4e481fac0b423ab532e3f4b8e3348a23e3134a10e4581ea3f383d6a81e6438d",
+        "baseSha256": "a4e481fac0b423ab532e3f4b8e3348a23e3134a10e4581ea3f383d6a81e6438d",
+        "targetSha256": "a4e481fac0b423ab532e3f4b8e3348a23e3134a10e4581ea3f383d6a81e6438d",
+        "change": "byte-identical"
+      }
+    ]
+  },
+  "checks": {
+    "archiveAndExtractedPayloadsEqual": true,
+    "gitApplyIndexCheck": true,
+    "gitApplyIndex": true,
+    "allSixAppliedPayloadsByteEqualReviewedV2": true,
+    "gitReverseApplyIndexCheck": true,
+    "gitReverseApplyIndex": true,
+    "roundtripIndexAndFilesEqualBase": true,
+    "mainIndexUnchanged": true,
+    "productSourceFilesChanged": false,
+    "buildExecuted": false,
+    "testsExecuted": false,
+    "modelsExecuted": false
+  },
+  "limits": [
+    "Code-only isolated measurement derivative; not installed product activation.",
+    "Existing inference bodies byte-identical after exact initializer removal; no algorithm/config/feature/Cargo edits.",
+    "Prior private pure checks/review are historical; applying the patch proves no Mac compile/native/runtime/resource success.",
+    "Old strict decision.validate must reject the derivative service; never skip/relax its47-current-source contract.",
+    "DualRoot historical authority and separately committed/built resource source require explicit source-transfer and resource-measurement approval.",
+    "No positive quality/resource approval, input, model, audio, hypothesis or actual freeze is supplied.",
+    "No microphone, paste, latency, live-heap or full qualification claim."
+  ]
+}
