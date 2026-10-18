@@ -114,8 +114,42 @@ pub fn pretrans_template(candidate: bool) -> Result<Value, serde_json::Error> {
     });
     Ok(value)
 }
+/// The existing full-prefix policy and decoder/source closure, decorated only
+/// with the unchanged one-warmup/six-by-thirty batch protocol.
+pub fn full_prefix_template(candidate: bool) -> Result<Value, serde_json::Error> {
+    let mut value = baseline::full_prefix_template(candidate)?;
+    let batch = template()?;
+    if let Some(measurement) = value["measurement"].as_object_mut() {
+        measurement.remove("measuredRuns");
+    }
+    for key in [
+        "warmupRuns",
+        "warmupFixture",
+        "measuredRunsPerCase",
+        "totalRows",
+        "caseOrder",
+        "runOrder",
+        "manifest",
+        "L",
+        "absoluteLimits",
+        "hypotheses",
+    ] {
+        value["measurement"][key] = batch["measurement"][key].clone();
+    }
+    value["batchSources"] = sources();
+    value["limits"] = batch["limits"].clone();
+    value["status"] = json!("six-case full-prefix experiment; no quality or P05/P06 qualification");
+    value["configurationId"] = json!(if candidate {
+        "p06-six-case-full-prefix-candidate-v1"
+    } else {
+        "p06-six-case-full-prefix-reference-v1"
+    });
+    Ok(value)
+}
 pub fn print_template(flag: &str) -> Result<Option<Value>, serde_json::Error> {
     Ok(Some(match flag {
+        "--print-full-prefix-reference-parameters" => full_prefix_template(false)?,
+        "--print-full-prefix-candidate-parameters" => full_prefix_template(true)?,
         "--print-parameters" => template()?,
         "--print-scheduling-parameters" => scheduling_template()?,
         "--print-context-reference-parameters" => context_template(false)?,
@@ -131,6 +165,14 @@ pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
     }
     let value: Value = serde_json::from_slice(bytes).map_err(|_| "invalid parameter JSON")?;
     for (expected, mode) in [
+        (
+            full_prefix_template(false),
+            ExecutionMode::FullPrefixReference,
+        ),
+        (
+            full_prefix_template(true),
+            ExecutionMode::FullPrefixCandidate,
+        ),
         (pretrans_template(false), ExecutionMode::PretransReference),
         (pretrans_template(true), ExecutionMode::PretransCandidate),
         (template(), ExecutionMode::Baseline),
@@ -233,6 +275,64 @@ mod tests {
             wrong["measurement"]["totalRows"] = json!(180);
             assert!(select(&serde_json::to_vec(&wrong)?).is_err());
         }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod full_prefix_batch_tests {
+    use super::*;
+    #[test]
+    fn explicit_full_prefix_freezes_keep_batch_counts_and_select_exact_overlap_modes()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for (flag, candidate, mode) in [
+            (
+                "--print-full-prefix-reference-parameters",
+                false,
+                ExecutionMode::FullPrefixReference,
+            ),
+            (
+                "--print-full-prefix-candidate-parameters",
+                true,
+                ExecutionMode::FullPrefixCandidate,
+            ),
+        ] {
+            let value =
+                print_template(flag)?.ok_or("missing explicit FullPrefix batch template")?;
+            assert_eq!(select(&serde_json::to_vec(&value)?)?.1, mode);
+            assert_eq!(mode.full_prefix(), Some(candidate));
+            assert!(mode.pretranscription().is_none());
+            assert!(mode.scheduled());
+            assert_eq!(value["measurement"]["totalRows"], 181);
+            assert_eq!(value["measurement"]["warmupRuns"], 1);
+            assert_eq!(value["measurement"]["measuredRunsPerCase"], 30);
+            assert_eq!(value["fullPrefix"]["candidate"], candidate);
+            assert!(
+                value["measurement"]["engineRtf"]
+                    .as_str()
+                    .ok_or("missing RTF scope")?
+                    .contains("unique final")
+            );
+            assert_eq!(
+                value["batchSources"]["main"]["sha256"],
+                input::digest(include_bytes!("../paced_reference_probe.rs"))
+            );
+            assert_eq!(
+                value["batchSources"]["parameters"]["sha256"],
+                input::digest(include_bytes!("parameters.rs"))
+            );
+            for target in ["count", "cut", "mode", "pin"] {
+                let mut wrong = value.clone();
+                match target {
+                    "count" => wrong["measurement"]["totalRows"] = json!(180),
+                    "cut" => wrong["fullPrefix"]["tailFrames"] = json!(3199),
+                    "mode" => wrong["fullPrefix"]["candidate"] = json!(!candidate),
+                    _ => wrong["batchSources"]["main"]["sha256"] = json!("changed"),
+                };
+                assert!(select(&serde_json::to_vec(&wrong)?).is_err());
+            }
+        }
+        assert!(print_template("--print-full-prefix-unknown")?.is_none());
         Ok(())
     }
 }

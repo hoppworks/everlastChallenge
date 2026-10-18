@@ -66,7 +66,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
     if failure.is_none() {
-        failure = match runner::audio_context::load(options.model, options.definition, variant) {
+        let loaded = if execution_mode.full_prefix().is_some() {
+            everlast_dictation::inference_service::InferenceService::load_prefix_cache(
+                options.model,
+                options.definition,
+            )
+            .map(|service| (service, None))
+            .map_err(|error| Box::new(error) as Box<dyn std::error::Error>)
+        } else {
+            runner::audio_context::load(options.model, options.definition, variant)
+        };
+        failure = match loaded {
             Ok((service, context_receipts)) => {
                 receipts = context_receipts;
                 match execution_mode.spawn_runtime(
@@ -101,7 +111,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 } else {
                     Language::English
                 };
-                if execution_mode.pretranscription().is_some() {
+                if let Some(candidate) = execution_mode.full_prefix() {
+                    runner::one_full_prefix(
+                        runtime,
+                        &samples[slot.fixture_index],
+                        language,
+                        slot.id.clone(),
+                        slot.warmup,
+                        None,
+                        runner::ExpectedOutcome::Local,
+                        if candidate {
+                            runner::full_prefix::Variant::Candidate
+                        } else {
+                            runner::full_prefix::Variant::Reference
+                        },
+                    )
+                } else if execution_mode.pretranscription().is_some() {
                     runner::one_pretranscription(
                         runtime,
                         &samples[slot.fixture_index],
@@ -197,12 +222,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let fixtures=cases.iter().map(|case|serde_json::json!({"id":case.id,"language":case.language,"class":"clean","split":"acceptance","durationSeconds":case.seconds,
         "audioSha256":case.audio.sha256,"inputFrames":case.audio.frames,"sampleRate":case.audio.sample_rate,"referenceUtf8Sha256":input::digest(case.reference.as_bytes())})).collect::<Vec<_>>();
     let metadata = serde_json::json!({
-        "schemaVersion":1,"processId":std::process::id(),"kind":if execution_mode.pretranscription().is_some(){"paced-six-case-pretranscription-experiment"}else{"paced-six-case-complete-recording-reference"},"measurementComplete":complete,
+        "schemaVersion":1,"processId":std::process::id(),"kind":if execution_mode.full_prefix().is_some(){"paced-six-case-full-prefix-experiment"}else if execution_mode.pretranscription().is_some(){"paced-six-case-pretranscription-experiment"}else{"paced-six-case-complete-recording-reference"},"measurementComplete":complete,
         "qualified":false,"p05Qualified":false,"qualityEvaluated":false,
         "sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
         "debugAssertions":cfg!(debug_assertions),"hostObservation":host,
-        "manifestSha256":input::digest(&manifest_bytes),"parameterDocumentSha256":input::digest(&parameter_bytes),"parameters":parameter_document,"contextCleanup":context_cleanup,"pretranscriptionCandidate":execution_mode.pretranscription(),"jobTraceAfterCleanup":job_trace_after_cleanup,"jobTraceAfterCleanupError":job_trace_after_cleanup_error,
+        "manifestSha256":input::digest(&manifest_bytes),"parameterDocumentSha256":input::digest(&parameter_bytes),"parameters":parameter_document,"contextCleanup":context_cleanup,"pretranscriptionCandidate":execution_mode.pretranscription(),"fullPrefixCandidate":execution_mode.full_prefix(),"jobTraceAfterCleanup":job_trace_after_cleanup,"jobTraceAfterCleanupError":job_trace_after_cleanup_error,
         "model":{"id":options.definition.id(),"sha256":options.definition.sha256()},
+        "engineRtfDefinition":if execution_mode.full_prefix().is_some(){Some("sum actual scoped decoder elapsed / (unique final recorded N/16000); includes preparation/hash/hit work; processed overlapping frames separate; not native kernel time or stop-to-text")}else{None},
         "warmupRuns":1,"measuredRunsPerCase":batch::RUNS_PER_CASE,"requestedRows":batch::TOTAL_RUNS,"fixtures":fixtures,
         "loadMillis":load_millis,"initialFailure":failure,"runs":observations,"cleanup":cleanup,"statistics":summary,
         "hypothesesSha256":input::digest(&serde_json::to_vec_pretty(&hypotheses)?),
