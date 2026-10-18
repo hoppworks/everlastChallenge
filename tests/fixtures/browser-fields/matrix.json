@@ -1,0 +1,502 @@
+{
+  "schemaVersion": 1,
+  "kind": "prospective-local-browser-field-matrix",
+  "sourceRevision": "5bbe330f7b32e043113f32f9ec2de342a7a147fb",
+  "requirementSource": "IMPLEMENTATION_PLAN.md sections P02K/P07 and A15b/A15c/A15d/A21/A21a",
+  "fixture": "index.html",
+  "transportFixture": "transport-fixture.txt",
+  "delayMillis": 5000,
+  "browserVariants": [
+    "Safari",
+    "Chrome actual experiment off",
+    "Chrome actual experiment on",
+    "Firefox"
+  ],
+  "environmentFields": [
+    "candidateRevision",
+    "artifactSha256",
+    "cdhash",
+    "osVersion",
+    "browserVersion",
+    "browserLaunchArgs",
+    "browserAccessibilityPriorState",
+    "experimentActuallyObserved",
+    "voiceOver",
+    "layout",
+    "tccStatus"
+  ],
+  "observationFields": [
+    "nativeStartPidRoleSubrole",
+    "nativeStartEditableEvidence",
+    "nativeEndIdentityEvidence",
+    "secureInputActuallyObserved",
+    "actualResult:inserted|held|error|unreachable|unclear",
+    "actualReceiverExactOnce",
+    "clipboardUnchangedForNegative",
+    "reason",
+    "evidence"
+  ],
+  "nativeExecutionPerformed": false,
+  "qualified": false,
+  "cases": [
+    {
+      "id": "E01",
+      "element": "editable-input",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reload page",
+        "Focus named field; independently establish native editable identity",
+        "Hotkey start; provide authorized public input; stop without field/app change"
+      ],
+      "expected": {
+        "automatic": "only with native editable start identity and all production guards satisfied",
+        "receiver": "verify actual intended field exactly once",
+        "clipboard": "record actual lease/restore; never infer from event log"
+      },
+      "caveat": null,
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "E02",
+      "element": "editable-other",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reload page",
+        "Focus named field; independently establish native editable identity",
+        "Hotkey start; provide authorized public input; stop without field/app change"
+      ],
+      "expected": {
+        "automatic": "only with native editable start identity and all production guards satisfied",
+        "receiver": "verify actual intended field exactly once",
+        "clipboard": "record actual lease/restore; never infer from event log"
+      },
+      "caveat": null,
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "E03",
+      "element": "editable-area",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reload page",
+        "Focus named field; independently establish native editable identity",
+        "Hotkey start; provide authorized public input; stop without field/app change"
+      ],
+      "expected": {
+        "automatic": "only with native editable start identity and all production guards satisfied",
+        "receiver": "verify actual intended field exactly once",
+        "clipboard": "record actual lease/restore; never infer from event log"
+      },
+      "caveat": null,
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "E04",
+      "element": "editable-rich",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reload page",
+        "Focus named field; independently establish native editable identity",
+        "Hotkey start; provide authorized public input; stop without field/app change"
+      ],
+      "expected": {
+        "automatic": "only with native editable start identity and all production guards satisfied",
+        "receiver": "verify actual intended field exactly once",
+        "clipboard": "record actual lease/restore; never infer from event log"
+      },
+      "caveat": null,
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "N01",
+      "element": "readonly-input",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reload page",
+        "Try to establish actual native focused negative field, not stale prior positive field",
+        "If not reachable record inconclusive, not pass",
+        "Otherwise start/stop with authorized public input"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "DOM attributes do not prove native AX evidence. Disabled fields may not be focusable; D04 is a separate transition test.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "N02",
+      "element": "disabled-input",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reload page",
+        "Try to establish actual native focused negative field, not stale prior positive field",
+        "If not reachable record inconclusive, not pass",
+        "Otherwise start/stop with authorized public input"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "DOM attributes do not prove native AX evidence. Disabled fields may not be focusable; D04 is a separate transition test.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "N03",
+      "element": "aria-input",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reload page",
+        "Try to establish actual native focused negative field, not stale prior positive field",
+        "If not reachable record inconclusive, not pass",
+        "Otherwise start/stop with authorized public input"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "DOM attributes do not prove native AX evidence. Disabled fields may not be focusable; D04 is a separate transition test.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "N04",
+      "element": "readonly-area",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reload page",
+        "Try to establish actual native focused negative field, not stale prior positive field",
+        "If not reachable record inconclusive, not pass",
+        "Otherwise start/stop with authorized public input"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "DOM attributes do not prove native AX evidence. Disabled fields may not be focusable; D04 is a separate transition test.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "N05",
+      "element": "disabled-area",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reload page",
+        "Try to establish actual native focused negative field, not stale prior positive field",
+        "If not reachable record inconclusive, not pass",
+        "Otherwise start/stop with authorized public input"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "DOM attributes do not prove native AX evidence. Disabled fields may not be focusable; D04 is a separate transition test.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "N06",
+      "element": "aria-rich",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reload page",
+        "Try to establish actual native focused negative field, not stale prior positive field",
+        "If not reachable record inconclusive, not pass",
+        "Otherwise start/stop with authorized public input"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "DOM attributes do not prove native AX evidence. Disabled fields may not be focusable; D04 is a separate transition test.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "N07",
+      "element": "readonly-rich",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reload page",
+        "Try to establish actual native focused negative field, not stale prior positive field",
+        "If not reachable record inconclusive, not pass",
+        "Otherwise start/stop with authorized public input"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "DOM attributes do not prove native AX evidence. Disabled fields may not be focusable; D04 is a separate transition test.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "D01",
+      "element": "replace-input",
+      "requirements": [
+        "A15c",
+        "A21"
+      ],
+      "actions": [
+        "Reset dynamic cases",
+        "Click replace button: initial object is focused",
+        "Hotkey start before fixed five-second timer",
+        "Wait for executed status and independently observe actual native context",
+        "Stop; do not reacquire a replacement as start target"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "Test page intentionally changes only its own DOM/focus. D03 begins without a text field. D04 may lose native focus.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "D02",
+      "element": "lock-input",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reset dynamic cases",
+        "Click lock button: initial object is focused",
+        "Hotkey start before fixed five-second timer",
+        "Wait for executed status and independently observe actual native context",
+        "Stop; do not reacquire a replacement as start target"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "Test page intentionally changes only its own DOM/focus. D03 begins without a text field. D04 may lose native focus.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "D03",
+      "element": "late-container",
+      "requirements": [
+        "A15b",
+        "A21"
+      ],
+      "actions": [
+        "Reset dynamic cases",
+        "Click late button: initial object is focused",
+        "Hotkey start before fixed five-second timer",
+        "Wait for executed status and independently observe actual native context",
+        "Stop; do not reacquire a replacement as start target"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "Test page intentionally changes only its own DOM/focus. D03 begins without a text field. D04 may lose native focus.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "D04",
+      "element": "disable-input",
+      "requirements": [
+        "A15d",
+        "A21"
+      ],
+      "actions": [
+        "Reset dynamic cases",
+        "Click disable button: initial object is focused",
+        "Hotkey start before fixed five-second timer",
+        "Wait for executed status and independently observe actual native context",
+        "Stop; do not reacquire a replacement as start target"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "Test page intentionally changes only its own DOM/focus. D03 begins without a text field. D04 may lose native focus.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "L01",
+      "element": "suggestion-input",
+      "requirements": [
+        "A15b",
+        "A21"
+      ],
+      "actions": [
+        "Reload",
+        "Type public A and press ArrowDown",
+        "Observe actual native popup/focused role before start",
+        "Start/stop only for the observed case"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "Conditional negative: only if native start context is actually list/container. Otherwise negative autofill case not reached.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "L02",
+      "element": "synthetic-list",
+      "requirements": [
+        "A15b",
+        "A21"
+      ],
+      "actions": [
+        "Reload",
+        "Click synthetic option focus button",
+        "Observe actual native option/list role",
+        "Hotkey start/stop"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "Synthetic ARIA list is not browser-internal autofill evidence.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "S01",
+      "element": "password-input",
+      "requirements": [
+        "A15",
+        "A21"
+      ],
+      "actions": [
+        "Reload",
+        "Focus password input; use dummy text only",
+        "Read native secure-field and Secure Input status independently",
+        "Try hotkey start/stop/escape as authorized; observe unintended printable character"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "Secure field and global Secure Input are separate observations. No real password or input logging.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "X01",
+      "element": "editable-input",
+      "requirements": [
+        "A15",
+        "A15c",
+        "A21"
+      ],
+      "actions": [
+        "Reload",
+        "Focus E01 and hotkey start",
+        "Focus E02 in same browser",
+        "Stop"
+      ],
+      "expected": {
+        "automatic": "held; no automatic paste",
+        "clipboard": "unchanged",
+        "transcript": "retained with appropriate reason"
+      },
+      "caveat": "Unchanged app/role does not preserve original field identity.",
+      "status": "not-run",
+      "observations": null
+    },
+    {
+      "id": "A21a-transport",
+      "element": "editable-area",
+      "requirements": [
+        "A21a"
+      ],
+      "actions": [
+        "Use separately authorized native fixture sender; this package contains none",
+        "Focus E03 and capture valid native target",
+        "Send exact transport-fixture.txt bytes through approved native path",
+        "Compare intended target bytes and exactly-once result"
+      ],
+      "expected": {
+        "automatic": "only with native editable start identity and all production guards satisfied",
+        "receiver": "verify actual intended field exactly once",
+        "clipboard": "record actual lease/restore; never infer from event log"
+      },
+      "caveat": "Separate adapter transport test, not microphone/ASR E2E. Repeat in TextEdit and chosen supported browser/editor per plan.",
+      "status": "not-run",
+      "observations": null
+    }
+  ],
+  "otherActualAppsStillRequired": [
+    "TextEdit",
+    "Google Docs in Chrome",
+    "Slack",
+    "Discord",
+    "Notion",
+    "VS Code",
+    "Terminal"
+  ],
+  "noClaims": [
+    "native AX mapping",
+    "native browser popup reproducibility",
+    "TCC",
+    "Secure Input activation",
+    "actual paste",
+    "clipboard restore timing",
+    "ASR quality",
+    "P02/P07/P09 completion"
+  ]
+}

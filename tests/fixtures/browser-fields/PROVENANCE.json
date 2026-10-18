@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "kind": "off-host-browser-field-fixture-preparation",
+  "baseRevision": "5bbe330f7b32e043113f32f9ec2de342a7a147fb",
+  "files": [
+    {
+      "path": "index.html",
+      "bytes": 11330,
+      "sha256": "1f9b640b4e28eb9f6a6db6a1e17c65167f59516739dc894b1339da4d2799301a",
+      "mode": "0o600"
+    },
+    {
+      "path": "fixture.test.cjs",
+      "bytes": 4902,
+      "sha256": "d20b03ca3b7a261c4185733887f15017446054e8d23bd07c50908e7a59f8de0c",
+      "mode": "0o600"
+    },
+    {
+      "path": "validate.py",
+      "bytes": 4004,
+      "sha256": "5041cdbadd41a32b54fbb750611811c3bbb81feaec5342458a2cfa92f443b8c9",
+      "mode": "0o600"
+    },
+    {
+      "path": "test_validate.py",
+      "bytes": 2233,
+      "sha256": "5ea6aa5ba6a3de99283d9d49952a9fa9170ba58b3aa31cae932ecf91bce8f105",
+      "mode": "0o600"
+    },
+    {
+      "path": "matrix.json",
+      "bytes": 16365,
+      "sha256": "a2d9dbbe2574218f202a8e1544e569f1df98d205e6f2e02cc4b91642638e4ab8",
+      "mode": "0o600"
+    },
+    {
+      "path": "README.md",
+      "bytes": 8118,
+      "sha256": "e3e573b2a550ecfc3c170992d5bd1d0ce8cc7d2fbde8ec2823e329c0e2636c59",
+      "mode": "0o600"
+    },
+    {
+      "path": "transport-fixture.txt",
+      "bytes": 68,
+      "sha256": "78ce796361f50b77b1c86a693c9ba3bb02be2be8dc7fcd0e5ddfd4305da0c5b7",
+      "mode": "0o600"
+    }
+  ],
+  "provenance": "Original deterministic test fixture; no copied app/browser implementation, no dependencies.",
+  "checks": [
+    {
+      "command": "node --test fixture.test.cjs",
+      "runtime": "Node22.23.1",
+      "exitCode": 0,
+      "tests": 6,
+      "scope": "actual inline fixture JS with synthetic DOM and controlled timer; no browser"
+    },
+    {
+      "command": "python3 -m unittest -v test_validate.py",
+      "runtime": "Python3.14.7",
+      "exitCode": 0,
+      "tests": 5,
+      "scope": "static HTML/matrix/negative fixture mutations; no native APIs"
+    }
+  ],
+  "redEvidence": [
+    "D01 absent action: FAIL before implementation",
+    "D02 absent action: FAIL before implementation",
+    "D03 absent action: FAIL before implementation",
+    "reset and option absent actions: FAIL before implementation",
+    "D04 absent action: FAIL before implementation",
+    "static validation stub:5 errors before implementation"
+  ],
+  "nativeBrowserExecution": false,
+  "macExecution": false,
+  "appIntegration": false,
+  "independentlyReviewed": false,
+  "qualified": false,
+  "limits": [
+    "No visual rendering checked",
+    "No actual AX/TCC/SecureInput evidence",
+    "No actual clipboard/native event/receiver proof",
+    "No microphone/ASR",
+    "Real app compatibility beyond this page remains separate"
+  ],
+  "revision": {
+    "kind": "wording-only-v2",
+    "previousArchive": "everlast-browser-field-fixture-5bbe330.tar.gz",
+    "previousArchiveSha256": "c9e8897d72e8667ea4d002e49ed66c872d196b834038cea658d6311517101160",
+    "changedPayloads": [
+      "index.html",
+      "README.md"
+    ],
+    "reason": "Browser timers are nominal5000ms, not exact wall-time guarantees; wait for actual executed status."
+  },
+  "review": {
+    "originalIndependentReview": "Application: no functional/spec blockers, own6JS+5Python passed; provenance payloads verified",
+    "deltaIndependentReadback": "pending",
+    "nativeBrowserExecution": false
+  }
+}

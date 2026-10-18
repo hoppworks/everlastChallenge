@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; font-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Lokale Browserfeld-Fixture · native Abnahme offen</title>
+<style>
+:root { color-scheme: light dark; font: 16px/1.5 system-ui, sans-serif; }
+body { max-width: 58rem; margin: auto; padding: 1.5rem; background: Canvas; color: CanvasText; }
+h1 { font-size: 1.65rem; line-height: 1.2; } h2 { font-size: 1.2rem; margin-top: 2rem; }
+section { border-top: 1px solid GrayText; padding-top: 1rem; margin-top: 1.5rem; }
+label, .label { display: block; margin: 1rem 0 .25rem; font-weight: 600; }
+input, textarea, [contenteditable], .container-target, [role="listbox"] {
+ box-sizing: border-box; width: 100%; padding: .65rem; font: inherit;
+ color: CanvasText; background: Canvas; border: 1px solid GrayText; border-radius: .2rem;
+}
+textarea { min-height: 6rem; resize: vertical; } [contenteditable], .container-target { min-height: 4rem; }
+button { font: inherit; padding: .45rem .7rem; margin: .4rem .4rem .4rem 0; }
+:focus-visible { outline: 3px solid Highlight; outline-offset: 3px; }
+.help { font-size: .9rem; } code { overflow-wrap: anywhere; } li[role="option"] { padding: .35rem; }
+</style>
+<header>
+<h1>Lokale Browserfeld-Fixture</h1>
+<p>Öffentliche Prüffelder für A15b/c/d, A21 und den getrennten A21a-Transporttest.
+Keine Netzwerkzugriffe, keine Eingabe-/Passwortprotokollierung, keine Produktintegration.</p>
+<p><strong>Kein bestandener nativer Test:</strong> DOM-Rollen und Fokusaktionen belegen keine
+AX-Rolle, Rechte, sichere Eingabe oder tatsächliche Einfügung. Die spätere Mac-Prüfung
+zeichnet Beobachtungen getrennt von Erwartungen auf.</p>
+<p class="help">Nur die öffentliche Transportfixture verwenden. Keine echten Passwörter oder privaten Inhalte eingeben.
+Neuladen setzt die Seite zurück. Die Seite liest weder Feldwerte noch Zwischenablage.</p>
+<a href="#positive">Zu den positiven Kontrollfeldern</a>
+</header>
+<main>
+<section id="positive">
+<h2>1 · Positive Kontrollen und Feldwechsel</h2>
+<label for="editable-input">E01 · normales Textfeld</label>
+<input id="editable-input" data-case="E01" type="text" autocomplete="off" spellcheck="false">
+<label for="editable-other">E02 · zweites Textfeld gleicher Art</label>
+<input id="editable-other" data-case="E02" type="text" autocomplete="off" spellcheck="false">
+<label for="editable-area">E03 · mehrzeilige Eingabe</label>
+<textarea id="editable-area" data-case="E03" autocomplete="off" spellcheck="false"></textarea>
+<div class="label" id="editable-rich-label">E04 · contenteditable / textbox</div>
+<div id="editable-rich" data-case="E04" role="textbox" contenteditable="true" aria-multiline="true" aria-labelledby="editable-rich-label" spellcheck="false"></div>
+<p class="help">E01→E02 während eines Hotkey-Diktats ist ein Feldwechsel, kein neuer gültiger Startkontext.
+Positive Übertragung nur nach tatsächlichem nativem Zielnachweis bewerten.</p>
+</section>
+<section id="negative">
+<h2>2 · Gesperrte Vergleichsfelder</h2>
+<label for="readonly-input">N01 · Textfeld readonly</label>
+<input id="readonly-input" data-case="N01" type="text" readonly value="Öffentlicher Kontrolltext" autocomplete="off">
+<label for="disabled-input">N02 · Textfeld disabled</label>
+<input id="disabled-input" data-case="N02" type="text" disabled value="Öffentlicher Kontrolltext" autocomplete="off">
+<label for="aria-input">N03 · nur aria-readonly=true, DOM weiterhin editierbar</label>
+<input id="aria-input" data-case="N03" type="text" aria-readonly="true" autocomplete="off">
+<p class="help">N03 isoliert die ARIA-Semantik. Kein readonly-Attribut und kein Eingabe-Blocker verschleiern die native Abbildung.</p>
+<label for="readonly-area">N04 · textarea readonly</label>
+<textarea id="readonly-area" data-case="N04" readonly>Öffentlicher Kontrolltext</textarea>
+<label for="disabled-area">N05 · textarea disabled</label>
+<textarea id="disabled-area" data-case="N05" disabled>Öffentlicher Kontrolltext</textarea>
+<div class="label" id="aria-rich-label">N06 · contenteditable mit aria-readonly=true</div>
+<div id="aria-rich" data-case="N06" role="textbox" contenteditable="true" aria-readonly="true" aria-multiline="true" aria-labelledby="aria-rich-label"></div>
+<div class="label" id="readonly-rich-label">N07 · textbox / contenteditable=false</div>
+<div id="readonly-rich" data-case="N07" role="textbox" contenteditable="false" tabindex="0" aria-readonly="true" aria-labelledby="readonly-rich-label">Öffentlicher Kontrolltext</div>
+</section>
+<section id="dynamic">
+<h2>3 · Identität und spätes Startziel</h2>
+<p>Eine geplante Aktion nutzt eine nominelle Timerverzögerung von 5000 ms. Der Browser kann sie später ausführen. Ihr Button fokussiert zunächst das zugehörige Startobjekt.
+Nur eine Aktion ist gleichzeitig vorgemerkt. Erst danach Hotkey starten; vor Stop die Aktionsbestätigung abwarten.</p>
+<label for="replace-input">D01 · gleich benanntes Feld mit neuer DOM-Identität</label>
+<input id="replace-input" data-case="D01" type="text" autocomplete="off">
+<button type="button" data-action="replace">D01 ersetzen (Timer: 5 s)</button>
+<label for="lock-input">D02 · während der Sitzung gesperrtes Textfeld</label>
+<input id="lock-input" data-case="D02" type="text" autocomplete="off">
+<button type="button" data-action="lock">D02 sperren (Timer: 5 s)</button>
+<label for="disable-input">D04 · während der Sitzung deaktiviertes Textfeld</label>
+<input id="disable-input" data-case="D04" type="text" autocomplete="off">
+<button type="button" data-action="disable">D04 deaktivieren (Timer: 5 s)</button>
+<div class="label" id="late-label">D03 · Container, später neues Gespräch/Textfeld</div>
+<div id="late-container" class="container-target" data-case="D03" tabindex="0" aria-labelledby="late-label">Hier ist zunächst kein Textfeld.</div>
+<button type="button" data-action="late">D03: neues Gespräch (Timer: 5 s)</button>
+<button type="button" data-action="reset">Dynamische Fälle zurücksetzen</button>
+<p id="action-status" role="status" aria-live="polite" aria-atomic="true">Keine Aktion vorgemerkt.</p>
+<p class="help">Bei D01 wird die Eingabe durch ein frisches, leeres Feld mit gleichem id/type ersetzt und dieses fokussiert.
+Bei D03 wird der Container durch ein neues Gesprächsfeld ergänzt und dieses fokussiert.
+Das sind bewusste Aktionen dieser Testseite, keine Fokusaktionen der Diktier-App.</p>
+</section>
+<section id="suggestions">
+<h2>4 · Vorschlags-/Listenkontext</h2>
+<label for="suggestion-input">L01 · echtes HTML-datalist-Feld</label>
+<input id="suggestion-input" data-case="L01" list="public-suggestions" autocomplete="off">
+<datalist id="public-suggestions"><option value="Alpha"><option value="Beta"></datalist>
+<p class="help">„A“ eingeben und Pfeil abwärts nutzen. Ob der Browser ein natives Popup zeigt und welches AX-Element
+fokussiert ist, muss beobachtet werden. Dies ist kein garantierter Autofill-Reproducer.</p>
+<div class="label" id="list-label">L02 · ausdrücklich synthetische ARIA-Liste</div>
+<ul id="synthetic-list" data-case="L02" role="listbox" aria-labelledby="list-label">
+<li id="synthetic-option" role="option" tabindex="0" aria-selected="false">Öffentliche Option Alpha</li>
+</ul>
+<button type="button" data-action="option">Synthetische Option fokussieren</button>
+<p class="help">L02 bildet einen Nicht-Textfeld-Startkontext ab; es ersetzt keinen Nachweis eines browserinternen Autofillpopups.</p>
+</section>
+<section id="secure">
+<h2>5 · Kontrollierter Passwortfall</h2>
+<label for="password-input">S01 · Passwortfeld, ausschließlich Dummytext</label>
+<input id="password-input" data-case="S01" type="password" autocomplete="off" spellcheck="false">
+<p class="help">Keine echten Zugangsdaten verwenden. Das Feld allein beweist nicht, dass Secure Input global aktiv ist.
+Separat native Passwortrolle und tatsächlich beobachteten Secure-Input-Status erfassen.
+Auch bei nicht aktivem Secure Input ist ein erkanntes Passwortfeld kein automatisches Ziel.</p>
+</section>
+</main>
+<script id="fixture-code">
+(() => {
+  let pending = null;
+  const status = message => { document.getElementById("action-status").textContent = message; };
+  const freshInput = (id, caseId) => {
+    const field = document.createElement("input");
+    field.id = id;
+    field.type = "text";
+    field.setAttribute("data-case", caseId);
+    field.setAttribute("autocomplete", "off");
+    return field;
+  };
+  const schedule = (targetId, message, action) => {
+    if (pending !== null) {
+      status("Es wartet bereits eine Aktion. Zuerst abwarten oder zurücksetzen.");
+      return;
+    }
+    document.getElementById(targetId).focus();
+    status(message + " · Timer auf 5000 ms gesetzt; auf „ausgeführt“ warten.");
+    pending = setTimeout(() => {
+      pending = null;
+      action();
+      status(message + " · ausgeführt.");
+    }, 5000);
+  };
+  document.querySelectorAll("button[data-action]").forEach(button => {
+    button.addEventListener("click", () => {
+      if (button.dataset.action === "reset") {
+        if (pending !== null) clearTimeout(pending);
+        pending = null;
+        document.getElementById("replace-input").replaceWith(freshInput("replace-input", "D01"));
+        document.getElementById("lock-input").replaceWith(freshInput("lock-input", "D02"));
+        document.getElementById("disable-input").replaceWith(freshInput("disable-input", "D04"));
+        document.getElementById("late-container").replaceChildren();
+        document.getElementById("late-container").textContent = "Hier ist zunächst kein Textfeld.";
+        status("Dynamische Fälle zurückgesetzt. Keine Aktion vorgemerkt.");
+      }
+      if (button.dataset.action === "option") {
+        document.getElementById("synthetic-option").focus();
+        status("L02: synthetische Option fokussiert.");
+      }
+      if (button.dataset.action === "late") {
+        schedule("late-container", "D03: neues Gesprächsfeld", () => {
+          const field = freshInput("late-input", "D03");
+          field.setAttribute("aria-label", "D03 neues Gespräch");
+          document.getElementById("late-container").replaceChildren(field);
+          field.focus();
+        });
+      }
+      if (button.dataset.action === "disable") {
+        schedule("disable-input", "D04: Feld deaktivieren", () => {
+          document.getElementById("disable-input").setAttribute("disabled", "");
+        });
+      }
+      if (button.dataset.action === "lock") {
+        schedule("lock-input", "D02: Feld sperren", () => {
+          const field = document.getElementById("lock-input");
+          field.setAttribute("readonly", "");
+          field.setAttribute("aria-readonly", "true");
+        });
+      }
+      if (button.dataset.action === "replace") {
+        schedule("replace-input", "D01: Feld ersetzen", () => {
+          const next = freshInput("replace-input", "D01");
+          document.getElementById("replace-input").replaceWith(next);
+          next.focus();
+        });
+      }
+    });
+  });
+})();
+</script>
+</html>
