@@ -10,6 +10,9 @@ mod speech_gate;
 #[cfg(feature = "measurement")]
 pub mod observation;
 
+#[cfg(feature = "measurement")]
+pub mod reduced_context;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Language {
     German,
@@ -58,6 +61,9 @@ pub enum InferenceError {
         end: i64,
         probability: f32,
     },
+    #[cfg(feature = "measurement")]
+    #[error("Reduced-context experiment requires model audio context 1500; observed {actual}")]
+    UnsupportedAudioContext { actual: i32 },
     #[error("Insufficient memory for bounded inference buffers")]
     Memory,
 }
@@ -106,6 +112,27 @@ impl Engine {
             decode::<false, _>(context, input, language, &mut NoObservation)
         })
     }
+    /// Frozen P06 experiment only: 1024 context positions for prepared inputs
+    /// <=320000 frames, otherwise verified model default (1500). No segmentation.
+    /// The record survives errors; chosen context is not proof of native execution.
+    #[cfg(feature = "measurement")]
+    pub fn transcribe_reduced_context(
+        &mut self,
+        samples: &[f32],
+        language: Language,
+    ) -> reduced_context::Transcription {
+        let Self { context, gate } = self;
+        reduced_context::transcribe(
+            samples,
+            language,
+            gate,
+            context.n_audio_ctx(),
+            |input, language, ctx, record| {
+                decode_with_audio_ctx::<false, _>(context, input, language, record, ctx)
+            },
+        )
+    }
+
     /// Legacy developer diagnostic with suppressed native timestamps (true),
     /// retained for historical comparisons. Production uses false. Shares the
     /// same preparation/decoder/text path; missing encoder windows stay unknown.
@@ -151,6 +178,7 @@ impl Engine {
 }
 
 trait ObservationSink {
+    fn full_started(&mut self) {}
     fn prepared(&mut self, _: usize, _: Option<std::ops::Range<usize>>, _: usize) {}
     fn segment(
         &mut self,
@@ -218,6 +246,16 @@ fn decode<const SUPPRESS_TIMESTAMPS: bool, O: ObservationSink>(
     language: Language,
     observation: &mut O,
 ) -> Result<String, InferenceError> {
+    decode_with_audio_ctx::<SUPPRESS_TIMESTAMPS, _>(context, input, language, observation, 0)
+}
+
+fn decode_with_audio_ctx<const SUPPRESS_TIMESTAMPS: bool, O: ObservationSink>(
+    context: &WhisperContext,
+    input: &[f32],
+    language: Language,
+    observation: &mut O,
+    audio_ctx: i32,
+) -> Result<String, InferenceError> {
     let mut state = context
         .create_state()
         .map_err(|_| InferenceError::Context)?;
@@ -236,6 +274,10 @@ fn decode<const SUPPRESS_TIMESTAMPS: bool, O: ObservationSink>(
     parameters.set_no_speech_thold(0.6);
     parameters.set_logprob_thold(-1.0);
     parameters.set_entropy_thold(2.4);
+    if audio_ctx != 0 {
+        parameters.set_audio_ctx(audio_ctx);
+    }
+    observation.full_started();
     state
         .full(parameters, input)
         .map_err(|_| InferenceError::Decode)?;
