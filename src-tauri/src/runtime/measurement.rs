@@ -170,13 +170,16 @@ struct ReplayAudio {
     trace: Arc<Trace>,
     native: NativeEndpoint,
     pretranscription: bool,
+    full_prefix_revision: bool,
 }
 impl AudioDriver for ReplayAudio {
     fn start(&mut self, session: u64, _: Option<String>) -> Result<(), String> {
         if self.owner.active.is_some() {
             return Err("Replay owner is still occupied".into());
         }
-        let handle = if self.pretranscription {
+        let handle = if self.full_prefix_revision {
+            CaptureHandle::start_full_prefix_replay(session, self.format, self.ready.clone())
+        } else if self.pretranscription {
             CaptureHandle::start_pretranscription_replay(session, self.format, self.ready.clone())
         } else {
             CaptureHandle::start_replay(session, self.format, self.ready.clone())
@@ -215,6 +218,9 @@ impl AudioDriver for ReplayAudio {
     }
     fn pretranscription(&self) -> bool {
         self.pretranscription
+    }
+    fn full_prefix_revision(&self) -> bool {
+        self.full_prefix_revision
     }
     fn allow_seal(&self, epoch: u64) {
         if let Some((_, handle)) = &self.owner.active {
@@ -291,13 +297,24 @@ impl MeasuredJobTrace {
     }
 }
 impl MeasuredRuntime {
+    /// Experimental whole-prefix revisions; never selected by app starts.
+    /// Job ranges intentionally overlap. Decoder input-frame totals describe
+    /// repeated work, not unique recording coverage; suffix validators and RTF
+    /// denominators must not be reused for this mode.
+    pub fn spawn_full_prefix_revision(
+        inference: InferenceService,
+        generation: u64,
+        format: AudioFormat,
+    ) -> Result<Self, RuntimeError> {
+        Self::spawn_inner(inference, generation, format, false, true, true)
+    }
     /// Experimental confirmed-pause pretranscription; never selected by app starts.
     pub fn spawn_pretranscription(
         inference: InferenceService,
         generation: u64,
         format: AudioFormat,
     ) -> Result<Self, RuntimeError> {
-        Self::spawn_inner(inference, generation, format, true, true)
+        Self::spawn_inner(inference, generation, format, true, false, true)
     }
     /// Full-recording control with exactly the same bounded job observations.
     pub fn spawn_pretranscription_reference(
@@ -305,20 +322,21 @@ impl MeasuredRuntime {
         generation: u64,
         format: AudioFormat,
     ) -> Result<Self, RuntimeError> {
-        Self::spawn_inner(inference, generation, format, false, true)
+        Self::spawn_inner(inference, generation, format, false, false, true)
     }
     pub fn spawn(
         inference: InferenceService,
         generation: u64,
         format: AudioFormat,
     ) -> Result<Self, RuntimeError> {
-        Self::spawn_inner(inference, generation, format, false, false)
+        Self::spawn_inner(inference, generation, format, false, false, false)
     }
     fn spawn_inner(
         inference: InferenceService,
         generation: u64,
         format: AudioFormat,
         pretranscription: bool,
+        full_prefix_revision: bool,
         jobs: bool,
     ) -> Result<Self, RuntimeError> {
         format.validate().map_err(service_error)?;
@@ -342,6 +360,7 @@ impl MeasuredRuntime {
             trace: Arc::clone(&trace),
             native: endpoint,
             pretranscription,
+            full_prefix_revision,
         };
         let runtime = Runtime::with_audio(inference, generation, native, audio)?;
         Ok(Self {
@@ -543,6 +562,8 @@ impl<A: AudioDriver> Actor<A> {
 
 #[cfg(test)]
 mod tests {
+    #[path = "full_prefix_tests.rs"]
+    mod full_prefix_tests;
     #[path = "pretranscription_tests.rs"]
     mod pretranscription_tests;
     #[path = "measurement_stop_tests.rs"]

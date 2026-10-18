@@ -13,6 +13,8 @@ use macos_integration::{
 use std::{num::NonZeroU64, ops::Range, sync::Arc};
 
 #[cfg(feature = "measurement")]
+mod full_prefix;
+#[cfg(feature = "measurement")]
 mod pretranscription;
 
 #[derive(Clone)]
@@ -103,6 +105,8 @@ struct Active {
     expected_range: Option<Range<usize>>,
     #[cfg(feature = "measurement")]
     run: Option<pretranscription::Run>,
+    #[cfg(feature = "measurement")]
+    full_prefix: Option<full_prefix::Run>,
 }
 
 #[derive(Default)]
@@ -111,6 +115,8 @@ pub struct Controller {
     active: Option<Active>,
     #[cfg(feature = "measurement")]
     pretranscription: bool,
+    #[cfg(feature = "measurement")]
+    full_prefix_revision: bool,
     #[cfg(feature = "measurement")]
     next_job: u64,
 }
@@ -182,6 +188,8 @@ impl Controller {
             expected_range: None,
             #[cfg(feature = "measurement")]
             run: self.pretranscription.then(pretranscription::Run::default),
+            #[cfg(feature = "measurement")]
+            full_prefix: self.full_prefix_revision.then(full_prefix::Run::default),
         });
         self.actions(effects)
     }
@@ -238,6 +246,10 @@ impl Controller {
         if !active.work_token.is_valid() {
             return false;
         }
+        if active.full_prefix.is_some() {
+            return self.prefix_matches(*generation, *job_id, sample_range, timeline_range);
+        }
+        #[cfg(feature = "measurement")]
         if active.run.is_some() {
             return self.segment_matches(*generation, *job_id, sample_range, timeline_range);
         }
@@ -273,7 +285,11 @@ impl Controller {
                 samples,
                 ..
             } => {
-                actions.extend(self.accept_segment(session, timeline_range, samples)?);
+                if self.full_prefix_revision {
+                    actions.extend(self.accept_prefix(session, timeline_range, samples)?);
+                } else {
+                    actions.extend(self.accept_segment(session, timeline_range, samples)?);
+                }
                 return Ok(actions);
             }
             #[cfg(feature = "measurement")]
@@ -318,6 +334,10 @@ impl Controller {
             }
             Event::AudioStarted(id) => effects.extend(self.core.accept(Fact::AudioStarted(id))?),
             Event::AudioFinished { result, .. } => {
+                #[cfg(feature = "measurement")]
+                if self.full_prefix_revision {
+                    return self.prefix_finished(session, result, actions);
+                }
                 let active = self.active.as_mut().ok_or(ControllerError::Resource)?;
                 if active.released {
                     return Ok(actions);
@@ -355,6 +375,17 @@ impl Controller {
                 result,
                 ..
             } => {
+                #[cfg(feature = "measurement")]
+                if self
+                    .active
+                    .as_ref()
+                    .is_some_and(|a| a.full_prefix.is_some())
+                {
+                    if self.prefix_matches(generation, job_id, &sample_range, &timeline_range) {
+                        actions.extend(self.prefix_result(result)?);
+                    }
+                    return Ok(actions);
+                }
                 #[cfg(feature = "measurement")]
                 if self.active.as_ref().is_some_and(|a| a.run.is_some()) {
                     if self.segment_matches(generation, job_id, &sample_range, &timeline_range) {
@@ -412,6 +443,11 @@ impl Controller {
                 Effect::StopAudio(session) => actions.push(Action::StopAudio(session)),
                 Effect::Transcribe(session) => {
                     #[cfg(feature = "measurement")]
+                    if active.full_prefix.is_some() {
+                        actions.extend(self.prefix_final_job()?);
+                        continue;
+                    }
+                    #[cfg(feature = "measurement")]
                     if active.run.is_some() {
                         actions.extend(self.segmented_jobs()?);
                         continue;
@@ -446,6 +482,7 @@ impl Controller {
                     #[cfg(feature = "measurement")]
                     {
                         active.run = None;
+                        active.full_prefix = None;
                     }
                     actions.push(Action::CancelInference(session));
                     actions.push(Action::AbortDelivery(session));

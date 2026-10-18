@@ -48,14 +48,19 @@ pub(super) fn record_segmented(
     ready: Sender<ReplayInput>,
     link: &super::pretranscription::SegmentLink,
 ) -> Result<Vec<f32>, CaptureError> {
-    record_inner(owner, format, ready, Some(link))
+    record_inner(
+        owner,
+        format,
+        ready,
+        Some(super::RecordingSegments::Suffix(link)),
+    )
 }
 
-fn record_inner(
+pub(super) fn record_inner(
     owner: RecordingOwner<'_>,
     format: AudioFormat,
     ready: Sender<ReplayInput>,
-    segmentation: Option<&super::pretranscription::SegmentLink>,
+    segmentation: Option<super::RecordingSegments<'_>>,
 ) -> Result<Vec<f32>, CaptureError> {
     if owner.stop.load(Ordering::Acquire) {
         return Ok(Vec::new());

@@ -402,6 +402,10 @@ trait AudioDriver: Send + 'static {
         false
     }
     #[cfg(feature = "measurement")]
+    fn full_prefix_revision(&self) -> bool {
+        false
+    }
+    #[cfg(feature = "measurement")]
     fn allow_seal(&self, _epoch: u64) {}
     #[cfg(feature = "measurement")]
     fn measurement_trace(&self) -> Option<Arc<measurement::Trace>> {
@@ -512,6 +516,9 @@ impl Runtime {
             let mut controller = controller;
             if audio.pretranscription() {
                 controller.enable_pretranscription();
+            }
+            if audio.full_prefix_revision() {
+                controller.enable_full_prefix_revision();
             }
             controller
         };
@@ -1079,8 +1086,12 @@ impl<A: AudioDriver> Actor<A> {
             self.execute(actions)?;
         }
         #[cfg(feature = "measurement")]
-        if self.audio.pretranscription()
-            && let Some(epoch) = self.controller.seal_available()
+        if (self.audio.pretranscription() || self.audio.full_prefix_revision())
+            && let Some(epoch) = if self.audio.full_prefix_revision() {
+                self.controller.prefix_available()
+            } else {
+                self.controller.seal_available()
+            }
             && self
                 .inference
                 .as_ref()

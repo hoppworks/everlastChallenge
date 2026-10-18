@@ -22,6 +22,8 @@ use std::{
 const CLOSED: usize = 1 << (usize::BITS - 1);
 
 #[cfg(feature = "measurement")]
+mod full_prefix;
+#[cfg(feature = "measurement")]
 pub mod pretranscription;
 #[cfg(feature = "measurement")]
 pub mod replay;
@@ -395,6 +397,8 @@ pub struct CaptureHandle {
     #[cfg(feature = "measurement")]
     segmentation: Option<Arc<pretranscription::SegmentLink>>,
     #[cfg(feature = "measurement")]
+    full_prefix: Option<Arc<full_prefix::PrefixLink>>,
+    #[cfg(feature = "measurement")]
     session: u64,
 }
 
@@ -457,9 +461,42 @@ impl CaptureHandle {
         Ok(handle)
     }
 
+    /// Whole-prefix experiment: keep the active journal intact until final flush.
+    #[cfg(feature = "measurement")]
+    pub fn start_full_prefix_replay(
+        session: u64,
+        format: AudioFormat,
+        ready: Sender<replay::ReplayInput>,
+    ) -> Result<Self, CaptureError> {
+        if ready.capacity().is_none() {
+            return Err(CaptureError::EventOverflow);
+        }
+        let link = Arc::new(full_prefix::PrefixLink::default());
+        let owner_link = Arc::clone(&link);
+        let mut handle = Self::spawn(session, move |events, stop, maximum, progress| {
+            full_prefix::record(
+                RecordingOwner {
+                    session,
+                    events,
+                    stop,
+                    maximum,
+                    progress,
+                },
+                format,
+                ready,
+                &owner_link,
+            )
+        })?;
+        handle.full_prefix = Some(link);
+        Ok(handle)
+    }
+
     #[cfg(feature = "measurement")]
     pub(crate) fn allow_seal(&self, epoch: u64) {
         if let Some(link) = &self.segmentation {
+            link.allow(epoch);
+        }
+        if let Some(link) = &self.full_prefix {
             link.allow(epoch);
         }
     }
@@ -505,6 +542,8 @@ impl CaptureHandle {
             #[cfg(feature = "measurement")]
             segmentation: None,
             #[cfg(feature = "measurement")]
+            full_prefix: None,
+            #[cfg(feature = "measurement")]
             session,
         })
     }
@@ -521,6 +560,10 @@ impl CaptureHandle {
             if !link.pause_poll() {
                 return None;
             }
+            return link.poll(self.session, &self.events);
+        }
+        #[cfg(feature = "measurement")]
+        if let Some(link) = &self.full_prefix {
             return link.poll(self.session, &self.events);
         }
         self.events.try_recv().ok()
@@ -697,6 +740,26 @@ impl<S> Drop for RecordingSource<S> {
     }
 }
 
+#[cfg(feature = "measurement")]
+#[derive(Clone, Copy)]
+enum RecordingSegments<'a> {
+    Suffix(&'a pretranscription::SegmentLink),
+    FullPrefix(&'a full_prefix::PrefixLink),
+}
+#[cfg(feature = "measurement")]
+impl RecordingSegments<'_> {
+    fn advance(
+        self,
+        processor: &mut AudioProcessor,
+        pauses: &mut dictation_core::audio::pauses::ConfirmedPauses,
+    ) -> Result<(), CaptureError> {
+        match self {
+            Self::Suffix(link) => link.advance(processor, pauses),
+            Self::FullPrefix(link) => link.advance(processor, pauses),
+        }
+    }
+}
+
 impl RecordingOwner<'_> {
     fn run<S>(
         self,
@@ -724,7 +787,7 @@ impl RecordingOwner<'_> {
         source: S,
         started: Instant,
         activate: impl FnOnce() -> Result<(), CaptureError>,
-        #[cfg(feature = "measurement")] segmentation: Option<&pretranscription::SegmentLink>,
+        #[cfg(feature = "measurement")] segmentation: Option<RecordingSegments<'_>>,
     ) -> Result<Vec<f32>, CaptureError> {
         #[cfg(feature = "measurement")]
         let mut pauses = dictation_core::audio::pauses::ConfirmedPauses::default();
@@ -848,6 +911,8 @@ mod tests {
             progress: Arc::new(ProgressSlot::default()),
             #[cfg(feature = "measurement")]
             segmentation: None,
+            #[cfg(feature = "measurement")]
+            full_prefix: None,
             #[cfg(feature = "measurement")]
             session: 4,
         };
@@ -1034,6 +1099,8 @@ mod tests {
             progress: Arc::new(ProgressSlot::default()),
             #[cfg(feature = "measurement")]
             segmentation: None,
+            #[cfg(feature = "measurement")]
+            full_prefix: None,
             #[cfg(feature = "measurement")]
             session: 4,
         };
