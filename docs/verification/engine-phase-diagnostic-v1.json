@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "kind": "engine-phase-diagnostic-summary-v1",
+  "sourceRevision": "17ed644",
+  "qualified": false,
+  "L": null,
+  "independentReadback": {
+    "completed": true,
+    "findings": [],
+    "allBindingsIncludingBothModelsRehashed": true,
+    "compiledSourceEntries": 49,
+    "uniqueSourceFiles": 43,
+    "currentAndImmutableSourcesVerified": true,
+    "rows": 8,
+    "exactPcmFloat32LeHashIndependentlyRecomputed": true,
+    "workerAndReceiptIdentitiesVerified": true,
+    "phasesAndCpuMonotonicityVerified": true,
+    "cleanupAndEmptyRequestGateVerified": true
+  },
+  "cases": [
+    {
+      "id": "fleurs-de-test-1736",
+      "language": "de",
+      "frames": 80000,
+      "measuredRuns": 3,
+      "warmupRuns": 1,
+      "medianNanos": {
+        "totalElapsedNanos": 973174000,
+        "validationEnergyNanos": 22334,
+        "vadNormalizationNanos": 32917,
+        "vadInferenceNanos": 5879125,
+        "stateCreateNanos": 12362708,
+        "nativeFullNanos": 954609250,
+        "textJoinNanos": 1166,
+        "stateDropNanos": 260792
+      },
+      "nativeFullFractionRange": [
+        0.9805490460942013,
+        0.9819824401686924
+      ],
+      "actualWorkerThreadId": "ThreadId(2)",
+      "qosClassRaw": [
+        21
+      ],
+      "textSha256Stable": true,
+      "cleanup": {
+        "error": null,
+        "joined": true
+      },
+      "report": {
+        "path": "artifacts/p06-engine-profile-v1/fleurs-de-test-1736.json",
+        "bytes": 24037,
+        "sha256": "a979de228e4c777f3191bd650e1e53c83a5c7308495a419b10f9bec672515ea8",
+        "mode": "0o600"
+      }
+    },
+    {
+      "id": "fleurs-en-test-1679",
+      "language": "en",
+      "frames": 80000,
+      "measuredRuns": 3,
+      "warmupRuns": 1,
+      "medianNanos": {
+        "totalElapsedNanos": 960395750,
+        "validationEnergyNanos": 21000,
+        "vadNormalizationNanos": 35042,
+        "vadInferenceNanos": 6054542,
+        "stateCreateNanos": 12815667,
+        "nativeFullNanos": 941264041,
+        "textJoinNanos": 875,
+        "stateDropNanos": 268333
+      },
+      "nativeFullFractionRange": [
+        0.9798414531864463,
+        0.9800793485393912
+      ],
+      "actualWorkerThreadId": "ThreadId(2)",
+      "qosClassRaw": [
+        21
+      ],
+      "textSha256Stable": true,
+      "cleanup": {
+        "error": null,
+        "joined": true
+      },
+      "report": {
+        "path": "artifacts/p06-engine-profile-v1/fleurs-en-test-1679.json",
+        "bytes": 24034,
+        "sha256": "230e4c614f175d2e9a5d4142b346b4ae2373ed3c492d25758cd0677af241a1a1",
+        "mode": "0o600"
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "path": "artifacts/p06-engine-profile-v1/freeze.json",
+      "bytes": 3043,
+      "sha256": "9cabf2755eb24837ea70d493a7a8434f58fdaba58f7f3fbd3c52d1f8f442723e",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-engine-profile-v1/parameters.json",
+      "bytes": 13781,
+      "sha256": "2748fa24601cd2f8e162d0e84b7ef4929249f39ba3e0233d11b688709e4b43aa",
+      "mode": "0o600"
+    }
+  ],
+  "conclusion": "Native Full dominates these six measured calls across two file fixtures. The direct measured state-creation share is about 1.3%; a 10% gain from state reuse alone is not established. Indirect backend effects remain unmeasured.",
+  "limits": [
+    "Two five-second file fixtures, not six-case central latency or real-time comparison.",
+    "One marked warmup plus three measured calls per fixture, fresh ASR state per call.",
+    "Thread CPU excludes child CPU threads and GPU; native Full is not a GPU-utilization measurement.",
+    "No state reuse, ASR setting or scheduling change.",
+    "No inference-quality improvement or universal performance promise."
+  ]
+}
