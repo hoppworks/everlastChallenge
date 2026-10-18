@@ -1,0 +1,469 @@
+{
+  "schemaVersion": 1,
+  "kind": "pretranscription-quality-screening-decision-v1",
+  "sourceRevision": "a8c3270eb24094c3b863904f1b130fed9287fa36",
+  "continuationId": "424273c0-04bc-4cdc-a30e-cfa2cec53d7a",
+  "execution": {
+    "completed": true,
+    "exitCode": 0,
+    "logicalCases": 400,
+    "rows": 800,
+    "adoptedCases": 185,
+    "newCases": 215,
+    "powerAssertionEnded": true
+  },
+  "independentPipelineAudit": {
+    "passed": true,
+    "syntheticCanonicalTests": 15,
+    "logicalCases": 400,
+    "rows": 800,
+    "publications": 686952,
+    "sourceFiles": {
+      "historicalImmutable": 145,
+      "currentAndImmutable": 152
+    },
+    "sharedCompiledFiles": 35
+  },
+  "canonicalEvaluation": {
+    "pythonVersion": "3.9.6",
+    "unicodeVersion": "13.0.0",
+    "assemblyCanonicalTests": 13,
+    "separateReports": 8,
+    "casesPerReport": 100
+  },
+  "comparisons": [
+    {
+      "phase": "warmup",
+      "referenceBlock": 1,
+      "candidateBlock": 2,
+      "groups": [
+        {
+          "language": "de",
+          "class": "clean",
+          "caseCount": 43,
+          "referenceTokens": 915,
+          "referenceEdits": 46,
+          "candidateEdits": 46,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": true,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": true
+        },
+        {
+          "language": "de",
+          "class": "challenging",
+          "caseCount": 8,
+          "referenceTokens": 559,
+          "referenceEdits": 230,
+          "candidateEdits": 230,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": true,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": true
+        },
+        {
+          "language": "en",
+          "class": "clean",
+          "caseCount": 32,
+          "referenceTokens": 734,
+          "referenceEdits": 34,
+          "candidateEdits": 34,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": true,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": true
+        },
+        {
+          "language": "en",
+          "class": "challenging",
+          "caseCount": 7,
+          "referenceTokens": 99,
+          "referenceEdits": 5,
+          "candidateEdits": 9,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": false,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": false
+        }
+      ],
+      "failedCases": [],
+      "unwantedSilence": [],
+      "changedWholeTexts": [
+        {
+          "id": "fleurs-en-test-1660-quiet",
+          "referenceTextUtf8Sha256": "4a9fddb493861c1f91705c957d61325aeb81a88b86f92886ac038f810409b09b",
+          "candidateTextUtf8Sha256": "0a061465ea99129c0eb6a21a51c25db770c61aad1219621c5cb030e088e59275"
+        },
+        {
+          "id": "fleurs-en-test-1663-quiet",
+          "referenceTextUtf8Sha256": "5c8d1528d2ca6c88f9e701d7cc3ed6835157984c4a3ebf0122c936eff09b6b4d",
+          "candidateTextUtf8Sha256": "e65cb1ff3f1f942b8931dcb0c8019cbff75f8e410c290ecf954f626e693e9f2d"
+        }
+      ],
+      "unchangedWholeTexts": 98,
+      "numericalPassed": false
+    },
+    {
+      "phase": "warmup",
+      "referenceBlock": 4,
+      "candidateBlock": 3,
+      "groups": [
+        {
+          "language": "de",
+          "class": "clean",
+          "caseCount": 43,
+          "referenceTokens": 915,
+          "referenceEdits": 46,
+          "candidateEdits": 46,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": true,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": true
+        },
+        {
+          "language": "de",
+          "class": "challenging",
+          "caseCount": 8,
+          "referenceTokens": 559,
+          "referenceEdits": 230,
+          "candidateEdits": 230,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": true,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": true
+        },
+        {
+          "language": "en",
+          "class": "clean",
+          "caseCount": 32,
+          "referenceTokens": 734,
+          "referenceEdits": 34,
+          "candidateEdits": 34,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": true,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": true
+        },
+        {
+          "language": "en",
+          "class": "challenging",
+          "caseCount": 7,
+          "referenceTokens": 99,
+          "referenceEdits": 5,
+          "candidateEdits": 9,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": false,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": false
+        }
+      ],
+      "failedCases": [],
+      "unwantedSilence": [],
+      "changedWholeTexts": [
+        {
+          "id": "fleurs-en-test-1660-quiet",
+          "referenceTextUtf8Sha256": "4a9fddb493861c1f91705c957d61325aeb81a88b86f92886ac038f810409b09b",
+          "candidateTextUtf8Sha256": "0a061465ea99129c0eb6a21a51c25db770c61aad1219621c5cb030e088e59275"
+        },
+        {
+          "id": "fleurs-en-test-1663-quiet",
+          "referenceTextUtf8Sha256": "5c8d1528d2ca6c88f9e701d7cc3ed6835157984c4a3ebf0122c936eff09b6b4d",
+          "candidateTextUtf8Sha256": "e65cb1ff3f1f942b8931dcb0c8019cbff75f8e410c290ecf954f626e693e9f2d"
+        }
+      ],
+      "unchangedWholeTexts": 98,
+      "numericalPassed": false
+    },
+    {
+      "phase": "measured",
+      "referenceBlock": 1,
+      "candidateBlock": 2,
+      "groups": [
+        {
+          "language": "de",
+          "class": "clean",
+          "caseCount": 43,
+          "referenceTokens": 915,
+          "referenceEdits": 46,
+          "candidateEdits": 46,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": true,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": true
+        },
+        {
+          "language": "de",
+          "class": "challenging",
+          "caseCount": 8,
+          "referenceTokens": 559,
+          "referenceEdits": 230,
+          "candidateEdits": 230,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": true,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": true
+        },
+        {
+          "language": "en",
+          "class": "clean",
+          "caseCount": 32,
+          "referenceTokens": 734,
+          "referenceEdits": 34,
+          "candidateEdits": 34,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": true,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": true
+        },
+        {
+          "language": "en",
+          "class": "challenging",
+          "caseCount": 7,
+          "referenceTokens": 99,
+          "referenceEdits": 5,
+          "candidateEdits": 9,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": false,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": false
+        }
+      ],
+      "failedCases": [],
+      "unwantedSilence": [],
+      "changedWholeTexts": [
+        {
+          "id": "fleurs-en-test-1660-quiet",
+          "referenceTextUtf8Sha256": "4a9fddb493861c1f91705c957d61325aeb81a88b86f92886ac038f810409b09b",
+          "candidateTextUtf8Sha256": "0a061465ea99129c0eb6a21a51c25db770c61aad1219621c5cb030e088e59275"
+        },
+        {
+          "id": "fleurs-en-test-1663-quiet",
+          "referenceTextUtf8Sha256": "5c8d1528d2ca6c88f9e701d7cc3ed6835157984c4a3ebf0122c936eff09b6b4d",
+          "candidateTextUtf8Sha256": "e65cb1ff3f1f942b8931dcb0c8019cbff75f8e410c290ecf954f626e693e9f2d"
+        }
+      ],
+      "unchangedWholeTexts": 98,
+      "numericalPassed": false
+    },
+    {
+      "phase": "measured",
+      "referenceBlock": 4,
+      "candidateBlock": 3,
+      "groups": [
+        {
+          "language": "de",
+          "class": "clean",
+          "caseCount": 43,
+          "referenceTokens": 915,
+          "referenceEdits": 46,
+          "candidateEdits": 46,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": true,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": true
+        },
+        {
+          "language": "de",
+          "class": "challenging",
+          "caseCount": 8,
+          "referenceTokens": 559,
+          "referenceEdits": 230,
+          "candidateEdits": 230,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": true,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": true
+        },
+        {
+          "language": "en",
+          "class": "clean",
+          "caseCount": 32,
+          "referenceTokens": 734,
+          "referenceEdits": 34,
+          "candidateEdits": 34,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": true,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": true
+        },
+        {
+          "language": "en",
+          "class": "challenging",
+          "caseCount": 7,
+          "referenceTokens": 99,
+          "referenceEdits": 5,
+          "candidateEdits": 9,
+          "complete": true,
+          "deltaWithinHalfPercentagePoint": false,
+          "candidateWithinAbsoluteCleanLimit": true,
+          "passed": false
+        }
+      ],
+      "failedCases": [],
+      "unwantedSilence": [],
+      "changedWholeTexts": [
+        {
+          "id": "fleurs-en-test-1660-quiet",
+          "referenceTextUtf8Sha256": "4a9fddb493861c1f91705c957d61325aeb81a88b86f92886ac038f810409b09b",
+          "candidateTextUtf8Sha256": "0a061465ea99129c0eb6a21a51c25db770c61aad1219621c5cb030e088e59275"
+        },
+        {
+          "id": "fleurs-en-test-1663-quiet",
+          "referenceTextUtf8Sha256": "5c8d1528d2ca6c88f9e701d7cc3ed6835157984c4a3ebf0122c936eff09b6b4d",
+          "candidateTextUtf8Sha256": "e65cb1ff3f1f942b8931dcb0c8019cbff75f8e410c290ecf954f626e693e9f2d"
+        }
+      ],
+      "unchangedWholeTexts": 98,
+      "numericalPassed": false
+    }
+  ],
+  "decision": {
+    "numericalScreenPassed": false,
+    "candidateRejected": true,
+    "reason": "English challenging: 5 to 9 edits / 99 words, +4.040404 percentage points exceeds 0.5 in each pair and phase.",
+    "productionPretranscriptionEnabled": false,
+    "performanceRunStarted": false
+  },
+  "independentActualReadback": {
+    "completed": true,
+    "findings": [],
+    "actualDecodeJobs": 860,
+    "timeConstraintSnapshots": 3200,
+    "maximumPublisherDeviationNanos": 90958,
+    "nonWeightBindingsRehashed": 2058,
+    "oldImmutableSourcesVerified": 145,
+    "newCurrentAndImmutableSourcesVerified": 152,
+    "canonicalReportsRecomputed": 8,
+    "rawToAssemblyRowsVerified": 800,
+    "wholeTextsCompared": 400,
+    "historicalReferenceIdentity": {
+      "contextReferenceCases": 100,
+      "qualifiedOriginalReferenceCases": 90
+    },
+    "cleanAnchorTransfer": {
+      "cases": 75,
+      "anchors": 158,
+      "passed": 154,
+      "failed": 3,
+      "unclear": 1,
+      "allEightCurrentArmsStatusAndFullTextIdentical": true
+    },
+    "changedCaseReview": {
+      "newEntityIdentityErrors": 4,
+      "newWholeClauseOmission": false,
+      "newWholeSentenceDuplication": false,
+      "newNegationLoss": false,
+      "newWrongNumber": false,
+      "entityObservationsAreNotANewAcceptanceGate": true
+    },
+    "emptyReview": {
+      "cases": 6,
+      "arms": 8,
+      "allEmpty": true
+    },
+    "shortAndA22FullTextsUnchanged": true,
+    "limits": [
+      "No PCM digest, selected ASR crop, VAD scores or per-job text in actual screening metadata; segmentation alone does not prove cause.",
+      "Historical model weight rehash by original auditor accepted; independent second reader did not redundantly rehash the 574MB weight."
+    ]
+  },
+  "qualified": false,
+  "L": null,
+  "limits": [
+    "Completed quality screening is not P06 completion.",
+    "No central latency or resource qualification; no microphone, recipient or physical device acceptance.",
+    "Raw hypotheses remain private. No ASR text repaired, cases dropped or thresholds changed."
+  ],
+  "bindings": [
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-v1/completion.json",
+      "bytes": 1803245,
+      "sha256": "607f19ae0f17c5eaa4b099ed35cd0e40dc2e7876f4ebcfa7c0237e0edb360b61",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-independent-audit-v1.json",
+      "bytes": 720307,
+      "sha256": "824ce7083ac499196c5cd09564a53612ddee5391bfa6c15ac494707824fa5121",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-quality-v1/input-bindings.json",
+      "bytes": 2593,
+      "sha256": "42ae5ef8b12626a7352ebec6e54224331010cc54a23eec0044ac700e17306386",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-quality-v1/numeric-comparison.json",
+      "bytes": 35339,
+      "sha256": "b492165f9a21004fa3081c7382a430524ab8f7df35860e8ccd30e5bbb7621717",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-independent-audit-reviewed-v3.tar",
+      "bytes": 71680,
+      "sha256": "5b88b850e58cc664a1bbcdece4fcfadf1651b603f72f4b8017be24aa10581b11",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/quality-assembly-reviewed-v2.tar.gz",
+      "bytes": 15135,
+      "sha256": "11b580747d610d8643163e96a673fd34ed5081ca78e4597be078d3a9086b177d",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/frozen-probe-v1/binding.json",
+      "bytes": 391,
+      "sha256": "e6064c5a7a425a51baaa22d6ac4d3ff8b7262ffc25e97f5594cdf669ff011c64",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-quality-v1/B1-warmup.quality.json",
+      "bytes": 29585,
+      "sha256": "831794acf3b2fc7c9eb2e652f24b297054dceb0cf80883a34193954a7a52d40d",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-quality-v1/B1-measured.quality.json",
+      "bytes": 29585,
+      "sha256": "831794acf3b2fc7c9eb2e652f24b297054dceb0cf80883a34193954a7a52d40d",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-quality-v1/B2-warmup.quality.json",
+      "bytes": 29598,
+      "sha256": "b406c35eaa11638b83f3f9f9707d332d7d12cd873d249f11efea9d2d0baad3e2",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-quality-v1/B2-measured.quality.json",
+      "bytes": 29598,
+      "sha256": "b406c35eaa11638b83f3f9f9707d332d7d12cd873d249f11efea9d2d0baad3e2",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-quality-v1/B3-warmup.quality.json",
+      "bytes": 29598,
+      "sha256": "b406c35eaa11638b83f3f9f9707d332d7d12cd873d249f11efea9d2d0baad3e2",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-quality-v1/B3-measured.quality.json",
+      "bytes": 29598,
+      "sha256": "b406c35eaa11638b83f3f9f9707d332d7d12cd873d249f11efea9d2d0baad3e2",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-quality-v1/B4-warmup.quality.json",
+      "bytes": 29585,
+      "sha256": "831794acf3b2fc7c9eb2e652f24b297054dceb0cf80883a34193954a7a52d40d",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/p06-pretranscription-screening/continuation-quality-v1/B4-measured.quality.json",
+      "bytes": 29585,
+      "sha256": "831794acf3b2fc7c9eb2e652f24b297054dceb0cf80883a34193954a7a52d40d",
+      "mode": "0o600"
+    }
+  ]
+}
