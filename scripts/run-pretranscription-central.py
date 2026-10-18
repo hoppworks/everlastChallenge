@@ -166,9 +166,9 @@ def validate_documents(plan, variant, results, meta, result_sha256):
     return dict(rows=rows,statistics=summary,processId=meta["processId"])
 
 
-def immutable_sources(root, revision, sources, pins, fingerprints):
+def immutable_sources(root, revision, sources, pins, fingerprints, required=None):
     bindings={b["path"]:b for b in sources}
-    check(len(bindings) == len(sources) and (set(pins)|OWN).issubset(bindings), "missing/duplicate source bindings")
+    check(len(bindings) == len(sources) and (set(pins)|(OWN if required is None else required)).issubset(bindings), "missing/duplicate source bindings")
     for path,b in bindings.items():
         data=common.verify_binding(root,b,fingerprints,common.MAX_JSON,True)
         check(path not in pins or b["sha256"] == pins[path], "compiled source mismatch")
@@ -218,21 +218,21 @@ def check_pair_targets(output, pair=None):
         check(not os.path.lexists(output/selected),"pair target already exists; no resume")
 
 
-def preflight(path,root,pair=None):
+def preflight(path,root,pair=None,*,freeze_kind=None,parameters_validator=None,quality_validator=None,required_sources=None):
     root=Path(root).resolve();raw=common.bounded_bytes(path,common.MAX_JSON); f=common.parse_json(raw); fp={}
-    check(f["schemaVersion"] == 1 and f["kind"] == "prospective-pretranscription-central-pairs-v1", "freeze schema differs")
+    check(f["schemaVersion"] == 1 and f["kind"] == ("prospective-pretranscription-central-pairs-v1" if freeze_kind is None else freeze_kind), "freeze schema differs")
     check(re.fullmatch("[0-9a-f]{40}",f["sourceRevision"]) is not None, "full source revision required")
     check(f["binary"]["path"] == "target/release/examples/paced_reference_probe", "only central binary allowed")
     common.verify_binding(root,f["binary"],fp)
     parameters={v:common.parse_json(common.verify_binding(root,b,fp,1024*1024,True)) for v,b in f["parameters"].items()}
-    validate_parameters(parameters)
+    (parameters_validator or validate_parameters)(parameters)
     pins={}
     for d in parameters.values():
         for name,digest in common.compiled_sources(d).items():
             check(name not in pins or pins[name] == digest, "parameter source conflicts")
             pins[name]=digest
-    immutable_sources(root,f["sourceRevision"],f["sources"],pins,fp)
-    validate_quality_decision(root,f["qualityDecision"],fp,parameters)
+    immutable_sources(root,f["sourceRevision"],f["sources"],pins,fp,required=required_sources)
+    (quality_validator or validate_quality_decision)(root,f["qualityDecision"],fp,parameters)
     manifest=common.parse_json(common.verify_binding(root,f["manifest"],fp,common.MAX_JSON,True))
     cases=canonical_cases(manifest)
     inputs={b["path"]:b for b in f["inputs"]}
@@ -283,7 +283,7 @@ def launch_block(plan,variant,paths):
     return screen.launch_case(plan,dict(id=variant,command=command_for(plan,variant,paths)),paths)
 
 
-def execute_pair(plan,pair,launch=launch_block):
+def execute_pair(plan,pair,launch=launch_block,*,validator=None,kind="pretranscription-central-pair-execution"):
     check(pair in PAIRS,"unknown pair role")
     # Serializes only this freeze's owned pair processes. A stale lock fails closed.
     # Never remove a pre-existing lock or adopt/resume partial pair output.
@@ -291,17 +291,17 @@ def execute_pair(plan,pair,launch=launch_block):
     descriptor=os.open(lock,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
     try:
         os.close(descriptor)
-        return _execute_pair(plan,pair,launch)
+        return _execute_pair(plan,pair,launch,validator=validator,kind=kind)
     finally:
         os.unlink(lock)
 
 
-def _execute_pair(plan,pair,launch):
+def _execute_pair(plan,pair,launch,*,validator=None,kind="pretranscription-central-pair-execution"):
     check(pair in PAIRS,"unknown pair role")
     output=plan["outputRoot"]/pair
     output.mkdir(mode=0o700);output.chmod(0o700)
     common.write_private_bytes(output/"freeze.json",plan["freezeBytes"])
-    report=dict(schemaVersion=1,kind="pretranscription-central-pair-execution",pair=pair,
+    report=dict(schemaVersion=1,kind=kind,pair=pair,
         freezeSha256=plan["freezeSha256"],startedUtc=screen.now(),completed=False,qualified=False,
         blocks=[],comparison=None,powerAssertionEnded=None)
     failure=None
@@ -328,7 +328,7 @@ def _execute_pair(plan,pair,launch):
                 meta=common.read_json(paths["metadata"],common.MAX_METADATA)
                 for p in (paths["results"],paths["metadata"],paths["log"]):
                     check(stat.S_IMODE(os.stat(p,follow_symlinks=False).st_mode) == 0o600,"raw mode differs")
-                checked=validate_documents(plan,variant,rs,meta,common.sha256(result_bytes))
+                checked=(validator or validate_documents)(plan,variant,rs,meta,common.sha256(result_bytes))
                 entry.update(checked,status="ok")
             except (ValueError,OSError,KeyError,TypeError,IndexError,AttributeError,OverflowError):
                 failure="block launch/report/owner/timing/provenance validation failed"
@@ -357,12 +357,12 @@ def _execute_pair(plan,pair,launch):
     return report
 
 
-def main(argv=None):
+def main(argv=None,*,preflight_fn=None,executor_fn=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("freeze",type=Path);parser.add_argument("--root",type=Path,default=Path.cwd())
     parser.add_argument("--pair",choices=tuple(PAIRS));parser.add_argument("--execute",action="store_true")
     args=parser.parse_args(argv)
-    plan=preflight(args.freeze,args.root,args.pair)
+    plan=(preflight_fn or preflight)(args.freeze,args.root,args.pair)
     if not args.execute:
         print(json.dumps(dict(preflightPassed=True,pairs=list(PAIRS),rowsPerBlock=181)))
         return 0
@@ -385,7 +385,7 @@ def main(argv=None):
             if result["powerAfter"].get("source") != "AC Power" or result["powerAfter"].get("error") is not None:
                 result["launchError"]="AC Power unavailable at block end"
             return result
-        report=execute_pair(plan,args.pair,guarded)
+        report=(executor_fn or execute_pair)(plan,args.pair,guarded)
         ended=screen.stop_power(assertion);assertion=None
         common.write_private(plan["outputRoot"]/args.pair/"supervisor-completion.json",
             dict(freezeSha256=plan["freezeSha256"],pair=args.pair,powerAssertionEnded=ended,

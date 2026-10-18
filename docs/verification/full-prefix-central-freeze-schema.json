@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:everlast:full-prefix-central-freeze:v1",
+  "title": "Prospective FullPrefix two indivisible central pairs; NOT RUN / NOT QUALIFIED",
+  "description": "Both pair roles use the same batch binary and exact typed arm templates. Each block has one warmup and six cases times thirty measured rows. A separately bound actual full-prefix quality approval is mandatory. Each complete pair reports >=10 percent improvement and all six candidate median/p95 limits; no production activation or P06 qualification follows from the launcher. Independent pair windows allowed, no incomplete pair resume/retry or subset statistics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "binary",
+    "manifest",
+    "vad",
+    "qualityDecision",
+    "schemaVersion",
+    "kind",
+    "sourceRevision",
+    "qualified",
+    "L",
+    "parameters",
+    "sources",
+    "inputs",
+    "outputDirectory",
+    "model"
+  ],
+  "properties": {
+    "binary": {
+      "$ref": "#/$defs/binding"
+    },
+    "manifest": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/binding"
+        },
+        {
+          "properties": {
+            "path": {
+              "const": "tests/fixtures/corpus/central-reference-v1.json"
+            },
+            "sha256": {
+              "const": "244b2cd766874855174699f8568dbb09ae664380a98b272bf6588293f44a36b5"
+            }
+          }
+        }
+      ]
+    },
+    "vad": {
+      "$ref": "#/$defs/binding"
+    },
+    "qualityDecision": {
+      "$ref": "#/$defs/binding"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "kind": {
+      "const": "prospective-full-prefix-central-pairs-v1"
+    },
+    "sourceRevision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "qualified": {
+      "const": false
+    },
+    "L": {
+      "type": "null"
+    },
+    "parameters": {
+      "type": "object",
+      "required": [
+        "reference",
+        "candidate"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "reference": {
+          "$ref": "#/$defs/binding"
+        },
+        "candidate": {
+          "$ref": "#/$defs/binding"
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 8,
+      "items": {
+        "$ref": "#/$defs/binding"
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "$ref": "#/$defs/binding"
+      }
+    },
+    "outputDirectory": {
+      "type": "string",
+      "pattern": "^artifacts/"
+    },
+    "model": {
+      "type": "object",
+      "required": [
+        "path",
+        "bytes",
+        "sha256",
+        "mode",
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1073741824
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mode": {
+          "type": "string",
+          "pattern": "^0o[0-7]{3}$"
+        },
+        "id": {
+          "const": "large-v3-turbo-q5_0"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "binding": {
+      "type": "object",
+      "required": [
+        "path",
+        "bytes",
+        "sha256",
+        "mode"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1073741824
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mode": {
+          "type": "string",
+          "pattern": "^0o[0-7]{3}$"
+        }
+      }
+    }
+  }
+}
