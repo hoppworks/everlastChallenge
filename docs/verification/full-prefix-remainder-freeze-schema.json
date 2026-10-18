@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:everlast:full-prefix-remainder-freeze:v1",
+  "title": "Prospective candidate-only94-case FullPrefix remainder; NOT RUN / NOT QUALIFIED",
+  "description": "Requires a separate actually passed screening decision through screening_quality.decision.validate; this schema is not a positive decision or semantic anchor judgement. Candidate only; one warmup plus ten measured runs per unchanged94-case selection; unique recording denominator for session RTF, no aggregate L from launcher.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "binary",
+    "parameters",
+    "selection",
+    "launcher",
+    "qualityDecision",
+    "schemaVersion",
+    "kind",
+    "runId",
+    "sourceRevision",
+    "sources",
+    "model",
+    "vad",
+    "inputs",
+    "outputDirectory",
+    "publisherPolicy",
+    "caseTimeoutSeconds",
+    "qualified",
+    "L",
+    "cases"
+  ],
+  "properties": {
+    "binary": {
+      "$ref": "#/$defs/binding"
+    },
+    "parameters": {
+      "$ref": "#/$defs/binding"
+    },
+    "selection": {
+      "$ref": "#/$defs/binding"
+    },
+    "launcher": {
+      "$ref": "#/$defs/binding"
+    },
+    "qualityDecision": {
+      "$ref": "#/$defs/binding"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "kind": {
+      "const": "prospective-full-prefix-remainder-v1"
+    },
+    "runId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "sourceRevision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 7,
+      "items": {
+        "$ref": "#/$defs/binding"
+      }
+    },
+    "model": {
+      "type": "object",
+      "required": [
+        "path",
+        "bytes",
+        "sha256",
+        "mode",
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1073741824
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mode": {
+          "type": "string",
+          "pattern": "^0o[0-7]{3}$"
+        },
+        "id": {
+          "const": "large-v3-turbo-q5_0"
+        }
+      }
+    },
+    "vad": {
+      "$ref": "#/$defs/binding"
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 94,
+      "maxItems": 94,
+      "items": {
+        "$ref": "#/$defs/binding"
+      }
+    },
+    "outputDirectory": {
+      "type": "string",
+      "pattern": "^artifacts/"
+    },
+    "publisherPolicy": {
+      "const": "timeConstrained"
+    },
+    "caseTimeoutSeconds": {
+      "const": 7200
+    },
+    "qualified": {
+      "const": false
+    },
+    "L": {
+      "type": "null"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 94,
+      "maxItems": 94,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "command",
+          "output",
+          "metadata",
+          "log",
+          "completion"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+          },
+          "command": {
+            "type": "array",
+            "minItems": 10,
+            "maxItems": 11,
+            "items": {
+              "type": "string"
+            }
+          },
+          "output": {
+            "type": "string",
+            "pattern": "^artifacts/"
+          },
+          "metadata": {
+            "type": "string",
+            "pattern": "^artifacts/"
+          },
+          "log": {
+            "type": "string",
+            "pattern": "^artifacts/"
+          },
+          "completion": {
+            "type": "string",
+            "pattern": "^artifacts/"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "binding": {
+      "type": "object",
+      "required": [
+        "path",
+        "bytes",
+        "sha256",
+        "mode"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1073741824
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mode": {
+          "type": "string",
+          "pattern": "^0o[0-7]{3}$"
+        }
+      }
+    }
+  }
+}
