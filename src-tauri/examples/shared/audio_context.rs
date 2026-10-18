@@ -18,6 +18,25 @@ use std::{
 pub enum Variant {
     Reference,
     Reduced,
+    #[allow(
+        dead_code,
+        reason = "only corpus experiments select this shared-wrapper variant"
+    )]
+    FlashReference,
+    #[allow(
+        dead_code,
+        reason = "only corpus experiments select this shared-wrapper variant"
+    )]
+    FlashCandidate,
+}
+impl Variant {
+    pub fn flash_attention(self) -> Option<bool> {
+        match self {
+            Self::FlashReference => Some(false),
+            Self::FlashCandidate => Some(true),
+            Self::Reference | Self::Reduced => None,
+        }
+    }
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -35,6 +54,10 @@ struct Identity {
 pub struct Receipt {
     identity: Identity,
     variant: Variant,
+    selected_flash_attention: Option<bool>,
+    // Absent for energy-empty/VAD-rejected/pre-decode failures: selected context
+    // policy alone is not evidence that native attention executed.
+    decode_attempted_with_flash_attention: Option<bool>,
     observation: Value,
     decoder_error: Option<String>,
 }
@@ -174,6 +197,10 @@ impl Receipts {
         s.receipt = Some(Receipt {
             identity: id,
             variant,
+            selected_flash_attention: variant.flash_attention(),
+            decode_attempted_with_flash_attention: variant
+                .flash_attention()
+                .filter(|_| o.decode_attempted),
             observation: record(o),
             decoder_error: output.result.as_ref().err().map(ToString::to_string),
         });
@@ -247,6 +274,9 @@ impl Backend for Engine {
         match v {
             Variant::Reference => self.transcribe_reference_context(a, l),
             Variant::Reduced => self.transcribe_reduced_context(a, l),
+            Variant::FlashReference | Variant::FlashCandidate => {
+                self.transcribe_reference_context(a, l)
+            }
         }
     }
 }
@@ -271,7 +301,10 @@ pub fn load(
     let Some(variant) = variant else {
         return Ok((InferenceService::load(path, definition)?, None));
     };
-    let backend = Engine::load(&path, definition)?;
+    let backend = match variant.flash_attention() {
+        Some(enabled) => Engine::load_flash_attention(&path, definition, enabled)?,
+        None => Engine::load(&path, definition)?,
+    };
     let receipts = Receipts::default();
     let service = InferenceService::with_decoder(Adapter {
         backend,
@@ -312,6 +345,120 @@ pub(super) fn controlled_service(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn flash_receipts_preserve_identity_and_distinguish_selection_from_decode_attempt()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for variant in [Variant::FlashReference, Variant::FlashCandidate] {
+            let (worker, receipts) = controlled_service(variant)?;
+            let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+            while !worker.ready() {
+                if std::time::Instant::now() >= deadline {
+                    return Err("controlled worker not ready".into());
+                }
+                std::thread::yield_now();
+            }
+            receipts.arm(1, 1, 1, 320, Language::English)?;
+            worker.submit(everlast_dictation::inference_service::Job {
+                session: 1,
+                generation: 1,
+                job_id: 1,
+                sample_range: 0..320,
+                timeline_range: 0..320,
+                audio: Arc::new(vec![0.1; 320]),
+                language: Language::English,
+                token: everlast_dictation::inference_service::WorkToken::default(),
+            })?;
+            let completed = loop {
+                if let Some(done) = worker.take_result()? {
+                    break done;
+                }
+                if std::time::Instant::now() >= deadline {
+                    return Err("controlled result missing".into());
+                }
+                std::thread::yield_now();
+            };
+            assert_eq!(completed.timeline_range, 0..320);
+            assert_eq!(completed.result?, "controlled words");
+            let collection = receipts.collect(Some(1), 320, Language::English);
+            worker.shutdown()?;
+            assert!(collection.error.is_none());
+            let receipt = collection.receipt.ok_or("missing receipt")?;
+            assert_eq!(receipt.variant, variant);
+            assert_eq!(receipt.selected_flash_attention, variant.flash_attention());
+            assert_eq!(
+                receipt.decode_attempted_with_flash_attention,
+                variant.flash_attention()
+            );
+            assert_eq!(receipt.observation["audioCtxParameter"], 0);
+            assert_eq!(receipt.observation["effectiveAudioCtx"], 1500);
+            assert!(receipts.finalize().error.is_none());
+
+            // Energy-empty is successful admission with no native decode: retain
+            // selected context policy, but never claim an executed Flash call.
+            let receipts = Receipts::default();
+            receipts.arm(1, 1, 1, 320, Language::German)?;
+            let id = receipts.begin(320, Language::German)?;
+            let output = Transcription {
+                result: Ok(String::new()),
+                observation: ObservationRecord {
+                    input_frames: 320,
+                    prepared_frames: 0,
+                    preparation: reduced_context::Preparation::EnergyEmpty,
+                    audio_ctx_parameter: None,
+                    effective_audio_ctx: None,
+                    decode_attempted: false,
+                },
+            };
+            receipts.finish(id, variant, &output)?;
+            let receipt = receipts
+                .collect(Some(1), 320, Language::German)
+                .receipt
+                .ok_or("empty receipt lost")?;
+            assert_eq!(receipt.selected_flash_attention, variant.flash_attention());
+            assert_eq!(receipt.decode_attempted_with_flash_attention, None);
+            assert!(receipts.finalize().error.is_none());
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn late_failed_flash_decode_preserves_flag_and_error_after_failed_observation()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let receipts = Receipts::default();
+        receipts.arm(9, 1, 9, 320, Language::German)?;
+        let id = receipts.begin(320, Language::German)?;
+        assert!(
+            receipts
+                .collect(Some(9), 320, Language::German)
+                .error
+                .is_some()
+        );
+        receipts.finish(
+            id,
+            Variant::FlashCandidate,
+            &Transcription {
+                result: Err(InferenceError::Decode),
+                observation: ObservationRecord {
+                    input_frames: 320,
+                    prepared_frames: 16000,
+                    preparation: reduced_context::Preparation::Ready,
+                    audio_ctx_parameter: Some(0),
+                    effective_audio_ctx: Some(1500),
+                    decode_attempted: true,
+                },
+            },
+        )?;
+        let finalized = receipts.finalize();
+        assert!(finalized.error.is_some());
+        let receipt = finalized.receipt.ok_or("late Flash evidence lost")?;
+        assert_eq!(receipt.identity.session, 9);
+        assert_eq!(receipt.selected_flash_attention, Some(true));
+        assert_eq!(receipt.decode_attempted_with_flash_attention, Some(true));
+        assert!(receipt.decoder_error.is_some());
+        assert!(receipts.arm(10, 1, 10, 320, Language::German).is_err());
+        Ok(())
+    }
+
     #[test]
     fn pending_receipt_admission_is_bounded_and_never_overwritten() -> Result<(), String> {
         let receipts = Receipts::default();

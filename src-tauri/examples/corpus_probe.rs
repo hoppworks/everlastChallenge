@@ -5,6 +5,9 @@ mod audio_context;
 #[cfg(feature = "measurement")]
 #[path = "corpus_probe/context_parameters.rs"]
 mod context_parameters;
+#[cfg(feature = "measurement")]
+#[path = "corpus_probe/flash_parameters.rs"]
+mod flash_parameters;
 #[path = "corpus_probe/input.rs"]
 mod input;
 use everlast_dictation::{
@@ -46,12 +49,14 @@ struct Cli {
     output: PathBuf,
     native_timestamps: bool,
     context_reduced: Option<bool>,
+    flash_attention: Option<bool>,
+    flash_parameters: Option<PathBuf>,
     context_parameters: Option<PathBuf>,
 }
 
 fn parse_arguments(arguments: Vec<std::ffi::OsString>) -> Result<Cli, Error> {
     if !(4..=6).contains(&arguments.len()) {
-        return Err("usage: corpus_probe MODEL reference|small MANIFEST OUTPUT [--native-timestamps | --context-reference PARAMETERS | --context-candidate PARAMETERS]".into());
+        return Err("usage: corpus_probe MODEL reference|small MANIFEST OUTPUT [--native-timestamps | --context-reference PARAMETERS | --context-candidate PARAMETERS | --flash-reference PARAMETERS | --flash-candidate PARAMETERS]".into());
     }
     if arguments
         .iter()
@@ -64,6 +69,8 @@ fn parse_arguments(arguments: Vec<std::ffi::OsString>) -> Result<Cli, Error> {
     }
     let mut native_timestamps = false;
     let mut context_reduced = None;
+    let mut flash_attention = None;
+    let mut flash_parameters = None;
     let mut context_parameters = None;
     if let Some(flag) = arguments.get(4) {
         match flag.to_str() {
@@ -73,6 +80,12 @@ fn parse_arguments(arguments: Vec<std::ffi::OsString>) -> Result<Cli, Error> {
             {
                 context_reduced = Some(flag == "--context-candidate");
                 context_parameters = Some(PathBuf::from(&arguments[5]));
+            }
+            Some("--flash-reference" | "--flash-candidate")
+                if arguments.len() == 6 && !arguments[5].as_encoded_bytes().starts_with(b"--") =>
+            {
+                flash_attention = Some(flag == "--flash-candidate");
+                flash_parameters = Some(PathBuf::from(&arguments[5]));
             }
             _ => return Err("unknown or incomplete corpus probe mode".into()),
         }
@@ -93,6 +106,8 @@ fn parse_arguments(arguments: Vec<std::ffi::OsString>) -> Result<Cli, Error> {
         native_timestamps,
         context_reduced,
         context_parameters,
+        flash_attention,
+        flash_parameters,
     })
 }
 
@@ -101,17 +116,24 @@ fn main() -> Result<(), Error> {
     if args.len() == 1
         && matches!(
             args[0].to_str(),
-            Some("--print-context-reference-parameters" | "--print-context-candidate-parameters")
+            Some(
+                "--print-context-reference-parameters"
+                    | "--print-context-candidate-parameters"
+                    | "--print-flash-reference-parameters"
+                    | "--print-flash-candidate-parameters"
+            )
         )
     {
         #[cfg(feature = "measurement")]
         {
-            println!(
-                "{}",
-                serde_json::to_string_pretty(&context_parameters::template(
-                    args[0] == "--print-context-candidate-parameters"
-                )?)?
-            );
+            let template = if args[0] == "--print-flash-reference-parameters"
+                || args[0] == "--print-flash-candidate-parameters"
+            {
+                flash_parameters::template(args[0] == "--print-flash-candidate-parameters")?
+            } else {
+                context_parameters::template(args[0] == "--print-context-candidate-parameters")?
+            };
+            println!("{}", serde_json::to_string_pretty(&template)?);
             return Ok(());
         }
         #[cfg(not(feature = "measurement"))]
@@ -119,6 +141,7 @@ fn main() -> Result<(), Error> {
     }
     let cli = parse_arguments(args)?;
     let context_document = context_document(&cli)?;
+    let flash_document = flash_document(&cli)?;
     let definition = cli.definition;
     let bytes = input::bounded_read(&cli.manifest, input::MAX_MANIFEST)?;
     let corpus_hash = input::digest(&bytes);
@@ -131,18 +154,12 @@ fn main() -> Result<(), Error> {
     #[cfg(feature = "measurement")]
     let mut context_receipts = None;
     #[cfg(feature = "measurement")]
+    let variant = experiment_variant(&cli);
+    #[cfg(feature = "measurement")]
     let loaded = (|| -> Result<InferenceService, Error> {
         #[cfg(feature = "measurement")]
-        if let Some(reduced) = cli.context_reduced {
-            let (worker, receipts) = audio_context::load(
-                cli.model,
-                definition,
-                Some(if reduced {
-                    audio_context::Variant::Reduced
-                } else {
-                    audio_context::Variant::Reference
-                }),
-            )?;
+        if let Some(variant) = variant {
+            let (worker, receipts) = audio_context::load(cli.model, definition, Some(variant))?;
             context_receipts = receipts;
             return Ok(worker);
         }
@@ -225,7 +242,9 @@ fn main() -> Result<(), Error> {
             job_millis,
             error,
             audio_context: context_observation,
-            execution_status: if cli.context_reduced.is_some() && was_unavailable {
+            execution_status: if (cli.context_reduced.is_some() || cli.flash_attention.is_some())
+                && was_unavailable
+            {
                 "unavailable"
             } else {
                 status
@@ -264,7 +283,7 @@ fn main() -> Result<(), Error> {
                 "windowSamples":512,"mode":"whole-recording-admission; ASR PCM unchanged","peakTarget":0.95,"zeroPeakGain":1.0,
                 "positiveThreshold":0.5,"aggregation":"any finite window >= threshold; all windows validated first",
                 "maximumScratchSamples":4800000,"failurePolicy":"error; never silence"});
-    let engine = serde_json::json!({ "threads":4, "samplingStrategy":"greedy", "bestOf":1, "useGpu":true, "flashAttention":false,
+    let engine = serde_json::json!({ "threads":4, "samplingStrategy":"greedy", "bestOf":1, "useGpu":true, "flashAttention":cli.flash_attention.unwrap_or(false),
             "suppressNonSpeechTokens":false, "noSpeechThreshold":0.6, "logprobThreshold":-1.0, "entropyThreshold":2.4,
             "utteranceMode":"complete-recording", "freshStatePerJob":true,
             "inputSegmentation":"energy-range", "energyStartRms":0.00005, "energyEndRms":0.000025,
@@ -279,14 +298,15 @@ fn main() -> Result<(), Error> {
         "observationTimeoutMillis": WAIT_LIMIT.as_millis(), "timeoutIsHardAbort": false,
         "nativeTimestampDiagnostic": {
             "enabled": cli.native_timestamps,
-            "modelInitializationOwner": if cli.native_timestamps || cli.context_reduced.is_some() { "developer-main-before-serial-worker" } else { "serial-inference-worker" },
-            "candidateInitializationDifference": cli.native_timestamps || cli.context_reduced.is_some(),
+            "modelInitializationOwner": if cli.native_timestamps || cli.context_reduced.is_some() || cli.flash_attention.is_some() { "developer-main-before-serial-worker" } else { "serial-inference-worker" },
+            "candidateInitializationDifference": cli.native_timestamps || cli.context_reduced.is_some() || cli.flash_attention.is_some(),
             "boundedAcceptedSegmentObservationAllocatedPerJob": cli.native_timestamps,
             "sharedInferenceServiceJobLifecycle": true,
             "resourceQualified": false, "realTimeLatencyProtocolExecuted": false
         },
         "engine": engine,
-        "audioContextParameters":context_document,"contextCleanup":context_cleanup,
+        "audioContextParameters":context_document,"flashAttentionParameters":flash_document,"contextCleanup":context_cleanup,
+        "flashAttentionExperiment": {"selected":cli.flash_attention,"newContextBothVariants":cli.flash_attention.is_some(),"noContextMutation":true,"gpuCoverageProven":false,"resourceQualified":false,"realTimeLatencyProtocolExecuted":false,"executionEvidence":"per-row receipt decodeAttempted; selected flag alone does not prove native execution"},
         "cases": observations,
     });
     input::write_reports(
@@ -301,6 +321,48 @@ fn main() -> Result<(), Error> {
         return Err("corpus probe recorded failures; inspect private output and metadata".into());
     }
     Ok(())
+}
+#[cfg(feature = "measurement")]
+fn experiment_variant(cli: &Cli) -> Option<audio_context::Variant> {
+    use audio_context::Variant;
+    cli.flash_attention
+        .map(|enabled| {
+            if enabled {
+                Variant::FlashCandidate
+            } else {
+                Variant::FlashReference
+            }
+        })
+        .or_else(|| {
+            cli.context_reduced.map(|reduced| {
+                if reduced {
+                    Variant::Reduced
+                } else {
+                    Variant::Reference
+                }
+            })
+        })
+}
+fn flash_document(cli: &Cli) -> Result<Option<serde_json::Value>, Error> {
+    match (cli.flash_attention, cli.flash_parameters.as_deref()) {
+        (None, None) => Ok(None),
+        (Some(enabled), Some(path)) => {
+            #[cfg(feature = "measurement")]
+            {
+                let bytes = input::bounded_read(path, 1024 * 1024)?;
+                let document = flash_parameters::validate(&bytes, enabled)?;
+                Ok(Some(
+                    serde_json::json!({"sha256":input::digest(&bytes),"document":document}),
+                ))
+            }
+            #[cfg(not(feature = "measurement"))]
+            {
+                let _ = (enabled, path);
+                Err("flash mode requires the measurement feature".into())
+            }
+        }
+        _ => Err("flash mode requires explicit frozen parameters".into()),
+    }
 }
 fn context_document(cli: &Cli) -> Result<Option<serde_json::Value>, Error> {
     match (cli.context_reduced, cli.context_parameters.as_deref()) {
@@ -438,6 +500,7 @@ fn infer(
                 || completed.generation != 1
                 || completed.job_id != id
                 || completed.sample_range != (0..frames)
+                || completed.timeline_range != (0..frames)
             {
                 token.cancel();
                 return Err(("inference result identity mismatch".into(), true));
@@ -525,6 +588,21 @@ mod tests {
     fn explicit_native_timestamp_candidate_is_accepted_only_as_optional_fifth_argument()
     -> Result<(), Error> {
         assert!(parse_arguments(cli_args(&["--native-timestamps"]))?.native_timestamps);
+        Ok(())
+    }
+
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn flash_modes_require_exact_explicit_mode_and_frozen_parameters() -> Result<(), Error> {
+        for mode in ["--flash-reference", "--flash-candidate"] {
+            let cli = parse_arguments(cli_args(&[mode, "flash.json"]))?;
+            assert!(!cli.native_timestamps);
+            assert_eq!(cli.context_reduced, None);
+            assert_eq!(cli.flash_attention, Some(mode == "--flash-candidate"));
+            assert_eq!(cli.flash_parameters, Some(PathBuf::from("flash.json")));
+            assert!(parse_arguments(cli_args(&[mode])).is_err());
+            assert!(parse_arguments(cli_args(&[mode, "--context-candidate"])).is_err());
+        }
         Ok(())
     }
 
@@ -618,10 +696,42 @@ mod tests {
         assert!(receipts.finalize().error.is_none());
         Ok(())
     }
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn flash_freeze_validation_precedes_manifest_and_model_access() -> Result<(), Error> {
+        use std::io::Write;
+        let directory =
+            std::env::temp_dir().join(format!("everlast-flash-cli-{}", std::process::id()));
+        std::fs::create_dir_all(&directory)?;
+        let path = directory.join("invalid-flash-parameters.json");
+        let mut file = std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&path)?;
+        file.write_all(b"{}")?;
+        let mut args = cli_args(&["--flash-candidate", "unused"]);
+        args[5] = path.as_os_str().to_owned();
+        let cli = parse_arguments(args)?;
+        let checked = flash_document(&cli);
+        std::fs::remove_file(path)?;
+        std::fs::remove_dir(directory)?;
+        assert!(
+            checked
+                .err()
+                .is_some_and(|e| e.to_string().contains("exact explicitly selected variant"))
+        );
+        Ok(())
+    }
+
     #[cfg(not(feature = "measurement"))]
     #[test]
     fn context_modes_without_feature_are_rejected_without_model_or_file_access() {
-        for mode in ["--context-reference", "--context-candidate"] {
+        for mode in [
+            "--context-reference",
+            "--context-candidate",
+            "--flash-reference",
+            "--flash-candidate",
+        ] {
             assert!(parse_arguments(cli_args(&[mode, "freeze.json"])).is_err());
         }
     }

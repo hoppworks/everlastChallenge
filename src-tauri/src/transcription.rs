@@ -62,7 +62,7 @@ pub enum InferenceError {
         probability: f32,
     },
     #[cfg(feature = "measurement")]
-    #[error("Reduced-context experiment requires model audio context 1500; observed {actual}")]
+    #[error("Developer experiment requires model audio context 1500; observed {actual}")]
     UnsupportedAudioContext { actual: i32 },
     #[error("Insufficient memory for bounded inference buffers")]
     Memory,
@@ -75,6 +75,31 @@ pub struct Engine {
 
 impl Engine {
     pub fn load(path: &Path, definition: ModelDefinition) -> Result<Self, InferenceError> {
+        Self::load_with_flash_attention(path, definition, false)
+    }
+
+    /// Isolated developer experiment: a fresh context, never mutation of an
+    /// existing context. This selects an implementation, not GPU coverage proof.
+    #[cfg(feature = "measurement")]
+    pub fn load_flash_attention(
+        path: &Path,
+        definition: ModelDefinition,
+        enabled: bool,
+    ) -> Result<Self, InferenceError> {
+        let engine = Self::load_with_flash_attention(path, definition, enabled)?;
+        if engine.context.n_audio_ctx() != reduced_context::EXPECTED_MODEL_AUDIO_CTX {
+            return Err(InferenceError::UnsupportedAudioContext {
+                actual: engine.context.n_audio_ctx(),
+            });
+        }
+        Ok(engine)
+    }
+
+    fn load_with_flash_attention(
+        path: &Path,
+        definition: ModelDefinition,
+        flash_attention: bool,
+    ) -> Result<Self, InferenceError> {
         verify_file(path, definition)?;
         // Neither log_backend nor tracing_backend is enabled. Route backend
         // logging into the safe library hook instead of printing paths/audio.
@@ -83,7 +108,7 @@ impl Engine {
             path.to_str().ok_or(InferenceError::ModelPath)?,
             WhisperContextParameters {
                 use_gpu: true,
-                flash_attn: false,
+                flash_attn: flash_attention,
                 ..Default::default()
             },
         )
