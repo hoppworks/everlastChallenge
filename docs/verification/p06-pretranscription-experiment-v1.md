@@ -114,3 +114,7 @@ Reihenfolge, Vollparameter, Jobtracegrenzen und Ausgabepfade werden vor dem
 ersten nativen Variantenlauf zusätzlich eingefroren. Ein früher Fehler darf
 einen Versuch begründet verwerfen, aber keine unbestandenen Abschlussgates
 als bestanden ausweisen.
+
+Das [prospektive native Qualitäts-Screening](p06-pretranscription-screening-v1.md)
+konkretisiert die erste vollständig gepaarte Prüfung dieser unveränderten
+Variante. Es ersetzt keine der vollständigen Abschlussbedingungen.

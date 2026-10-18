@@ -1,0 +1,359 @@
+{
+  "build": {
+    "architecture": "aarch64",
+    "debugAssertions": false
+  },
+  "configurationId": "p06-pretranscription-candidate-v1",
+  "limits": {
+    "controllerTimestamps": true,
+    "maximumEndpointAcceptancePending": true,
+    "noNativeDelivery": true,
+    "notAggregateL": true,
+    "notFullP05Qualification": true,
+    "notMicrophoneAcceptance": true,
+    "pacedInput": true
+  },
+  "measurement": {
+    "chunkMillis": 20,
+    "clock": "same monotone Instant, offsets relative to actual capture t0",
+    "engineRtf": "actual Decoder::decode elapsed / (passed 16-kHz frames / 16000); absent timing is not zero; not pure ASR",
+    "expectedOutcome": "explicit Local default or --expect-empty; never inferred from input",
+    "failurePolicy": "retain every failed or unexecuted run; no partial-sample statistics",
+    "finalSpinNanos": 250000,
+    "inputFormat": "PCM16 mono 16000 Hz decoded to f32",
+    "jitterToleranceNanos": 10000000,
+    "maximumSleepNanos": 1000000,
+    "measuredRuns": "explicit CLI count 1..30",
+    "mode": "paced-runtime-pretranscription-experiment",
+    "publisherThread": {
+      "computationNanos": 500000,
+      "constraintNanos": 1000000,
+      "failurePolicy": "retain feed/stop/policy/text/Engine evidence when available; failed policy invalidates run; next rows unavailable; no retry",
+      "fixtureOwnership": "one Arc<Vec<f32>> per loaded fixture; no per-run full PCM copy; StopHandle has no Runtime worker owner",
+      "inputWaitBudgetSeconds": 120,
+      "joinBudget": "ceil fixture duration seconds plus120; bounded completion-channel wait, then post-read/thread-exit poll using same deadline; unverified child output explicit on timeout",
+      "normalParentRequestedQosChanged": false,
+      "order": "policy-ready; parent measured Start/ACK/ReplayInput; child beforeFeed, unchanged feed_observed, bound Stop, portdrop, afterFeed; child policy ends/joins; parent terminal polling",
+      "periodNanos": 20000000,
+      "policy": "timeConstrained",
+      "preemptible": true,
+      "publisherQosOverride": false,
+      "readyBeforeParentStart": true,
+      "readyWaitBudgetSeconds": 120,
+      "scope": "fresh owned publisher child; normal parent, Runtime actor, audio/DSP and inference workers unchanged",
+      "snapshots": "sequential OS reads, not atomic; outlier observer after publication timestamps may affect following chunks",
+      "stop": "SID-bound StopHandle; FIRST operation Instant::now before shared admission/control lock",
+      "validation": "configured,beforeFeed,afterFeed,post and each invalid-publication snapshot: exact requested ticks/defaultfalse/basic2; raw basic2 alone is not continuous RT proof",
+      "waitPolicy": "unchanged20ms input,10ms budget,1ms std sleep,250us final spin; no Mach waiter substitution"
+    },
+    "reset": "actor rejects non-idle audio/inference; fresh session data, warm model context",
+    "stopTimestamp": "host entry before controller queue/lock",
+    "terminalTimestamp": "accepted Local/Empty controller completion; Empty has no text timestamp or L",
+    "textTimestamp": "directly after accepted final nonempty controller text",
+    "variant": "confirmed-pause-pretranscription",
+    "warmupRuns": 1
+  },
+  "models": [
+    {
+      "id": "large-v3-turbo-q5_0",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+    },
+    {
+      "id": "small-q5_1",
+      "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb"
+    }
+  ],
+  "preprocessing": {
+    "backendPaddingMinimumSamples": 16000,
+    "channels": 1,
+    "endRms": 0.000025,
+    "frameSamples": 320,
+    "maximumSamples": 4800000,
+    "mode": "continuous stable DSP; confirmed-pause prefixes and one final rest; per-job unchanged reference energy/VAD/ASR preparation",
+    "paddingSampleValue": 0.0,
+    "prerollSamples": 2400,
+    "sampleRate": 16000,
+    "startRms": 0.00005,
+    "tailSamples": 3200
+  },
+  "pretranscription": {
+    "candidate": true,
+    "confirmationFrames": 8000,
+    "continuousDsp": true,
+    "cut": "last voice window end+3200, eligible after+8000 stable frames",
+    "decoderPolicy": "unchanged full reference; audio_ctx selector0/model1500; flash attentionfalse; native timestamps enabled",
+    "endRms": 0.000025,
+    "finalText": "only after audio release/drain/flush, complete disjoint result coverage and final adoption; early results never establish L",
+    "flush": "exactly once at recording end",
+    "initialization": "both arms use identical InferenceService::load serial-worker Engine initialization, one warm context pair, same bounded observer",
+    "input": "PCM16 mono16000Hz; complete immutable fixture",
+    "inputProof": "host-submit timestamp compared with complete publication after_publish_nanos; prefix requires timeline.end+4800 published frames, final job timeline.end; missing evidence invalidates run",
+    "join": "one ASCII space between trimmed nonempty parts; no dedup or repair; total<=256KiB",
+    "lateCleanup": "one retired service-accepted unfinished job record; before-decode may be absent, identity bound with its own capture t0; detached evidence handle owns no Runtime/PCM; exported after cleanup join",
+    "maximumJobs": 601,
+    "metadataContainsTextOrPcm": false,
+    "noForcedCuts": true,
+    "noMinimumUtteranceFilter": true,
+    "noOverlap": true,
+    "prerollFrames": 2400,
+    "productionDefaultChanged": false,
+    "qualification": false,
+    "startRms": 0.00005,
+    "storage": "at most one frozen journal and one open/final-rest journal; suffix-only copy; actual worker PCM release precedes completion and next permit",
+    "tailFrames": 3200,
+    "windowFrames": 320,
+    "workerEdges": "before Decoder::decode observer and after its return; not native kernel/full entry; Engine can return at energy/VAD guard"
+  },
+  "runtime": {
+    "context": {
+      "dtw": "disabled",
+      "flash_attn": false,
+      "gpu_device": 0,
+      "use_gpu": true
+    },
+    "fullParams": {
+      "audio_ctx": 0,
+      "beam_patience": -1.0,
+      "beam_size": -1,
+      "callbacks": "all disabled/null",
+      "carry_initial_prompt": false,
+      "debug_mode": false,
+      "detect_language": false,
+      "duration_ms": 0,
+      "entropy_thold": 2.4,
+      "grammar_penalty": 100.0,
+      "grammar_rules": null,
+      "greedy_best_of": 1,
+      "i_start_rule": 0,
+      "initial_prompt": null,
+      "language": "explicit per case: de or en",
+      "length_penalty": -1.0,
+      "logprob_thold": -1.0,
+      "max_initial_ts": 1.0,
+      "max_len": 0,
+      "max_tokens": 0,
+      "n_grammar_rules": 0,
+      "n_max_text_ctx": 16384,
+      "n_threads": 4,
+      "no_context": true,
+      "no_speech_thold": 0.6,
+      "no_timestamps": false,
+      "offset_ms": 0,
+      "print_progress": false,
+      "print_realtime": false,
+      "print_special": false,
+      "print_timestamps": false,
+      "prompt_n_tokens": 0,
+      "prompt_tokens": null,
+      "single_segment": false,
+      "split_on_word": false,
+      "strategy": "greedy",
+      "suppress_blank": true,
+      "suppress_nst": false,
+      "suppress_regex": null,
+      "tdrz_enable": false,
+      "temperature": 0.0,
+      "temperature_inc": 0.2,
+      "thold_pt": 0.01,
+      "thold_ptsum": 0.01,
+      "token_timestamps": false,
+      "translate": false,
+      "vad": false,
+      "vad_model_path": null,
+      "vad_params": "upstream defaults inactive because vad=false; exact source hash below"
+    },
+    "localCorrections": [
+      "initial SOT no-speech row",
+      "VAD failure propagation",
+      "VAD CString ownership"
+    ],
+    "speechGate": {
+      "aggregation": "at least one finite probability >= threshold, after validating all values and exact ceil(samples/512) count",
+      "cancelCallback": false,
+      "failurePolicy": "distinct error; never blank text as fallback",
+      "input": "entire original recording in normalized scratch only; never alters ASR input",
+      "maximumScratchSamples": 4800000,
+      "model": {
+        "bytes": 885098,
+        "file": "ggml-silero-v5.1.2.bin",
+        "id": "silero-v5.1.2",
+        "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+        "sourceRevision": "9ffd54a1e1ee413ddf265af9913beaf518d1639b"
+      },
+      "nativeStateResetEachCall": true,
+      "normalization": {
+        "clip": false,
+        "gain": "0.95 / whole-recording absolute peak; zero peak has gain=1",
+        "peakTarget": 0.95,
+        "trim": false
+      },
+      "positiveThreshold": 0.5,
+      "threads": 1,
+      "useGpu": false,
+      "warmContext": true,
+      "windowSamples": 512
+    },
+    "whisperCppSourceRevision": "2eeeba56e9edd762b4b38467bab96c2517163158",
+    "whisperCppUpstreamRevision": "2eeeba56e9edd762b4b38467bab96c2517163158",
+    "whisperRs": "0.16.0",
+    "whisperRsSys": "0.15.0",
+    "whisperRsSysLocalPatch": {
+      "id": "initial-sot-no-speech-row-v1+vad-failure-status-v1",
+      "notes": "vendor/whisper-rs-sys/PATCHES.md",
+      "path": "vendor/whisper-rs-sys"
+    },
+    "whisperRsUpstreamRevision": "7558e1b72f54f2f22a53589afb77e65681834c36"
+  },
+  "schemaVersion": 2,
+  "sourceHashes": {
+    "capture": {
+      "filename": "src-tauri/src/audio.rs",
+      "sha256": "766ba60846061b7e358d4f8381bb754733865970d1c7710aa5cb9e63ca5e4a74"
+    },
+    "cargoLock": {
+      "filename": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089"
+    },
+    "clock": {
+      "filename": "src-tauri/src/audio/replay/clock.rs",
+      "sha256": "c5cb28a620b0222a01f6b658665199eae94f8df2117466964eeff9164599c17b"
+    },
+    "controller": {
+      "filename": "src-tauri/src/controller.rs",
+      "sha256": "42db9df897754178ae22d67d5bafe98a5e54738a89171f5ae8d3411860bfccb8"
+    },
+    "cpp": {
+      "filename": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+      "sha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e"
+    },
+    "energy": {
+      "filename": "crates/dictation-core/src/audio.rs",
+      "sha256": "4b45e24678529d3e12914173b3d99395e8a2b7e2dcfffe077aec48d2b2ed9aeb"
+    },
+    "engine": {
+      "filename": "src-tauri/src/transcription.rs",
+      "sha256": "723cf136864a7878ce1ecf8cb981821dbf53d49c957c49a167194623a734b5a6"
+    },
+    "inference": {
+      "filename": "src-tauri/src/inference_service.rs",
+      "sha256": "f1df32132a87b1e5c983b0e11602b97195937c55e7398dd3948618d3928e4459"
+    },
+    "jobTrace": {
+      "filename": "src-tauri/src/runtime/measurement/job_trace.rs",
+      "sha256": "7874c0c91fbff937623b3c43648284e6f7c88e07000d4ba69ae51802003e7625"
+    },
+    "manifest": {
+      "filename": "src-tauri/Cargo.toml",
+      "sha256": "7696f89d6e3ece66139610e369d96242c070b6865e5faa9acc23c671fcd7e585"
+    },
+    "measurement": {
+      "filename": "src-tauri/src/runtime/measurement.rs",
+      "sha256": "1a3a75b6874e489e9a7b0626e953e99a0ebd3e0fc7184df8e75c2eea95a63820"
+    },
+    "models": {
+      "filename": "src-tauri/src/model.rs",
+      "sha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2"
+    },
+    "nativeLibrary": {
+      "filename": "crates/macos-integration/src/lib.rs",
+      "sha256": "0d55b5e246ea6d2510c3868670a57288e983a8762fe128b18533884fd5521b9e"
+    },
+    "nativeManifest": {
+      "filename": "crates/macos-integration/Cargo.toml",
+      "sha256": "14be4d5bc3c6528b345b5631459329d4b851385967fa6fb7eacd9a5d3c60f8b9"
+    },
+    "nativeRealtime": {
+      "filename": "crates/macos-integration/src/realtime.rs",
+      "sha256": "ab04deb53f86b8821e73097acacfa07da566bb4f609fcc7f80511b34ed5708fc"
+    },
+    "options": {
+      "filename": "src-tauri/examples/paced_runtime_probe/options.rs",
+      "sha256": "2b34798c449dcf8413008d14a0941b8e8d020f9eabe3f3c46697079ea2d202a9"
+    },
+    "parameters": {
+      "filename": "src-tauri/examples/paced_runtime_probe/parameters.rs",
+      "sha256": "4a801c6345b6125d1af8fd1a2a0757f3b4fdfb363fb29c557ed5a45b59d65619"
+    },
+    "paramsWrapper": {
+      "filename": "vendor/whisper-rs/src/whisper_params.rs",
+      "sha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8"
+    },
+    "pausePolicy": {
+      "filename": "crates/dictation-core/src/audio/pauses.rs",
+      "sha256": "6a0c631df9ec9e27f0c2c0895e3b704b33e73241293bfe488829efaf1c370afa"
+    },
+    "prefixOwnership": {
+      "filename": "src-tauri/src/audio/pretranscription.rs",
+      "sha256": "6285f5e158280f534262496b3f376eb7a9b383c68d498bfb3e2091dcd5c80823"
+    },
+    "pretransAudit": {
+      "filename": "src-tauri/examples/paced_runtime_probe/pretranscription.rs",
+      "sha256": "64c7750494c92532dac6f33e7cbe230366df61a713462b9d8f7ad535989451c5"
+    },
+    "pretransConfiguration": {
+      "filename": "src-tauri/examples/paced_runtime_probe/pretranscription_configuration.rs",
+      "sha256": "3d96ffd628b74450b279becadc447f2209b355fabae2120e431c14899009dd9d"
+    },
+    "probe": {
+      "filename": "src-tauri/examples/paced_runtime_probe.rs",
+      "sha256": "e2ff474855631ca1e1be1283077e49a1e045ee43e3850698828ef7a73fbf470c"
+    },
+    "publisher": {
+      "filename": "src-tauri/examples/paced_runtime_probe/publisher.rs",
+      "sha256": "c0cefcf45731a8bd7504d79263ebc66ad765938801b6dd1d224876dd760dcbf5"
+    },
+    "publisherQos": {
+      "filename": "crates/macos-integration/src/qos.rs",
+      "sha256": "09308c2d9280aed0f61e98b124fa42501514abb3befe47a6669bd8009a160772"
+    },
+    "replay": {
+      "filename": "src-tauri/src/audio/replay.rs",
+      "sha256": "dab517b319ab836edccbe4ba228ea38cce98b515241f0c0e4d558336a00bd197"
+    },
+    "runner": {
+      "filename": "src-tauri/examples/paced_runtime_probe/runner.rs",
+      "sha256": "9c41d42a2f402c52aaba4d4a236626a8a4242be349ae77f56c2421cb87a8a36b"
+    },
+    "runtime": {
+      "filename": "src-tauri/src/runtime.rs",
+      "sha256": "714180011dba621a0628cfbeebee621fb22ab1af1d8233369b85d2fb7a65cb56"
+    },
+    "schedule": {
+      "filename": "src-tauri/src/audio/replay/schedule.rs",
+      "sha256": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b"
+    },
+    "sessionLedger": {
+      "filename": "src-tauri/src/controller/pretranscription.rs",
+      "sha256": "cc9475c50ffb293b60657b20ef1a12ec134f3de97c2f64e11d407766ae76f50c"
+    },
+    "speechGate": {
+      "filename": "src-tauri/src/transcription/speech_gate.rs",
+      "sha256": "4e6964540cbe78217cf6c5f6924c859d5240bd2ec9603f857113dea272da7f1f"
+    },
+    "statistics": {
+      "filename": "src-tauri/examples/paced_runtime_probe/statistics.rs",
+      "sha256": "c7c4d986deba4386afac48305616651570f5e59ce6f76ab5c7a7cac75c562ae7"
+    },
+    "vadWrapper": {
+      "filename": "vendor/whisper-rs/src/whisper_vad.rs",
+      "sha256": "a4e481fac0b423ab532e3f4b8e3348a23e3134a10e4581ea3f383d6a81e6438d"
+    },
+    "workerObservation": {
+      "filename": "src-tauri/src/inference_service/observation.rs",
+      "sha256": "f15fe0cf0df9a7fc18e315341adbbb6d344f159426f06ac0c203794b6fc2ecb3"
+    },
+    "workspaceManifest": {
+      "filename": "Cargo.toml",
+      "sha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230"
+    }
+  },
+  "state": {
+    "abortCallback": false,
+    "freshWhisperStateEachJob": true,
+    "serialInference": true,
+    "warmAsrContexts": 1,
+    "warmVadContexts": 1
+  },
+  "status": "measurement baseline; not a model, quality or latency qualification",
+  "unicodeVersion": "13.0.0"
+}
