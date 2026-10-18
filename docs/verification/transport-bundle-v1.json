@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "kind": "separate-transport-test-bundle-static-status-v1",
+  "sourceBaseRevision": "d2546c438b8f5079f52b5415c181a0fe9129d98b",
+  "publicPackagingRevision": "febe3dbb3c4aecbb38715b1ba543c63770bc3456",
+  "bundle": {
+    "path": "artifacts/transport-acceptance-bundle-v1/EverlastTransportAcceptance.app",
+    "identifier": "de.hoppworks.everlast-transport-acceptance",
+    "name": "Everlast UTF8 Transport Acceptance",
+    "minimumSystemVersion": "27.0",
+    "profile": "dev",
+    "signature": "adhoc",
+    "CDHash": "07249c8e5fa8b41bc2364965e9d64e8c40731e17",
+    "runtimeIdentityObserved": false,
+    "quarantineGatekeeperApprovalClaimed": false,
+    "noIconInfoReference": true,
+    "iconNote": "reviewed existing PNG bound in source audit and embedded Tauri context; reviewed Info has no icon resource reference; no new icon/Info edits"
+  },
+  "sourcePatch": {
+    "path": "tools/acceptance/transport-v3.patch",
+    "bytes": 24488,
+    "sha256": "bc780dbcc8431a7371df02bf297930116da3247317c8bf1563f10ae52752bf97",
+    "mode": "0o644"
+  },
+  "frozenDevBuild": {
+    "path": "artifacts/transport-acceptance-mac-candidate-v3/frozen-transport-acceptance",
+    "bytes": 30496040,
+    "sha256": "c18ad606586cec44302bac3e6574af1e5ee72a02cd0773d0bafc0b3033038ba1",
+    "mode": "0o700"
+  },
+  "signedExecutable": {
+    "path": "artifacts/transport-acceptance-bundle-v1/EverlastTransportAcceptance.app/Contents/MacOS/transport_acceptance",
+    "bytes": 30318880,
+    "sha256": "8cac138f848a05ea69c451399edfd7734c9911ecce1c34615468f81bdda1e641",
+    "mode": "0o755"
+  },
+  "fixture": {
+    "path": "artifacts/transport-acceptance-bundle-v1/EverlastTransportAcceptance.app/Contents/Resources/transport-fixture.txt",
+    "bytes": 68,
+    "sha256": "78ce796361f50b77b1c86a693c9ba3bb02be2be8dc7fcd0e5ddfd4305da0c5b7",
+    "mode": "0o644"
+  },
+  "actualBundleFileCount": 231,
+  "originalImmutableLicenseFileCount": 227,
+  "preservedNonZeroFillMachOSections": 17,
+  "staticIntegrityPassed": true,
+  "independentStaticReadback": {
+    "path": "artifacts/transport-acceptance-bundle-v1/independent-static-readback-v1.json",
+    "bytes": 9594,
+    "sha256": "177bf473eb1648ae218bb46384a0f32d2e62dd5ebf1bf02bbfcadde6d8d6fe73",
+    "mode": "0o600"
+  },
+  "assemblyEvidence": {
+    "path": "artifacts/transport-acceptance-bundle-v1/bundle-evidence.json",
+    "bytes": 211967,
+    "sha256": "ed2674774dd84007aac01b3aeae146cdb9b7a541606b9204ed0fe459a71834c3",
+    "mode": "0o600"
+  },
+  "qualified": false,
+  "launched": false,
+  "installed": false,
+  "runtimeIdentityObserved": false,
+  "TCCObserved": false,
+  "recipientObserved": false,
+  "clipboardRestorationObserved": false,
+  "productMicInferenceEndToEndObserved": false,
+  "limits": [
+    "Exact source base plus reviewed isolated patch; this is a separate dev test adapter.",
+    "Ad-hoc signature and static integrity do not prove Gatekeeper approval, runtime identity, TCC or actual recipient receipt.",
+    "No keyboard, clipboard, microphone, model or GUI action occurred.",
+    "The adapter is not the final product bundle."
+  ]
+}
