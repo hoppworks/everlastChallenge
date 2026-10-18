@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "kind": "actual-full-prefix-paced-pilot",
+  "runId": "e911faa3-fe5e-4af0-9768-16ef02a1c075",
+  "sourceRevision": "c0e1077a57c0740c7af3eb50ab4dfb73af21b8f4",
+  "binarySha256": "f29291e161556e9802375c59ba20c1e0863581220fcb185cb85d1503c0599227",
+  "modelSha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+  "vadSha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+  "freezeSha256": "8e2837a9341e63bae4f926756e03951487cb6a3dc2dba8c390b56b6d0103b315",
+  "compiledSourcePins": 45,
+  "processes": 3,
+  "runtimeSessions": 6,
+  "allPassed": true,
+  "metadataBindings": [
+    {
+      "id": "1-reference-1663",
+      "metadataSha256": "61c288480641f0fc27235fee070a66a1688f186d13059cb6f6d937fc43798fdc",
+      "outputSha256": "47491c6f107e7c19c5223e0da628a4ab663726797239e191e315d68a19a33737"
+    },
+    {
+      "id": "2-candidate-1663",
+      "metadataSha256": "9a5f708ea7986e2df786f7246f32733ae454190718f64a519da2d06088558b2f",
+      "outputSha256": "47491c6f107e7c19c5223e0da628a4ab663726797239e191e315d68a19a33737"
+    },
+    {
+      "id": "3-candidate-1660",
+      "metadataSha256": "bf8f0a02386c8c4efad97793695ded356431ea9fa99ed315cd47a5702352f9d5",
+      "outputSha256": "0a9e36539d20eba191969c89832ca96e78bb14acbf5429b0127ed7a3865e074e"
+    }
+  ],
+  "rows": [
+    {
+      "process": "1-reference-1663",
+      "runId": "warmup",
+      "warmup": true,
+      "status": "ok",
+      "referenceMatch": true,
+      "inputFrames": 193920,
+      "processedFramesSum": 193920,
+      "sessionRtfRecordingFrames": 193920,
+      "jobCount": 1,
+      "cacheOutcomes": [
+        "decoded"
+      ],
+      "finalWholeFrames": 193920,
+      "finalAudioReleased": true,
+      "traceError": null,
+      "publisherJoined": true,
+      "cleanupJoined": true
+    },
+    {
+      "process": "1-reference-1663",
+      "runId": "measured-001",
+      "warmup": false,
+      "status": "ok",
+      "referenceMatch": true,
+      "inputFrames": 193920,
+      "processedFramesSum": 193920,
+      "sessionRtfRecordingFrames": 193920,
+      "jobCount": 1,
+      "cacheOutcomes": [
+        "decoded"
+      ],
+      "finalWholeFrames": 193920,
+      "finalAudioReleased": true,
+      "traceError": null,
+      "publisherJoined": true,
+      "cleanupJoined": true
+    },
+    {
+      "process": "2-candidate-1663",
+      "runId": "warmup",
+      "warmup": true,
+      "status": "ok",
+      "referenceMatch": true,
+      "inputFrames": 193920,
+      "processedFramesSum": 464640,
+      "sessionRtfRecordingFrames": 193920,
+      "jobCount": 4,
+      "cacheOutcomes": [
+        "decoded",
+        "decoded",
+        "decoded",
+        "hit"
+      ],
+      "finalWholeFrames": 193920,
+      "finalAudioReleased": true,
+      "traceError": null,
+      "publisherJoined": true,
+      "cleanupJoined": true
+    },
+    {
+      "process": "2-candidate-1663",
+      "runId": "measured-001",
+      "warmup": false,
+      "status": "ok",
+      "referenceMatch": true,
+      "inputFrames": 193920,
+      "processedFramesSum": 464640,
+      "sessionRtfRecordingFrames": 193920,
+      "jobCount": 4,
+      "cacheOutcomes": [
+        "decoded",
+        "decoded",
+        "decoded",
+        "hit"
+      ],
+      "finalWholeFrames": 193920,
+      "finalAudioReleased": true,
+      "traceError": null,
+      "publisherJoined": true,
+      "cleanupJoined": true
+    },
+    {
+      "process": "3-candidate-1660",
+      "runId": "warmup",
+      "warmup": true,
+      "status": "ok",
+      "referenceMatch": true,
+      "inputFrames": 170880,
+      "processedFramesSum": 493760,
+      "sessionRtfRecordingFrames": 170880,
+      "jobCount": 4,
+      "cacheOutcomes": [
+        "decoded",
+        "decoded",
+        "decoded",
+        "decoded"
+      ],
+      "finalWholeFrames": 170880,
+      "finalAudioReleased": true,
+      "traceError": null,
+      "publisherJoined": true,
+      "cleanupJoined": true
+    },
+    {
+      "process": "3-candidate-1660",
+      "runId": "measured-001",
+      "warmup": false,
+      "status": "ok",
+      "referenceMatch": true,
+      "inputFrames": 170880,
+      "processedFramesSum": 493760,
+      "sessionRtfRecordingFrames": 170880,
+      "jobCount": 4,
+      "cacheOutcomes": [
+        "decoded",
+        "decoded",
+        "decoded",
+        "decoded"
+      ],
+      "finalWholeFrames": 170880,
+      "finalAudioReleased": true,
+      "traceError": null,
+      "publisherJoined": true,
+      "cleanupJoined": true
+    }
+  ],
+  "independentActualReadbackCompleted": true,
+  "qualified": false,
+  "L": null,
+  "limits": [
+    "two selected diagnostic corpus fixtures; no full corpus WER or central latency aggregate",
+    "expected text is prior actual complete-recording output; not a ground truth accuracy claim",
+    "all actual feed, policy, job, cache and postjoin evidence remains in private bound metadata",
+    "production default unchanged; full quality/performance/resource and native acceptance gates remain open"
+  ],
+  "independentReadback": {
+    "compiledSourcesRehashed": 45,
+    "jobsChecked": 18,
+    "publicationsChecked": 3492,
+    "maximumObservedAfterPublishLatenessNanos": 30083,
+    "all18PreparedPcmHashesIndependentlyReconstructed": true,
+    "nativeDecodes": 16,
+    "cacheHits": 2,
+    "tcPolicySnapshotsAndPostjoinChecked": true,
+    "findings": [],
+    "noAdditionalModelCalls": true
+  }
+}
