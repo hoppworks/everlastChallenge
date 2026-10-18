@@ -20,6 +20,17 @@ pub(crate) mod observation;
 
 pub trait Decoder: Send + 'static {
     fn decode(&mut self, audio: &[f32], language: Language) -> Result<String, InferenceError>;
+
+    /// Explicit experiment seam. Legacy decoders keep their existing behavior.
+    #[cfg(feature = "measurement")]
+    fn decode_with_context(
+        &mut self,
+        audio: &[f32],
+        language: Language,
+        _context: &DecodeContext,
+    ) -> Result<String, InferenceError> {
+        self.decode(audio, language)
+    }
 }
 
 impl Decoder for Engine {
@@ -44,6 +55,23 @@ impl WorkToken {
     }
 }
 
+/// Identity of the actual token-checked worker invocation, never UI state.
+#[cfg(feature = "measurement")]
+#[derive(Clone)]
+pub struct DecodeContext {
+    pub session: u64,
+    pub generation: u64,
+    pub job_id: u64,
+    pub(crate) token: WorkToken,
+}
+
+#[cfg(feature = "measurement")]
+impl DecodeContext {
+    pub fn is_valid(&self) -> bool {
+        self.token.is_valid()
+    }
+}
+
 pub struct Job {
     pub session: u64,
     pub generation: u64,
@@ -58,7 +86,8 @@ pub struct Job {
     pub token: WorkToken,
 }
 
-/// Entire actual Decoder::decode call, including Engine preprocessing/VAD/ASR.
+/// Entire selected decoder invocation (contextual in measurement), including
+/// Engine preprocessing/VAD/ASR when used.
 /// Exists only for developer measurements; never queue or stop-to-text time.
 #[cfg(feature = "measurement")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -416,7 +445,16 @@ fn inference_loop(
             {
                 shared.observe(&job, observation::Edge::BeforeDecode);
                 let started = std::time::Instant::now();
-                let result = decoder.decode(input, job.language);
+                let result = decoder.decode_with_context(
+                    input,
+                    job.language,
+                    &DecodeContext {
+                        session: job.session,
+                        generation: job.generation,
+                        job_id: job.job_id,
+                        token: job.token.clone(),
+                    },
+                );
                 decode_timing = Some(DecodeTiming {
                     elapsed: started.elapsed(),
                     input_frames: input.len(),
@@ -493,6 +531,97 @@ fn inference_loop(
 mod tests {
     use super::*;
     use std::time::{Duration, Instant};
+
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn contextual_decoder_receives_only_the_actual_selected_job_and_live_token()
+    -> Result<(), Box<dyn std::error::Error>> {
+        struct Contextual;
+        impl Decoder for Contextual {
+            fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+                Ok("missing actual worker context".into())
+            }
+
+            fn decode_with_context(
+                &mut self,
+                audio: &[f32],
+                language: Language,
+                context: &DecodeContext,
+            ) -> Result<String, InferenceError> {
+                assert_eq!(audio, [0.2, 0.3]);
+                assert_eq!(language, Language::German);
+                assert!(context.is_valid());
+                Ok(format!(
+                    "{}:{}:{}",
+                    context.session, context.generation, context.job_id
+                ))
+            }
+        }
+        let service = InferenceService::with_decoder(Contextual)?;
+        wait_ready(&service)?;
+        service.submit(Job {
+            audio: Arc::new(vec![0.1, 0.2, 0.3, 0.4]),
+            job_id: 42,
+            sample_range: 1..3,
+            timeline_range: 100..102,
+            ..job(7, 9)
+        })?;
+        wait_idle(&service)?;
+        let completed = service.take_result()?.ok_or("missing context result")?;
+        service.shutdown()?;
+        assert_eq!(completed.result?, "7:9:42");
+        Ok(())
+    }
+
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn contextual_decoder_observes_cancellation_of_its_actual_work_token()
+    -> Result<(), Box<dyn std::error::Error>> {
+        struct HeldContext {
+            entered: Sender<()>,
+            release: Receiver<()>,
+            validity: Sender<bool>,
+        }
+        impl Decoder for HeldContext {
+            fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+                Err(InferenceError::Decode)
+            }
+            fn decode_with_context(
+                &mut self,
+                _: &[f32],
+                _: Language,
+                context: &DecodeContext,
+            ) -> Result<String, InferenceError> {
+                assert!(context.is_valid());
+                self.entered.send(()).map_err(|_| InferenceError::Decode)?;
+                self.release
+                    .recv_timeout(Duration::from_secs(2))
+                    .map_err(|_| InferenceError::Decode)?;
+                self.validity
+                    .send(context.is_valid())
+                    .map_err(|_| InferenceError::Decode)?;
+                Ok("revoked result must not be published".into())
+            }
+        }
+        let (entered, started) = crossbeam_channel::bounded(1);
+        let (release, finish) = crossbeam_channel::bounded(1);
+        let (validity, observed) = crossbeam_channel::bounded(1);
+        let service = InferenceService::with_decoder(HeldContext {
+            entered,
+            release: finish,
+            validity,
+        })?;
+        wait_ready(&service)?;
+        service.submit(job(7, 9))?;
+        started.recv_timeout(Duration::from_secs(2))?;
+        service.cancel(7)?;
+        release.send(())?;
+        assert!(!observed.recv_timeout(Duration::from_secs(2))?);
+        wait_idle(&service)?;
+        assert!(service.take_result()?.is_none());
+        service.shutdown()?;
+        Ok(())
+    }
 
     #[test]
     fn completed_publication_and_idle_never_retain_the_job_audio()
