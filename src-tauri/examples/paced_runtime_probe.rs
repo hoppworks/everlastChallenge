@@ -1,5 +1,6 @@
 //! Explicit developer measurement of paced stop-to-text through the real runtime.
 #![forbid(unsafe_code)]
+#![recursion_limit = "256"]
 #[allow(
     dead_code,
     reason = "reuse the bounded, hash-verified corpus input and private export seam"
@@ -62,28 +63,42 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
     let mut receipts = None;
-    let mut unavailable =
-        match runner::audio_context::load(options.model, options.definition, variant) {
-            Ok((service, context_receipts)) => {
-                receipts = context_receipts;
-                match execution_mode.spawn_runtime(
-                    service,
-                    1,
-                    AudioFormat {
-                        sample_rate: 16_000,
-                        channels: 1,
-                    },
-                ) {
-                    Ok(measured) => {
-                        let ready = runner::wait_ready(&measured);
-                        runtime = Some(measured);
-                        ready.err()
-                    }
-                    Err(error) => Some(error.to_string()),
+    let loaded = if execution_mode.full_prefix().is_some() {
+        (|| -> Result<_, Box<dyn std::error::Error>> {
+            let decoder =
+                everlast_dictation::transcription::prefix_cache::PrefixCacheDecoder::load(
+                    &options.model,
+                    options.definition,
+                )?;
+            Ok((
+                everlast_dictation::inference_service::InferenceService::with_decoder(decoder)?,
+                None,
+            ))
+        })()
+    } else {
+        runner::audio_context::load(options.model, options.definition, variant)
+    };
+    let mut unavailable = match loaded {
+        Ok((service, context_receipts)) => {
+            receipts = context_receipts;
+            match execution_mode.spawn_runtime(
+                service,
+                1,
+                AudioFormat {
+                    sample_rate: 16_000,
+                    channels: 1,
+                },
+            ) {
+                Ok(measured) => {
+                    let ready = runner::wait_ready(&measured);
+                    runtime = Some(measured);
+                    ready.err()
                 }
+                Err(error) => Some(error.to_string()),
             }
-            Err(error) => Some(error.to_string()),
-        };
+        }
+        Err(error) => Some(error.to_string()),
+    };
     let load_millis = load_started.elapsed().as_millis();
     let load_error = unavailable.clone();
     let mut results = Vec::new();
@@ -97,7 +112,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut output = if let Some(error) = &unavailable {
             runner::unavailable(id, index == 0, error.clone())
         } else if let Some(measured) = &runtime {
-            if execution_mode.pretranscription().is_some() {
+            if let Some(candidate) = execution_mode.full_prefix() {
+                runner::one_full_prefix(
+                    measured,
+                    &samples,
+                    options.language,
+                    id,
+                    index == 0,
+                    reference,
+                    options.expected_outcome,
+                    if candidate {
+                        runner::full_prefix::Variant::Candidate
+                    } else {
+                        runner::full_prefix::Variant::Reference
+                    },
+                )
+            } else if execution_mode.pretranscription().is_some() {
                 runner::one_pretranscription(
                     measured,
                     &samples,
@@ -265,13 +295,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "range":summary.range_nanos as f64*factor})
             });
     let metadata = serde_json::json!({
-        "schemaVersion":1,"kind":"paced-runtime-complete-recording","passed":passed,
+        "schemaVersion":1,"kind":if execution_mode.full_prefix().is_some(){"paced-runtime-full-prefix-revision-v1"}else{"paced-runtime-complete-recording"},"passed":passed,
         "debugAssertions":cfg!(debug_assertions),
         "processId":std::process::id(),"sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
         "fixtureSha256":declared.sha256,"inputFrames":samples.len(),"sampleRate":16000,"channels":1,
         "model":{"id":options.definition.id(),"sha256":options.definition.sha256()},
         "language":options.language.code(),"parameterDocumentSha256":input::digest(&parameter_bytes),
-        "parameters":parameter_document,"contextCleanup":context_cleanup,"pretranscriptionCandidate":execution_mode.pretranscription(),"jobTraceAfterCleanup":job_trace_after_cleanup,"jobTraceAfterCleanupError":job_trace_after_cleanup_error,"hostObservation":host,
+        "parameters":parameter_document,"contextCleanup":context_cleanup,"pretranscriptionCandidate":execution_mode.pretranscription(),"fullPrefixCandidate":execution_mode.full_prefix(),"jobTraceAfterCleanup":job_trace_after_cleanup,"jobTraceAfterCleanupError":job_trace_after_cleanup_error,"hostObservation":host,
         "referenceSha256":reference_bytes.as_ref().map(|data| input::digest(data)),
         "referenceComparison":"trimmed exact text only; provenance and independent WER are separate",
         "warmupRuns":1,"measuredRunsRequested":options.runs,"loadMillis":load_millis,"loadError":load_error,
@@ -279,7 +309,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "engineElapsedSummary":engine_summary,"engineRtfSummary":engine_rtf_summary,
         "engineTimingCoverage":{"measuredRuns":measured_rows.len(),"withActualEngineTiming":measured_rows.iter().filter(|row|row.engine_elapsed_nanos.is_some()).count()},
         "expectedOutcome":options.expected_outcome,
-        "engineRtfDefinition":"actual Decoder::decode duration / (passed 16-kHz frames / 16000); production Engine includes energy/VAD/preparation/fresh ASR state; not pure ASR or stop-to-text",
+        "engineRtfDefinition":if execution_mode.full_prefix().is_some(){"sum actual scoped decoder call elapsed / (unique final recorded N/16000); includes preparation/hash/hit work; processed overlapping frames separate; not native kernel time or stop-to-text"}else{"actual Decoder::decode duration / (passed 16-kHz frames / 16000); production Engine includes energy/VAD/preparation/fresh ASR state; not pure ASR or stop-to-text"},
         "cleanup":cleanup,
         "thirtyMeasuredRunsCompleted":options.runs==30&&passed,
         "L":null,"notAggregateL":true,"qualified":false,

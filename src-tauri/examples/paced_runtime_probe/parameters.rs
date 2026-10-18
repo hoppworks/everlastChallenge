@@ -2,6 +2,8 @@
 mod context_configuration;
 // Immutable parameter template tied to the actual compiled measurement sources.
 use crate::input;
+#[path = "full_prefix_configuration.rs"]
+mod full_prefix_configuration;
 #[path = "pretranscription_configuration.rs"]
 mod pretranscription;
 use everlast_dictation::audio::replay::{
@@ -91,6 +93,8 @@ pub enum ExecutionMode {
     ContextReduced,
     PretransReference,
     PretransCandidate,
+    FullPrefixReference,
+    FullPrefixCandidate,
 }
 pub fn scheduling_template() -> Result<Value, serde_json::Error> {
     use macos_integration::realtime;
@@ -127,6 +131,12 @@ pub fn pretrans_template(candidate: bool) -> Result<Value, serde_json::Error> {
         candidate,
     ))
 }
+pub fn full_prefix_template(candidate: bool) -> Result<Value, serde_json::Error> {
+    Ok(full_prefix_configuration::decorate(
+        scheduling_template()?,
+        candidate,
+    ))
+}
 impl ExecutionMode {
     pub fn spawn_runtime(
         self,
@@ -138,12 +148,27 @@ impl ExecutionMode {
         everlast_dictation::runtime::RuntimeError,
     > {
         use everlast_dictation::runtime::measurement::MeasuredRuntime;
+        if let Some(candidate) = self.full_prefix() {
+            return if candidate {
+                MeasuredRuntime::spawn_full_prefix_revision(service, generation, format)
+            } else {
+                MeasuredRuntime::spawn_pretranscription_reference(service, generation, format)
+            };
+        }
         match self.pretranscription() {
             Some(true) => MeasuredRuntime::spawn_pretranscription(service, generation, format),
             Some(false) => {
                 MeasuredRuntime::spawn_pretranscription_reference(service, generation, format)
             }
             None => MeasuredRuntime::spawn(service, generation, format),
+        }
+    }
+
+    pub fn full_prefix(self) -> Option<bool> {
+        match self {
+            Self::FullPrefixReference => Some(false),
+            Self::FullPrefixCandidate => Some(true),
+            _ => None,
         }
     }
 
@@ -154,7 +179,9 @@ impl ExecutionMode {
             Self::Baseline
             | Self::TimeConstrained
             | Self::ContextReference
-            | Self::ContextReduced => None,
+            | Self::ContextReduced
+            | Self::FullPrefixReference
+            | Self::FullPrefixCandidate => None,
         }
     }
     pub fn context_reduced(self) -> Option<bool> {
@@ -164,7 +191,9 @@ impl ExecutionMode {
             Self::Baseline
             | Self::TimeConstrained
             | Self::PretransReference
-            | Self::PretransCandidate => None,
+            | Self::PretransCandidate
+            | Self::FullPrefixReference
+            | Self::FullPrefixCandidate => None,
         }
     }
     pub fn scheduled(self) -> bool {
@@ -174,7 +203,9 @@ impl ExecutionMode {
             | Self::ContextReference
             | Self::ContextReduced
             | Self::PretransReference
-            | Self::PretransCandidate => true,
+            | Self::PretransCandidate
+            | Self::FullPrefixReference
+            | Self::FullPrefixCandidate => true,
         }
     }
 }
@@ -186,6 +217,8 @@ pub fn print_template(flag: &str) -> Result<Option<Value>, serde_json::Error> {
         "--print-context-candidate-parameters" => context_template(true)?,
         "--print-pretrans-reference-parameters" => pretrans_template(false)?,
         "--print-pretrans-candidate-parameters" => pretrans_template(true)?,
+        "--print-full-prefix-reference-parameters" => full_prefix_template(false)?,
+        "--print-full-prefix-candidate-parameters" => full_prefix_template(true)?,
         _ => return Ok(None),
     }))
 }
@@ -195,6 +228,14 @@ pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
     }
     let value: Value = serde_json::from_slice(bytes).map_err(|_| "invalid parameter JSON")?;
     for (template, mode) in [
+        (
+            full_prefix_template(false).map_err(|e| e.to_string())?,
+            ExecutionMode::FullPrefixReference,
+        ),
+        (
+            full_prefix_template(true).map_err(|e| e.to_string())?,
+            ExecutionMode::FullPrefixCandidate,
+        ),
         (
             pretrans_template(false).map_err(|e| e.to_string())?,
             ExecutionMode::PretransReference,
@@ -282,6 +323,48 @@ fn compiled_sources() -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn full_prefix_modes_require_their_exact_own_configuration_and_source_closure()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for candidate in [false, true] {
+            let flag = if candidate {
+                "--print-full-prefix-candidate-parameters"
+            } else {
+                "--print-full-prefix-reference-parameters"
+            };
+            let frozen = print_template(flag)?.ok_or("full-prefix configuration unavailable")?;
+            assert_eq!(frozen["fullPrefix"]["candidate"], candidate);
+            assert_eq!(
+                frozen["measurement"]["mode"],
+                "paced-full-prefix-revision-v1"
+            );
+            assert!(frozen.get("pretranscription").is_none());
+            let selected = select(&serde_json::to_vec(&frozen)?)?.1;
+            assert_eq!(selected.full_prefix(), Some(candidate));
+            assert!(selected.scheduled());
+            assert_eq!(selected.pretranscription(), None);
+            assert_eq!(selected.context_reduced(), None);
+            for key in [
+                "fullPrefixAudio",
+                "fullPrefixController",
+                "preparedCache",
+                "cacheEvidence",
+                "fullPrefixAudit",
+                "fullPrefixConfiguration",
+            ] {
+                assert!(
+                    frozen["sourceHashes"][key]["sha256"]
+                        .as_str()
+                        .is_some_and(|value| value.len() == 64),
+                    "missing source binding {key}"
+                );
+            }
+            let mut wrong = frozen;
+            wrong["fullPrefix"]["confirmationFrames"] = json!(7999);
+            assert!(select(&serde_json::to_vec(&wrong)?).is_err());
+        }
+        Ok(())
+    }
     #[test]
     fn explicit_pretranscription_freezes_select_both_arms_without_context_or_legacy_fallback()
     -> Result<(), Box<dyn std::error::Error>> {

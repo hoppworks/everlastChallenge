@@ -504,7 +504,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: Some("controlled words"),
                 context: None,
-                trace: false,
+                trace: TraceContract::None,
             },
             || Ok(fake_thread(child_samples, false, false)),
         );
@@ -539,7 +539,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
                 context: None,
-                trace: false,
+                trace: TraceContract::None,
             },
             || Ok(fake_thread(child_samples, true, false)),
         );
@@ -573,7 +573,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
                 context: None,
-                trace: false,
+                trace: TraceContract::None,
             },
             || Ok(fake_thread(child_samples, false, true)),
         );
@@ -768,7 +768,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
                 context: Some(&receipts),
-                trace: false,
+                trace: TraceContract::None,
             },
             || Ok(fake_thread(Arc::clone(&samples), false, false)),
         );
@@ -806,7 +806,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
                 context: Some(&receipts),
-                trace: false,
+                trace: TraceContract::None,
             },
             || Ok(fake_thread(Arc::clone(&samples), false, false)),
         );

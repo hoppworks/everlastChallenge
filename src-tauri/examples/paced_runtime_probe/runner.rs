@@ -13,6 +13,8 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
+#[path = "full_prefix.rs"]
+pub mod full_prefix;
 #[path = "pretranscription.rs"]
 mod pretranscription;
 #[path = "publisher.rs"]
@@ -26,12 +28,23 @@ pub enum ExpectedOutcome {
     Empty,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum TraceContract {
+    None,
+    DisjointPretrans,
+    #[allow(
+        dead_code,
+        reason = "shared runner is also compiled by probes without this entry point"
+    )]
+    FullPrefix(full_prefix::Variant),
+}
+
 #[derive(Clone, Copy)]
 struct Expectation<'a> {
     outcome: ExpectedOutcome,
     reference: Option<&'a str>,
     context: Option<&'a audio_context::Receipts>,
-    trace: bool,
+    trace: TraceContract,
 }
 
 #[derive(Serialize)]
@@ -45,6 +58,8 @@ pub struct Observation {
     pub engine_elapsed_nanos: Option<u128>,
     pub engine_input_frames: Option<usize>,
     pub engine_rtf: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub session_rtf_recording_frames: Option<usize>,
     pub engine_rtf_unavailable_reason: Option<String>,
     pub status: &'static str,
     pub error: Option<String>,
@@ -78,6 +93,7 @@ fn observation(id: String, warmup: bool) -> Observation {
         engine_elapsed_nanos: None,
         engine_input_frames: None,
         engine_rtf: None,
+        session_rtf_recording_frames: None,
         engine_rtf_unavailable_reason: Some("no accepted decoder timing".into()),
         status: "failed",
         error: None,
@@ -227,7 +243,7 @@ pub fn one_expected(
             outcome: expected,
             reference,
             context: None,
-            trace: false,
+            trace: TraceContract::None,
         },
         || macos_integration::qos::PublisherQos::enter().map_err(|error| error.to_string()),
     )
@@ -254,7 +270,7 @@ pub fn one_scheduled(
             outcome: expected,
             reference,
             context: None,
-            trace: false,
+            trace: TraceContract::None,
         },
         || publisher::Native::spawn(std::sync::Arc::clone(samples)),
     )
@@ -279,11 +295,46 @@ pub fn one_pretranscription(
             outcome: expected,
             reference,
             context: None,
-            trace: true,
+            trace: TraceContract::DisjointPretrans,
         },
         || publisher::Native::spawn(std::sync::Arc::clone(samples)),
     )
 }
+/// Whole-prefix revisions with their own overlapping trace/RTF contract.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "same explicit run arguments as other entries plus its frozen variant"
+)]
+#[allow(
+    dead_code,
+    reason = "selected by the single-fixture full-prefix probe; other shared-runner callers remain legacy"
+)]
+pub fn one_full_prefix(
+    runtime: &MeasuredRuntime,
+    samples: &std::sync::Arc<Vec<f32>>,
+    language: Language,
+    id: String,
+    warmup: bool,
+    reference: Option<&str>,
+    expected: ExpectedOutcome,
+    variant: full_prefix::Variant,
+) -> Output {
+    one_scheduled_with(
+        runtime,
+        samples,
+        language,
+        id,
+        warmup,
+        Expectation {
+            outcome: expected,
+            reference,
+            context: None,
+            trace: TraceContract::FullPrefix(variant),
+        },
+        || publisher::Native::spawn(std::sync::Arc::clone(samples)),
+    )
+}
+
 pub struct ContextRun<'a> {
     pub receipts: &'a audio_context::Receipts,
     pub reference: Option<&'a str>,
@@ -308,7 +359,7 @@ pub fn one_context(
             outcome: context.outcome,
             reference: context.reference,
             context: Some(context.receipts),
-            trace: false,
+            trace: TraceContract::None,
         },
         || publisher::Native::spawn(std::sync::Arc::clone(samples)),
     )
@@ -385,6 +436,7 @@ fn one_scheduled_with<P: publisher::Publisher>(
             stopped,
             samples.len(),
             expectation.outcome,
+            expectation.trace,
         )
     } else {
         Err("publisher did not return complete feed/stop evidence".into())
@@ -398,39 +450,14 @@ fn one_scheduled_with<P: publisher::Publisher>(
         output.observation.status = "invalid_setup";
         output.observation.error = Some(errors.join("; "));
     }
-    if expectation.trace {
-        match runtime.job_trace() {
-            Ok(trace) if output.observation.session.is_some() => {
-                let evidence = pretranscription::audit(
-                    trace,
-                    output.observation.feed.as_ref(),
-                    output.observation.session,
-                    samples.len(),
-                    language,
-                );
-                if let Some(error) = &evidence.error {
-                    if output.observation.status == "ok" {
-                        output.observation.status = "invalid_setup";
-                    }
-                    output.observation.error = Some(match output.observation.error.take() {
-                        Some(old) => format!("{old}; {error}"),
-                        None => error.clone(),
-                    });
-                }
-                output.observation.job_trace = Some(serde_json::json!(evidence));
-            }
-            Ok(_) => {
-                output.observation.job_trace =
-                    Some(serde_json::json!({"error":"no admitted session; no job trace assigned"}));
-            }
-            Err(error) => {
-                output.observation.status = "failed";
-                output.observation.error = Some(match output.observation.error.take() {
-                    Some(old) => format!("{old}; {error}"),
-                    None => error.to_string(),
-                });
-            }
-        }
+    if !matches!(expectation.trace, TraceContract::None) {
+        audit_trace(
+            runtime,
+            &mut output,
+            samples.len(),
+            language,
+            expectation.trace,
+        );
     }
     if let Some(receipts) = expectation.context {
         let collection = receipts.collect(output.observation.session, samples.len(), language);
@@ -446,6 +473,126 @@ fn one_scheduled_with<P: publisher::Publisher>(
         output.observation.audio_context = Some(serde_json::json!(collection));
     }
     output
+}
+
+fn append_trace_error(row: &mut Observation, error: String) {
+    if row.status == "ok" {
+        row.status = "invalid_setup";
+    }
+    row.error = Some(match row.error.take() {
+        Some(old) => format!("{old}; {error}"),
+        None => error,
+    });
+}
+
+fn full_prefix_timing(
+    row: &mut Observation,
+    evidence: &full_prefix::Evidence,
+    frames: usize,
+) -> Result<(), &'static str> {
+    row.engine_rtf = None;
+    row.session_rtf_recording_frames = Some(frames);
+    row.engine_rtf_unavailable_reason =
+        Some("full-prefix trace or accepted timing unavailable".into());
+    if evidence.error.is_some() {
+        return Err("full-prefix trace rejected; no session RTF");
+    }
+    let processed = evidence
+        .processed_frames_sum
+        .ok_or("full-prefix processed frame sum missing")?;
+    if row.engine_input_frames != Some(processed) {
+        return Err("accepted decoder frame sum differs from full-prefix jobs");
+    }
+    let elapsed = row
+        .engine_elapsed_nanos
+        .ok_or("full-prefix accepted decoder timing missing")?;
+    let worker_spans = evidence
+        .checked_worker_span_sum_nanos
+        .ok_or("full-prefix checked worker span sum missing")?;
+    if elapsed > worker_spans {
+        return Err("accepted decoder elapsed exceeds enclosing worker span sum");
+    }
+    let final_adoption = evidence
+        .final_adoption_offset_nanos
+        .ok_or("full-prefix final adoption missing")?;
+    let terminal = row
+        .t_terminal_offset_nanos
+        .ok_or("full-prefix terminal timestamp missing")?;
+    // The validated trace already proves final settlement <= final adoption.
+    if final_adoption > terminal {
+        return Err("full-prefix terminal precedes final result adoption");
+    }
+    row.engine_rtf = full_prefix::session_rtf(elapsed, frames);
+    if row.engine_rtf.is_none() {
+        return Err("full-prefix recording RTF denominator invalid");
+    }
+    row.engine_rtf_unavailable_reason = None;
+    Ok(())
+}
+
+fn audit_trace(
+    runtime: &MeasuredRuntime,
+    output: &mut Output,
+    frames: usize,
+    language: Language,
+    contract: TraceContract,
+) {
+    if matches!(contract, TraceContract::FullPrefix(_)) {
+        output.observation.engine_rtf = None;
+        output.observation.session_rtf_recording_frames = Some(frames);
+        output.observation.engine_rtf_unavailable_reason =
+            Some("full-prefix trace unavailable".into());
+    }
+    match runtime.job_trace() {
+        Ok(trace) if output.observation.session.is_some() => match contract {
+            TraceContract::DisjointPretrans => {
+                let evidence = pretranscription::audit(
+                    trace,
+                    output.observation.feed.as_ref(),
+                    output.observation.session,
+                    frames,
+                    language,
+                );
+                if let Some(error) = &evidence.error {
+                    append_trace_error(&mut output.observation, error.clone());
+                }
+                output.observation.job_trace = Some(serde_json::json!(evidence));
+            }
+            TraceContract::FullPrefix(variant) => {
+                let evidence = full_prefix::audit(
+                    trace,
+                    output.observation.feed.as_ref(),
+                    output.observation.session,
+                    1,
+                    frames,
+                    language,
+                    variant,
+                );
+                if let Some(error) = &evidence.error {
+                    append_trace_error(&mut output.observation, error.clone());
+                }
+                if let Err(error) = full_prefix_timing(&mut output.observation, &evidence, frames) {
+                    append_trace_error(&mut output.observation, error.into());
+                }
+                output.observation.job_trace = Some(serde_json::json!(evidence));
+            }
+            TraceContract::None => {}
+        },
+        Ok(_) => {
+            output.observation.job_trace =
+                Some(serde_json::json!({"error":"no admitted session; no job trace assigned"}));
+            if matches!(contract, TraceContract::FullPrefix(_)) {
+                append_trace_error(
+                    &mut output.observation,
+                    "no admitted full-prefix session".into(),
+                );
+            }
+        }
+        Err(error) => {
+            output.observation.status = "failed";
+            append_trace_error(&mut output.observation, error.to_string());
+        }
+    }
 }
 
 fn one_scoped<Q: PublisherScope>(
@@ -504,6 +651,7 @@ fn one_scoped<Q: PublisherScope>(
             stopped,
             samples.len(),
             expectation.outcome,
+            expectation.trace,
         )
     })();
     // Error paths drop the source port while unwinding the closure, then end
@@ -556,6 +704,7 @@ fn observe_terminal(
     stopped: Instant,
     frames: usize,
     expected: ExpectedOutcome,
+    trace_contract: TraceContract,
 ) -> Result<String, Box<dyn std::error::Error>> {
     let session = row.session.ok_or("missing current measurement session")?;
     let deadline = Instant::now() + WAIT;
@@ -583,7 +732,15 @@ fn observe_terminal(
     if row.stop_to_terminal_nanos.is_none() {
         return Err("accepted terminal timestamp precedes stop or is missing".into());
     }
-    validate_engine_timing(timing.decode_timing, frames, expected)?;
+    if matches!(trace_contract, TraceContract::FullPrefix(_)) {
+        // Its accepted frame sum is overlapping work, checked independently
+        // against the complete job trace below before deriving session RTF.
+        row.engine_rtf = None;
+        row.engine_rtf_unavailable_reason =
+            Some("full-prefix trace/timing validation pending".into());
+    } else {
+        validate_engine_timing(timing.decode_timing, frames, expected)?;
+    }
     if expected == ExpectedOutcome::Empty {
         if timing.terminal != Some(MeasuredTerminal::Empty) || timing.t_text.is_some() {
             return Err("run did not end with explicitly expected Empty outcome".into());
@@ -785,7 +942,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
                 context: None,
-                trace: false,
+                trace: TraceContract::None,
             },
             || Err("controlled QoS enter failure".into()),
         );
@@ -818,7 +975,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
                 context: None,
-                trace: false,
+                trace: TraceContract::None,
             },
             || {
                 Ok(FakeScope {
@@ -858,7 +1015,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
                 context: None,
-                trace: false,
+                trace: TraceContract::None,
             },
             || {
                 Ok(FakeScope {
@@ -905,7 +1062,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: Some("controlled words"),
                 context: None,
-                trace: false,
+                trace: TraceContract::None,
             },
             || {
                 Ok(FakeScope {
@@ -954,7 +1111,7 @@ mod tests {
                 outcome: ExpectedOutcome::Empty,
                 reference: None,
                 context: None,
-                trace: false,
+                trace: TraceContract::None,
             },
             || {
                 Ok(FakeScope {
@@ -1018,7 +1175,7 @@ mod tests {
                 outcome: ExpectedOutcome::Local,
                 reference: None,
                 context: None,
-                trace: false,
+                trace: TraceContract::None,
             },
             || {
                 Ok(FakeScope {
@@ -1147,6 +1304,174 @@ mod pretranscription_tests {
             result
         }
     }
+    struct ControlledReceipt {
+        receipt: Option<everlast_dictation::transcription::prefix_cache::PreparedReuse>,
+        native_flag: bool,
+    }
+    impl Decoder for ControlledReceipt {
+        fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+            Err(InferenceError::InvalidDecodeContext)
+        }
+        fn decode_with_context(
+            &mut self,
+            audio: &[f32],
+            _: Language,
+            context: &everlast_dictation::inference_service::DecodeContext,
+        ) -> Result<String, InferenceError> {
+            use everlast_dictation::transcription::prefix_cache::{PreparedReuse, ReuseOutcome};
+            self.receipt = Some(PreparedReuse {
+                session: context.session,
+                generation: context.generation,
+                job_id: context.job_id,
+                outcome: ReuseOutcome::Decoded,
+                origin_job_id: Some(context.job_id),
+                prepared_frames: Some(audio.len().max(16000)),
+                prepared_pcm_sha256: Some([17; 32]),
+                decoder_invoked: true,
+                // A true value here is an explicit test double, NEVER a native proof.
+                native_full_attempted: self.native_flag,
+            });
+            Ok("controlled revision".into())
+        }
+        fn take_prepared_reuse(
+            &mut self,
+        ) -> Option<everlast_dictation::transcription::prefix_cache::PreparedReuse> {
+            self.receipt.take()
+        }
+    }
+
+    #[test]
+    fn full_prefix_route_rejects_a_controlled_decode_without_actual_native_full_flag()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let runtime = MeasuredRuntime::spawn_full_prefix_revision(
+            InferenceService::with_decoder(ControlledReceipt {
+                receipt: None,
+                native_flag: false,
+            })?,
+            1,
+            dictation_core::audio::AudioFormat {
+                sample_rate: 16000,
+                channels: 1,
+            },
+        )?;
+        wait_ready(&runtime)?;
+        let samples = Arc::new(vec![0.125; 320]);
+        let output = one_scheduled_with(
+            &runtime,
+            &samples,
+            Language::German,
+            "controlled-not-native".into(),
+            false,
+            Expectation {
+                outcome: ExpectedOutcome::Local,
+                reference: None,
+                context: None,
+                trace: TraceContract::FullPrefix(full_prefix::Variant::Candidate),
+            },
+            || PlainPublisher::spawn(Arc::clone(&samples), false),
+        );
+        assert!(cleanup(runtime).joined);
+        assert_ne!(
+            output.observation.status, "ok",
+            "controlled false native flag qualified"
+        );
+        let evidence = output
+            .observation
+            .job_trace
+            .ok_or("missing retained trace")?;
+        assert!(evidence["error"].is_string());
+        assert_eq!(output.observation.engine_rtf, None);
+        assert!(
+            output.text.is_some(),
+            "trace failure must retain actual output"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn full_prefix_controlled_route_reports_overlapping_work_with_unique_recording_rtf()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let runtime = MeasuredRuntime::spawn_full_prefix_revision(
+            InferenceService::with_decoder(ControlledReceipt {
+                receipt: None,
+                native_flag: true,
+            })?,
+            1,
+            dictation_core::audio::AudioFormat {
+                sample_rate: 16000,
+                channels: 1,
+            },
+        )?;
+        wait_ready(&runtime)?;
+        let mut voice = vec![0.125; 320];
+        voice.resize(11520, 0.0);
+        let samples = Arc::new(voice);
+        let mut output = one_scheduled_with(
+            &runtime,
+            &samples,
+            Language::German,
+            "controlled-native-marker-double".into(),
+            false,
+            Expectation {
+                outcome: ExpectedOutcome::Local,
+                reference: Some("controlled revision"),
+                context: None,
+                trace: TraceContract::FullPrefix(full_prefix::Variant::Candidate),
+            },
+            || PlainPublisher::spawn(Arc::clone(&samples), false),
+        );
+        let timing = runtime.timing()?;
+        let trace = runtime.job_trace()?;
+        assert!(cleanup(runtime).joined);
+        assert_eq!(
+            output.text.as_deref(),
+            Some("controlled revision"),
+            "{:?}",
+            output.observation.error
+        );
+        let evidence = output
+            .observation
+            .job_trace
+            .as_ref()
+            .ok_or("missing overlap trace")?;
+        assert_eq!(evidence["error"], serde_json::Value::Null);
+        assert_eq!(
+            evidence["trace"]["jobs"]
+                .as_array()
+                .ok_or("missing jobs")?
+                .len(),
+            2
+        );
+        let actual = timing
+            .decode_timing
+            .ok_or("missing actual controlled timing")?;
+        assert!(actual.input_frames > samples.len());
+        assert_eq!(
+            output.observation.engine_input_frames,
+            Some(actual.input_frames)
+        );
+        assert_eq!(
+            output.observation.engine_rtf,
+            full_prefix::session_rtf(actual.elapsed.as_nanos(), samples.len())
+        );
+        assert!(matches!(output.observation.status, "ok" | "invalid_setup"));
+        let proof = full_prefix::audit(
+            trace,
+            output.observation.feed.as_ref(),
+            output.observation.session,
+            1,
+            samples.len(),
+            Language::German,
+            full_prefix::Variant::Candidate,
+        );
+        output.observation.engine_input_frames = Some(actual.input_frames - 1);
+        assert!(full_prefix_timing(&mut output.observation, &proof, samples.len()).is_err());
+        assert_eq!(
+            output.observation.engine_rtf, None,
+            "mismatched actual timing must erase an older RTF"
+        );
+        Ok(())
+    }
     #[test]
     fn selected_pretranscription_modes_run_actual_pipeline_and_complete_publication_proof_without_os_policy()
     -> Result<(), Box<dyn std::error::Error>> {
@@ -1176,7 +1501,7 @@ mod pretranscription_tests {
                     outcome: ExpectedOutcome::Local,
                     reference: None,
                     context: None,
-                    trace: true,
+                    trace: TraceContract::DisjointPretrans,
                 },
                 || PlainPublisher::spawn(Arc::clone(&samples), post_failure),
             );
@@ -1259,6 +1584,75 @@ mod pretranscription_tests {
                 count
             );
         }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod full_prefix_timing_contract_tests {
+    use super::*;
+    fn proof() -> Result<full_prefix::Evidence, &'static str> {
+        let (trace, feed) = full_prefix::tests::fixture()?;
+        Ok(full_prefix::audit(
+            trace,
+            Some(&feed),
+            Some(7),
+            9,
+            16000,
+            Language::German,
+            full_prefix::Variant::Candidate,
+        ))
+    }
+    fn row() -> Observation {
+        let mut row = observation("timing-mutation".into(), false);
+        row.status = "ok";
+        row.engine_input_frames = Some(22400);
+        row.engine_elapsed_nanos = Some(2); // two independently observed 1-ns worker spans
+        row.t_terminal_offset_nanos = Some(1_000_000_015); // exact final adoption boundary
+        row.engine_rtf = Some(123.0); // failed validation must erase earlier derived values
+        row
+    }
+    #[test]
+    fn full_prefix_timing_rejects_decode_sum_above_observed_worker_spans()
+    -> Result<(), &'static str> {
+        let proof = proof()?;
+        assert_eq!(proof.error, None);
+        let mut row = row();
+        row.engine_elapsed_nanos = Some(3);
+        assert!(
+            full_prefix_timing(&mut row, &proof, 16000).is_err(),
+            "decode elapsed cannot exceed both enclosing worker spans combined"
+        );
+        assert_eq!(row.engine_rtf, None);
+        assert_eq!(
+            row.engine_elapsed_nanos,
+            Some(3),
+            "retain the actual inconsistent value"
+        );
+        row.engine_elapsed_nanos = Some(2);
+        assert!(
+            full_prefix_timing(&mut row, &proof, 16000).is_ok(),
+            "equal bound is valid"
+        );
+        Ok(())
+    }
+    #[test]
+    fn full_prefix_timing_rejects_terminal_before_final_adoption() -> Result<(), &'static str> {
+        let proof = proof()?;
+        assert_eq!(proof.error, None);
+        let mut row = row();
+        row.t_terminal_offset_nanos = Some(1_000_000_014);
+        assert!(
+            full_prefix_timing(&mut row, &proof, 16000).is_err(),
+            "terminal before accepted final result cannot qualify a session RTF"
+        );
+        assert_eq!(row.engine_rtf, None);
+        assert_eq!(row.t_terminal_offset_nanos, Some(1_000_000_014));
+        row.t_terminal_offset_nanos = Some(1_000_000_015);
+        assert!(
+            full_prefix_timing(&mut row, &proof, 16000).is_ok(),
+            "exact adoption is valid"
+        );
         Ok(())
     }
 }
