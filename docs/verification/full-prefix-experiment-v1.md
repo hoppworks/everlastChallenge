@@ -102,3 +102,43 @@ Ein zusätzlicher Wrapper allein verlangt damit keinen neuen Korpuslauf;
 Änderungen der gemeinsamen Qualitätsalgorithmus-, Eingabe- oder Decoderstrecke
 invalidieren dagegen die betroffenen Nachweise. Wrapperprüfung und tatsächliche
 Leistungsabnahme bleiben erforderlich; ein neuer Build allein belegt beides nicht.
+
+## Übertragung auf den späteren App-Kandidaten
+
+`src-tauri/src/pipeline.rs` gehört zu den 47 gemeinsamen gebundenen Quellen.
+Der aktuelle `APP_POLICY`-Selektor bleibt `Reference`. Seine spätere Änderung
+auf `FullPrefix` ist eine eigene Quellenänderung und darf weder alte Hashes
+übernehmen noch als bytegleich ausgegeben werden. Die strenge
+`screening_quality/decision.py`-Prüfung bleibt unverändert; sie prüft weiterhin
+den tatsächlichen historischen Quellenbaum der Qualitätsfreigabe.
+
+Nach tatsächlich bestandener vollständiger Qualität, beiden Leistungspaaren,
+den 94 Restfällen und der Ressourcenqualifikation des gemessenen Runtime-Pfads
+samt kontrollierten Cancel-/Maximaldauerbelegen darf ein lokaler App-Kandidat
+für die anschließenden nativen Produktabnahmen vorbereitet werden.
+Ein eigener Aktivierungs-Übertragungsbeleg bindet dafür:
+
+- Die unveränderten tatsächlichen Qualitäts-, Leistungs- und Ressourcenberichte
+  samt Freigaben, ursprünglichen Revisionen, Parametern und Binärdateien.
+- Die 47 gemeinsamen Quellen vor und nach dem Wechsel aus unveränderlichen
+  Git-Ständen. Alle Dateien außer `pipeline.rs` müssen bytegleich sein. Der
+  vollständige Inhalt von `pipeline.rs` muss nach Rücknahme ausschließlich des
+  exakt geankerten `APP_POLICY`-Initializers `Reference` → `FullPrefix` wieder
+  bytegleich sein. Weitere Änderungen an diesen Quellen sind nicht abgedeckt.
+- Den unabhängigen Readback beider tatsächlichen App-Aufrufer:
+  `setup.rs` verwendet `load_with_policy(..., APP_POLICY)`, `application.rs`
+  verwendet `spawn_with_policy(..., APP_POLICY)`. Cache/Engine, RecordingOwner
+  und Controller müssen dadurch konsistent dieselbe geprüfte Policy erhalten.
+  Die öffentlichen Referenz-Defaults bleiben unabhängig davon unverändert.
+- Den eigenen vollständigen finalen App-Quellstand, Buildparameter und neuen
+  Binary-/Bundlehash. Die isolierte Mess-Factory im Ressourcen-Testbaum behält
+  ihren separaten Quellenübertragungsbeleg; sie ist keine Ausnahme für weitere
+  Änderungen am App-Algorithmus.
+
+Dieser Beleg überträgt nur den bereits gemessenen Algorithmus auf den expliziten
+App-Selektor. Er behauptet weder eine neue Messung noch eine bestandene native
+Produktabnahme. Ein neuer identischer Korpuslauf ist allein für diesen unabhängig
+belegten Selektorwechsel nicht erforderlich. Änderungen an Algorithmus, Eingaben,
+Modellen oder Decoderparametern benötigen weiterhin neue betroffene Nachweise.
+Bei fehlendem oder nicht eindeutigem Übertragungsbeleg bleibt die Aktivierung
+unfreigegeben; die strenge Qualitätsprüfung erhält keinen Skip oder Override.
