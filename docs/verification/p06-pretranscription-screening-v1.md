@@ -105,3 +105,14 @@ Zahlen, verlorenen Negationen oder Segmentauslassungen/-dopplungen. Bestehende
 Fehler transparent erhalten; kein neues pauschales Null-Namensfehler-Gate.
 Erst nach erfolgreichem Screening die übrigen Qualifikationsmessungen mit
 eigenem Freeze durchführen.
+
+## Gesondert autorisierte kontrollierte Übernahme
+
+Der [Fortsetzungsprospekt](p06-pretranscription-continuation-v1.md) erlaubt für
+ein neu eingefrorenes Screening über mehrere Ausführungszeiträume ausschließlich
+die Übernahme aller 185 vollständig gültigen v2-Fälle und die neue Ausführung
+der übrigen 215 ganzen Fälle. Diese enge Ausnahme ersetzt für genau dieses neue
+Dataset die Pflicht, wieder alle 400 Prozesse zu starten; alle anderen Regeln,
+Eingaben und Qualitätsgrenzen bleiben unverändert. Die fehlgeschlagenen
+historischen Ausführungen bleiben fehlgeschlagen. Es entsteht keine Latenz-,
+Ressourcen- oder P06-Qualifikation und keine automatische weitere Fortsetzung.
