@@ -11,6 +11,7 @@ import signal
 import time
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 _SPEC = importlib.util.spec_from_file_location("paced_remainder", Path(__file__).with_name("run-paced-remainder.py"))
@@ -104,15 +105,87 @@ def paths_for(plan, case):
             for key in ("output", "metadata", "log", "completion")}
 
 
+POWER_COMMAND = ["/usr/bin/pmset", "-g", "batt"]
+POWER_TIMEOUT_SECONDS = 2
+POWER_MAX_BYTES = 16 * 1024
+
+
+def read_power_output():
+    """Unprivileged read with bounded output, deadline and owned-child cleanup."""
+    child = None
+    result = dict(stdout=None, error=None, exitCode=None, timedOut=False, outputBytes=0)
+    with tempfile.TemporaryFile() as output:
+        try:
+            child = subprocess.Popen(POWER_COMMAND, stdout=output, stderr=output)
+            deadline = time.monotonic() + POWER_TIMEOUT_SECONDS
+            while child.poll() is None:
+                if os.fstat(output.fileno()).st_size > POWER_MAX_BYTES:
+                    result["error"] = "pmset output limit exceeded"
+                    break
+                if time.monotonic() >= deadline:
+                    result.update(error="pmset read timed out", timedOut=True)
+                    break
+                time.sleep(.01)
+            if child.poll() is None:
+                child.kill()
+            result["exitCode"] = child.wait(timeout=POWER_TIMEOUT_SECONDS)
+            size = os.fstat(output.fileno()).st_size
+            result["outputBytes"] = size
+            if size > POWER_MAX_BYTES:
+                result["error"] = "pmset output limit exceeded"
+            elif result["error"] is None:
+                output.seek(0)
+                result["stdout"] = output.read(POWER_MAX_BYTES).decode("utf-8", errors="strict")
+                if result["exitCode"] != 0:
+                    result["error"] = "pmset exited unsuccessfully"
+        except (OSError, UnicodeError, subprocess.TimeoutExpired) as error:
+            result["error"] = "pmset observation failed: " + type(error).__name__
+        finally:
+            if child is not None and child.poll() is None:
+                try:
+                    child.kill()
+                    child.wait(timeout=POWER_TIMEOUT_SECONDS)
+                except (OSError, subprocess.TimeoutExpired):
+                    result["error"] = "pmset child cleanup unconfirmed"
+    return result
+
+
+def power_snapshot():
+    observation = read_power_output()
+    source = None
+    if observation["error"] is None:
+        lines = (observation["stdout"] or "").splitlines()
+        match = re.fullmatch(r"Now drawing from '(AC Power|Battery Power)'", lines[0]) if lines else None
+        if match:
+            source = match.group(1)
+        else:
+            observation["error"] = "pmset power source unavailable"
+    return dict(observation, command=POWER_COMMAND, observedUtc=now(), source=source)
+
+
+class PowerAdmissionError(ValueError):
+    def __init__(self, snapshot):
+        super().__init__("fresh AC Power evidence required; battery or unavailable observation")
+        self.snapshot = snapshot
+
+
+def require_ac(snapshot):
+    if snapshot.get("source") != "AC Power" or snapshot.get("error") is not None:
+        raise PowerAdmissionError(snapshot)
+
+
 def execute(plan, launch, finish=None):
     check(len(plan["blocks"]) == 4 and all(len(b["cases"]) == 100 for b in plan["blocks"]), "expected400 frozen commands")
+    startup_power = power_snapshot()
+    require_ac(startup_power)
     output = plan["output"]
     output.mkdir(mode=0o700)
     output.chmod(0o700)
     if "freezeBytes" in plan:
         common.write_private_bytes(output / "freeze.json", plan["freezeBytes"])
-    if "launchObservation" in plan:
-        common.write_private(output / "launch.json", plan["launchObservation"])
+    launch_observation = dict(plan.get("launchObservation", {}), startupPower=startup_power,
+                              powerScope="discrete startup/before-case/after-case reads; not continuous or lid-sleep protection")
+    common.write_private(output / "launch.json", launch_observation)
     report = {"schemaVersion": 1, "kind": "pretranscription-screening-execution", "blocks": [],
               "freezeSha256": plan.get("freezeSha256"), "completed": False,
               "qualified": False, "L": None, "error": None}
@@ -127,13 +200,22 @@ def execute(plan, launch, finish=None):
                 entry["error"] = failure
             if failure is None:
                 paths = paths_for(plan, case)
+                before_power = power_snapshot()
+                after_power = None
                 try:
+                    require_ac(before_power)
                     common.check_unchanged(plan)
                     launched = launch(case, paths)
+                    after_power = power_snapshot()
                 except (OSError, ValueError, KeyboardInterrupt) as error:
                     launched = {"exitCode": None, "terminationConfirmed": False,
-                                "launchError": "prelaunch/launch failed: " + type(error).__name__}
+                                "launchError": "prelaunch/launch failed: " + type(error).__name__ + ": " + str(error)}
                 errors = []
+                if after_power is not None:
+                    try:
+                        require_ac(after_power)
+                    except ValueError:
+                        errors.append("post-probe AC Power evidence missing or battery observed")
                 if launched.get("exitCode") != 0:
                     errors.append("wrapped probe did not exit successfully")
                 if launched.get("terminationConfirmed") is not True:
@@ -148,7 +230,8 @@ def execute(plan, launch, finish=None):
                 failure = "; ".join(errors) if errors else None
                 entry.update(status="failed" if failure else "ok", error=failure,
                              rows=validation["rows"], launch=launched, rawFiles=raw,
-                             actualProbePid=validation.get("processId"))
+                             actualProbePid=validation.get("processId"),
+                             beforePower=before_power, afterPower=after_power)
                 if validation.get("processId") is not None:
                     if validation["processId"] in plan.setdefault("seenPids", set()):
                         failure = "actual probe PID reused within frozen sequence"
@@ -178,6 +261,7 @@ def validate_case(plan, block, case, paths):
                 rows[index]["status"] = item.get("status", "invalid")
         check(len(results) == 2 and len(meta["runs"]) == 2, "expected warmup plus one measured row")
         actual_pid = meta["processId"]
+        check(meta["hostObservation"]["powerSource"] == "AC Power", "actual probe did not observe AC Power")
         check(integer(actual_pid, 1), "missing actual probe PID")
         check(meta["sourceRevision"] == plan["sourceRevision"] and meta["schemaVersion"] == 1 and
               meta["kind"] == "paced-runtime-complete-recording", "source/schema differs")
@@ -501,8 +585,13 @@ def main(argv=None):
     args = parser.parse_args(argv)
     plan = preflight(args.freeze, args.root)
     if not args.execute:
-        print(json.dumps({"preflight":True, "cases":400, "rows":800, "qualified":False}))
+        print(json.dumps({"preflight":True, "cases":400, "rows":800, "qualified":False,
+                          "executionReadiness":"not checked; --execute requires fresh AC Power evidence"}))
         return 0
+    initial_power = power_snapshot()
+    if initial_power.get("source") != "AC Power" or initial_power.get("error") is not None:
+        print(json.dumps({"executionReady":False, "initialPower":initial_power}), file=sys.stderr)
+        return 2
     os.umask(0o077)
     signal.signal(signal.SIGINT, interrupt)
     signal.signal(signal.SIGTERM, interrupt)
@@ -514,7 +603,7 @@ def main(argv=None):
         power_error = "owned idle-sleep assertion could not start"
     plan["launchObservation"] = dict(startedUtc=now(), runnerPid=os.getpid(),
                                      caffeinatePid=power.pid if power is not None else None,
-                                     powerError=power_error, freezeSha256=plan["freezeSha256"],
+                                     powerError=power_error, initialPower=initial_power, freezeSha256=plan["freezeSha256"],
                                      qualified=False, L=None)
     def launch(case, paths):
         if power_error is not None or power is None or power.poll() is not None:
@@ -524,6 +613,9 @@ def main(argv=None):
     try:
         report = execute(plan, launch, lambda: power is not None and stop_power(power))
         return 0 if report["completed"] else 1
+    except PowerAdmissionError as error:
+        print(json.dumps({"executionReady":False, "startupPower":error.snapshot}), file=sys.stderr)
+        return 2
     finally:
         if power is not None and power.poll() is None:
             stop_power(power)

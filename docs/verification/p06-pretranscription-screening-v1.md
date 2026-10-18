@@ -76,6 +76,22 @@ Veröffentlichung ohne Überschreiben. Keine Hypothesentexte in öffentlichen
 Berichten. Während Modellläufen keine anderen Builds, Tests, Modelle oder
 Agentenarbeiten; nur den eigenen Lauf beobachten.
 
+Nach dem [ungültigen ersten Versuch](p06-pretranscription-screening-v1-failed.md)
+gilt vor einem neu eingefrorenen Lauf zusätzlich eine erzwungene
+Netzstromprüfung: unprivilegiertes, zeitlich und in der Ausgabemenge begrenztes
+`pmset -g batt` vor der ersten Ausführung und nochmals unmittelbar vor dem
+Anlegen des Ausgabeverzeichnisses. Akku oder fehlende Evidenz verhindert jeden
+Modellstart. Vor und nach jedem gestarteten Fall werden neue Beobachtungen
+gespeichert; eine Abweichung stoppt alle folgenden Modelle. Auch die
+Hostbeobachtung der Probe vor Modellinitialisierung muss AC Power melden.
+Der reine Binding-Preflight prüft nur Dateien und Kommandos und bezeichnet
+die Ausführungsbereitschaft ausdrücklich als ungeprüft.
+
+Diese Beobachtungen sind diskrete Kontrollen, keine kontinuierliche
+Stromüberwachung. Der Deckel muss während des Versuchs offen bleiben;
+die eigene Idle-Sleep-Anforderung garantiert das nicht. Keine globale
+Energieeinstellung, Jittergrenze oder Auswahl wird dafür geändert.
+
 ## Aufwand und Entscheidung
 
 Die100 Inputs enthalten1717,2964375 Sekunden Audio. Vier Blöcke mit Warmup

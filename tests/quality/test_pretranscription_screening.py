@@ -53,6 +53,12 @@ class TraceTests(unittest.TestCase):
 
 
 class ExecutionTests(unittest.TestCase):
+    def setUp(self):
+        from unittest import mock
+        self.power = mock.patch.object(screen, "power_snapshot", return_value={"source":"AC Power", "error":None})
+        self.power.start()
+        self.addCleanup(self.power.stop)
+
     def test_first_failure_keeps_800_rows_and_never_retries_or_starts_later_blocks(self):
         import tempfile
         with tempfile.TemporaryDirectory() as directory:
@@ -176,7 +182,7 @@ def valid_reports(directory):
     case=dict(id="case",language="de",expectedOutcome="Local",audio=dict(frames=8320,sha256="a"*64))
     plan=dict(parameters={"PretransCandidate":{"test":True}}, parameterBindings={"PretransCandidate":{"sha256":"c"*64}},
               sourceRevision="b"*40, model=dict(id="large-v3-turbo-q5_0",sha256="d"*64))
-    meta=dict(schemaVersion=1,kind="paced-runtime-complete-recording",processId=42,sourceRevision=plan["sourceRevision"],
+    meta=dict(hostObservation={"powerSource":"AC Power"},schemaVersion=1,kind="paced-runtime-complete-recording",processId=42,sourceRevision=plan["sourceRevision"],
               fixtureSha256=case["audio"]["sha256"],inputFrames=8320,sampleRate=16000,channels=1,language="de",
               model=plan["model"],parameters={"test":True},parameterDocumentSha256="c"*64,pretranscriptionCandidate=True,
               contextCleanup=None,referenceSha256=None,warmupRuns=1,measuredRunsRequested=1,debugAssertions=False,
@@ -239,3 +245,160 @@ class OwnedProcessTests(unittest.TestCase):
             self.assertEqual(paths["log"].stat().st_mode & 0o777,0o600)
             self.assertEqual(paths["log"].read_text().strip(),"controlled child")
             self.assertIsNone(screen._ACTIVE)
+
+
+class PowerAdmissionTests(unittest.TestCase):
+    def test_battery_rejects_before_output_directory_or_any_launch(self):
+        import tempfile
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory).resolve()
+            blocks=[dict(name=str(b),variant="PretransReference",cases=[dict(id="case-%d"%i,
+                         output="new/%d-%d.json"%(b,i),metadata="new/%d-%d.meta"%(b,i),
+                         log="new/%d-%d.log"%(b,i),completion="new/%d-%d.done"%(b,i)) for i in range(100)]) for b in range(4)]
+            launch=mock.Mock(return_value={"exitCode":1,"terminationConfirmed":True})
+            with mock.patch.object(screen,"power_snapshot",return_value={"source":"Battery Power","error":None},create=True):
+                with self.assertRaisesRegex(ValueError,"AC Power"):
+                    screen.execute(dict(root=root,output=root/"new",blocks=blocks),launch)
+            launch.assert_not_called()
+            self.assertFalse((root/"new").exists())
+
+    def test_probe_host_battery_is_rejected_even_with_valid_pipeline(self):
+        import tempfile
+        import json
+        with tempfile.TemporaryDirectory() as directory:
+            plan,block,case,paths,meta=valid_reports(Path(directory))
+            meta["hostObservation"]={"powerSource":"Battery Power"}
+            paths["metadata"].write_text(json.dumps(meta))
+            result=screen.validate_case(plan,block,case,paths)
+            self.assertTrue(result["errors"])
+            self.assertIn("AC",result["errors"][0])
+
+
+class PowerObservationTests(unittest.TestCase):
+    def test_pmset_source_is_authoritative_and_failure_is_not_ac(self):
+        from unittest import mock
+        for output,source,error in [
+            ("Now drawing from 'AC Power'\n-Battery\n", "AC Power",None),
+            ("Now drawing from 'Battery Power'\nlast source AC Power\n", "Battery Power",None),
+            ("unrecognized AC Power",None,"pmset power source unavailable"),
+        ]:
+            with mock.patch.object(screen,"read_power_output",return_value=dict(stdout=output,error=None,exitCode=0,timedOut=False,outputBytes=len(output))):
+                snap=screen.power_snapshot()
+            self.assertEqual(snap["source"],source)
+            self.assertEqual(snap["error"],error)
+            self.assertEqual(snap["command"],["/usr/bin/pmset","-g","batt"])
+        with mock.patch.object(screen,"read_power_output",return_value=dict(stdout=None,error="pmset read timed out",exitCode=-9,timedOut=True,outputBytes=0)):
+            snap=screen.power_snapshot()
+            with self.assertRaises(screen.PowerAdmissionError):
+                screen.require_ac(snap)
+
+    def test_after_probe_battery_preserves_current_result_and_blocks_every_later_launch(self):
+        import tempfile
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory).resolve()
+            blocks=[dict(name=str(b),variant="PretransReference",cases=[dict(id="case-%d"%i,
+                         output="new/%d-%d.json"%(b,i),metadata="new/%d-%d.meta"%(b,i),
+                         log="new/%d-%d.log"%(b,i),completion="new/%d-%d.done"%(b,i)) for i in range(100)]) for b in range(4)]
+            ac={"source":"AC Power","error":None}
+            battery={"source":"Battery Power","error":None}
+            calls=[]
+            def launch(case,paths):
+                calls.append(case["id"])
+                for key in ("output","metadata"):
+                    screen.common.write_private(paths[key],{})
+                paths["log"].write_bytes(b"")
+                paths["log"].chmod(0o600)
+                return dict(exitCode=0,terminationConfirmed=True)
+            validation=dict(errors=[],rows=[dict(status="ok"),dict(status="ok")],processId=1)
+            with mock.patch.object(screen,"power_snapshot",side_effect=[ac,ac,battery]), mock.patch.object(screen,"validate_case",return_value=validation):
+                report=screen.execute(dict(root=root,output=root/"new",blocks=blocks),launch)
+            self.assertEqual(calls,["case-0"])
+            entries=[c for b in report["blocks"] for c in b["cases"]]
+            self.assertEqual(entries[0]["beforePower"],ac)
+            self.assertEqual(entries[0]["afterPower"],battery)
+            self.assertEqual(entries[0]["rows"],validation["rows"])
+            self.assertIn("post-probe AC Power",entries[0]["error"])
+            self.assertTrue(all(c["status"]=="unavailable" for c in entries[1:]))
+
+    def test_saved_v1_case_one_battery_observation_is_rejected(self):
+        import tempfile
+        import json
+        import hashlib
+        saved=Path(__file__).resolve().parents[2]/"artifacts/p06-pretranscription-screening/v1/01-reference-001-fleurs-de-test-1660.json.metadata.json"
+        if not saved.exists():
+            self.skipTest("private immutable v1 raw evidence unavailable")
+        data=screen.common.bounded_bytes(saved,screen.common.MAX_METADATA)
+        self.assertEqual(hashlib.sha256(data).hexdigest(),"77d79c5cf50cfad44ab68ec20e963e4e1c29206b69123a5c21bd8b0b93bdf21b")
+        observation=json.loads(data)["hostObservation"]
+        with tempfile.TemporaryDirectory() as directory:
+            plan,block,case,paths,meta=valid_reports(Path(directory))
+            meta["hostObservation"]=observation
+            paths["metadata"].write_text(json.dumps(meta))
+            self.assertIn("AC Power",screen.validate_case(plan,block,case,paths)["errors"][0])
+
+
+class PowerBoundaryTests(unittest.TestCase):
+    def test_main_battery_admission_precedes_caffeinate_and_output(self):
+        from unittest import mock
+        import contextlib
+        import io
+        battery={"source":"Battery Power","error":None}
+        with mock.patch.object(screen,"preflight",return_value={}), mock.patch.object(screen,"power_snapshot",return_value=battery), mock.patch.object(screen.subprocess,"Popen") as start, contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(screen.main(["freeze.json","--execute"]),2)
+        start.assert_not_called()
+        with mock.patch.object(screen,"preflight",return_value={}), mock.patch.object(screen,"power_snapshot",side_effect=AssertionError("binding-only preflight must not observe power")), contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(screen.main(["freeze.json"]),0)
+            self.assertIn("not checked",out.getvalue())
+
+    def test_bounded_pmset_timeout_kills_and_reaps_and_oversize_is_unavailable(self):
+        from unittest import mock
+        class Child:
+            def __init__(self, completed):
+                self.completed=completed
+                self.killed=False
+                self.waited=False
+            def poll(self):
+                return 0 if self.completed else None
+            def kill(self):
+                self.killed=True
+                self.completed=True
+            def wait(self,timeout):
+                self.waited=True
+                return -9 if self.killed else 0
+        held=Child(False)
+        with mock.patch.object(screen.subprocess,"Popen",return_value=held), mock.patch.object(screen.time,"monotonic",side_effect=[0,3]):
+            result=screen.read_power_output()
+        self.assertTrue(held.killed and held.waited)
+        self.assertTrue(result["timedOut"])
+        self.assertIsNone(result["stdout"])
+        complete=Child(True)
+        def oversized(command,stdout,stderr):
+            stdout.write(b"x"*(screen.POWER_MAX_BYTES+1))
+            stdout.flush()
+            return complete
+        with mock.patch.object(screen.subprocess,"Popen",side_effect=oversized):
+            result=screen.read_power_output()
+        self.assertEqual(result["error"],"pmset output limit exceeded")
+        self.assertIsNone(result["stdout"])
+        self.assertTrue(complete.waited)
+
+    def test_case_admission_rechecks_ac_after_startup_and_never_launches_on_unknown(self):
+        import tempfile
+        from unittest import mock
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory).resolve()
+            blocks=[dict(name=str(b),variant="PretransReference",cases=[dict(id="case-%d"%i,
+                         output="new/%d-%d.json"%(b,i),metadata="new/%d-%d.meta"%(b,i),
+                         log="new/%d-%d.log"%(b,i),completion="new/%d-%d.done"%(b,i)) for i in range(100)]) for b in range(4)]
+            unavailable={"source":None,"error":"pmset read timed out"}
+            launch=mock.Mock()
+            with mock.patch.object(screen,"power_snapshot",side_effect=[{"source":"AC Power","error":None},unavailable]):
+                report=screen.execute(dict(root=root,output=root/"new",blocks=blocks),launch)
+            launch.assert_not_called()
+            first=report["blocks"][0]["cases"][0]
+            self.assertEqual(first["beforePower"],unavailable)
+            self.assertIsNone(first["afterPower"])
+            self.assertEqual(first["status"],"failed")
+            self.assertFalse(report["completed"])
