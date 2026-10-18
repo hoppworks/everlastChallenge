@@ -12,6 +12,7 @@ pub mod inference_service;
 pub mod ipc;
 pub mod model;
 pub mod native_service;
+pub(crate) mod pipeline;
 pub mod preferences;
 pub mod runtime;
 pub mod settings;

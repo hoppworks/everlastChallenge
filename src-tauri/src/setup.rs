@@ -121,7 +121,8 @@ impl Backend for NativeBackend {
         path: PathBuf,
         definition: ModelDefinition,
     ) -> Result<InferenceService, Failure> {
-        InferenceService::load(path, definition).map_err(|_| Failure::Initialization)
+        InferenceService::load_with_policy(path, definition, crate::pipeline::APP_POLICY)
+            .map_err(|_| Failure::Initialization)
     }
 }
 

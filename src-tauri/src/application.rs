@@ -199,8 +199,15 @@ impl AppSupervisor {
                                 // Startup admission shares the shutdown lock. Once admitted, ownership
                                 // stays on this thread even if shutdown is requested immediately after.
                                 let (port, endpoint) = runtime::native_mailbox();
-                                runtime =
-                                    Some(Runtime::spawn(inference, 1, port).map_err(worker_error)?);
+                                runtime = Some(
+                                    Runtime::spawn_with_policy(
+                                        inference,
+                                        1,
+                                        port,
+                                        crate::pipeline::APP_POLICY,
+                                    )
+                                    .map_err(worker_error)?,
+                                );
                                 let start_native = factory
                                     .take()
                                     .ok_or_else(|| worker_error("Native factory consumed"))?;

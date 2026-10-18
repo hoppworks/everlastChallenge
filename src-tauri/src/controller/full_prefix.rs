@@ -15,9 +15,6 @@ struct Identity {
     final_job: bool,
 }
 impl Controller {
-    pub(crate) fn enable_full_prefix_revision(&mut self) {
-        self.full_prefix_revision = true;
-    }
     pub(crate) fn prefix_available(&self) -> Option<u64> {
         let active = self.active.as_ref()?;
         let run = active.full_prefix.as_ref()?;
@@ -237,8 +234,7 @@ mod tests {
     #[test]
     fn every_identity_guards_revisions_and_final_always_redecodes_the_full_recording() -> TestResult
     {
-        let mut controller = Controller::default();
-        controller.enable_full_prefix_revision();
+        let mut controller = Controller::with_policy(crate::pipeline::Policy::FullPrefix);
         let sid = start(&mut controller)?;
         let preview = job(controller.accept(Event::Segment {
             session: sid,
@@ -264,6 +260,7 @@ mod tests {
                     _ => *timeline_range = 1..19201,
                 }
             }
+            #[cfg(feature = "measurement")]
             assert!(!controller.inference_matches(&wrong));
             assert!(controller.accept(wrong)?.is_empty());
         }
@@ -313,8 +310,7 @@ mod tests {
     }
     #[test]
     fn final_call_is_mandatory_even_if_its_frames_equal_the_last_prefix() -> TestResult {
-        let mut controller = Controller::default();
-        controller.enable_full_prefix_revision();
+        let mut controller = Controller::with_policy(crate::pipeline::Policy::FullPrefix);
         let sid = start(&mut controller)?;
         let preview = job(controller.accept(Event::Segment {
             session: sid,
@@ -335,8 +331,7 @@ mod tests {
     }
     #[test]
     fn oversized_revision_fails_without_a_partial_transcript_or_next_job() -> TestResult {
-        let mut controller = Controller::default();
-        controller.enable_full_prefix_revision();
+        let mut controller = Controller::with_policy(crate::pipeline::Policy::FullPrefix);
         let sid = start(&mut controller)?;
         let preview = job(controller.accept(Event::Segment {
             session: sid,

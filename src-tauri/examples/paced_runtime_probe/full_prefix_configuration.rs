@@ -16,7 +16,7 @@ pub fn decorate(mut value: Value, candidate: bool) -> Value {
         "revisions":"replace internal text; no early final text or native delivery",
         "finalInput":"always complete0..N after AudioReleased, drain and flush; never infer an empty suffix",
         "storage":"active full journal plus at most one actual job snapshot; no new snapshot while old worker retains PCM; final journal moved",
-        "initialization":"both arms load PrefixCacheDecoder Engine on developer caller before with_decoder; actual decoding on serial local-inference worker",
+        "initialization":"both arms use load_prefix_cache; Engine/cache initialization and all decodes owned by serial local-inference worker",
         "decoderPolicy":"unchanged full reference; audio_ctx0/model1500; flash attentionfalse; native timestamps enabled",
         "cache":"after current validation/energy/VAD/padding; exact prepared f32LE SHA256+frames+language; immutable per-decoder Engine/model/config",
         "scope":"SID+generation+actual token owner; strictly increasing job IDs; fresh session each warmup and measured run; revoked/failed/not-admitted clears entry",
@@ -55,6 +55,12 @@ pub fn decorate(mut value: Value, candidate: bool) -> Value {
         "src-tauri/src/audio/full_prefix.rs",
         "../../src/audio/full_prefix.rs"
     );
+    bind!(
+        "pipelinePolicy",
+        "src-tauri/src/pipeline.rs",
+        "../../src/pipeline.rs"
+    );
+    bind!("appLibrary", "src-tauri/src/lib.rs", "../../src/lib.rs");
     bind!(
         "fullPrefixController",
         "src-tauri/src/controller/full_prefix.rs",

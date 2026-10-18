@@ -219,8 +219,12 @@ impl AudioDriver for ReplayAudio {
     fn pretranscription(&self) -> bool {
         self.pretranscription
     }
-    fn full_prefix_revision(&self) -> bool {
-        self.full_prefix_revision
+    fn policy(&self) -> crate::pipeline::Policy {
+        if self.full_prefix_revision {
+            crate::pipeline::Policy::FullPrefix
+        } else {
+            crate::pipeline::Policy::Reference
+        }
     }
     fn allow_seal(&self, epoch: u64) {
         if let Some((_, handle)) = &self.owner.active {

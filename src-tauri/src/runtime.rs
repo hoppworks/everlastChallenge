@@ -401,11 +401,9 @@ trait AudioDriver: Send + 'static {
     fn pretranscription(&self) -> bool {
         false
     }
-    #[cfg(feature = "measurement")]
-    fn full_prefix_revision(&self) -> bool {
-        false
+    fn policy(&self) -> crate::pipeline::Policy {
+        crate::pipeline::Policy::Reference
     }
-    #[cfg(feature = "measurement")]
     fn allow_seal(&self, _epoch: u64) {}
     #[cfg(feature = "measurement")]
     fn measurement_trace(&self) -> Option<Arc<measurement::Trace>> {
@@ -420,8 +418,17 @@ trait AudioDriver: Send + 'static {
 #[derive(Default)]
 struct CpalAudio {
     active: Option<(u64, CaptureHandle)>,
+    policy: crate::pipeline::Policy,
 }
 impl AudioDriver for CpalAudio {
+    fn policy(&self) -> crate::pipeline::Policy {
+        self.policy
+    }
+    fn allow_seal(&self, epoch: u64) {
+        if let Some((_, handle)) = &self.active {
+            handle.allow_seal(epoch);
+        }
+    }
     fn take_progress(&mut self) -> Option<CaptureProgress> {
         self.active
             .as_ref()
@@ -433,7 +440,8 @@ impl AudioDriver for CpalAudio {
         }
         self.active = Some((
             session,
-            CaptureHandle::start(session, device).map_err(|error| error.to_string())?,
+            CaptureHandle::start_with_policy(session, device, self.policy)
+                .map_err(|error| error.to_string())?,
         ));
         Ok(())
     }
@@ -502,7 +510,28 @@ impl Runtime {
         generation: u64,
         native: NativePort,
     ) -> Result<Self, RuntimeError> {
-        Self::with_audio(inference, generation, native, CpalAudio::default())
+        Self::spawn_with_policy(
+            inference,
+            generation,
+            native,
+            crate::pipeline::Policy::Reference,
+        )
+    }
+    pub(crate) fn spawn_with_policy(
+        inference: InferenceService,
+        generation: u64,
+        native: NativePort,
+        policy: crate::pipeline::Policy,
+    ) -> Result<Self, RuntimeError> {
+        Self::with_audio(
+            inference,
+            generation,
+            native,
+            CpalAudio {
+                policy,
+                ..CpalAudio::default()
+            },
+        )
     }
     fn with_audio(
         inference: InferenceService,
@@ -510,15 +539,12 @@ impl Runtime {
         native: NativePort,
         audio: impl AudioDriver,
     ) -> Result<Self, RuntimeError> {
-        let controller = Controller::default();
+        let controller = Controller::with_policy(audio.policy());
         #[cfg(feature = "measurement")]
         let controller = {
             let mut controller = controller;
             if audio.pretranscription() {
                 controller.enable_pretranscription();
-            }
-            if audio.full_prefix_revision() {
-                controller.enable_full_prefix_revision();
             }
             controller
         };
@@ -1007,7 +1033,6 @@ impl<A: AudioDriver> Actor<A> {
     fn poll(&mut self) -> Result<(), RuntimeError> {
         for event in self.audio.poll() {
             let event = match event {
-                #[cfg(feature = "measurement")]
                 CaptureEvent::Segment { session, prefix } => Event::Segment {
                     session,
                     timeline_range: prefix.timeline_range,
@@ -1095,13 +1120,22 @@ impl<A: AudioDriver> Actor<A> {
                 .map_err(service_error)?;
             self.execute(actions)?;
         }
-        #[cfg(feature = "measurement")]
-        if (self.audio.pretranscription() || self.audio.full_prefix_revision())
-            && let Some(epoch) = if self.audio.full_prefix_revision() {
-                self.controller.prefix_available()
-            } else {
-                self.controller.seal_available()
+        let epoch = if self.audio.policy() == crate::pipeline::Policy::FullPrefix {
+            self.controller.prefix_available()
+        } else {
+            #[cfg(feature = "measurement")]
+            {
+                self.audio
+                    .pretranscription()
+                    .then(|| self.controller.seal_available())
+                    .flatten()
             }
+            #[cfg(not(feature = "measurement"))]
+            {
+                None
+            }
+        };
+        if let Some(epoch) = epoch
             && self
                 .inference
                 .as_ref()
@@ -2535,6 +2569,7 @@ mod tests {
     -> Result<(), Box<dyn std::error::Error>> {
         panic_cleanup_contract(Some(true))
     }
+    mod full_prefix_native_contract;
     mod maximum_contract;
     mod restart_contract;
 }

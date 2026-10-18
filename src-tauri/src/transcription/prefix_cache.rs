@@ -1,4 +1,4 @@
-//! Experimental full-context prefix result reuse, never selected by app starts.
+//! Scoped full-context prefix reuse, selected only by an explicit pipeline policy.
 //! The owning decoder fixes the Engine/model/config for the cache's lifetime.
 use super::{Engine, InferenceError, Language, decode, speech_gate, transcribe_using};
 use crate::{
@@ -8,8 +8,13 @@ use crate::{
 use sha2::{Digest, Sha256};
 use std::path::Path;
 
+#[cfg(feature = "measurement")]
 mod evidence;
+#[cfg(not(feature = "measurement"))]
+use super::NoObservation as NativeObservation;
+#[cfg(feature = "measurement")]
 use evidence::NativeObservation;
+#[cfg(feature = "measurement")]
 pub use evidence::{PreparedReuse, ReuseOutcome};
 
 pub struct PrefixCacheDecoder {
@@ -52,6 +57,7 @@ impl Decoder for PrefixCacheDecoder {
         )
     }
 
+    #[cfg(feature = "measurement")]
     fn take_prepared_reuse(&mut self) -> Option<PreparedReuse> {
         self.cache.take_receipt()
     }
@@ -61,6 +67,7 @@ impl Decoder for PrefixCacheDecoder {
 struct SessionCache {
     entry: Option<Entry>,
     scope: Option<DecodeContext>,
+    #[cfg(feature = "measurement")]
     receipt: Option<PreparedReuse>,
 }
 
@@ -74,6 +81,7 @@ struct PreparedKey {
 struct Entry {
     key: PreparedKey,
     text: String,
+    #[cfg(feature = "measurement")]
     origin_job_id: u64,
 }
 
@@ -106,6 +114,7 @@ fn bounded_text_copy(text: &str) -> Result<String, InferenceError> {
 }
 
 impl SessionCache {
+    #[cfg(feature = "measurement")]
     fn take_receipt(&mut self) -> Option<PreparedReuse> {
         self.receipt.take()
     }
@@ -117,23 +126,27 @@ impl SessionCache {
         gate: &mut speech_gate::SpeechGate<D>,
         native: impl FnOnce(&[f32], Language, &mut NativeObservation) -> Result<String, InferenceError>,
     ) -> Result<String, InferenceError> {
-        self.receipt = Some(PreparedReuse {
-            session: context.session,
-            generation: context.generation,
-            job_id: context.job_id,
-            outcome: ReuseOutcome::NotAdmitted,
-            origin_job_id: None,
-            prepared_frames: None,
-            prepared_pcm_sha256: None,
-            decoder_invoked: false,
-            native_full_attempted: false,
-        });
+        #[cfg(feature = "measurement")]
+        {
+            self.receipt = Some(PreparedReuse {
+                session: context.session,
+                generation: context.generation,
+                job_id: context.job_id,
+                outcome: ReuseOutcome::NotAdmitted,
+                origin_job_id: None,
+                prepared_frames: None,
+                prepared_pcm_sha256: None,
+                decoder_invoked: false,
+                native_full_attempted: false,
+            });
+        }
         if !context.is_valid()
             || context.session == 0
             || context.generation == 0
             || context.job_id == 0
         {
             self.entry = None;
+            #[cfg(feature = "measurement")]
             if let Some(receipt) = &mut self.receipt {
                 receipt.outcome = ReuseOutcome::InvalidContext;
             }
@@ -143,6 +156,7 @@ impl SessionCache {
             if previous.same_epoch(context) {
                 if context.job_id <= previous.job_id {
                     self.entry = None;
+                    #[cfg(feature = "measurement")]
                     if let Some(receipt) = &mut self.receipt {
                         receipt.outcome = ReuseOutcome::InvalidContext;
                     }
@@ -154,7 +168,10 @@ impl SessionCache {
         }
         self.scope = Some(context.clone());
         let mut reached = false;
+        #[cfg(feature = "measurement")]
         let mut observer = NativeObservation::default();
+        #[cfg(not(feature = "measurement"))]
+        let mut observer = NativeObservation;
         let result = transcribe_using(
             samples,
             language,
@@ -163,11 +180,13 @@ impl SessionCache {
             |prepared, language, observer| {
                 reached = true;
                 let key = prepared_key(prepared, language);
+                #[cfg(feature = "measurement")]
                 if let Some(receipt) = &mut self.receipt {
                     receipt.prepared_frames = Some(key.frames);
                     receipt.prepared_pcm_sha256 = Some(key.sha256);
                 }
                 if let Some(entry) = self.entry.as_ref().filter(|entry| entry.key == key) {
+                    #[cfg(feature = "measurement")]
                     if let Some(receipt) = &mut self.receipt {
                         receipt.outcome = ReuseOutcome::Hit;
                         receipt.origin_job_id = Some(entry.origin_job_id);
@@ -177,6 +196,7 @@ impl SessionCache {
                 // A miss has no fallback. Release the old text before native work
                 // and before allocating the replacement entry's bounded copy.
                 self.entry = None;
+                #[cfg(feature = "measurement")]
                 if let Some(receipt) = &mut self.receipt {
                     receipt.decoder_invoked = true;
                 }
@@ -184,8 +204,10 @@ impl SessionCache {
                 self.entry = Some(Entry {
                     key,
                     text: bounded_text_copy(&text)?,
+                    #[cfg(feature = "measurement")]
                     origin_job_id: context.job_id,
                 });
+                #[cfg(feature = "measurement")]
                 if let Some(receipt) = &mut self.receipt {
                     receipt.outcome = ReuseOutcome::Decoded;
                     receipt.origin_job_id = Some(context.job_id);
@@ -193,6 +215,7 @@ impl SessionCache {
                 Ok(text)
             },
         );
+        #[cfg(feature = "measurement")]
         if let Some(receipt) = &mut self.receipt {
             receipt.native_full_attempted = observer.full_attempted;
             if result.is_err() {
@@ -629,21 +652,24 @@ mod tests {
         assert_eq!(texts, ["native result 1", "native result 1"]);
         assert_eq!(native_calls, 1);
         assert_eq!(vad_calls.load(Ordering::Relaxed), 2);
-        let receipt = cache.take_receipt().ok_or(InferenceError::Observation)?;
-        assert_eq!(
-            (receipt.session, receipt.generation, receipt.job_id),
-            (7, 9, 12)
-        );
-        assert_eq!(receipt.outcome, ReuseOutcome::Hit);
-        assert_eq!(receipt.origin_job_id, Some(11));
-        assert_eq!(receipt.prepared_frames, Some(16000));
-        assert!(receipt.prepared_pcm_sha256.is_some());
-        assert!(!receipt.decoder_invoked);
-        assert!(!receipt.native_full_attempted);
-        assert!(
-            cache.take_receipt().is_none(),
-            "receipt must be consumed exactly once"
-        );
+        #[cfg(feature = "measurement")]
+        {
+            let receipt = cache.take_receipt().ok_or(InferenceError::Observation)?;
+            assert_eq!(
+                (receipt.session, receipt.generation, receipt.job_id),
+                (7, 9, 12)
+            );
+            assert_eq!(receipt.outcome, ReuseOutcome::Hit);
+            assert_eq!(receipt.origin_job_id, Some(11));
+            assert_eq!(receipt.prepared_frames, Some(16000));
+            assert!(receipt.prepared_pcm_sha256.is_some());
+            assert!(!receipt.decoder_invoked);
+            assert!(!receipt.native_full_attempted);
+            assert!(
+                cache.take_receipt().is_none(),
+                "receipt must be consumed exactly once"
+            );
+        }
         Ok(())
     }
 }

@@ -64,17 +64,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
     let mut receipts = None;
     let loaded = if execution_mode.full_prefix().is_some() {
-        (|| -> Result<_, Box<dyn std::error::Error>> {
-            let decoder =
-                everlast_dictation::transcription::prefix_cache::PrefixCacheDecoder::load(
-                    &options.model,
-                    options.definition,
-                )?;
-            Ok((
-                everlast_dictation::inference_service::InferenceService::with_decoder(decoder)?,
-                None,
-            ))
-        })()
+        everlast_dictation::inference_service::InferenceService::load_prefix_cache(
+            options.model,
+            options.definition,
+        )
+        .map(|service| (service, None))
+        .map_err(|error| Box::new(error) as Box<dyn std::error::Error>)
     } else {
         runner::audio_context::load(options.model, options.definition, variant)
     };

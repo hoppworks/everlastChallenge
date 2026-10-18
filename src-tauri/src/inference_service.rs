@@ -21,8 +21,7 @@ pub(crate) mod observation;
 pub trait Decoder: Send + 'static {
     fn decode(&mut self, audio: &[f32], language: Language) -> Result<String, InferenceError>;
 
-    /// Explicit experiment seam. Legacy decoders keep their existing behavior.
-    #[cfg(feature = "measurement")]
+    /// Actual worker identity and revocation scope; legacy decoders delegate unchanged.
     fn decode_with_context(
         &mut self,
         audio: &[f32],
@@ -61,7 +60,6 @@ impl WorkToken {
 }
 
 /// Identity of the actual token-checked worker invocation, never UI state.
-#[cfg(feature = "measurement")]
 #[derive(Clone)]
 pub struct DecodeContext {
     pub session: u64,
@@ -70,7 +68,6 @@ pub struct DecodeContext {
     pub(crate) token: WorkToken,
 }
 
-#[cfg(feature = "measurement")]
 impl DecodeContext {
     pub fn is_valid(&self) -> bool {
         self.token.is_valid()
@@ -89,7 +86,8 @@ pub struct Job {
     pub job_id: u64,
     /// Local slice in immutable storage (which may physically retain a suffix).
     pub sample_range: Range<usize>,
-    /// Global, disjoint recording frames; equal length, independent origin.
+    /// Global recording frames, equal length with independent origin.
+    /// Full-prefix revisions overlap; disjointness belongs to the selected policy.
     pub timeline_range: Range<usize>,
     // Arc<Vec> moves the existing journal buffer without copying its samples.
     pub audio: Arc<Vec<f32>>,
@@ -97,7 +95,7 @@ pub struct Job {
     pub token: WorkToken,
 }
 
-/// Entire selected decoder invocation (contextual in measurement), including
+/// Entire selected scoped decoder invocation, including
 /// Engine preprocessing/VAD/ASR when used.
 /// Exists only for developer measurements; never queue or stop-to-text time.
 #[cfg(feature = "measurement")]
@@ -120,7 +118,8 @@ pub struct Completed {
     pub job_id: u64,
     /// Local slice in immutable storage (which may physically retain a suffix).
     pub sample_range: Range<usize>,
-    /// Global, disjoint recording frames; equal length, independent origin.
+    /// Global recording frames, equal length with independent origin.
+    /// Full-prefix revisions overlap; disjointness belongs to the selected policy.
     pub timeline_range: Range<usize>,
     pub result: Result<String, InferenceError>,
     #[cfg(feature = "measurement")]
@@ -190,7 +189,31 @@ pub struct InferenceService {
 
 impl InferenceService {
     pub fn load(path: PathBuf, definition: ModelDefinition) -> Result<Self, ServiceError> {
-        Self::spawn(move || Engine::load(&path, definition))
+        Self::load_with_policy(path, definition, crate::pipeline::Policy::Reference)
+    }
+
+    pub(crate) fn load_with_policy(
+        path: PathBuf,
+        definition: ModelDefinition,
+        policy: crate::pipeline::Policy,
+    ) -> Result<Self, ServiceError> {
+        match policy {
+            crate::pipeline::Policy::Reference => {
+                Self::spawn(move || Engine::load(&path, definition))
+            }
+            crate::pipeline::Policy::FullPrefix => Self::spawn(move || {
+                crate::transcription::prefix_cache::PrefixCacheDecoder::load(&path, definition)
+            }),
+        }
+    }
+
+    /// Matched reference/candidate experiments load on the real inference owner.
+    #[cfg(feature = "measurement")]
+    pub fn load_prefix_cache(
+        path: PathBuf,
+        definition: ModelDefinition,
+    ) -> Result<Self, ServiceError> {
+        Self::load_with_policy(path, definition, crate::pipeline::Policy::FullPrefix)
     }
 
     /// Controlled decoder seam for deterministic worker/lifecycle verification.
@@ -456,20 +479,17 @@ fn inference_loop(
         let mut prepared_reuse = None;
         let result = if job.token.is_valid() {
             let input = &job.audio[job.sample_range.clone()];
+            let context = DecodeContext {
+                session: job.session,
+                generation: job.generation,
+                job_id: job.job_id,
+                token: job.token.clone(),
+            };
             #[cfg(feature = "measurement")]
             {
                 shared.observe(&job, observation::Edge::BeforeDecode);
                 let started = std::time::Instant::now();
-                let mut result = decoder.decode_with_context(
-                    input,
-                    job.language,
-                    &DecodeContext {
-                        session: job.session,
-                        generation: job.generation,
-                        job_id: job.job_id,
-                        token: job.token.clone(),
-                    },
-                );
+                let mut result = decoder.decode_with_context(input, job.language, &context);
                 prepared_reuse = decoder.take_prepared_reuse();
                 if prepared_reuse.as_ref().is_some_and(|receipt| {
                     receipt.session != job.session
@@ -485,7 +505,7 @@ fn inference_loop(
                 result
             }
             #[cfg(not(feature = "measurement"))]
-            decoder.decode(input, job.language)
+            decoder.decode_with_context(input, job.language, &context)
         } else {
             Ok(String::new())
         };
@@ -556,6 +576,66 @@ fn inference_loop(
 mod tests {
     use super::*;
     use std::time::{Duration, Instant};
+
+    #[test]
+    fn initializer_and_decoder_owner_run_on_the_serial_worker()
+    -> Result<(), Box<dyn std::error::Error>> {
+        struct Owned {
+            initialized: thread::ThreadId,
+            dropped: Sender<thread::ThreadId>,
+            calls: Arc<std::sync::atomic::AtomicUsize>,
+        }
+        impl Decoder for Owned {
+            fn decode(&mut self, audio: &[f32], _: Language) -> Result<String, InferenceError> {
+                assert_eq!(thread::current().id(), self.initialized);
+                assert_eq!(audio, [0.1; 320]);
+                assert_eq!(self.calls.fetch_add(1, Ordering::AcqRel), 0);
+                Ok("legacy once on initialized owner".into())
+            }
+        }
+        impl Drop for Owned {
+            fn drop(&mut self) {
+                let _sent = self.dropped.try_send(thread::current().id());
+            }
+        }
+        let caller = thread::current().id();
+        let (created, initialized) = crossbeam_channel::bounded(1);
+        let (dropped, released) = crossbeam_channel::bounded(1);
+        let (admit, admission) = crossbeam_channel::bounded(1);
+        let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let observed_calls = Arc::clone(&calls);
+        let service = InferenceService::spawn(move || {
+            let worker = thread::current().id();
+            created
+                .send((worker, thread::current().name().map(str::to_owned)))
+                .map_err(|_| InferenceError::Decode)?;
+            admission
+                .recv_timeout(Duration::from_secs(2))
+                .map_err(|_| InferenceError::Decode)?;
+            Ok(Owned {
+                initialized: worker,
+                dropped,
+                calls,
+            })
+        })?;
+        let (worker, name) = initialized.recv_timeout(Duration::from_secs(2))?;
+        assert!(
+            !service.ready(),
+            "initializer has not returned its decoder yet"
+        );
+        admit.send(())?;
+        wait_ready(&service)?;
+        service.submit(job(7, 9))?;
+        wait_idle(&service)?;
+        let completed = service.take_result()?.ok_or("missing initialized result")?;
+        service.shutdown()?;
+        assert_ne!(worker, caller);
+        assert_eq!(name.as_deref(), Some("local-inference"));
+        assert_eq!(released.recv_timeout(Duration::from_secs(2))?, worker);
+        assert_eq!(completed.result?, "legacy once on initialized owner");
+        assert_eq!(observed_calls.load(Ordering::Acquire), 1);
+        Ok(())
+    }
 
     #[cfg(feature = "measurement")]
     #[test]
@@ -667,7 +747,6 @@ mod tests {
         Ok(())
     }
 
-    #[cfg(feature = "measurement")]
     #[test]
     fn contextual_decoder_receives_only_the_actual_selected_job_and_live_token()
     -> Result<(), Box<dyn std::error::Error>> {
@@ -708,7 +787,6 @@ mod tests {
         Ok(())
     }
 
-    #[cfg(feature = "measurement")]
     #[test]
     fn contextual_decoder_observes_cancellation_of_its_actual_work_token()
     -> Result<(), Box<dyn std::error::Error>> {
@@ -819,6 +897,36 @@ mod tests {
             service.shutdown(),
             Err(ServiceError::Backend(InferenceError::Model(_)))
         ));
+        Ok(())
+    }
+
+    #[test]
+    fn both_policy_loaders_keep_model_failure_on_the_actual_worker()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for policy in [
+            crate::pipeline::Policy::Reference,
+            crate::pipeline::Policy::FullPrefix,
+        ] {
+            let directory = tempfile::tempdir()?;
+            // A caller-thread constructor would fail this call synchronously.
+            // This exercises real Engine/Cache loading of a missing file, not
+            // a model or native inference acceptance test.
+            let service = InferenceService::load_with_policy(
+                directory.path().join("missing.bin"),
+                crate::model::REFERENCE,
+                policy,
+            )?;
+            let deadline = Instant::now() + Duration::from_secs(2);
+            while !service.is_finished() && Instant::now() < deadline {
+                thread::sleep(Duration::from_millis(1));
+            }
+            assert!(service.is_finished());
+            assert!(!service.ready());
+            assert!(matches!(
+                service.shutdown(),
+                Err(ServiceError::Backend(InferenceError::Model(_)))
+            ));
+        }
         Ok(())
     }
 

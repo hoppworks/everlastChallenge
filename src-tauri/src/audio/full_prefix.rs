@@ -1,4 +1,4 @@
-//! Measurement-only cumulative snapshots. The complete DSP journal stays owned
+//! Cumulative snapshots for the explicitly selected internal pipeline. The complete DSP journal stays owned
 //! by AudioProcessor; only one granted immutable prefix may exist beside it.
 use super::*;
 use dictation_core::audio::pauses::ConfirmedPauses;
@@ -9,7 +9,7 @@ pub(super) struct PrefixLink {
 }
 #[derive(Default)]
 struct State {
-    slot: Option<pretranscription::SealedPrefix>,
+    slot: Option<SealedPrefix>,
     epoch: Option<u64>,
     permitted: bool,
     last_offered_cut: usize,
@@ -72,14 +72,14 @@ impl PrefixLink {
             .try_reserve_exact(cut)
             .map_err(|_| CaptureError::Audio(AudioError::Allocation))?;
         prefix.extend_from_slice(&samples[..cut]);
-        self.state.lock().map_err(|_| CaptureError::Worker)?.slot =
-            Some(pretranscription::SealedPrefix {
-                timeline_range: 0..cut,
-                samples: Arc::new(prefix),
-            });
+        self.state.lock().map_err(|_| CaptureError::Worker)?.slot = Some(SealedPrefix {
+            timeline_range: 0..cut,
+            samples: Arc::new(prefix),
+        });
         Ok(())
     }
 }
+#[cfg(feature = "measurement")]
 pub(super) fn record(
     owner: RecordingOwner<'_>,
     format: AudioFormat,
@@ -101,13 +101,14 @@ mod tests {
     fn snapshot_handoff_retains_no_hidden_arc_and_stop_returns_the_full_journal()
     -> Result<(), Box<dyn std::error::Error>> {
         let (ready, receive) = crossbeam_channel::bounded(1);
-        let handle = CaptureHandle::start_full_prefix_replay(
+        let handle = CaptureHandle::start_test_source(
             1,
             AudioFormat {
                 sample_rate: 16000,
                 channels: 1,
             },
             ready,
+            crate::pipeline::Policy::FullPrefix,
         )?;
         let mut input = receive.recv_timeout(Duration::from_secs(2))?;
         assert!(matches!(
@@ -118,7 +119,7 @@ mod tests {
         let mut source = vec![0.1; 16000];
         source.resize(24000, 0.0);
         for chunk in source.chunks(320) {
-            input.port.publish(chunk);
+            input.publish(chunk);
             thread::sleep(Duration::from_millis(1));
         }
         let deadline = Instant::now() + Duration::from_secs(2);
@@ -138,7 +139,7 @@ mod tests {
             1,
             "slot/owner retain no hidden frozen allocation after transfer"
         );
-        input.port.publish(&[0.3125; 137]);
+        input.publish(&[0.3125; 137]);
         source.extend_from_slice(&[0.3125; 137]);
         handle.request_stop();
         let whole = loop {

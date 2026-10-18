@@ -12,7 +12,6 @@ use macos_integration::{
 };
 use std::{num::NonZeroU64, ops::Range, sync::Arc};
 
-#[cfg(feature = "measurement")]
 mod full_prefix;
 #[cfg(feature = "measurement")]
 mod pretranscription;
@@ -46,7 +45,6 @@ pub enum Action {
 }
 
 pub enum Event {
-    #[cfg(feature = "measurement")]
     Segment {
         session: u64,
         timeline_range: Range<usize>,
@@ -105,7 +103,6 @@ struct Active {
     expected_range: Option<Range<usize>>,
     #[cfg(feature = "measurement")]
     run: Option<pretranscription::Run>,
-    #[cfg(feature = "measurement")]
     full_prefix: Option<full_prefix::Run>,
 }
 
@@ -115,13 +112,18 @@ pub struct Controller {
     active: Option<Active>,
     #[cfg(feature = "measurement")]
     pretranscription: bool,
-    #[cfg(feature = "measurement")]
     full_prefix_revision: bool,
-    #[cfg(feature = "measurement")]
     next_job: u64,
 }
 
 impl Controller {
+    pub(crate) fn with_policy(policy: crate::pipeline::Policy) -> Self {
+        Self {
+            full_prefix_revision: policy == crate::pipeline::Policy::FullPrefix,
+            ..Self::default()
+        }
+    }
+
     pub(crate) fn audio_is_unreleased(&self, session: u64) -> bool {
         self.core.session_id() == Some(session)
             && self.active.as_ref().is_some_and(|active| !active.released)
@@ -188,7 +190,6 @@ impl Controller {
             expected_range: None,
             #[cfg(feature = "measurement")]
             run: self.pretranscription.then(pretranscription::Run::default),
-            #[cfg(feature = "measurement")]
             full_prefix: self.full_prefix_revision.then(full_prefix::Run::default),
         });
         self.actions(effects)
@@ -263,8 +264,9 @@ impl Controller {
 
     pub fn accept(&mut self, event: Event) -> Result<Vec<Action>, ControllerError> {
         let session = match &event {
+            Event::Segment { session, .. } => *session,
             #[cfg(feature = "measurement")]
-            Event::Segment { session, .. } | Event::SegmentedFinished { session, .. } => *session,
+            Event::SegmentedFinished { session, .. } => *session,
             Event::AudioStarted(id) => *id,
             Event::AudioFinished { session, .. }
             | Event::InferenceFinished { session, .. }
@@ -279,7 +281,6 @@ impl Controller {
         }
         let mut effects = Vec::new();
         match event {
-            #[cfg(feature = "measurement")]
             Event::Segment {
                 timeline_range,
                 samples,
@@ -288,7 +289,10 @@ impl Controller {
                 if self.full_prefix_revision {
                     actions.extend(self.accept_prefix(session, timeline_range, samples)?);
                 } else {
+                    #[cfg(feature = "measurement")]
                     actions.extend(self.accept_segment(session, timeline_range, samples)?);
+                    #[cfg(not(feature = "measurement"))]
+                    return Err(ControllerError::Resource);
                 }
                 return Ok(actions);
             }
@@ -334,7 +338,6 @@ impl Controller {
             }
             Event::AudioStarted(id) => effects.extend(self.core.accept(Fact::AudioStarted(id))?),
             Event::AudioFinished { result, .. } => {
-                #[cfg(feature = "measurement")]
                 if self.full_prefix_revision {
                     return self.prefix_finished(session, result, actions);
                 }
@@ -375,7 +378,6 @@ impl Controller {
                 result,
                 ..
             } => {
-                #[cfg(feature = "measurement")]
                 if self
                     .active
                     .as_ref()
@@ -442,7 +444,6 @@ impl Controller {
                 }
                 Effect::StopAudio(session) => actions.push(Action::StopAudio(session)),
                 Effect::Transcribe(session) => {
-                    #[cfg(feature = "measurement")]
                     if active.full_prefix.is_some() {
                         actions.extend(self.prefix_final_job()?);
                         continue;
@@ -482,8 +483,8 @@ impl Controller {
                     #[cfg(feature = "measurement")]
                     {
                         active.run = None;
-                        active.full_prefix = None;
                     }
+                    active.full_prefix = None;
                     actions.push(Action::CancelInference(session));
                     actions.push(Action::AbortDelivery(session));
                 }

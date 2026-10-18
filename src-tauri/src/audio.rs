@@ -21,7 +21,6 @@ use std::{
 
 const CLOSED: usize = 1 << (usize::BITS - 1);
 
-#[cfg(feature = "measurement")]
 mod full_prefix;
 #[cfg(feature = "measurement")]
 pub mod pretranscription;
@@ -333,11 +332,15 @@ impl CaptureReader {
     }
 }
 
+pub struct SealedPrefix {
+    pub timeline_range: std::ops::Range<usize>,
+    pub samples: Arc<Vec<f32>>,
+}
+
 pub enum CaptureEvent {
-    #[cfg(feature = "measurement")]
     Segment {
         session: u64,
-        prefix: pretranscription::SealedPrefix,
+        prefix: SealedPrefix,
     },
     #[cfg(feature = "measurement")]
     SegmentedFinished {
@@ -396,24 +399,96 @@ pub struct CaptureHandle {
     progress: Arc<ProgressSlot>,
     #[cfg(feature = "measurement")]
     segmentation: Option<Arc<pretranscription::SegmentLink>>,
-    #[cfg(feature = "measurement")]
     full_prefix: Option<Arc<full_prefix::PrefixLink>>,
-    #[cfg(feature = "measurement")]
     session: u64,
 }
 
 impl CaptureHandle {
     pub fn start(session: u64, device_name: Option<String>) -> Result<Self, CaptureError> {
-        Self::spawn(session, move |events, stop, maximum, progress| {
-            record(
-                session,
-                device_name.as_deref(),
-                events,
-                stop,
-                maximum,
-                progress,
-            )
-        })
+        Self::start_with_policy(session, device_name, crate::pipeline::Policy::Reference)
+    }
+
+    pub(crate) fn start_with_policy(
+        session: u64,
+        device_name: Option<String>,
+        policy: crate::pipeline::Policy,
+    ) -> Result<Self, CaptureError> {
+        Self::spawn_for_policy(
+            session,
+            policy,
+            move |events, stop, maximum, progress, link| {
+                record(
+                    session,
+                    device_name.as_deref(),
+                    events,
+                    stop,
+                    maximum,
+                    progress,
+                    link,
+                )
+            },
+        )
+    }
+
+    fn spawn_for_policy(
+        session: u64,
+        policy: crate::pipeline::Policy,
+        run: impl FnOnce(
+            &Sender<CaptureEvent>,
+            &AtomicBool,
+            &mut bool,
+            &ProgressSlot,
+            Option<&full_prefix::PrefixLink>,
+        ) -> Result<Vec<f32>, CaptureError>
+        + Send
+        + 'static,
+    ) -> Result<Self, CaptureError> {
+        let link = (policy == crate::pipeline::Policy::FullPrefix)
+            .then(|| Arc::new(full_prefix::PrefixLink::default()));
+        let owner_link = link.clone();
+        let mut handle = Self::spawn(session, move |events, stop, maximum, progress| {
+            run(events, stop, maximum, progress, owner_link.as_deref())
+        })?;
+        handle.full_prefix = link;
+        Ok(handle)
+    }
+
+    /// Controlled source into the same owner/policy selection as native capture.
+    /// Only device construction is replaced; no CPAL or system input is started.
+    #[cfg(test)]
+    pub(crate) fn start_test_source(
+        session: u64,
+        format: AudioFormat,
+        ready: Sender<CapturePort>,
+        policy: crate::pipeline::Policy,
+    ) -> Result<Self, CaptureError> {
+        Self::spawn_for_policy(
+            session,
+            policy,
+            move |events, stop, maximum, progress, link| {
+                let processor = AudioProcessor::new(format)?;
+                let (port, reader) = capture_buffer(format)?;
+                RecordingOwner {
+                    session,
+                    events,
+                    stop,
+                    maximum,
+                    progress,
+                }
+                .run_inner(
+                    processor,
+                    reader,
+                    (),
+                    Instant::now(),
+                    move || {
+                        ready
+                            .try_send(port)
+                            .map_err(|_| CaptureError::ControllerGone)
+                    },
+                    link.map(RecordingSegments::FullPrefix),
+                )
+            },
+        )
     }
 
     /// Developer-only source: no device selection, permission request or pacing.
@@ -491,8 +566,8 @@ impl CaptureHandle {
         Ok(handle)
     }
 
-    #[cfg(feature = "measurement")]
     pub(crate) fn allow_seal(&self, epoch: u64) {
+        #[cfg(feature = "measurement")]
         if let Some(link) = &self.segmentation {
             link.allow(epoch);
         }
@@ -541,9 +616,7 @@ impl CaptureHandle {
             progress,
             #[cfg(feature = "measurement")]
             segmentation: None,
-            #[cfg(feature = "measurement")]
             full_prefix: None,
-            #[cfg(feature = "measurement")]
             session,
         })
     }
@@ -562,7 +635,6 @@ impl CaptureHandle {
             }
             return link.poll(self.session, &self.events);
         }
-        #[cfg(feature = "measurement")]
         if let Some(link) = &self.full_prefix {
             return link.poll(self.session, &self.events);
         }
@@ -685,6 +757,7 @@ fn record(
     stop: &AtomicBool,
     maximum: &mut bool,
     progress: &ProgressSlot,
+    full_prefix: Option<&full_prefix::PrefixLink>,
 ) -> Result<Vec<f32>, CaptureError> {
     if stop.load(Ordering::Acquire) {
         return Ok(Vec::new());
@@ -705,14 +778,25 @@ fn record(
     };
     stream.play()?;
     let started = Instant::now();
-    RecordingOwner {
+    let owner = RecordingOwner {
         session,
         events,
         stop,
         maximum,
         progress,
+    };
+    if let Some(link) = full_prefix {
+        owner.run_inner(
+            processor,
+            reader,
+            stream,
+            started,
+            || Ok(()),
+            Some(RecordingSegments::FullPrefix(link)),
+        )
+    } else {
+        owner.run(processor, reader, stream, started, || Ok(()))
     }
-    .run(processor, reader, stream, started, || Ok(()))
 }
 
 struct RecordingOwner<'a> {
@@ -740,13 +824,12 @@ impl<S> Drop for RecordingSource<S> {
     }
 }
 
-#[cfg(feature = "measurement")]
 #[derive(Clone, Copy)]
 enum RecordingSegments<'a> {
+    #[cfg(feature = "measurement")]
     Suffix(&'a pretranscription::SegmentLink),
     FullPrefix(&'a full_prefix::PrefixLink),
 }
-#[cfg(feature = "measurement")]
 impl RecordingSegments<'_> {
     fn advance(
         self,
@@ -754,6 +837,7 @@ impl RecordingSegments<'_> {
         pauses: &mut dictation_core::audio::pauses::ConfirmedPauses,
     ) -> Result<(), CaptureError> {
         match self {
+            #[cfg(feature = "measurement")]
             Self::Suffix(link) => link.advance(processor, pauses),
             Self::FullPrefix(link) => link.advance(processor, pauses),
         }
@@ -769,15 +853,7 @@ impl RecordingOwner<'_> {
         started: Instant,
         activate: impl FnOnce() -> Result<(), CaptureError>,
     ) -> Result<Vec<f32>, CaptureError> {
-        self.run_inner(
-            processor,
-            reader,
-            source,
-            started,
-            activate,
-            #[cfg(feature = "measurement")]
-            None,
-        )
+        self.run_inner(processor, reader, source, started, activate, None)
     }
 
     fn run_inner<S>(
@@ -787,9 +863,8 @@ impl RecordingOwner<'_> {
         source: S,
         started: Instant,
         activate: impl FnOnce() -> Result<(), CaptureError>,
-        #[cfg(feature = "measurement")] segmentation: Option<RecordingSegments<'_>>,
+        segmentation: Option<RecordingSegments<'_>>,
     ) -> Result<Vec<f32>, CaptureError> {
-        #[cfg(feature = "measurement")]
         let mut pauses = dictation_core::audio::pauses::ConfirmedPauses::default();
         let source = RecordingSource {
             source: Some(source),
@@ -834,7 +909,6 @@ impl RecordingOwner<'_> {
                 } else {
                     processor.push_interleaved(chunk)?;
                 }
-                #[cfg(feature = "measurement")]
                 if let Some(link) = segmentation {
                     link.advance(&mut processor, &mut pauses)?;
                 }
@@ -911,9 +985,7 @@ mod tests {
             progress: Arc::new(ProgressSlot::default()),
             #[cfg(feature = "measurement")]
             segmentation: None,
-            #[cfg(feature = "measurement")]
             full_prefix: None,
-            #[cfg(feature = "measurement")]
             session: 4,
         };
         send_event(
@@ -1099,9 +1171,7 @@ mod tests {
             progress: Arc::new(ProgressSlot::default()),
             #[cfg(feature = "measurement")]
             segmentation: None,
-            #[cfg(feature = "measurement")]
             full_prefix: None,
-            #[cfg(feature = "measurement")]
             session: 4,
         };
         let started = Instant::now();

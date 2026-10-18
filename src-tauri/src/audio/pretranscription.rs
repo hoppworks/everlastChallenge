@@ -1,12 +1,8 @@
 //! One frozen prefix slot, independently bounded from lifecycle events.
 use super::*;
 use dictation_core::audio::pauses::ConfirmedPauses;
-use std::ops::Range;
 
-pub struct SealedPrefix {
-    pub timeline_range: Range<usize>,
-    pub samples: Arc<Vec<f32>>,
-}
+pub use super::SealedPrefix;
 #[derive(Default)]
 pub(super) struct SegmentLink {
     state: Mutex<State>,
