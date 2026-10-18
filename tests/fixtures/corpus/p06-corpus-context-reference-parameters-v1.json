@@ -1,0 +1,306 @@
+{
+  "audioContextExperiment": {
+    "decoderTimingScope": "actual Decoder::decode includes receipt admission/validation/serialization around Engine; identical wrapper for both variants",
+    "eligibility": "actual prepared ASR frames, including padding; Reference always0, Reduced1024 iff<=320000 else0",
+    "expectedModelAudioCtx": 1500,
+    "longInputEffectiveAudioCtx": 1500,
+    "longInputParameter": 0,
+    "maximumPreparedFrames": 320000,
+    "modelInitializationOwner": "developer-main-before-serial-worker",
+    "noSegmentation": true,
+    "records": "one armed/inflight/completed receipt, bounded; identity validated at caller admission before submit/feed; receipt failure invalidates subsequent rows",
+    "reducedAudioCtx": 1024,
+    "referenceEffectiveAudioCtx": 1500,
+    "referenceParameter": 0,
+    "sharedWrapperBothVariants": true,
+    "variant": "Reference"
+  },
+  "build": {
+    "architecture": "aarch64",
+    "debugAssertions": false
+  },
+  "configurationId": "p06-corpus-context-reference-v1",
+  "limits": {
+    "fileBackendOnly": true,
+    "noPublisherPolicySet": true,
+    "notMicrophoneOrDeliveryAcceptance": true,
+    "notRealTimeLatency": true,
+    "notResourceQualification": true,
+    "privateHypotheses": true
+  },
+  "measurement": {
+    "maximumCases": 500,
+    "mode": "file-backend-only",
+    "noWarmupPerCase": true,
+    "order": "manifest order; one warm serial worker; first failed context job blocks later rows",
+    "realTimeLatencyProtocolExecuted": false,
+    "receiptAdmission": "explicit current Session/Generation/Job/Range before submit; full identity checked on completed result before receipt collection"
+  },
+  "models": [
+    {
+      "id": "large-v3-turbo-q5_0",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+    },
+    {
+      "id": "small-q5_1",
+      "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb"
+    }
+  ],
+  "preprocessing": {
+    "backendPaddingMinimumSamples": 16000,
+    "channels": 1,
+    "endRms": 0.000025,
+    "frameSamples": 320,
+    "maximumSamples": 4800000,
+    "mode": "finite/bounds then energy-empty guard; full-recording VAD; unchanged outer energy-range ASR; no speculative segments",
+    "paddingSampleValue": 0.0,
+    "prerollSamples": 2400,
+    "sampleRate": 16000,
+    "startRms": 0.00005,
+    "tailSamples": 3200
+  },
+  "runtime": {
+    "context": {
+      "dtw": "disabled",
+      "flash_attn": false,
+      "gpu_device": 0,
+      "use_gpu": true
+    },
+    "fullParams": {
+      "audio_ctx": 0,
+      "beam_patience": -1.0,
+      "beam_size": -1,
+      "callbacks": "all disabled/null",
+      "carry_initial_prompt": false,
+      "debug_mode": false,
+      "detect_language": false,
+      "duration_ms": 0,
+      "entropy_thold": 2.4,
+      "grammar_penalty": 100.0,
+      "grammar_rules": null,
+      "greedy_best_of": 1,
+      "i_start_rule": 0,
+      "initial_prompt": null,
+      "language": "explicit per case: de or en",
+      "length_penalty": -1.0,
+      "logprob_thold": -1.0,
+      "max_initial_ts": 1.0,
+      "max_len": 0,
+      "max_tokens": 0,
+      "n_grammar_rules": 0,
+      "n_max_text_ctx": 16384,
+      "n_threads": 4,
+      "no_context": true,
+      "no_speech_thold": 0.6,
+      "no_timestamps": false,
+      "offset_ms": 0,
+      "print_progress": false,
+      "print_realtime": false,
+      "print_special": false,
+      "print_timestamps": false,
+      "prompt_n_tokens": 0,
+      "prompt_tokens": null,
+      "single_segment": false,
+      "split_on_word": false,
+      "strategy": "greedy",
+      "suppress_blank": true,
+      "suppress_nst": false,
+      "suppress_regex": null,
+      "tdrz_enable": false,
+      "temperature": 0.0,
+      "temperature_inc": 0.2,
+      "thold_pt": 0.01,
+      "thold_ptsum": 0.01,
+      "token_timestamps": false,
+      "translate": false,
+      "vad": false,
+      "vad_model_path": null,
+      "vad_params": "upstream defaults inactive because vad=false; exact source hash below"
+    },
+    "localCorrections": [
+      "initial SOT no-speech row",
+      "VAD failure propagation",
+      "VAD CString ownership"
+    ],
+    "speechGate": {
+      "aggregation": "at least one finite probability >= threshold, after validating all values and exact ceil(samples/512) count",
+      "cancelCallback": false,
+      "failurePolicy": "distinct error; never blank text as fallback",
+      "input": "entire original recording in normalized scratch only; never alters ASR input",
+      "maximumScratchSamples": 4800000,
+      "model": {
+        "bytes": 885098,
+        "file": "ggml-silero-v5.1.2.bin",
+        "id": "silero-v5.1.2",
+        "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+        "sourceRevision": "9ffd54a1e1ee413ddf265af9913beaf518d1639b"
+      },
+      "nativeStateResetEachCall": true,
+      "normalization": {
+        "clip": false,
+        "gain": "0.95 / whole-recording absolute peak; zero peak has gain=1",
+        "peakTarget": 0.95,
+        "trim": false
+      },
+      "positiveThreshold": 0.5,
+      "threads": 1,
+      "useGpu": false,
+      "warmContext": true,
+      "windowSamples": 512
+    },
+    "whisperCppSourceRevision": "2eeeba56e9edd762b4b38467bab96c2517163158",
+    "whisperCppUpstreamRevision": "2eeeba56e9edd762b4b38467bab96c2517163158",
+    "whisperRs": "0.16.0",
+    "whisperRsSys": "0.15.0",
+    "whisperRsSysLocalPatch": {
+      "id": "initial-sot-no-speech-row-v1+vad-failure-status-v1",
+      "notes": "vendor/whisper-rs-sys/PATCHES.md",
+      "path": "vendor/whisper-rs-sys"
+    },
+    "whisperRsUpstreamRevision": "7558e1b72f54f2f22a53589afb77e65681834c36"
+  },
+  "schemaVersion": 2,
+  "sourceHashes": {
+    "audioContextAdapter": {
+      "filename": "src-tauri/examples/shared/audio_context.rs",
+      "sha256": "bab535a390e10e0795a9d7c93af50ee3ad306882f44761c64930e50bf8da8abc"
+    },
+    "audioContextConfiguration": {
+      "filename": "src-tauri/examples/shared/context_configuration.rs",
+      "sha256": "640acea89f5139c9b3205cede1adfc458cad60741e27719d899bbb3220e8ea48"
+    },
+    "audioContextPolicy": {
+      "filename": "src-tauri/src/transcription/reduced_context.rs",
+      "sha256": "75c8e28ac717f6ee9e6ffc5a64b662fa5787c30ca6b93bbe9132db0a9af233b4"
+    },
+    "capture": {
+      "filename": "src-tauri/src/audio.rs",
+      "sha256": "30649268bfb85918ed7971f4707af793cc81882bcbe6e60115670058b70f91f9"
+    },
+    "cargoLock": {
+      "filename": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089"
+    },
+    "clock": {
+      "filename": "src-tauri/src/audio/replay/clock.rs",
+      "sha256": "c5cb28a620b0222a01f6b658665199eae94f8df2117466964eeff9164599c17b"
+    },
+    "corpusContextParameters": {
+      "filename": "src-tauri/examples/corpus_probe/context_parameters.rs",
+      "sha256": "e778733d276bacddb78f048d88c3e82006ec9da4d76a2a2d27b165378aa9d89f"
+    },
+    "corpusInput": {
+      "filename": "src-tauri/examples/corpus_probe/input.rs",
+      "sha256": "91143edc2a8202bae0f015dfa55f8142ca576ed98051c6b5b0d53829b17c32e9"
+    },
+    "corpusMain": {
+      "filename": "src-tauri/examples/corpus_probe.rs",
+      "sha256": "3cf07a2f423f7387c6c761a5766273075a2234912d5088919d89836e13e55c97"
+    },
+    "cpp": {
+      "filename": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+      "sha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e"
+    },
+    "energy": {
+      "filename": "crates/dictation-core/src/audio.rs",
+      "sha256": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46"
+    },
+    "engine": {
+      "filename": "src-tauri/src/transcription.rs",
+      "sha256": "fb86b02866f29fbd21fcdc4ea99089fd03332c72d95eb533469c7eb3aff7eb77"
+    },
+    "inference": {
+      "filename": "src-tauri/src/inference_service.rs",
+      "sha256": "886f40f2fbc9b0dbe43e008b7d17875e0cddbef5b7350d4754285fdee2beb083"
+    },
+    "manifest": {
+      "filename": "src-tauri/Cargo.toml",
+      "sha256": "7696f89d6e3ece66139610e369d96242c070b6865e5faa9acc23c671fcd7e585"
+    },
+    "measurement": {
+      "filename": "src-tauri/src/runtime/measurement.rs",
+      "sha256": "396485e56f89982b95e78c0544f2b815745319644b36554dd1b3352c03cc9955"
+    },
+    "models": {
+      "filename": "src-tauri/src/model.rs",
+      "sha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2"
+    },
+    "nativeLibrary": {
+      "filename": "crates/macos-integration/src/lib.rs",
+      "sha256": "0d55b5e246ea6d2510c3868670a57288e983a8762fe128b18533884fd5521b9e"
+    },
+    "nativeManifest": {
+      "filename": "crates/macos-integration/Cargo.toml",
+      "sha256": "14be4d5bc3c6528b345b5631459329d4b851385967fa6fb7eacd9a5d3c60f8b9"
+    },
+    "nativeRealtime": {
+      "filename": "crates/macos-integration/src/realtime.rs",
+      "sha256": "ab04deb53f86b8821e73097acacfa07da566bb4f609fcc7f80511b34ed5708fc"
+    },
+    "options": {
+      "filename": "src-tauri/examples/paced_runtime_probe/options.rs",
+      "sha256": "2b34798c449dcf8413008d14a0941b8e8d020f9eabe3f3c46697079ea2d202a9"
+    },
+    "parameters": {
+      "filename": "src-tauri/examples/paced_runtime_probe/parameters.rs",
+      "sha256": "c5a1af68b74e0e235495bb28205695f4ddfb8c565321710258fe53e705b04907"
+    },
+    "paramsWrapper": {
+      "filename": "vendor/whisper-rs/src/whisper_params.rs",
+      "sha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8"
+    },
+    "probe": {
+      "filename": "src-tauri/examples/paced_runtime_probe.rs",
+      "sha256": "d56acdeb4b22f66e8b22b98ee445df9caa3e35de51dfa5971d9b15af81821699"
+    },
+    "publisher": {
+      "filename": "src-tauri/examples/paced_runtime_probe/publisher.rs",
+      "sha256": "7b7a19d0155b94aaf2c2300829b52e8df45e9eabb949525df7efb0362ac1aa38"
+    },
+    "publisherQos": {
+      "filename": "crates/macos-integration/src/qos.rs",
+      "sha256": "09308c2d9280aed0f61e98b124fa42501514abb3befe47a6669bd8009a160772"
+    },
+    "replay": {
+      "filename": "src-tauri/src/audio/replay.rs",
+      "sha256": "d4ddcb96f91ec766fd2afdc94b05f72a8a7e7ec03413dd08d5d18d1bedad0d8a"
+    },
+    "runner": {
+      "filename": "src-tauri/examples/paced_runtime_probe/runner.rs",
+      "sha256": "4866d4f20883c547dd7cd308751c1d1d2b1847b3bd772ec5a2d207d05b3083b7"
+    },
+    "runtime": {
+      "filename": "src-tauri/src/runtime.rs",
+      "sha256": "04d2b763b7f4b2d8e82afa7288a46294fffb1b41a52c00a8fa98fec5984dc868"
+    },
+    "schedule": {
+      "filename": "src-tauri/src/audio/replay/schedule.rs",
+      "sha256": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b"
+    },
+    "speechGate": {
+      "filename": "src-tauri/src/transcription/speech_gate.rs",
+      "sha256": "4e6964540cbe78217cf6c5f6924c859d5240bd2ec9603f857113dea272da7f1f"
+    },
+    "statistics": {
+      "filename": "src-tauri/examples/paced_runtime_probe/statistics.rs",
+      "sha256": "c7c4d986deba4386afac48305616651570f5e59ce6f76ab5c7a7cac75c562ae7"
+    },
+    "vadWrapper": {
+      "filename": "vendor/whisper-rs/src/whisper_vad.rs",
+      "sha256": "a4e481fac0b423ab532e3f4b8e3348a23e3134a10e4581ea3f383d6a81e6438d"
+    },
+    "workspaceManifest": {
+      "filename": "Cargo.toml",
+      "sha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230"
+    }
+  },
+  "state": {
+    "abortCallback": false,
+    "freshWhisperStateEachJob": true,
+    "serialInference": true,
+    "warmAsrContexts": 1,
+    "warmVadContexts": 1
+  },
+  "status": "measurement baseline; not a model, quality or latency qualification",
+  "unicodeVersion": "13.0.0"
+}

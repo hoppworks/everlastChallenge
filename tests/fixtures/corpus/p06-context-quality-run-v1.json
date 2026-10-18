@@ -1,0 +1,1018 @@
+{
+  "schemaVersion": 1,
+  "kind": "prospective-p06-context-file-quality-abba-v1",
+  "sourceRevision": "688303557f483b6145bf2b4ff871b47537afda3d",
+  "binary": {
+    "path": "target/release/examples/corpus_probe",
+    "sha256": "83223aab3162b4f9127d29d5334cf1771040239e6d70ecc2c33d2a7cba2ddfe8",
+    "bytes": 3860784,
+    "mode": "0o700"
+  },
+  "parameters": {
+    "Reference": {
+      "path": "tests/fixtures/corpus/p06-corpus-context-reference-parameters-v1.json",
+      "sha256": "02e2bbcbc0a880505b5840e617fed23076882dfe3186b57504b5a7224bb0cd7d",
+      "bytes": 11549,
+      "mode": "0o644"
+    },
+    "Reduced": {
+      "path": "tests/fixtures/corpus/p06-corpus-context-candidate-parameters-v1.json",
+      "sha256": "eac33d770fd9b91d17dd0f0b15be4d4532064fc3b0094096592d87756eadaf4e",
+      "bytes": 11712,
+      "mode": "0o644"
+    }
+  },
+  "models": [
+    {
+      "path": "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+      "bytes": 574041195,
+      "mode": "0o644"
+    },
+    {
+      "path": "artifacts/models/ggml-silero-v5.1.2.bin",
+      "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+      "bytes": 885098,
+      "mode": "0o600"
+    }
+  ],
+  "manifest": {
+    "path": "tests/fixtures/corpus/p06-context-quality-manifest-v1.json",
+    "sha256": "df432b44c48a39ebe290c6bd20d9ba8b800fd2211cdd898c86a9b22a54edf030",
+    "bytes": 147607,
+    "mode": "0o644"
+  },
+  "selection": {
+    "path": "tests/fixtures/corpus/p06-context-quality-selection-v1.json",
+    "sha256": "864332ed3e11c4924066f920ff8c98e2c2c98f6040ddf0bff53ceff3b40551a9",
+    "bytes": 57785,
+    "mode": "0o644"
+  },
+  "sources": [
+    {
+      "path": ".cargo/config.toml",
+      "sha256": "867049e39a2c207bba21bf98eb9858aef44b4e93adc5f766d2866748fe207b8b",
+      "bytes": 40,
+      "mode": "0o644"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089",
+      "bytes": 129670,
+      "mode": "0o644"
+    },
+    {
+      "path": "Cargo.toml",
+      "sha256": "99d4f5b8bab4631045b28a62ec5d6d1eff8966db6d1e994cf020226559dae230",
+      "bytes": 1104,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/dictation-core/src/audio.rs",
+      "sha256": "1d93213539481a9a19aeb191a34737796b94544eee4e1340444261bc3db32c46",
+      "bytes": 7074,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/Cargo.toml",
+      "sha256": "14be4d5bc3c6528b345b5631459329d4b851385967fa6fb7eacd9a5d3c60f8b9",
+      "bytes": 945,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/src/lib.rs",
+      "sha256": "0d55b5e246ea6d2510c3868670a57288e983a8762fe128b18533884fd5521b9e",
+      "bytes": 497,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/src/qos.rs",
+      "sha256": "09308c2d9280aed0f61e98b124fa42501514abb3befe47a6669bd8009a160772",
+      "bytes": 6255,
+      "mode": "0o644"
+    },
+    {
+      "path": "crates/macos-integration/src/realtime.rs",
+      "sha256": "ab04deb53f86b8821e73097acacfa07da566bb4f609fcc7f80511b34ed5708fc",
+      "bytes": 27469,
+      "mode": "0o644"
+    },
+    {
+      "path": "docs/verification/p06-audio-context-experiment-v1.md",
+      "sha256": "fbb6930d6cb4c730862945ab9ea42e10617daa385e8b104791472b188df886da",
+      "bytes": 7802,
+      "mode": "0o644"
+    },
+    {
+      "path": "scripts/quality.py",
+      "sha256": "0b9a37959d2fedfacd2c70643b134ce548a4e4cf6a281e1a4d95bec89aa6be5c",
+      "bytes": 11462,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/Cargo.toml",
+      "sha256": "7696f89d6e3ece66139610e369d96242c070b6865e5faa9acc23c671fcd7e585",
+      "bytes": 1698,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/build.rs",
+      "sha256": "3ea0d629c12cb8bc2f8e434f5c176cc93b66d5d9b0c51878120737a9fbf0a147",
+      "bytes": 734,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/corpus_probe.rs",
+      "sha256": "3cf07a2f423f7387c6c761a5766273075a2234912d5088919d89836e13e55c97",
+      "bytes": 24205,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/corpus_probe/context_parameters.rs",
+      "sha256": "e778733d276bacddb78f048d88c3e82006ec9da4d76a2a2d27b165378aa9d89f",
+      "bytes": 3070,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/corpus_probe/input.rs",
+      "sha256": "91143edc2a8202bae0f015dfa55f8142ca576ed98051c6b5b0d53829b17c32e9",
+      "bytes": 11803,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/paced_runtime_probe.rs",
+      "sha256": "d56acdeb4b22f66e8b22b98ee445df9caa3e35de51dfa5971d9b15af81821699",
+      "bytes": 12931,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/paced_runtime_probe/options.rs",
+      "sha256": "2b34798c449dcf8413008d14a0941b8e8d020f9eabe3f3c46697079ea2d202a9",
+      "bytes": 8453,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/paced_runtime_probe/parameters.rs",
+      "sha256": "c5a1af68b74e0e235495bb28205695f4ddfb8c565321710258fe53e705b04907",
+      "bytes": 14815,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/paced_runtime_probe/publisher.rs",
+      "sha256": "7b7a19d0155b94aaf2c2300829b52e8df45e9eabb949525df7efb0362ac1aa38",
+      "bytes": 29023,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/paced_runtime_probe/runner.rs",
+      "sha256": "4866d4f20883c547dd7cd308751c1d1d2b1847b3bd772ec5a2d207d05b3083b7",
+      "bytes": 32694,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/paced_runtime_probe/statistics.rs",
+      "sha256": "c7c4d986deba4386afac48305616651570f5e59ce6f76ab5c7a7cac75c562ae7",
+      "bytes": 3655,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/shared/audio_context.rs",
+      "sha256": "bab535a390e10e0795a9d7c93af50ee3ad306882f44761c64930e50bf8da8abc",
+      "bytes": 17876,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/examples/shared/context_configuration.rs",
+      "sha256": "640acea89f5139c9b3205cede1adfc458cad60741e27719d899bbb3220e8ea48",
+      "bytes": 2304,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/audio.rs",
+      "sha256": "30649268bfb85918ed7971f4707af793cc81882bcbe6e60115670058b70f91f9",
+      "bytes": 34524,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/audio/replay.rs",
+      "sha256": "d4ddcb96f91ec766fd2afdc94b05f72a8a7e7ec03413dd08d5d18d1bedad0d8a",
+      "bytes": 23298,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/audio/replay/clock.rs",
+      "sha256": "c5cb28a620b0222a01f6b658665199eae94f8df2117466964eeff9164599c17b",
+      "bytes": 25281,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/audio/replay/schedule.rs",
+      "sha256": "8ed858523fcffd5804d93829c0cec40a21ba84df418c6e4ac67a4cde5176191b",
+      "bytes": 12357,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/inference_service.rs",
+      "sha256": "886f40f2fbc9b0dbe43e008b7d17875e0cddbef5b7350d4754285fdee2beb083",
+      "bytes": 24335,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/model.rs",
+      "sha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2",
+      "bytes": 17435,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/runtime.rs",
+      "sha256": "04d2b763b7f4b2d8e82afa7288a46294fffb1b41a52c00a8fa98fec5984dc868",
+      "bytes": 92000,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/runtime/measurement.rs",
+      "sha256": "396485e56f89982b95e78c0544f2b815745319644b36554dd1b3352c03cc9955",
+      "bytes": 34736,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/transcription.rs",
+      "sha256": "fb86b02866f29fbd21fcdc4ea99089fd03332c72d95eb533469c7eb3aff7eb77",
+      "bytes": 24634,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/transcription/reduced_context.rs",
+      "sha256": "75c8e28ac717f6ee9e6ffc5a64b662fa5787c30ca6b93bbe9132db0a9af233b4",
+      "bytes": 13379,
+      "mode": "0o644"
+    },
+    {
+      "path": "src-tauri/src/transcription/speech_gate.rs",
+      "sha256": "4e6964540cbe78217cf6c5f6924c859d5240bd2ec9603f857113dea272da7f1f",
+      "bytes": 9418,
+      "mode": "0o644"
+    },
+    {
+      "path": "tests/fixtures/corpus/reference-parameters-v4.json",
+      "sha256": "14c36b44254d0c859074e31315b149e54b848d6601cc705ebdc1e91f683271f3",
+      "bytes": 6598,
+      "mode": "0o644"
+    },
+    {
+      "path": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+      "sha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e",
+      "bytes": 330873,
+      "mode": "0o644"
+    },
+    {
+      "path": "vendor/whisper-rs/src/whisper_params.rs",
+      "sha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8",
+      "bytes": 34127,
+      "mode": "0o644"
+    },
+    {
+      "path": "vendor/whisper-rs/src/whisper_vad.rs",
+      "sha256": "a4e481fac0b423ab532e3f4b8e3348a23e3134a10e4581ea3f383d6a81e6438d",
+      "bytes": 10152,
+      "mode": "0o644"
+    }
+  ],
+  "inputs": [
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1660.wav",
+      "sha256": "a66eaf81acafe0b195defc63ed17079e3ee4067837ec037f43189a8c07266f93",
+      "bytes": 332204,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1661.wav",
+      "sha256": "1106da01f1ba8e3eb876a433fa884265a1a057c332b90f36dfbc76e8d033a4f0",
+      "bytes": 213164,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1662.wav",
+      "sha256": "ee4d0708ee838307fa0a73a29667e830c732e01cba61a65dd2be27385a98e781",
+      "bytes": 750764,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1663.wav",
+      "sha256": "e86ac3cc846d6fb8655fbbdaa6906d8812810bcc03fedeb4c385b7d039d0b79d",
+      "bytes": 320044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1664.wav",
+      "sha256": "58898f88e5470d640487c22539d6f9726c2deb62447d584eecf723e8716a5acc",
+      "bytes": 278444,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1665.wav",
+      "sha256": "cacc73b9bc8f4dc2f5938f13592d41522aba683185eb4857a55c4a543377f75f",
+      "bytes": 341804,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1666.wav",
+      "sha256": "bd37e0d2856a8b827af8d7f42c432e6e114f6eb1d5dd2ed3846f76893f2ab24e",
+      "bytes": 568364,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1667.wav",
+      "sha256": "ae2cc2fd5c40fc6ec00e0938a2eba23c7a110818f3b564cbca35ef4856fe00d7",
+      "bytes": 885164,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1668.wav",
+      "sha256": "27e005fc4ffab77389bda81861250b6a3616fb2e686e65ef366314bad791abf6",
+      "bytes": 480044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1669.wav",
+      "sha256": "d80f796a615341eea4ea84c38e56d2beea5b505080d67fe1bcd354a320238eb6",
+      "bytes": 409004,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1670.wav",
+      "sha256": "218549b01ef27b749d8a5188266755d317a2b4dc6059836df38112eca5f6c616",
+      "bytes": 675884,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1671.wav",
+      "sha256": "5c3702a82696c772446d83478803ed3e4c7c607b142eaf46eb4d287d8564696e",
+      "bytes": 919724,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1672.wav",
+      "sha256": "47c5fd1658abfaffa2a24b7534cbc5199c8474f74fec8442cd73f5503d935249",
+      "bytes": 336044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1673.wav",
+      "sha256": "85b87f2aa27a995e798da31cd6c2aa1ee00fdb168da9e06c4a1794b20802a7d9",
+      "bytes": 403244,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1674.wav",
+      "sha256": "81eca22f5b771009d1d2e24fb8c5d3641bedeb1a5e4de3a03e50a6e6f06294d0",
+      "bytes": 385964,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1675.wav",
+      "sha256": "76268a0036d64afe231afbf16a2c01df39e48165f4376c70cad131fcb0474905",
+      "bytes": 506924,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1676.wav",
+      "sha256": "224c39bf03540bd1a5c30004d9991c18c12151b155b6a6b587b72f03d75f53b5",
+      "bytes": 193964,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1677.wav",
+      "sha256": "b299953f9d4f50393119d28774475ea7208d7fa4afc3eef3d63d440d2a97ead5",
+      "bytes": 172844,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1678.wav",
+      "sha256": "45a05c8b45f4baa25c5093e52ee8ce67df8c177a1f8a7da213d8dc18587cb4ae",
+      "bytes": 512684,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1679.wav",
+      "sha256": "4efa54c2de9100fb014ddc30da83b1fd70175fdef742614e81051408f0250ee7",
+      "bytes": 213164,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1680.wav",
+      "sha256": "c06ddc0f23b18bbea72418316b2e869aa01de388c19d7b5209e01ee17f5bb037",
+      "bytes": 316844,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1682.wav",
+      "sha256": "4605ed38d8740156c0dcfa75419585752922b222a7d5bfec7c212d1dda9522ec",
+      "bytes": 620204,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1683.wav",
+      "sha256": "90c9e5da7736b3f5a7e87eb9322c151e7b496cd2a22a3e5719a8f530e5317976",
+      "bytes": 341804,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1684.wav",
+      "sha256": "3ffc815d7bc4dba5ccf81f937bd2f1fa7cbe85a5a5cdabb2f76218ec0272a525",
+      "bytes": 395564,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1685.wav",
+      "sha256": "eb8932f65a6a0d872dfe9f90ec99b1bdab60f4ab4a7b0c3033bb66d13e12a6ad",
+      "bytes": 706604,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1686.wav",
+      "sha256": "f552614ec20000c5b49d1a9be8c8ccca645c0efe41b108d79661dc07568dd9c8",
+      "bytes": 303404,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1687.wav",
+      "sha256": "a59c136aa0762de6ffe2064f5d5f6ca4df2edc709798b38ec5ff312053e6dcf6",
+      "bytes": 224684,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1688.wav",
+      "sha256": "c3109ed6c1fcec23c00d0ec097ff9d99b3869b58457168b599f67916f6892bd1",
+      "bytes": 543404,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1689.wav",
+      "sha256": "58925b17bbf08baf2bc0517b2f3b85bb941d7fb10b502691f610bb141524df3c",
+      "bytes": 579884,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1690.wav",
+      "sha256": "b94c30e0687482d99d30cf78249712e62bcc492710111857465ecb0e0f2679dc",
+      "bytes": 466604,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1691.wav",
+      "sha256": "2ada4aefe5616f421916711bd445ded60857f88c8729ca389efe3eb3ef7f46cc",
+      "bytes": 265004,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1692.wav",
+      "sha256": "62afc8adc4a9dda6bdbd3adc90ab218232e2b1ec06dc6f49adedba8e3b2f06a9",
+      "bytes": 368684,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1693.wav",
+      "sha256": "7f6fb3f43ee5c56b44e20145aa99a819f398ad5344a6997a564056056c85c9ef",
+      "bytes": 284204,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1694.wav",
+      "sha256": "27451986155a8d107c65651f6ee3482d7712574cab874181825e3fe3c5a93016",
+      "bytes": 458924,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1695.wav",
+      "sha256": "7e74f7dc2ab01fef6bdfb4f438d34b35c4fb98833510ded035628fc344ceb9f1",
+      "bytes": 385964,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1696.wav",
+      "sha256": "b4ef3f6261ff21ec0fe8546fc449cd11480981685b80e1c412c9afb37e432591",
+      "bytes": 566444,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1697.wav",
+      "sha256": "33fd9c4122f75551cb59d22d4ce0e848d2a5bd2a916fdd5f97bbc79033e0b79c",
+      "bytes": 255404,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1698.wav",
+      "sha256": "c1196fa78010d4b1db1fdddbf6d645692f8c5c7300a04d47e6a0c889fb6187be",
+      "bytes": 720044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1699.wav",
+      "sha256": "b9393a8a8dcd19a8082692078bf70678b6992f2f4ed0f69097fffd4cf62f1507",
+      "bytes": 330284,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1700.wav",
+      "sha256": "86ed2606de1afc1ca4f34073442eb1227c80f6e5f506000e5939db314c6caa0c",
+      "bytes": 234284,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1736.wav",
+      "sha256": "67718418a15f877ec263f7c864e6b72fd41365afebeb78e915a4c97066bb6670",
+      "bytes": 160044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1660-quiet.wav",
+      "sha256": "6af20bdab84f5b7b0ee47a59e9474626e76eaf5e1a7010066ea530161fd37abf",
+      "bytes": 332204,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1661-quiet.wav",
+      "sha256": "39068797a6ffd78f857c0e5c881ef845f8029efc6a6aa56e2d1e4dd6c197b16a",
+      "bytes": 213164,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1662-quiet.wav",
+      "sha256": "3fd4c1c4b8072dc17784234ab86292829c9765eee8e991c18a5d4620af70f8fb",
+      "bytes": 750764,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1663-quiet.wav",
+      "sha256": "0cd0cf219d3bbdb9fd5edaa764813a9d837f5e0b26b9b5d619eca4ffc1558bdd",
+      "bytes": 320044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1664-quiet.wav",
+      "sha256": "922b2b157744661d31fbe3ee4e603606f1b5b33251668771720f31f0184d348a",
+      "bytes": 278444,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1660.wav",
+      "sha256": "0f608e0e9e87ffca1289b5180322e7f88f532195820e4fdce53fc9ef5e67e4e7",
+      "bytes": 341804,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1661.wav",
+      "sha256": "779f912307ff0982dfe146e19366685e8d57976e221b3bef271d199361d769b8",
+      "bytes": 203564,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1662.wav",
+      "sha256": "b4a5f1c4c1c3769c7344892db3996ea04eb842baf6fa28be28acb1e79a95f03d",
+      "bytes": 268204,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1663.wav",
+      "sha256": "3fba7a13be7eba17263cb9e017c41a0040e7bb4ab8e84d454ce9858520aa1507",
+      "bytes": 387884,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1664.wav",
+      "sha256": "702fa8c3cf5341589a026377caa98d463853a55d8e270b6f72856cbe1321b37e",
+      "bytes": 267564,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1665.wav",
+      "sha256": "7077b38c6e54cbfa42fea8acacc931ebac9d015ba63b94ed57d9408745df4edd",
+      "bytes": 265004,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1666.wav",
+      "sha256": "9ea7d021fefc00b6569be88250913b2998933780fc900df664e45137de884a84",
+      "bytes": 266924,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1667.wav",
+      "sha256": "7ccf8be690e39e04c1481bf1162e0b6efe8abfccbfa8e0bd5b103f502c2c4390",
+      "bytes": 480044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1668.wav",
+      "sha256": "89293c36ea8a2b0065a632f6cd9af35fcbcb442eaf43909c1a5780a74897e902",
+      "bytes": 426284,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1669.wav",
+      "sha256": "c19bbd275356b0310fa0d0687a4a736a6f59d7c503de2769ae5309b3ac676142",
+      "bytes": 230444,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1670.wav",
+      "sha256": "523a4c84775ad35c1ce474012b9f31368da2d3ea9ab10e99f35a59182d417902",
+      "bytes": 937644,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1671.wav",
+      "sha256": "84845e2cb982b5d0e56c518c4e4bebdf071b0edce0726161347adca885c2202f",
+      "bytes": 320684,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1672.wav",
+      "sha256": "9e11f406dde11a176e87d619600b5481af9a76b5669add902ef709238fe0f308",
+      "bytes": 325164,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1673.wav",
+      "sha256": "48f640b35e2954d62f0d8abdade29b67b36af04e815aa61c4466363c1b4a6f00",
+      "bytes": 322604,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1674.wav",
+      "sha256": "a8b0dbfb163abcdfcd0c98112d06d471293f498c63be8dd200601495e0a6b2bf",
+      "bytes": 180524,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1675.wav",
+      "sha256": "fd99727983733f9771077fe1a030fcc44ea7e16be1e9396cff525db2886a8f0f",
+      "bytes": 280364,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1676.wav",
+      "sha256": "afd053eebcc3c55cc883a0f4e18904609c75cc6c4b76890d674b9dbf9e1834cb",
+      "bytes": 320044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1677.wav",
+      "sha256": "6d4e9a0532459969ac13d6f16dc5099f93fb2a4d4637392a2a9c7e8ecb278cb7",
+      "bytes": 190124,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1678.wav",
+      "sha256": "4676663ad860d56c3b17f26f957fc2e86ee364111aa6e8b0c1430bb72006457d",
+      "bytes": 409004,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1679.wav",
+      "sha256": "a244c933384e8c3b15371039d1cfba04a02b97bb22c40381dcec557679666241",
+      "bytes": 160044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1680.wav",
+      "sha256": "8d69bfff7fcabafcbc2a96974129aaad5441572368963a350d467e3921805062",
+      "bytes": 326444,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1681.wav",
+      "sha256": "888ee8d39457730e1a8b22717084955eb971f9f5099bae090c49c28a4c9b6539",
+      "bytes": 639404,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1682.wav",
+      "sha256": "9eaf2a82389a5a6025ce3b0d59efc3025779c0c6c58201dc8b2fd493ec4ef3c9",
+      "bytes": 500524,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1683.wav",
+      "sha256": "873b09d81c8ef85d0ab72cb1e9485baeaf87d54fc772fe26e01c765251c2a4cd",
+      "bytes": 355244,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1684.wav",
+      "sha256": "c788ee151ea8e0e9b7682521e4f2d901db0813138aabcbbeb6b2d5512dee6ae0",
+      "bytes": 350764,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1685.wav",
+      "sha256": "31db67c3bb01ffa42be033d2627da6e8dd301b99f5390f20e8be293cebba4cc4",
+      "bytes": 445484,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1686.wav",
+      "sha256": "d400fd5253713eda5e5e0cc0b1711a9ac047f76843392311e8c480d7efed9a24",
+      "bytes": 387884,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1687.wav",
+      "sha256": "8cae96fd853a92d303bd8eb2e15d2bbe513aa29f28cef2973db3cea4324acd2c",
+      "bytes": 368684,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1688.wav",
+      "sha256": "a7c88b00b6e6e8c5cc2fa422eeb4d4efe494277cf67a67ea302293d5e996c5d2",
+      "bytes": 558124,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1689.wav",
+      "sha256": "b75624f03ccffcb848380c4b86d60a505e020bb66e9d81dc4ec6bafbc8d8fbbe",
+      "bytes": 664364,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1660-quiet.wav",
+      "sha256": "107f5b79282db96178885f9673e6f3da5dd8f615a40cb49d00fd3d5fb6514cee",
+      "bytes": 341804,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1661-quiet.wav",
+      "sha256": "7b037da04c013baa7b9c920150c47442932d5928aff049332b7a42e92e6abaf8",
+      "bytes": 203564,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1662-quiet.wav",
+      "sha256": "619f962c2f9ac054340256ec59f61600534a515b2233f02fe88675555dc6b707",
+      "bytes": 268204,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1663-quiet.wav",
+      "sha256": "872b1b9e8e498e7e4b5a4b0153cc83068e0b7ffc099ebd30ff67375a8ad41872",
+      "bytes": 387884,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1664-quiet.wav",
+      "sha256": "17fe61a865b10963d15722a2ad6c6c8395086a254a23b2fda8f065c3e114834a",
+      "bytes": 267564,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/synthetic-de-silence-5s.wav",
+      "sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec",
+      "bytes": 160044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/synthetic-de-noise-5s.wav",
+      "sha256": "2efadede2e96edaba4ffbed3a663d57e0c33f4763fb934caff82d8d14840125c",
+      "bytes": 160044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/synthetic-en-silence-5s.wav",
+      "sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec",
+      "bytes": 160044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/synthetic-en-noise-5s.wav",
+      "sha256": "2efadede2e96edaba4ffbed3a663d57e0c33f4763fb934caff82d8d14840125c",
+      "bytes": 160044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/constructed-de-masked-300s.wav",
+      "sha256": "ca2da7fb88fed220222002d631ab61c585ffb3f099ac3fc79ccc222d0e188e84",
+      "bytes": 9600044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/hd-de-acceptance-s04-t0-d8.wav",
+      "sha256": "351d1217d2ad656ee4825fd4168a3c61a25fac35a49b35e703044e592d0c2372",
+      "bytes": 22856,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/hd-de-acceptance-s05-t0-d9.wav",
+      "sha256": "1647291976869e97a5efee7d714e5f1fcfb4d004b4cd905d4f8d7b7e6334ccf0",
+      "bytes": 18188,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/hd-en-acceptance-s04-t0-d8.wav",
+      "sha256": "a8958e9d24bddb3893573b7902a06865001a6cbb3fb1b10fcd957ce3f041722c",
+      "bytes": 18860,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/hd-en-acceptance-s05-t0-d9.wav",
+      "sha256": "9f1803b9de4c00073f6db17def9423529b9812cbfa5f249dfe7724a990f03528",
+      "bytes": 19996,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/ja.wav",
+      "sha256": "9d9878f659184ad2e8d7578239ce07da9e42f233e850359dfcb5eaeb9e09facd",
+      "bytes": 18860,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/nein.wav",
+      "sha256": "335de366410f8f13615168751a1fcb578aa12e4bbac4fa17b215593a852c3eca",
+      "bytes": 22314,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/v1/thanks.wav",
+      "sha256": "70b2cebf90f9a14084184fed47d2c403376c4e29e5ca1c91077ba28da16c5ad8",
+      "bytes": 62796,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-de-test-1732-thirty-second-v1.wav",
+      "sha256": "045f4e0c1534e2d4240a10a2dbda1fad22c8ae9ca83809b2cd34e0a2a7510a2e",
+      "bytes": 960044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/fleurs-en-test-1670-thirty-second-v1.wav",
+      "sha256": "ce7e66bfe03c6d4ce0a1975f7f399d873de5c412635c68fceb86331726bdcb96",
+      "bytes": 960044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/calibration-de-trailing-silence.wav",
+      "sha256": "4f0090652adc300613277ea6a3aceb96e2c9c9dff2a477e7d30e4e6b8b3e10c4",
+      "bytes": 384044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/calibration-de-room-5s.wav",
+      "sha256": "91d7d1bf89611ff27bc1d4db11c05eb5580c6c5db44e241722c2498bf2996b59",
+      "bytes": 160044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/calibration-en-trailing-silence.wav",
+      "sha256": "85517b795629737f422c11281d8beef90337523041b182f4497eb9196e76a647",
+      "bytes": 349484,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/corpus/audio/calibration-en-room-5s.wav",
+      "sha256": "91d7d1bf89611ff27bc1d4db11c05eb5580c6c5db44e241722c2498bf2996b59",
+      "bytes": 160044,
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/controlled-300s.wav",
+      "sha256": "80b79393de147e78e9b9a86bad3d88998dae4056a9fe10a080ef2468c92dc25b",
+      "bytes": 9600044,
+      "mode": "0o600"
+    }
+  ],
+  "launcher": {
+    "path": "artifacts/p06-context-quality/launch-v1.py",
+    "sha256": "a147838e91fa269adcb7c2f7dfa64f2714d1c1054de3cfb401c4e7e34da3fd4f",
+    "bytes": 11972,
+    "mode": "0o600"
+  },
+  "outputDirectory": "artifacts/p06-context-quality/v1",
+  "blocks": [
+    {
+      "name": "01-reference",
+      "variant": "Reference",
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/Users/hoppworks/projects/everlastChallenge/target/release/examples/corpus_probe",
+        "/Users/hoppworks/projects/everlastChallenge/artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "reference",
+        "/Users/hoppworks/projects/everlastChallenge/tests/fixtures/corpus/p06-context-quality-manifest-v1.json",
+        "/Users/hoppworks/projects/everlastChallenge/artifacts/p06-context-quality/v1/01-reference.json",
+        "--context-reference",
+        "/Users/hoppworks/projects/everlastChallenge/tests/fixtures/corpus/p06-corpus-context-reference-parameters-v1.json"
+      ],
+      "output": "artifacts/p06-context-quality/v1/01-reference.json",
+      "metadata": "artifacts/p06-context-quality/v1/01-reference.json.metadata.json",
+      "log": "artifacts/p06-context-quality/v1/01-reference.command.log",
+      "completion": "artifacts/p06-context-quality/v1/01-reference.completion.json"
+    },
+    {
+      "name": "02-reduced",
+      "variant": "Reduced",
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/Users/hoppworks/projects/everlastChallenge/target/release/examples/corpus_probe",
+        "/Users/hoppworks/projects/everlastChallenge/artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "reference",
+        "/Users/hoppworks/projects/everlastChallenge/tests/fixtures/corpus/p06-context-quality-manifest-v1.json",
+        "/Users/hoppworks/projects/everlastChallenge/artifacts/p06-context-quality/v1/02-reduced.json",
+        "--context-candidate",
+        "/Users/hoppworks/projects/everlastChallenge/tests/fixtures/corpus/p06-corpus-context-candidate-parameters-v1.json"
+      ],
+      "output": "artifacts/p06-context-quality/v1/02-reduced.json",
+      "metadata": "artifacts/p06-context-quality/v1/02-reduced.json.metadata.json",
+      "log": "artifacts/p06-context-quality/v1/02-reduced.command.log",
+      "completion": "artifacts/p06-context-quality/v1/02-reduced.completion.json"
+    },
+    {
+      "name": "03-reduced",
+      "variant": "Reduced",
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/Users/hoppworks/projects/everlastChallenge/target/release/examples/corpus_probe",
+        "/Users/hoppworks/projects/everlastChallenge/artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "reference",
+        "/Users/hoppworks/projects/everlastChallenge/tests/fixtures/corpus/p06-context-quality-manifest-v1.json",
+        "/Users/hoppworks/projects/everlastChallenge/artifacts/p06-context-quality/v1/03-reduced.json",
+        "--context-candidate",
+        "/Users/hoppworks/projects/everlastChallenge/tests/fixtures/corpus/p06-corpus-context-candidate-parameters-v1.json"
+      ],
+      "output": "artifacts/p06-context-quality/v1/03-reduced.json",
+      "metadata": "artifacts/p06-context-quality/v1/03-reduced.json.metadata.json",
+      "log": "artifacts/p06-context-quality/v1/03-reduced.command.log",
+      "completion": "artifacts/p06-context-quality/v1/03-reduced.completion.json"
+    },
+    {
+      "name": "04-reference",
+      "variant": "Reference",
+      "command": [
+        "/usr/bin/time",
+        "-l",
+        "/Users/hoppworks/projects/everlastChallenge/target/release/examples/corpus_probe",
+        "/Users/hoppworks/projects/everlastChallenge/artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "reference",
+        "/Users/hoppworks/projects/everlastChallenge/tests/fixtures/corpus/p06-context-quality-manifest-v1.json",
+        "/Users/hoppworks/projects/everlastChallenge/artifacts/p06-context-quality/v1/04-reference.json",
+        "--context-reference",
+        "/Users/hoppworks/projects/everlastChallenge/tests/fixtures/corpus/p06-corpus-context-reference-parameters-v1.json"
+      ],
+      "output": "artifacts/p06-context-quality/v1/04-reference.json",
+      "metadata": "artifacts/p06-context-quality/v1/04-reference.json.metadata.json",
+      "log": "artifacts/p06-context-quality/v1/04-reference.command.log",
+      "completion": "artifacts/p06-context-quality/v1/04-reference.completion.json"
+    }
+  ],
+  "perBlockLivenessTimeoutSeconds": 1800,
+  "build": {
+    "command": [
+      "cargo",
+      "build",
+      "--release",
+      "--example",
+      "corpus_probe",
+      "--features",
+      "measurement",
+      "--locked",
+      "--offline"
+    ],
+    "deploymentTarget": "27.0",
+    "target": "aarch64-apple-darwin",
+    "profile": "release",
+    "features": [
+      "measurement"
+    ],
+    "buildLog": {
+      "path": "artifacts/p06-context-quality/build-v1.log",
+      "sha256": "623faf94132f7fbf9ab0120aaeb76ed4238aa3b6e1373d2e38da008e3ef0f1c0",
+      "bytes": 157,
+      "mode": "0o600"
+    }
+  },
+  "policy": {
+    "freshProcessPerBlock": true,
+    "caseOrder": "unchanged100-case manifest",
+    "warmupPerCase": false,
+    "retry": false,
+    "onFailure": "retain failed block and mark following blocks unavailable",
+    "qualityComparisonPairs": [
+      [
+        1,
+        2
+      ],
+      [
+        4,
+        3
+      ]
+    ],
+    "judgeEachPairIndependently": true,
+    "baseline": "same-code same-wrapper Reference; historical outputs only drift/semantic anchors",
+    "fileTimesAreNotL": true,
+    "resourceQualified": false,
+    "qualified": false,
+    "timeout": "liveness only, never a latency acceptance threshold",
+    "noConcurrentBuildsTestsModelsOrAgentWork": true
+  }
+}
