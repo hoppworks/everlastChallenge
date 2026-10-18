@@ -31,6 +31,11 @@ pub trait Decoder: Send + 'static {
     ) -> Result<String, InferenceError> {
         self.decode(audio, language)
     }
+
+    #[cfg(feature = "measurement")]
+    fn take_prepared_reuse(&mut self) -> Option<crate::transcription::prefix_cache::PreparedReuse> {
+        None
+    }
 }
 
 impl Decoder for Engine {
@@ -69,6 +74,12 @@ pub struct DecodeContext {
 impl DecodeContext {
     pub fn is_valid(&self) -> bool {
         self.token.is_valid()
+    }
+
+    pub(crate) fn same_epoch(&self, other: &Self) -> bool {
+        self.session == other.session
+            && self.generation == other.generation
+            && Arc::ptr_eq(&self.token.0, &other.token.0)
     }
 }
 
@@ -114,6 +125,8 @@ pub struct Completed {
     pub result: Result<String, InferenceError>,
     #[cfg(feature = "measurement")]
     pub decode_timing: Option<DecodeTiming>,
+    #[cfg(feature = "measurement")]
+    pub prepared_reuse: Option<crate::transcription::prefix_cache::PreparedReuse>,
     token: WorkToken,
 }
 
@@ -439,13 +452,15 @@ fn inference_loop(
         }
         #[cfg(feature = "measurement")]
         let mut decode_timing = None;
+        #[cfg(feature = "measurement")]
+        let mut prepared_reuse = None;
         let result = if job.token.is_valid() {
             let input = &job.audio[job.sample_range.clone()];
             #[cfg(feature = "measurement")]
             {
                 shared.observe(&job, observation::Edge::BeforeDecode);
                 let started = std::time::Instant::now();
-                let result = decoder.decode_with_context(
+                let mut result = decoder.decode_with_context(
                     input,
                     job.language,
                     &DecodeContext {
@@ -455,6 +470,14 @@ fn inference_loop(
                         token: job.token.clone(),
                     },
                 );
+                prepared_reuse = decoder.take_prepared_reuse();
+                if prepared_reuse.as_ref().is_some_and(|receipt| {
+                    receipt.session != job.session
+                        || receipt.generation != job.generation
+                        || receipt.job_id != job.job_id
+                }) {
+                    result = Err(InferenceError::InvalidDecodeContext);
+                }
                 decode_timing = Some(DecodeTiming {
                     elapsed: started.elapsed(),
                     input_frames: input.len(),
@@ -504,6 +527,8 @@ fn inference_loop(
                 result,
                 #[cfg(feature = "measurement")]
                 decode_timing,
+                #[cfg(feature = "measurement")]
+                prepared_reuse,
                 token: job.token,
             });
         }
@@ -531,6 +556,116 @@ fn inference_loop(
 mod tests {
     use super::*;
     use std::time::{Duration, Instant};
+
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn prepared_reuse_receipt_crosses_the_actual_worker_once_with_current_job_identity()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use crate::transcription::prefix_cache::{PreparedReuse, ReuseOutcome};
+        struct ReceiptDecoder(Option<PreparedReuse>);
+        impl Decoder for ReceiptDecoder {
+            fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+                Err(InferenceError::Decode)
+            }
+            fn decode_with_context(
+                &mut self,
+                audio: &[f32],
+                _: Language,
+                context: &DecodeContext,
+            ) -> Result<String, InferenceError> {
+                self.0 = Some(PreparedReuse {
+                    session: context.session,
+                    generation: context.generation,
+                    job_id: context.job_id,
+                    outcome: ReuseOutcome::Decoded,
+                    origin_job_id: Some(context.job_id),
+                    prepared_frames: Some(audio.len()),
+                    prepared_pcm_sha256: Some([17; 32]),
+                    decoder_invoked: true,
+                    native_full_attempted: false,
+                });
+                Ok("controlled current result".into())
+            }
+            fn take_prepared_reuse(&mut self) -> Option<PreparedReuse> {
+                self.0.take()
+            }
+        }
+        let service = InferenceService::with_decoder(ReceiptDecoder(None))?;
+        wait_ready(&service)?;
+        service.submit(job(7, 9))?;
+        wait_idle(&service)?;
+        let result = service.take_result()?.ok_or("missing result")?;
+        service.shutdown()?;
+        let receipt = result
+            .prepared_reuse
+            .ok_or("missing actual invocation receipt")?;
+        assert_eq!(
+            (receipt.session, receipt.generation, receipt.job_id),
+            (7, 9, 7)
+        );
+        assert_eq!(receipt.prepared_pcm_sha256, Some([17; 32]));
+        assert_eq!(receipt.prepared_frames, Some(320));
+        assert!(receipt.decoder_invoked);
+        assert!(
+            !receipt.native_full_attempted,
+            "controlled decoder did not call native full"
+        );
+        assert_eq!(result.result?, "controlled current result");
+        Ok(())
+    }
+
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn a_foreign_reuse_receipt_cannot_publish_a_successful_current_result()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use crate::transcription::prefix_cache::{PreparedReuse, ReuseOutcome};
+        struct Foreign(Option<PreparedReuse>);
+        impl Decoder for Foreign {
+            fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+                Err(InferenceError::Decode)
+            }
+            fn decode_with_context(
+                &mut self,
+                _: &[f32],
+                _: Language,
+                context: &DecodeContext,
+            ) -> Result<String, InferenceError> {
+                self.0 = Some(PreparedReuse {
+                    session: 999,
+                    generation: context.generation,
+                    job_id: context.job_id,
+                    outcome: ReuseOutcome::Hit,
+                    origin_job_id: Some(1),
+                    prepared_frames: Some(16000),
+                    prepared_pcm_sha256: Some([17; 32]),
+                    decoder_invoked: false,
+                    native_full_attempted: false,
+                });
+                Ok("foreign receipt must not endorse this result".into())
+            }
+            fn take_prepared_reuse(&mut self) -> Option<PreparedReuse> {
+                self.0.take()
+            }
+        }
+        let service = InferenceService::with_decoder(Foreign(None))?;
+        wait_ready(&service)?;
+        service.submit(job(7, 9))?;
+        wait_idle(&service)?;
+        let result = service.take_result()?.ok_or("missing failure result")?;
+        service.shutdown()?;
+        assert!(matches!(
+            result.result,
+            Err(InferenceError::InvalidDecodeContext)
+        ));
+        assert_eq!(
+            result
+                .prepared_reuse
+                .ok_or("missing invalid receipt evidence")?
+                .session,
+            999
+        );
+        Ok(())
+    }
 
     #[cfg(feature = "measurement")]
     #[test]

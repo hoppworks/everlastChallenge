@@ -13,6 +13,9 @@ use phase::Phase;
 pub mod profile;
 
 #[cfg(feature = "measurement")]
+pub mod prefix_cache;
+
+#[cfg(feature = "measurement")]
 #[derive(Debug)]
 pub struct ProfiledTranscription {
     pub result: Result<String, InferenceError>,
@@ -42,6 +45,9 @@ impl Language {
 
 #[derive(Debug, thiserror::Error)]
 pub enum InferenceError {
+    #[cfg(feature = "measurement")]
+    #[error("Invalid or revoked experimental decode context")]
+    InvalidDecodeContext,
     #[error(transparent)]
     Model(#[from] ModelError),
     #[error("Model path cannot be represented for the local backend")]
