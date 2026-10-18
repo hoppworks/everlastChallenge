@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "kind": "prospective-pretranscription-continuation-v1",
+  "continuationId": "424273c0-04bc-4cdc-a30e-cfa2cec53d7a",
+  "sourceRevision": "a8c3270eb24094c3b863904f1b130fed9287fa36",
+  "originalFreeze": {
+    "path": "tests/fixtures/corpus/p06-pretranscription-screening-run-v2.json",
+    "bytes": 568608,
+    "sha256": "96e11df8d0f33c0467f184712b4ad21ed0379ac684a0d5242f4f7fe52c580a81",
+    "mode": "0o600"
+  },
+  "originalArchive": {
+    "path": "docs/verification/p06-pretranscription-screening-v2-failed.json",
+    "bytes": 914403,
+    "sha256": "6ed3f21b6569e37cafb607e4659911f6b511a4c5b7e04652226d64a5b031e48e",
+    "mode": "0o644"
+  },
+  "originalCompletion": {
+    "path": "artifacts/p06-pretranscription-screening/v2/completion.json",
+    "bytes": 888210,
+    "sha256": "b7d84babc08db9299c840b73126fb88f4065bbf4d6d91b933e86073293d91ae9",
+    "mode": "0o600"
+  },
+  "excludedV3": {
+    "freeze": {
+      "path": "tests/fixtures/corpus/p06-pretranscription-screening-run-v3.json",
+      "bytes": 571105,
+      "sha256": "3cf6b479bd86dc1fa3af1928d4e9dfaaaa1fb39f2223011df94ae27e70765ad2",
+      "mode": "0o600"
+    },
+    "launch": {
+      "path": "artifacts/p06-pretranscription-screening/v3/launch.json",
+      "bytes": 1133,
+      "sha256": "c9b4ccfa4315760b16008c814b87055f8c2af3b8297e4462ac84ed525d8d73b6",
+      "mode": "0o600"
+    },
+    "completion": {
+      "path": "artifacts/p06-pretranscription-screening/v3/completion.json",
+      "bytes": 631737,
+      "sha256": "a9ba7901dbd5d2b39a18d5d15319fb8ea826a652fa4f6593d569abb400b8170c",
+      "mode": "0o600"
+    },
+    "ownerClearance": {
+      "path": "artifacts/p06-pretranscription-screening/v3-owner-clearance-v2.json",
+      "bytes": 3783,
+      "sha256": "9f2b819db7eb31005f4dcd673c7853354d0ffb5d0855ff043fcb4058d4468578",
+      "mode": "0o600"
+    }
+  },
+  "qualified": false,
+  "L": null,
+  "adoptedPrefixCases": 185,
+  "newCases": 215,
+  "rerunFromSlot": 186,
+  "v3AdoptionAllowed": false,
+  "epochFreeze": {
+    "path": "tests/fixtures/corpus/p06-pretranscription-continuation-epoch-v1.json",
+    "bytes": 597779,
+    "sha256": "85256933ccaee19aea5a7b282a4d27e605b8f3a038e7e30c74c15e50e2e760f8",
+    "mode": "0o600"
+  },
+  "adoptionLedger": {
+    "path": "tests/fixtures/corpus/p06-pretranscription-continuation-adoption-v1.json",
+    "bytes": 291717,
+    "sha256": "9901494de4b86d0339aab410e593078163d36da80080ffc024a3fcccc83ca9a6",
+    "mode": "0o600"
+  }
+}
