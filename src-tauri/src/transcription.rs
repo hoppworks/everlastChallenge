@@ -5,7 +5,19 @@ use dictation_core::audio::{EnergyProfile, MAX_SAMPLES, speech_range};
 use std::path::Path;
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
+mod phase;
 mod speech_gate;
+use phase::Phase;
+
+#[cfg(feature = "measurement")]
+pub mod profile;
+
+#[cfg(feature = "measurement")]
+#[derive(Debug)]
+pub struct ProfiledTranscription {
+    pub result: Result<String, InferenceError>,
+    pub profile: profile::EngineProfile,
+}
 
 #[cfg(feature = "measurement")]
 pub mod observation;
@@ -137,6 +149,31 @@ impl Engine {
             decode::<false, _>(context, input, language, &mut NoObservation)
         })
     }
+    /// Developer-only phase observation of the unchanged reference call.
+    /// Snapshot identity is the executing caller. Use a Decoder wrapper on the
+    /// existing InferenceService worker before calling it an inference-worker
+    /// observation; direct calls on main are only diagnostic-caller evidence.
+    #[cfg(feature = "measurement")]
+    pub fn transcribe_profiled(
+        &mut self,
+        samples: &[f32],
+        language: Language,
+    ) -> ProfiledTranscription {
+        let Self { context, gate } = self;
+        let mut collector = profile::Collector::new();
+        let result = transcribe_using(
+            samples,
+            language,
+            gate,
+            &mut collector,
+            |input, language, observer| decode::<false, _>(context, input, language, observer),
+        );
+        ProfiledTranscription {
+            result,
+            profile: collector.finish(),
+        }
+    }
+
     /// Frozen P06 experiment only: 1024 context positions for prepared inputs
     /// <=320000 frames, otherwise verified model default (1500). No segmentation.
     /// The record survives errors; chosen context is not proof of native execution.
@@ -223,6 +260,8 @@ impl Engine {
 }
 
 trait ObservationSink {
+    fn phase_start(&mut self, _: Phase) {}
+    fn phase_end(&mut self, _: Phase) {}
     fn full_started(&mut self) {}
     fn prepared(&mut self, _: usize, _: Option<std::ops::Range<usize>>, _: usize) {}
     fn segment(
@@ -231,6 +270,15 @@ trait ObservationSink {
         _: &str,
     ) -> Result<(), InferenceError> {
         Ok(())
+    }
+}
+#[cfg(feature = "measurement")]
+impl ObservationSink for profile::Collector {
+    fn phase_start(&mut self, phase: Phase) {
+        self.start(phase);
+    }
+    fn phase_end(&mut self, phase: Phase) {
+        self.end(phase);
     }
 }
 struct NoObservation;
@@ -258,14 +306,18 @@ fn transcribe_using<D: speech_gate::Detector, O: ObservationSink>(
     observation: &mut O,
     decode: impl FnOnce(&[f32], Language, &mut O) -> Result<String, InferenceError>,
 ) -> Result<String, InferenceError> {
-    if samples.len() > MAX_SAMPLES || samples.iter().any(|sample| !sample.is_finite()) {
-        return Err(InferenceError::InvalidAudio);
-    }
-    let Some(range) = speech_range(samples, EnergyProfile::default()) else {
+    observation.phase_start(Phase::ValidationEnergy);
+    let range = if samples.len() > MAX_SAMPLES || samples.iter().any(|sample| !sample.is_finite()) {
+        Err(InferenceError::InvalidAudio)
+    } else {
+        Ok(speech_range(samples, EnergyProfile::default()))
+    };
+    observation.phase_end(Phase::ValidationEnergy);
+    let Some(range) = range? else {
         observation.prepared(samples.len(), None, 0);
         return Ok(String::new());
     };
-    if !gate.allows(samples)? {
+    if !gate.allows_observed(samples, observation)? {
         observation.prepared(samples.len(), Some(range), 0);
         return Ok(String::new());
     }
@@ -301,47 +353,179 @@ fn decode_with_audio_ctx<const SUPPRESS_TIMESTAMPS: bool, O: ObservationSink>(
     observation: &mut O,
     audio_ctx: i32,
 ) -> Result<String, InferenceError> {
-    let mut state = context
-        .create_state()
-        .map_err(|_| InferenceError::Context)?;
-    let mut parameters = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
-    parameters.set_n_threads(4);
-    parameters.set_language(Some(language.code()));
-    parameters.set_translate(false);
-    parameters.set_detect_language(false);
-    parameters.set_no_context(true);
-    parameters.set_no_timestamps(SUPPRESS_TIMESTAMPS);
-    parameters.set_print_special(false);
-    parameters.set_print_progress(false);
-    parameters.set_print_realtime(false);
-    parameters.set_print_timestamps(false);
-    parameters.set_suppress_nst(false);
-    parameters.set_no_speech_thold(0.6);
-    parameters.set_logprob_thold(-1.0);
-    parameters.set_entropy_thold(2.4);
-    if audio_ctx != 0 {
-        parameters.set_audio_ctx(audio_ctx);
-    }
-    observation.full_started();
-    state
-        .full(parameters, input)
-        .map_err(|_| InferenceError::Decode)?;
-    let mut text = String::new();
-    for segment in state.as_iter() {
-        let segment_text = segment.to_str().map_err(|_| InferenceError::InvalidText)?;
-        if text.len() + segment_text.len() > 256 * 1024 {
-            return Err(InferenceError::OutputLimit);
+    observation.phase_start(Phase::StateCreate);
+    let state = context.create_state().map_err(|_| InferenceError::Context);
+    observation.phase_end(Phase::StateCreate);
+    let mut state = state?;
+    let result = (|| {
+        let mut parameters = FullParams::new(SamplingStrategy::Greedy { best_of: 1 });
+        parameters.set_n_threads(4);
+        parameters.set_language(Some(language.code()));
+        parameters.set_translate(false);
+        parameters.set_detect_language(false);
+        parameters.set_no_context(true);
+        parameters.set_no_timestamps(SUPPRESS_TIMESTAMPS);
+        parameters.set_print_special(false);
+        parameters.set_print_progress(false);
+        parameters.set_print_realtime(false);
+        parameters.set_print_timestamps(false);
+        parameters.set_suppress_nst(false);
+        parameters.set_no_speech_thold(0.6);
+        parameters.set_logprob_thold(-1.0);
+        parameters.set_entropy_thold(2.4);
+        if audio_ctx != 0 {
+            parameters.set_audio_ctx(audio_ctx);
         }
-        observation.segment(&segment, segment_text)?;
-        text.push_str(segment_text);
-    }
-    Ok(text.trim().to_owned())
+        observation.full_started();
+        observation.phase_start(Phase::NativeFull);
+        let full = state
+            .full(parameters, input)
+            .map_err(|_| InferenceError::Decode);
+        observation.phase_end(Phase::NativeFull);
+        full?;
+        observation.phase_start(Phase::TextJoin);
+        let joined = (|| {
+            let mut text = String::new();
+            for segment in state.as_iter() {
+                let segment_text = segment.to_str().map_err(|_| InferenceError::InvalidText)?;
+                if text.len() + segment_text.len() > 256 * 1024 {
+                    return Err(InferenceError::OutputLimit);
+                }
+                observation.segment(&segment, segment_text)?;
+                text.push_str(segment_text);
+            }
+            Ok(text.trim().to_owned())
+        })();
+        observation.phase_end(Phase::TextJoin);
+        joined
+    })();
+    observation.phase_start(Phase::StateDrop);
+    drop(state);
+    observation.phase_end(Phase::StateDrop);
+    result
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use speech_gate::{Detector, SpeechGate};
+
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn profile_preserves_error_and_records_only_the_executed_guard_phases() {
+        let mut collector = profile::Collector::new();
+        let mut gate = SpeechGate::from_detector(FailedDetector);
+        let mut decoded = false;
+        let result = transcribe_using(
+            &[0.1; 3200],
+            Language::German,
+            &mut gate,
+            &mut collector,
+            |_, _, _| {
+                decoded = true;
+                Ok("unexpected".into())
+            },
+        );
+        let profile = collector.finish();
+        assert!(matches!(result, Err(InferenceError::Vad)));
+        assert!(!decoded);
+        for phase in [
+            Phase::ValidationEnergy,
+            Phase::VadNormalization,
+            Phase::VadInference,
+        ] {
+            assert!(profile.elapsed(phase).is_some());
+        }
+        for phase in [
+            Phase::StateCreate,
+            Phase::NativeFull,
+            Phase::TextJoin,
+            Phase::StateDrop,
+        ] {
+            assert_eq!(profile.elapsed(phase), None);
+        }
+        assert_eq!(profile.error, None);
+    }
+
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn profile_energy_reject_never_invents_vad_or_native_work() -> Result<(), InferenceError> {
+        let mut collector = profile::Collector::new();
+        let mut gate = SpeechGate::from_detector(FailedDetector);
+        let mut decoded = false;
+        let text = transcribe_using(
+            &[0.0; 3200],
+            Language::English,
+            &mut gate,
+            &mut collector,
+            |_, _, _| {
+                decoded = true;
+                Ok("unexpected".into())
+            },
+        )?;
+        let profile = collector.finish();
+        assert!(text.is_empty());
+        assert!(!decoded);
+        assert!(profile.elapsed(Phase::ValidationEnergy).is_some());
+        assert_eq!(profile.elapsed(Phase::VadNormalization), None);
+        assert_eq!(profile.elapsed(Phase::VadInference), None);
+        assert_eq!(profile.elapsed(Phase::NativeFull), None);
+        assert_eq!(profile.error, None);
+        Ok(())
+    }
+
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn profiled_prepare_keeps_the_same_language_pcm_and_padding() -> Result<(), InferenceError> {
+        let input = [0.1; 3200];
+        let mut baseline_observed = Vec::new();
+        let mut baseline_gate = SpeechGate::from_detector(RecordingDetector {
+            scores: &[0.8; 7],
+            observed: &mut baseline_observed,
+        });
+        let mut baseline_pcm = Vec::new();
+        let baseline_text = transcribe_with(
+            &input,
+            Language::English,
+            &mut baseline_gate,
+            |pcm, language| {
+                assert_eq!(language, Language::English);
+                baseline_pcm.extend_from_slice(pcm);
+                Ok("same result".into())
+            },
+        )?;
+        let mut observed = Vec::new();
+        let mut gate = SpeechGate::from_detector(RecordingDetector {
+            scores: &[0.8; 7],
+            observed: &mut observed,
+        });
+        let mut collector = profile::Collector::new();
+        let text = transcribe_using(
+            &input,
+            Language::English,
+            &mut gate,
+            &mut collector,
+            |pcm, language, _| {
+                assert_eq!(language, Language::English);
+                assert_eq!(pcm, baseline_pcm.as_slice());
+                assert_eq!(pcm.len(), 16000);
+                assert_eq!(&pcm[..3200], input.as_slice());
+                assert!(pcm[3200..].iter().all(|value| *value == 0.0));
+                Ok("same result".into())
+            },
+        )?;
+        let profile = collector.finish();
+        assert_eq!(text, baseline_text);
+        assert_eq!(observed, baseline_observed);
+        assert!(profile.elapsed(Phase::VadInference).is_some());
+        assert_eq!(
+            profile.elapsed(Phase::NativeFull),
+            None,
+            "controlled closure is not proof of a native Full call"
+        );
+        assert_eq!(profile.error, None);
+        Ok(())
+    }
 
     struct FailedDetector;
     impl Detector for FailedDetector {

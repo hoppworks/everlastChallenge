@@ -63,33 +63,52 @@ impl<D: Detector> SpeechGate<D> {
         }
     }
 
+    #[cfg(test)]
     pub(super) fn allows(&mut self, samples: &[f32]) -> Result<bool, InferenceError> {
-        if samples.is_empty()
-            || samples.len() > MAX_SAMPLES
-            || samples.iter().any(|v| !v.is_finite())
-        {
-            return Err(InferenceError::InvalidAudio);
-        }
-        let peak = samples
-            .iter()
-            .map(|v| f64::from(v.abs()))
-            .fold(0.0, f64::max);
-        let gain = if peak > 0.0 { PEAK / peak } else { 1.0 };
-        self.scratch.clear();
-        self.scratch
-            .try_reserve_exact(samples.len())
-            .map_err(|_| InferenceError::Memory)?;
-        self.scratch
-            .extend(samples.iter().map(|v| (f64::from(*v) * gain) as f32));
-        let probabilities = self.detector.probabilities(&self.scratch)?;
-        if probabilities.len() != samples.len().div_ceil(WINDOW)
-            || probabilities
+        self.allows_observed(samples, &mut super::NoObservation)
+    }
+    pub(super) fn allows_observed(
+        &mut self,
+        samples: &[f32],
+        observation: &mut impl super::ObservationSink,
+    ) -> Result<bool, InferenceError> {
+        observation.phase_start(super::Phase::VadNormalization);
+        let normalized = (|| {
+            if samples.is_empty()
+                || samples.len() > MAX_SAMPLES
+                || samples.iter().any(|v| !v.is_finite())
+            {
+                return Err(InferenceError::InvalidAudio);
+            }
+            let peak = samples
                 .iter()
-                .any(|p| !p.is_finite() || !(0.0..=1.0).contains(p))
-        {
-            return Err(InferenceError::Vad);
-        }
-        Ok(probabilities.iter().any(|p| *p >= THRESHOLD))
+                .map(|v| f64::from(v.abs()))
+                .fold(0.0, f64::max);
+            let gain = if peak > 0.0 { PEAK / peak } else { 1.0 };
+            self.scratch.clear();
+            self.scratch
+                .try_reserve_exact(samples.len())
+                .map_err(|_| InferenceError::Memory)?;
+            self.scratch
+                .extend(samples.iter().map(|v| (f64::from(*v) * gain) as f32));
+            Ok(())
+        })();
+        observation.phase_end(super::Phase::VadNormalization);
+        normalized?;
+        observation.phase_start(super::Phase::VadInference);
+        let detected = (|| {
+            let probabilities = self.detector.probabilities(&self.scratch)?;
+            if probabilities.len() != samples.len().div_ceil(WINDOW)
+                || probabilities
+                    .iter()
+                    .any(|p| !p.is_finite() || !(0.0..=1.0).contains(p))
+            {
+                return Err(InferenceError::Vad);
+            }
+            Ok(probabilities.iter().any(|p| *p >= THRESHOLD))
+        })();
+        observation.phase_end(super::Phase::VadInference);
+        detected
     }
 }
 

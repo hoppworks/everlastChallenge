@@ -21,3 +21,5 @@ pub mod target;
 pub mod ui_services;
 
 pub mod feedback;
+
+pub mod thread_observation;

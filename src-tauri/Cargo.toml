@@ -58,3 +58,7 @@ required-features = ["measurement"]
 [[example]]
 name = "observed_corpus_probe"
 required-features = ["measurement"]
+
+[[example]]
+name = "engine_profile_probe"
+required-features = ["measurement"]
