@@ -410,5 +410,127 @@ class ExecutorTests(unittest.TestCase):
         self.assertNotIn("private hypothesis", stdout.getvalue())
 
 
+
+class PretranscriptionTests(unittest.TestCase):
+    @staticmethod
+    def reports(directory, candidate=True, empty=False):
+        plan, case, paths = ExecutorTests.reports(directory, empty)
+        plan["parameters"]["configurationId"] = "p06-pretranscription-" + ("candidate" if candidate else "reference") + "-v1"
+        meta = json.loads(paths["metadata"].read_text())
+        meta["parameters"] = plan["parameters"]
+        meta["pretranscriptionCandidate"] = candidate
+        meta["contextCleanup"] = None
+        for row in meta["runs"]:
+            sid = row["session"]
+            job = dict(session=sid, generation=1, language="de", jobId=sid,
+                       timelineStart=0, timelineEnd=320, storageStart=0, storageEnd=320,
+                       inputFrames=320, hostSubmitOffsetNanos=20_000_020,
+                       serviceAcceptedOffsetNanos=20_000_030, workerBeforeDecodeOffsetNanos=20_000_040,
+                       workerAfterDecodeOffsetNanos=30_000_040, workerSettledOffsetNanos=30_000_050,
+                       resultAdoptedOffsetNanos=30_000_060, workerOutcome="decoded-ok",
+                       adoption="accepted", audioReleasedAtSubmit=True, requiredStableFrames=320)
+            row["jobTrace"] = dict(error=None, trace=dict(enabled=True, session=sid, maximumJobs=601,
+                error=None, overflowEvents=0, firstOverflowJob=None, retiredJob=None, jobs=[job]),
+                inputProofs=[dict(jobId=sid, requiredStableFrames=320,
+                publishedThroughFramesAtAdmission=320, lastCompletePublicationOffsetNanos=20_000_010)])
+        meta["jobTraceAfterCleanupError"] = None
+        meta["jobTraceAfterCleanup"] = meta["runs"][-1]["jobTrace"]["trace"]
+        paths["metadata"].write_text(json.dumps(meta))
+        return plan, case, paths, meta
+
+    def test_parameter_mode_is_explicit_and_unknown_variants_fail_closed(self):
+        for name in ("paced-full-recording-native-timestamps-rtf-tc-owned-v6",
+                     "p06-pretranscription-reference-v1", "p06-pretranscription-candidate-v1"):
+            executor.validate_parameter_mode(dict(configurationId=name,
+                measurement=dict(publisherThread=dict(policy="timeConstrained"))))
+        for name, policy in (("unknown", "timeConstrained"),
+                             ("p06-pretranscription-candidate-v1", "userInteractive")):
+            with self.assertRaises(ValueError):
+                executor.validate_parameter_mode(dict(configurationId=name,
+                    measurement=dict(publisherThread=dict(policy=policy))))
+
+    def test_accepts_complete_eleven_rows_for_both_explicit_modes_and_empty(self):
+        for candidate, empty in ((False, False), (True, False), (True, True)):
+            with self.subTest(candidate=candidate, empty=empty), tempfile.TemporaryDirectory() as d:
+                plan, case, paths, _ = self.reports(Path(d), candidate, empty)
+                self.assertEqual(executor.validate_case(plan, case, paths)["errors"], [])
+
+    def test_rejects_missing_or_corrupt_trace_in_any_of_eleven_rows(self):
+        for index in range(11):
+            for mutation in ("missing", "gap", "proof", "unsettled", "premature", "generation"):
+                with self.subTest(index=index, mutation=mutation), tempfile.TemporaryDirectory() as d:
+                    plan, case, paths, meta = self.reports(Path(d))
+                    evidence = meta["runs"][index]["jobTrace"]
+                    job = evidence["trace"]["jobs"][0]
+                    if mutation == "missing": del meta["runs"][index]["jobTrace"]
+                    if mutation == "gap": job["timelineStart"] = 1
+                    if mutation == "proof": evidence["inputProofs"][0]["publishedThroughFramesAtAdmission"] = 0
+                    if mutation == "unsettled": job["workerSettledOffsetNanos"] = None
+                    if mutation == "premature": job["hostSubmitOffsetNanos"] = 19_000_000
+                    if mutation == "generation": job["generation"] = 2
+                    paths["metadata"].write_text(json.dumps(meta))
+                    self.assertTrue(executor.validate_case(plan, case, paths)["errors"])
+
+    def test_prefix_suffix_local_storage_and_published_admission_are_verified(self):
+        with tempfile.TemporaryDirectory() as d:
+            plan, case, paths, meta = self.reports(Path(d))
+            case["audio"]["frames"] = meta["inputFrames"] = 16000
+            for row in meta["runs"]:
+                row.update(engineInputFrames=16000, engineElapsedNanos=20_000_000,
+                           engineRtf=.02, tStopOffsetNanos=1_000_000_100,
+                           tTerminalOffsetNanos=1_030_000_100, stopToTerminalNanos=30_000_000,
+                           tTextOffsetNanos=1_030_000_100, stopToTextNanos=30_000_000)
+                row["feed"] = dict(timingValid=True, plannedStopOffset=dict(secs=1, nanos=0),
+                    waitSummary=dict(observedPublications=50, detailedPublications=0),
+                    publications=[dict(startFrame=i*320, endFrame=(i+1)*320,
+                        plannedNanos=(i+1)*20_000_000, beforePublishNanos=(i+1)*20_000_000+1,
+                        afterPublishNanos=(i+1)*20_000_000+10, deviationNanos=10,
+                        timing="onBudget") for i in range(50)])
+                evidence = row["jobTrace"]
+                base = evidence["trace"]["jobs"][0]
+                jobs, proofs = [], []
+                for part, start, end, submit, released in (
+                        (0, 0, 3200, 500_000_020, False),
+                        (1, 3200, 16000, 1_000_000_020, True)):
+                    job = dict(base)
+                    jid = row["session"]*2-1+part
+                    required = end if released else end+4800
+                    job.update(jobId=jid, timelineStart=start, timelineEnd=end,
+                        storageStart=0, storageEnd=end-start, inputFrames=end-start,
+                        audioReleasedAtSubmit=released, requiredStableFrames=required,
+                        hostSubmitOffsetNanos=submit, serviceAcceptedOffsetNanos=submit+10,
+                        workerBeforeDecodeOffsetNanos=submit+20,
+                        workerAfterDecodeOffsetNanos=submit+10_000_020,
+                        workerSettledOffsetNanos=submit+10_000_030,
+                        resultAdoptedOffsetNanos=submit+10_000_040)
+                    jobs.append(job)
+                    proofs.append(dict(jobId=jid, requiredStableFrames=required,
+                        publishedThroughFramesAtAdmission=8000 if part==0 else 16000,
+                        lastCompletePublicationOffsetNanos=submit-10))
+                evidence["trace"]["jobs"] = jobs
+                evidence["inputProofs"] = proofs
+            meta["jobTraceAfterCleanup"] = meta["runs"][-1]["jobTrace"]["trace"]
+            paths["metadata"].write_text(json.dumps(meta))
+            self.assertEqual(executor.validate_case(plan, case, paths)["errors"], [])
+            # The decoded prefix must not be admitted using unpublished lookahead.
+            meta["runs"][7]["jobTrace"]["trace"]["jobs"][0]["hostSubmitOffsetNanos"] = 499_999_999
+            paths["metadata"].write_text(json.dumps(meta))
+            self.assertTrue(executor.validate_case(plan, case, paths)["errors"])
+
+    def test_rejects_postjoin_changes_identity_reuse_and_mixed_modes(self):
+        for mutation in ("late", "late_error", "reuse", "mode", "context"):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as d:
+                plan, case, paths, meta = self.reports(Path(d))
+                if mutation == "late": meta["jobTraceAfterCleanup"] = {}
+                if mutation == "late_error": meta["jobTraceAfterCleanupError"] = "failed"
+                if mutation == "reuse":
+                    meta["runs"][5]["jobTrace"]["trace"]["jobs"][0]["jobId"] = 5
+                    meta["runs"][5]["jobTrace"]["inputProofs"][0]["jobId"] = 5
+                if mutation == "mode": meta["pretranscriptionCandidate"] = False
+                if mutation == "context": meta["contextCleanup"] = {}
+                paths["metadata"].write_text(json.dumps(meta))
+                self.assertTrue(executor.validate_case(plan, case, paths)["errors"])
+
+
 if __name__ == "__main__":
     unittest.main()

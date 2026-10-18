@@ -110,3 +110,27 @@ an den Unicode-13-Evaluator geben; die 1034 Runzeilen dürfen nicht als ein Corp
 an dessen 500-Fälle-Grenze vorbei übergeben werden. Der Executor normalisiert
 keine Referenz und führt selbst keine WER-/Ankerprüfung durch. Er behauptet keine
 L-/RTF-/P05-/P06-, Mikrofon- oder installierte Appqualifikation.
+
+### Explizite Vorabtranskriptions-Messvarianten
+
+Neben der unveränderten v6-Konfiguration akzeptiert der Executor ausschließlich
+die kompilierten Einzelaufnahme-IDs `p06-pretranscription-reference-v1` und
+`p06-pretranscription-candidate-v1`. Publisher-, Timing-, Input-, Modell- und
+Cleanupprüfungen bleiben identisch. Der Parameterbeleg muss weiterhin mit dem
+vollständigen tatsächlichen Metadaten-Dokument übereinstimmen; das Probe-Binary
+akzeptiert nur seinen exakten kompilierten Parametersatz.
+
+Für diese beiden Varianten muss zusätzlich
+`scripts/run-pretranscription-screening.py` in den eindeutigen, aktuellen und
+gegen dieselbe immutable Source-Revision geprüften Sourcebindungen stehen.
+Sein reiner Tracevalidator wird wiederverwendet: jede der elf Zeilen (Warmup
+eingeschlossen) benötigt begrenzte Session-/Generation-/Jobidentität, lückenlose
+globale Frameabdeckung, passende lokale Storagebereiche, vollständige
+InputProofs aus den tatsächlich bereits publizierten Frames, monotone
+Worker-/Settlement-/Adoptionskanten und endgültige Audiofreigabe. Job-IDs dürfen
+zwischen Sessions nicht zurückspringen oder wiederverwendet werden. Der
+gemeldete Varianten-Bool muss zur Parameter-ID passen, ein Audio-Context-Mix
+wird abgewiesen. Nach dem Owner-Join muss der letzte Trace unverändert und
+fehlerfrei vorliegen. Ein fehlender oder widersprüchlicher Nachweis stoppt die
+Folgefälle unter Beibehaltung aller 94 Slots und 1034 Zeilen. Dies ist ein
+diskreter Nachweis, keine kontinuierliche Scheduler- oder Ressourcenbehauptung.

@@ -234,6 +234,42 @@ def validate_publisher(row):
         check(snapshot["defaultPolicy"] is False and snapshot["basicPolicy"] == 2 and snapshot["timeConstraint"] == requested, "TC demotion/mismatch observed")
 
 
+PRETRANSCRIPTION_IDS = {
+    "p06-pretranscription-reference-v1": False,
+    "p06-pretranscription-candidate-v1": True,
+}
+_TRACE_VALIDATOR = None
+
+
+def validate_parameter_mode(parameters):
+    allowed = {"paced-full-recording-native-timestamps-rtf-tc-owned-v6"} | set(PRETRANSCRIPTION_IDS)
+    check(parameters["configurationId"] in allowed and
+          parameters["measurement"]["publisherThread"]["policy"] == "timeConstrained",
+          "explicit TC parameter variant required")
+
+
+def pretranscription_variant(parameters):
+    return PRETRANSCRIPTION_IDS.get(parameters.get("configurationId"))
+
+
+def validate_pretranscription_trace(evidence, row, frames, language):
+    """Reuse the screening's pure bounded range/admission/settlement contract.
+
+    Lazy loading avoids its reverse common-helper import at module initialization.
+    This source is separately required in pretranscription freeze source bindings.
+    No process, audio or model operation runs during import.
+    """
+    global _TRACE_VALIDATOR
+    if _TRACE_VALIDATOR is None:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "remainder_screening_trace", Path(__file__).with_name("run-pretranscription-screening.py"))
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _TRACE_VALIDATOR = module.validate_trace
+    return _TRACE_VALIDATOR(evidence, row, frames, language)
+
+
 def validate_case(plan, case, paths):
     canonical = rows_for(case, "missing")
     actual_pid = None
@@ -262,6 +298,10 @@ def validate_case(plan, case, paths):
         check(metadata["debugAssertions"] is False and metadata["qualified"] is False and metadata["L"] is None, "invalid release/qualification flags")
         check(integer(metadata["processId"], 1), "actual processId missing")
         actual_pid = metadata["processId"]
+        variant = pretranscription_variant(plan["parameters"])
+        if variant is not None:
+            check(metadata["pretranscriptionCandidate"] is variant and metadata["contextCleanup"] is None,
+                  "mixed pretranscription/context experiment")
         observations = metadata["runs"]
         check(isinstance(observations, list) and len(observations) == 11, "observation row count differs from11")
         for index, (result, row) in enumerate(zip(results, observations)):
@@ -302,9 +342,20 @@ def validate_case(plan, case, paths):
                 check(text == "" and row["tTextOffsetNanos"] is None and row["stopToTextNanos"] is None, "Empty has text or L timestamp")
             else:
                 check(isinstance(text, str) and bool(text.strip()) and row["tTextOffsetNanos"] == terminal and row["stopToTextNanos"] == terminal - stopped, "Local text/timestamp missing")
+            if variant is not None:
+                validate_pretranscription_trace(row["jobTrace"], row, frames, case["language"])
+                if index:
+                    previous_jobs = observations[index-1]["jobTrace"]["trace"]["jobs"]
+                    current_jobs = row["jobTrace"]["trace"]["jobs"]
+                    check(current_jobs[0]["jobId"] > previous_jobs[-1]["jobId"],
+                          "job identity reused across sessions")
             canonical[index].update(validated=True, session=row["session"], expectedOutcome=outcome,
                                     engineElapsedNanos=elapsed, engineRtf=rtf, stopToTerminalNanos=terminal-stopped,
                                     stopToTextNanos=row["stopToTextNanos"], publicationCount=count)
+        if variant is not None:
+            check(metadata["jobTraceAfterCleanupError"] is None and
+                  metadata["jobTraceAfterCleanup"] == observations[-1]["jobTrace"]["trace"],
+                  "post-join trace changed or unavailable")
         check(metadata["expectedOutcome"] == outcome and metadata["passed"] is True and metadata["loadError"] is None, "case-level setup/outcome failure")
         check(metadata["cleanup"]["joined"] is True and metadata["cleanup"].get("error") is None, "cleanup join/error invalid")
         check(metadata["engineTimingCoverage"] == {"measuredRuns": 10, "withActualEngineTiming": 10}, "engine timing coverage incomplete")
@@ -406,13 +457,16 @@ def preflight(freeze_path, root):
     check(parameters["build"]["debugAssertions"] is False, "release parameter configuration required")
     full = parameters["runtime"]["fullParams"]
     check(full["no_timestamps"] is False and full["suppress_nst"] is False, "production decoding configuration mismatch")
-    check(parameters["configurationId"] == "paced-full-recording-native-timestamps-rtf-tc-owned-v6" and parameters["measurement"]["publisherThread"]["policy"] == "timeConstrained", "explicit TC parameter variant required")
+    validate_parameter_mode(parameters)
     for key, value in {"chunkMillis": 20, "jitterToleranceNanos": 10_000_000,
                        "maximumSleepNanos": 1_000_000, "finalSpinNanos": 250_000}.items():
         check(parameters["measurement"][key] == value, "fixed clock configuration mismatch")
     pins = compiled_sources(parameters)
     sources = {b["path"]: b for b in freeze["sources"]}
     check(len(sources) == len(freeze["sources"]) and (set(pins) | OWN_SOURCES).issubset(sources), "source list must uniquely include compiled pins plus executor/test/schema")
+    if pretranscription_variant(parameters) is not None:
+        check("scripts/run-pretranscription-screening.py" in sources,
+              "shared pretranscription trace validator source binding missing")
     for path, binding in sources.items():
         data = verify_binding(root, binding, fingerprints, MAX_JSON, True)
         check(path not in pins or pins[path] == binding["sha256"], "compiled/source binding mismatch")
