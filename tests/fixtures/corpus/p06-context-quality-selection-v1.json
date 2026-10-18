@@ -1,0 +1,1535 @@
+{
+  "schemaVersion": 1,
+  "kind": "prospective-p06-context-quality-selection-v1",
+  "qualified": false,
+  "policyProspect": "docs/verification/p06-audio-context-experiment-v1.md",
+  "sourceManifests": [
+    {
+      "path": "tests/fixtures/corpus/acceptance-v1.json",
+      "sha256": "7d7a25695ab77d9d4affe04b0bbc1ce5f8bc4b38a59b40763fd26884d090c67d",
+      "bytes": 126728
+    },
+    {
+      "path": "tests/fixtures/corpus/native-timestamps-supplement-v1.json",
+      "sha256": "67f5ea1c457d4ec230b4ffc3bb032284badf0ee29f4721492a25b597140e34f0",
+      "bytes": 8797
+    },
+    {
+      "path": "tests/fixtures/corpus/calibration-v2.json",
+      "sha256": "514befba28e7ea14882cd13a71f971e5fb6c6131f914491b697741a027611a49",
+      "bytes": 56879
+    },
+    {
+      "path": "artifacts/diagnostic-speech/long-control-v1/manifest.json",
+      "sha256": "d03a4aa23d2f5a5fe67671ddb298801b64af4368e8eab90510eafc30bcf2ed37",
+      "bytes": 12137
+    }
+  ],
+  "selectionPolicy": "All original acceptance90 in unchanged order, then existing supplement5, four existing calibration roles, controlled300. No new or omitted cases; no repeat weighting.",
+  "comparisonGroups": "Original acceptance90 DE/EN x clean/challenging separately; supplement/calibration/controlled families are separate controls, never folded into original WER denominators.",
+  "comparisonBaseline": "New same-code same-wrapper context-reference outputs; historical outputs are drift and semantic-provenance anchors only.",
+  "qualityThreshold": "For each original group: 200*(candidateEdits-referenceEdits)<=referenceTokens; clean absolute WER<=0.10 per language; independent differential anchor/segment/empty/short/A22 review.",
+  "caseCount": 100,
+  "cases": [
+    {
+      "id": "fleurs-de-test-1660",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 166080,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1660.wav",
+        "sampleRate": 16000,
+        "sha256": "a66eaf81acafe0b195defc63ed17079e3ee4067837ec037f43189a8c07266f93"
+      },
+      "referenceUtf8Sha256": "8700ebc82ab270f14d2e64d94eb16235f1998dc6159621f093891cbca937753d",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1661",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 106560,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1661.wav",
+        "sampleRate": 16000,
+        "sha256": "1106da01f1ba8e3eb876a433fa884265a1a057c332b90f36dfbc76e8d033a4f0"
+      },
+      "referenceUtf8Sha256": "0a5a838829580ccefd0558c3483c01e13e2bdf87aa68b700fb1c0b53214e88f8",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1662",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 375360,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1662.wav",
+        "sampleRate": 16000,
+        "sha256": "ee4d0708ee838307fa0a73a29667e830c732e01cba61a65dd2be27385a98e781"
+      },
+      "referenceUtf8Sha256": "a10b37ba32ca9ce6523f4aab4525c0f22582132c846a79cf206b106da237c642",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1663",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 160000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1663.wav",
+        "sampleRate": 16000,
+        "sha256": "e86ac3cc846d6fb8655fbbdaa6906d8812810bcc03fedeb4c385b7d039d0b79d"
+      },
+      "referenceUtf8Sha256": "1cdc6da736d89b173190df5d25eb9879d82bd73c0b9672cddcfea949fdf44a38",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1664",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 139200,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1664.wav",
+        "sampleRate": 16000,
+        "sha256": "58898f88e5470d640487c22539d6f9726c2deb62447d584eecf723e8716a5acc"
+      },
+      "referenceUtf8Sha256": "f7697e63f690a89d6d692c418c802b1b42cb5c3b3150bf55b5de4a98a27076b6",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1665",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 170880,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1665.wav",
+        "sampleRate": 16000,
+        "sha256": "cacc73b9bc8f4dc2f5938f13592d41522aba683185eb4857a55c4a543377f75f"
+      },
+      "referenceUtf8Sha256": "6ac9f25615a1c3e95653f79b2698694a22512cd0efbc995f2678c550392e4f58",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1666",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 284160,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1666.wav",
+        "sampleRate": 16000,
+        "sha256": "bd37e0d2856a8b827af8d7f42c432e6e114f6eb1d5dd2ed3846f76893f2ab24e"
+      },
+      "referenceUtf8Sha256": "cef0ff97f781ffe7f8699936cd665ab9c8794788fb64a59a7b7fc5ce7f5ead82",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1667",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 442560,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1667.wav",
+        "sampleRate": 16000,
+        "sha256": "ae2cc2fd5c40fc6ec00e0938a2eba23c7a110818f3b564cbca35ef4856fe00d7"
+      },
+      "referenceUtf8Sha256": "200e45bf15ed3bd8582afdb11e3264f85b8b72dd04c7c86f27c2063575aa499b",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1668",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 240000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1668.wav",
+        "sampleRate": 16000,
+        "sha256": "27e005fc4ffab77389bda81861250b6a3616fb2e686e65ef366314bad791abf6"
+      },
+      "referenceUtf8Sha256": "d3cd79b9c440000b83c9dce50a0b527837937aa1b689b7ed5bd079d44e2a53a2",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1669",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 204480,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1669.wav",
+        "sampleRate": 16000,
+        "sha256": "d80f796a615341eea4ea84c38e56d2beea5b505080d67fe1bcd354a320238eb6"
+      },
+      "referenceUtf8Sha256": "3cc28fc8ee56a2bade992ba58b42035ea746efb87300d38c0bb958f5fc0cb39a",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1670",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 337920,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1670.wav",
+        "sampleRate": 16000,
+        "sha256": "218549b01ef27b749d8a5188266755d317a2b4dc6059836df38112eca5f6c616"
+      },
+      "referenceUtf8Sha256": "116a3aa22f961bdd635ad84286a1f01a23360761e78a1e9478fe6cfb0bcb01c1",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1671",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 459840,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1671.wav",
+        "sampleRate": 16000,
+        "sha256": "5c3702a82696c772446d83478803ed3e4c7c607b142eaf46eb4d287d8564696e"
+      },
+      "referenceUtf8Sha256": "a9701b5f3b9c26804367aa647c02eb56fb49b25745c0c44a8fab687a086c3214",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1672",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 168000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1672.wav",
+        "sampleRate": 16000,
+        "sha256": "47c5fd1658abfaffa2a24b7534cbc5199c8474f74fec8442cd73f5503d935249"
+      },
+      "referenceUtf8Sha256": "2751712850da193b14baf915edce2ad0fcc6f18ed8198b684ea9e356e5d3090c",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1673",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 201600,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1673.wav",
+        "sampleRate": 16000,
+        "sha256": "85b87f2aa27a995e798da31cd6c2aa1ee00fdb168da9e06c4a1794b20802a7d9"
+      },
+      "referenceUtf8Sha256": "b2a9a5665923dcff30fdc0bb775bc4e66a9b9448aede388e00afe75c931c35a3",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1674",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 192960,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1674.wav",
+        "sampleRate": 16000,
+        "sha256": "81eca22f5b771009d1d2e24fb8c5d3641bedeb1a5e4de3a03e50a6e6f06294d0"
+      },
+      "referenceUtf8Sha256": "472980dd63672b20bbae05ce137b2e6b0332fb90238b8fa6f012eea9dc675941",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1675",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 253440,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1675.wav",
+        "sampleRate": 16000,
+        "sha256": "76268a0036d64afe231afbf16a2c01df39e48165f4376c70cad131fcb0474905"
+      },
+      "referenceUtf8Sha256": "121b461d351a879192935db1a3432920fe7b4ca760086804482b0975621d08b6",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1676",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 96960,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1676.wav",
+        "sampleRate": 16000,
+        "sha256": "224c39bf03540bd1a5c30004d9991c18c12151b155b6a6b587b72f03d75f53b5"
+      },
+      "referenceUtf8Sha256": "c5d5da0bb843d479a3001a4da183f70c9fe36a745fcd0564a326aeffa8c14846",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1677",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 86400,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1677.wav",
+        "sampleRate": 16000,
+        "sha256": "b299953f9d4f50393119d28774475ea7208d7fa4afc3eef3d63d440d2a97ead5"
+      },
+      "referenceUtf8Sha256": "b700d143d280ed0ba4eb022e26ba120dd0b0db9defa50460dfae3457e5365c4d",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1678",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 256320,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1678.wav",
+        "sampleRate": 16000,
+        "sha256": "45a05c8b45f4baa25c5093e52ee8ce67df8c177a1f8a7da213d8dc18587cb4ae"
+      },
+      "referenceUtf8Sha256": "dc3a921e8e034ea236591d1944c67bd16ddc988957b12fac8486b88dbae2836d",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1679",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 106560,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1679.wav",
+        "sampleRate": 16000,
+        "sha256": "4efa54c2de9100fb014ddc30da83b1fd70175fdef742614e81051408f0250ee7"
+      },
+      "referenceUtf8Sha256": "147b1ddc39e21868e8fca6a0a2a1c7b03e4fe7015ffe7ab0f700caf3071e81d2",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1680",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 158400,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1680.wav",
+        "sampleRate": 16000,
+        "sha256": "c06ddc0f23b18bbea72418316b2e869aa01de388c19d7b5209e01ee17f5bb037"
+      },
+      "referenceUtf8Sha256": "16e78e8e91d2fa8bd324de51deffe428f0f23d9e62c25672e04a6e2a9324acb8",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1682",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 310080,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1682.wav",
+        "sampleRate": 16000,
+        "sha256": "4605ed38d8740156c0dcfa75419585752922b222a7d5bfec7c212d1dda9522ec"
+      },
+      "referenceUtf8Sha256": "d05efdae9c0691a3b87895aab28ff82ca11aaeda0e64afc8ef43c07b4b9772cc",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1683",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 170880,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1683.wav",
+        "sampleRate": 16000,
+        "sha256": "90c9e5da7736b3f5a7e87eb9322c151e7b496cd2a22a3e5719a8f530e5317976"
+      },
+      "referenceUtf8Sha256": "f6309bf6c6f3dfc9dde1d51542ac5e8f9cab11fd68b301d9145b9729ca2d9faa",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1684",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 197760,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1684.wav",
+        "sampleRate": 16000,
+        "sha256": "3ffc815d7bc4dba5ccf81f937bd2f1fa7cbe85a5a5cdabb2f76218ec0272a525"
+      },
+      "referenceUtf8Sha256": "f7249c43b1d347c5a765e409db6fdf71e3cf10f2889c4c57d6df44054667a65c",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1685",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 353280,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1685.wav",
+        "sampleRate": 16000,
+        "sha256": "eb8932f65a6a0d872dfe9f90ec99b1bdab60f4ab4a7b0c3033bb66d13e12a6ad"
+      },
+      "referenceUtf8Sha256": "d52dc8f013ba12ee6fc1384af4d1610ced71da74c178b43e4fe69cb998a5d7dd",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1686",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 151680,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1686.wav",
+        "sampleRate": 16000,
+        "sha256": "f552614ec20000c5b49d1a9be8c8ccca645c0efe41b108d79661dc07568dd9c8"
+      },
+      "referenceUtf8Sha256": "f98461ff1b9bb0f31abd5b0ae2351db2d324592d0235b871f4cf0df58f8c10cb",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1687",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 112320,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1687.wav",
+        "sampleRate": 16000,
+        "sha256": "a59c136aa0762de6ffe2064f5d5f6ca4df2edc709798b38ec5ff312053e6dcf6"
+      },
+      "referenceUtf8Sha256": "1bb08f2d8372e8c7a4dca686fd6c91962b69296ccc300a9bb46149d134721038",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1688",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 271680,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1688.wav",
+        "sampleRate": 16000,
+        "sha256": "c3109ed6c1fcec23c00d0ec097ff9d99b3869b58457168b599f67916f6892bd1"
+      },
+      "referenceUtf8Sha256": "58f0e0c52faef768ba8bb809e6dbde63b38ad4abf0256c7326ce35155411ffc4",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1689",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 289920,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1689.wav",
+        "sampleRate": 16000,
+        "sha256": "58925b17bbf08baf2bc0517b2f3b85bb941d7fb10b502691f610bb141524df3c"
+      },
+      "referenceUtf8Sha256": "966a7fd3c5e6dc71fd22ac1c845a26b72968318315cd938cfd88a47fe3e35ce1",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1690",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 233280,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1690.wav",
+        "sampleRate": 16000,
+        "sha256": "b94c30e0687482d99d30cf78249712e62bcc492710111857465ecb0e0f2679dc"
+      },
+      "referenceUtf8Sha256": "c3cd56b3742cf53c8d3ae7688aac525de7e6753ea5f83b80e8e4df50894bc9db",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1691",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 132480,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1691.wav",
+        "sampleRate": 16000,
+        "sha256": "2ada4aefe5616f421916711bd445ded60857f88c8729ca389efe3eb3ef7f46cc"
+      },
+      "referenceUtf8Sha256": "d36eb365e8d25bd5f11056e7730742de8ef1ef7dddb521d6e91b7fae15421cce",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1692",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 184320,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1692.wav",
+        "sampleRate": 16000,
+        "sha256": "62afc8adc4a9dda6bdbd3adc90ab218232e2b1ec06dc6f49adedba8e3b2f06a9"
+      },
+      "referenceUtf8Sha256": "b227f2201c1ad3a32d1981e93fbda38bd1f5ecdaf77724541294ca6e928948ef",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1693",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 142080,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1693.wav",
+        "sampleRate": 16000,
+        "sha256": "7f6fb3f43ee5c56b44e20145aa99a819f398ad5344a6997a564056056c85c9ef"
+      },
+      "referenceUtf8Sha256": "d5f3bb270657cd4a984ceb4ee20e399646bccc7d36464dd84036bb1c15c05b4b",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1694",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 229440,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1694.wav",
+        "sampleRate": 16000,
+        "sha256": "27451986155a8d107c65651f6ee3482d7712574cab874181825e3fe3c5a93016"
+      },
+      "referenceUtf8Sha256": "197bf6897ea6da08872d1c504594324426f2c69b902432060d75c8fb9aafa2ee",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1695",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 192960,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1695.wav",
+        "sampleRate": 16000,
+        "sha256": "7e74f7dc2ab01fef6bdfb4f438d34b35c4fb98833510ded035628fc344ceb9f1"
+      },
+      "referenceUtf8Sha256": "8c30c542d7185b4de93e15497206e65b0a486f61ab2a696cad663cbed589afa0",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1696",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 283200,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1696.wav",
+        "sampleRate": 16000,
+        "sha256": "b4ef3f6261ff21ec0fe8546fc449cd11480981685b80e1c412c9afb37e432591"
+      },
+      "referenceUtf8Sha256": "3e8fe876442b5e10499158e730cd7fcc0dba84cb072db1f74cc8925828a7abc7",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1697",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 127680,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1697.wav",
+        "sampleRate": 16000,
+        "sha256": "33fd9c4122f75551cb59d22d4ce0e848d2a5bd2a916fdd5f97bbc79033e0b79c"
+      },
+      "referenceUtf8Sha256": "15b620cdafc62570acf0f109c952ea333a43f4c1a694b3f4cd6c09e9efe9a3ba",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1698",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 360000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1698.wav",
+        "sampleRate": 16000,
+        "sha256": "c1196fa78010d4b1db1fdddbf6d645692f8c5c7300a04d47e6a0c889fb6187be"
+      },
+      "referenceUtf8Sha256": "6e244f856fb9d7a40526c0a7b3a0b4e97baedfdee7456252f2ea139b1c008888",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1699",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 165120,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1699.wav",
+        "sampleRate": 16000,
+        "sha256": "b9393a8a8dcd19a8082692078bf70678b6992f2f4ed0f69097fffd4cf62f1507"
+      },
+      "referenceUtf8Sha256": "268afb224cf9f367d564438074247766b288358acdfdedf1eaa9ac018ff54d73",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1700",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 117120,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1700.wav",
+        "sampleRate": 16000,
+        "sha256": "86ed2606de1afc1ca4f34073442eb1227c80f6e5f506000e5939db314c6caa0c"
+      },
+      "referenceUtf8Sha256": "3688280bfe9e6544a5039e9e819647e0d64dabf7e2f999cd32e4fc9931932a59",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1736",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1736.wav",
+        "sampleRate": 16000,
+        "sha256": "67718418a15f877ec263f7c864e6b72fd41365afebeb78e915a4c97066bb6670"
+      },
+      "referenceUtf8Sha256": "57ce29a29d84fb1d4e22ea4fece6b196c117c1ed5afc2783b09a04df7b81ebcd",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1660-quiet",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "de",
+      "audio": {
+        "frames": 166080,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1660-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "6af20bdab84f5b7b0ee47a59e9474626e76eaf5e1a7010066ea530161fd37abf"
+      },
+      "referenceUtf8Sha256": "8700ebc82ab270f14d2e64d94eb16235f1998dc6159621f093891cbca937753d",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1661-quiet",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "de",
+      "audio": {
+        "frames": 106560,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1661-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "39068797a6ffd78f857c0e5c881ef845f8029efc6a6aa56e2d1e4dd6c197b16a"
+      },
+      "referenceUtf8Sha256": "0a5a838829580ccefd0558c3483c01e13e2bdf87aa68b700fb1c0b53214e88f8",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1662-quiet",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "de",
+      "audio": {
+        "frames": 375360,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1662-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "3fd4c1c4b8072dc17784234ab86292829c9765eee8e991c18a5d4620af70f8fb"
+      },
+      "referenceUtf8Sha256": "a10b37ba32ca9ce6523f4aab4525c0f22582132c846a79cf206b106da237c642",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1663-quiet",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "de",
+      "audio": {
+        "frames": 160000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1663-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "0cd0cf219d3bbdb9fd5edaa764813a9d837f5e0b26b9b5d619eca4ffc1558bdd"
+      },
+      "referenceUtf8Sha256": "1cdc6da736d89b173190df5d25eb9879d82bd73c0b9672cddcfea949fdf44a38",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1664-quiet",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "de",
+      "audio": {
+        "frames": 139200,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1664-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "922b2b157744661d31fbe3ee4e603606f1b5b33251668771720f31f0184d348a"
+      },
+      "referenceUtf8Sha256": "f7697e63f690a89d6d692c418c802b1b42cb5c3b3150bf55b5de4a98a27076b6",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1660",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 170880,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1660.wav",
+        "sampleRate": 16000,
+        "sha256": "0f608e0e9e87ffca1289b5180322e7f88f532195820e4fdce53fc9ef5e67e4e7"
+      },
+      "referenceUtf8Sha256": "a81391740174adf0516811f524207656b3bbb894276376ac1fec0b5fb0722f26",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1661",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 101760,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1661.wav",
+        "sampleRate": 16000,
+        "sha256": "779f912307ff0982dfe146e19366685e8d57976e221b3bef271d199361d769b8"
+      },
+      "referenceUtf8Sha256": "867cab1e0f4044bf307a4a0fbf39e76b85c052df127244d66f779e00be3b4941",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1662",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 134080,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1662.wav",
+        "sampleRate": 16000,
+        "sha256": "b4a5f1c4c1c3769c7344892db3996ea04eb842baf6fa28be28acb1e79a95f03d"
+      },
+      "referenceUtf8Sha256": "5f02d8c4cc7fccc8b1dab61bb6b9ccb6ad5c5d3ddd681063390f098d848d5fc2",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1663",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 193920,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1663.wav",
+        "sampleRate": 16000,
+        "sha256": "3fba7a13be7eba17263cb9e017c41a0040e7bb4ab8e84d454ce9858520aa1507"
+      },
+      "referenceUtf8Sha256": "6347292e3f3fa98ce1f0feb1c20e56b259db806a47ed1a1cc4dd5bd4c14782cd",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1664",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 133760,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1664.wav",
+        "sampleRate": 16000,
+        "sha256": "702fa8c3cf5341589a026377caa98d463853a55d8e270b6f72856cbe1321b37e"
+      },
+      "referenceUtf8Sha256": "362a06cedd0b60f50abd59f98f4bc38d39c5fe54d8e8a9113d29b5c0efa355fb",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1665",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 132480,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1665.wav",
+        "sampleRate": 16000,
+        "sha256": "7077b38c6e54cbfa42fea8acacc931ebac9d015ba63b94ed57d9408745df4edd"
+      },
+      "referenceUtf8Sha256": "b73f2458cd2eb42257fbe4597d59bb2e1e056e6f17d39f2600745342032aeda3",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1666",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 133440,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1666.wav",
+        "sampleRate": 16000,
+        "sha256": "9ea7d021fefc00b6569be88250913b2998933780fc900df664e45137de884a84"
+      },
+      "referenceUtf8Sha256": "5a20dfd0e38b00f4ddeb0086147689822ad22f34e619e1244f712ac16741ee44",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1667",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 240000,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1667.wav",
+        "sampleRate": 16000,
+        "sha256": "7ccf8be690e39e04c1481bf1162e0b6efe8abfccbfa8e0bd5b103f502c2c4390"
+      },
+      "referenceUtf8Sha256": "c8e3490106a3406ce2708e843773e31be740d8401de84c7d1d9f93357556d475",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1668",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 213120,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1668.wav",
+        "sampleRate": 16000,
+        "sha256": "89293c36ea8a2b0065a632f6cd9af35fcbcb442eaf43909c1a5780a74897e902"
+      },
+      "referenceUtf8Sha256": "a4323a4d417c1169268dd32b23c41e458762b093ad11a1a04f2bfffe772af3f1",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1669",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 115200,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1669.wav",
+        "sampleRate": 16000,
+        "sha256": "c19bbd275356b0310fa0d0687a4a736a6f59d7c503de2769ae5309b3ac676142"
+      },
+      "referenceUtf8Sha256": "889febee2b3eed379bcbde631bdfc92ebca7582681e3354860c32163b7209d61",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1670",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 468800,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1670.wav",
+        "sampleRate": 16000,
+        "sha256": "523a4c84775ad35c1ce474012b9f31368da2d3ea9ab10e99f35a59182d417902"
+      },
+      "referenceUtf8Sha256": "2493355ce14b68b8fec5ee7390070bd06f628e4b55f3bf85c46a3e5c3afaa251",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1671",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 160320,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1671.wav",
+        "sampleRate": 16000,
+        "sha256": "84845e2cb982b5d0e56c518c4e4bebdf071b0edce0726161347adca885c2202f"
+      },
+      "referenceUtf8Sha256": "1dbef675126ffc91d4daadbb668e5859e5944a8f686114d0817dec1f7910894d",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1672",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 162560,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1672.wav",
+        "sampleRate": 16000,
+        "sha256": "9e11f406dde11a176e87d619600b5481af9a76b5669add902ef709238fe0f308"
+      },
+      "referenceUtf8Sha256": "01d54e9527eceff98429a94e7399e1769d687e3679ab9cb2e95c794b8d569868",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1673",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 161280,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1673.wav",
+        "sampleRate": 16000,
+        "sha256": "48f640b35e2954d62f0d8abdade29b67b36af04e815aa61c4466363c1b4a6f00"
+      },
+      "referenceUtf8Sha256": "31cf70d353861b70fb89e382109810ac2c9ada6b8cfcc1ad5f833dbd37875e5c",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1674",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 90240,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1674.wav",
+        "sampleRate": 16000,
+        "sha256": "a8b0dbfb163abcdfcd0c98112d06d471293f498c63be8dd200601495e0a6b2bf"
+      },
+      "referenceUtf8Sha256": "5860a3b0c690df5284c8a1a54a18ff64d52633c4ed464de668b600e3b620a98a",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1675",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 140160,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1675.wav",
+        "sampleRate": 16000,
+        "sha256": "fd99727983733f9771077fe1a030fcc44ea7e16be1e9396cff525db2886a8f0f"
+      },
+      "referenceUtf8Sha256": "63d31e54c66a437f7f103d1ea1438dbb719573f49df77c53ed2c250698821520",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1676",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 160000,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1676.wav",
+        "sampleRate": 16000,
+        "sha256": "afd053eebcc3c55cc883a0f4e18904609c75cc6c4b76890d674b9dbf9e1834cb"
+      },
+      "referenceUtf8Sha256": "2443b0eb3e5cf3384aba601bd83eeaae0429a174f5c32b778f6bc1d329e4dc64",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1677",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 95040,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1677.wav",
+        "sampleRate": 16000,
+        "sha256": "6d4e9a0532459969ac13d6f16dc5099f93fb2a4d4637392a2a9c7e8ecb278cb7"
+      },
+      "referenceUtf8Sha256": "f82b6177cdc6fec2b9294eb3e8c90aacc673f34916962fd759be622aaca52102",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1678",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 204480,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1678.wav",
+        "sampleRate": 16000,
+        "sha256": "4676663ad860d56c3b17f26f957fc2e86ee364111aa6e8b0c1430bb72006457d"
+      },
+      "referenceUtf8Sha256": "5c51f6eebdf5d0377a2e52a201135f72cb31dbbed2de00e1621400c806fb937f",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1679",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1679.wav",
+        "sampleRate": 16000,
+        "sha256": "a244c933384e8c3b15371039d1cfba04a02b97bb22c40381dcec557679666241"
+      },
+      "referenceUtf8Sha256": "776e89b2b222bc2ea3a0cc0294ad3a082774ba76a599eb79467353dc0c08005b",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1680",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 163200,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1680.wav",
+        "sampleRate": 16000,
+        "sha256": "8d69bfff7fcabafcbc2a96974129aaad5441572368963a350d467e3921805062"
+      },
+      "referenceUtf8Sha256": "af6d7f1acd4da04299ac19e6727705241e7c7e6fee0acd6f44524cda8c03bc30",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1681",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 319680,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1681.wav",
+        "sampleRate": 16000,
+        "sha256": "888ee8d39457730e1a8b22717084955eb971f9f5099bae090c49c28a4c9b6539"
+      },
+      "referenceUtf8Sha256": "85062de6b4ca1f1ca39c9a2478ed25c2a202f7249e9fb184c2bfe78d67f8816e",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1682",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 250240,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1682.wav",
+        "sampleRate": 16000,
+        "sha256": "9eaf2a82389a5a6025ce3b0d59efc3025779c0c6c58201dc8b2fd493ec4ef3c9"
+      },
+      "referenceUtf8Sha256": "13e936a5941795329e58eb4f086a8c5e601d1fb077880e3f97ba569a8cf35676",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1683",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 177600,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1683.wav",
+        "sampleRate": 16000,
+        "sha256": "873b09d81c8ef85d0ab72cb1e9485baeaf87d54fc772fe26e01c765251c2a4cd"
+      },
+      "referenceUtf8Sha256": "7c44a1260f81facdc8be499b88b94a7a5161c9cf20efd737ef29d34db7b9815c",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1684",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 175360,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1684.wav",
+        "sampleRate": 16000,
+        "sha256": "c788ee151ea8e0e9b7682521e4f2d901db0813138aabcbbeb6b2d5512dee6ae0"
+      },
+      "referenceUtf8Sha256": "a7b1d118b72c6fd55665fd5d6e1b412a4350b6fce96f758ff07b911c00ef297f",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1685",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 222720,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1685.wav",
+        "sampleRate": 16000,
+        "sha256": "31db67c3bb01ffa42be033d2627da6e8dd301b99f5390f20e8be293cebba4cc4"
+      },
+      "referenceUtf8Sha256": "b09f58412ea469ab517352f153a85b5c54acedc50c28c0c009dc77c167d44805",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1686",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 193920,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1686.wav",
+        "sampleRate": 16000,
+        "sha256": "d400fd5253713eda5e5e0cc0b1711a9ac047f76843392311e8c480d7efed9a24"
+      },
+      "referenceUtf8Sha256": "177db35a7b55fc67fca2255dccad061d89462a0f54d30c9813dbc0ab64a0a918",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1687",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 184320,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1687.wav",
+        "sampleRate": 16000,
+        "sha256": "8cae96fd853a92d303bd8eb2e15d2bbe513aa29f28cef2973db3cea4324acd2c"
+      },
+      "referenceUtf8Sha256": "a1722014df8da956c072ca131bad91dc97b3b8c9a2b7c4d1222360c64a224a50",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1688",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 279040,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1688.wav",
+        "sampleRate": 16000,
+        "sha256": "a7c88b00b6e6e8c5cc2fa422eeb4d4efe494277cf67a67ea302293d5e996c5d2"
+      },
+      "referenceUtf8Sha256": "09e19e02827293b592a7cb960f0accae84ff30788a4941a75922e8e8153fe633",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1689",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 332160,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1689.wav",
+        "sampleRate": 16000,
+        "sha256": "b75624f03ccffcb848380c4b86d60a505e020bb66e9d81dc4ec6bafbc8d8fbbe"
+      },
+      "referenceUtf8Sha256": "0c954b6fbbfcbfc153479604254b5d42fea0118735e168949a145cd1a2e6c742",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1660-quiet",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "en",
+      "audio": {
+        "frames": 170880,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1660-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "107f5b79282db96178885f9673e6f3da5dd8f615a40cb49d00fd3d5fb6514cee"
+      },
+      "referenceUtf8Sha256": "a81391740174adf0516811f524207656b3bbb894276376ac1fec0b5fb0722f26",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1661-quiet",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "en",
+      "audio": {
+        "frames": 101760,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1661-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "7b037da04c013baa7b9c920150c47442932d5928aff049332b7a42e92e6abaf8"
+      },
+      "referenceUtf8Sha256": "867cab1e0f4044bf307a4a0fbf39e76b85c052df127244d66f779e00be3b4941",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1662-quiet",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "en",
+      "audio": {
+        "frames": 134080,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1662-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "619f962c2f9ac054340256ec59f61600534a515b2233f02fe88675555dc6b707"
+      },
+      "referenceUtf8Sha256": "5f02d8c4cc7fccc8b1dab61bb6b9ccb6ad5c5d3ddd681063390f098d848d5fc2",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1663-quiet",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "en",
+      "audio": {
+        "frames": 193920,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1663-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "872b1b9e8e498e7e4b5a4b0153cc83068e0b7ffc099ebd30ff67375a8ad41872"
+      },
+      "referenceUtf8Sha256": "6347292e3f3fa98ce1f0feb1c20e56b259db806a47ed1a1cc4dd5bd4c14782cd",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1664-quiet",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "en",
+      "audio": {
+        "frames": 133760,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1664-quiet.wav",
+        "sampleRate": 16000,
+        "sha256": "17fe61a865b10963d15722a2ad6c6c8395086a254a23b2fda8f065c3e114834a"
+      },
+      "referenceUtf8Sha256": "362a06cedd0b60f50abd59f98f4bc38d39c5fe54d8e8a9113d29b5c0efa355fb",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "synthetic-de-silence-5s",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "de",
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/synthetic-de-silence-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec"
+      },
+      "referenceUtf8Sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedOutcome": "Empty"
+    },
+    {
+      "id": "synthetic-de-noise-5s",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "de",
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/synthetic-de-noise-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "2efadede2e96edaba4ffbed3a663d57e0c33f4763fb934caff82d8d14840125c"
+      },
+      "referenceUtf8Sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedOutcome": "Empty"
+    },
+    {
+      "id": "synthetic-en-silence-5s",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "en",
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/synthetic-en-silence-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "262d1f34f300560a4c82ba8127ddea9e1d72946f187fdbd3e8f70ee096077aec"
+      },
+      "referenceUtf8Sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedOutcome": "Empty"
+    },
+    {
+      "id": "synthetic-en-noise-5s",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "en",
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/synthetic-en-noise-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "2efadede2e96edaba4ffbed3a663d57e0c33f4763fb934caff82d8d14840125c"
+      },
+      "referenceUtf8Sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedOutcome": "Empty"
+    },
+    {
+      "id": "constructed-de-masked-300s",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "de",
+      "audio": {
+        "frames": 4800000,
+        "path": "artifacts/corpus/audio/constructed-de-masked-300s.wav",
+        "sampleRate": 16000,
+        "sha256": "ca2da7fb88fed220222002d631ab61c585ffb3f099ac3fc79ccc222d0e188e84"
+      },
+      "referenceUtf8Sha256": "d51d6da9e44fa66e85d8158d6630ef1750436c4b6650ea1324816a8fa51e018c",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "hd-de-acceptance-s04-t0-d8",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "path": "artifacts/corpus/audio/hd-de-acceptance-s04-t0-d8.wav",
+        "sha256": "351d1217d2ad656ee4825fd4168a3c61a25fac35a49b35e703044e592d0c2372",
+        "frames": 11406,
+        "sampleRate": 16000
+      },
+      "referenceUtf8Sha256": "fb33ab7105db46d8a43042ad35f9c42eb4f1eb4cb7ae1cf4b1490c4cb2a5d585",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "hd-de-acceptance-s05-t0-d9",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "path": "artifacts/corpus/audio/hd-de-acceptance-s05-t0-d9.wav",
+        "sha256": "1647291976869e97a5efee7d714e5f1fcfb4d004b4cd905d4f8d7b7e6334ccf0",
+        "frames": 9072,
+        "sampleRate": 16000
+      },
+      "referenceUtf8Sha256": "d5b7e81295ca0471ca6df83d9abe07bd624dc6fa0aa8a7eb0a0898908e003777",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "hd-en-acceptance-s04-t0-d8",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "path": "artifacts/corpus/audio/hd-en-acceptance-s04-t0-d8.wav",
+        "sha256": "a8958e9d24bddb3893573b7902a06865001a6cbb3fb1b10fcd957ce3f041722c",
+        "frames": 9408,
+        "sampleRate": 16000
+      },
+      "referenceUtf8Sha256": "c195d2d8756234367242ba7616c5c60369bc25ced2dcb5b92808d31b58ef217a",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "hd-en-acceptance-s05-t0-d9",
+      "sourceManifest": "tests/fixtures/corpus/acceptance-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "path": "artifacts/corpus/audio/hd-en-acceptance-s05-t0-d9.wav",
+        "sha256": "9f1803b9de4c00073f6db17def9423529b9812cbfa5f249dfe7724a990f03528",
+        "frames": 9976,
+        "sampleRate": 16000
+      },
+      "referenceUtf8Sha256": "edcd8e701a2df0cd66a39bae6aa156cf16fe2b9653ef65f7d31742e2352421e4",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "synthetic-de-ja",
+      "sourceManifest": "tests/fixtures/corpus/native-timestamps-supplement-v1.json",
+      "split": "calibration",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "path": "artifacts/diagnostic-speech/v1/ja.wav",
+        "sha256": "9d9878f659184ad2e8d7578239ce07da9e42f233e850359dfcb5eaeb9e09facd",
+        "frames": 7382,
+        "sampleRate": 16000
+      },
+      "referenceUtf8Sha256": "918c02e9102ce389bd321a9e96e6b253c6b877e7a967d3a4e2c3b076a62a414b",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "synthetic-de-nein",
+      "sourceManifest": "tests/fixtures/corpus/native-timestamps-supplement-v1.json",
+      "split": "calibration",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "path": "artifacts/diagnostic-speech/v1/nein.wav",
+        "sha256": "335de366410f8f13615168751a1fcb578aa12e4bbac4fa17b215593a852c3eca",
+        "frames": 9109,
+        "sampleRate": 16000
+      },
+      "referenceUtf8Sha256": "ddca7a753c625a28630381d107632271e4b29f054f863ecd328d94932e27dbbf",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "synthetic-de-thanks",
+      "sourceManifest": "tests/fixtures/corpus/native-timestamps-supplement-v1.json",
+      "split": "calibration",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "path": "artifacts/diagnostic-speech/v1/thanks.wav",
+        "sha256": "70b2cebf90f9a14084184fed47d2c403376c4e29e5ca1c91077ba28da16c5ad8",
+        "frames": 29350,
+        "sampleRate": 16000
+      },
+      "referenceUtf8Sha256": "d3999c531c2cd7cc03a898ecc8f4a2ac1d74091bc9b7caa5c7378ea8504289b7",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-de-test-1732-thirty-second-v1",
+      "sourceManifest": "tests/fixtures/corpus/native-timestamps-supplement-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "de",
+      "audio": {
+        "frames": 480000,
+        "path": "artifacts/corpus/audio/fleurs-de-test-1732-thirty-second-v1.wav",
+        "sampleRate": 16000,
+        "sha256": "045f4e0c1534e2d4240a10a2dbda1fad22c8ae9ca83809b2cd34e0a2a7510a2e"
+      },
+      "referenceUtf8Sha256": "22d28af04bf321e8d913a59deaa8290060e479fcede48b281ed2a05d5006a703",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "fleurs-en-test-1670-thirty-second-v1",
+      "sourceManifest": "tests/fixtures/corpus/native-timestamps-supplement-v1.json",
+      "split": "acceptance",
+      "class": "clean",
+      "language": "en",
+      "audio": {
+        "frames": 480000,
+        "path": "artifacts/corpus/audio/fleurs-en-test-1670-thirty-second-v1.wav",
+        "sampleRate": 16000,
+        "sha256": "ce7e66bfe03c6d4ce0a1975f7f399d873de5c412635c68fceb86331726bdcb96"
+      },
+      "referenceUtf8Sha256": "2493355ce14b68b8fec5ee7390070bd06f628e4b55f3bf85c46a3e5c3afaa251",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "calibration-de-trailing-silence",
+      "sourceManifest": "tests/fixtures/corpus/calibration-v2.json",
+      "split": "calibration",
+      "class": "challenging",
+      "language": "de",
+      "audio": {
+        "frames": 192000,
+        "path": "artifacts/corpus/audio/calibration-de-trailing-silence.wav",
+        "sampleRate": 16000,
+        "sha256": "4f0090652adc300613277ea6a3aceb96e2c9c9dff2a477e7d30e4e6b8b3e10c4"
+      },
+      "referenceUtf8Sha256": "f9ec407b5d09cc0c39a44e9687a46c802704d0c34f5d158c7c364e89ff3ce2dc",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "calibration-de-room-5s",
+      "sourceManifest": "tests/fixtures/corpus/calibration-v2.json",
+      "split": "calibration",
+      "class": "challenging",
+      "language": "de",
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/calibration-de-room-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "91d7d1bf89611ff27bc1d4db11c05eb5580c6c5db44e241722c2498bf2996b59"
+      },
+      "referenceUtf8Sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedOutcome": "Empty"
+    },
+    {
+      "id": "calibration-en-trailing-silence",
+      "sourceManifest": "tests/fixtures/corpus/calibration-v2.json",
+      "split": "calibration",
+      "class": "challenging",
+      "language": "en",
+      "audio": {
+        "frames": 174720,
+        "path": "artifacts/corpus/audio/calibration-en-trailing-silence.wav",
+        "sampleRate": 16000,
+        "sha256": "85517b795629737f422c11281d8beef90337523041b182f4497eb9196e76a647"
+      },
+      "referenceUtf8Sha256": "0ae8990852abdc14befde5f5a8685276b582990a30ec26df3ad92969fb24bd9d",
+      "expectedOutcome": "Local"
+    },
+    {
+      "id": "calibration-en-room-5s",
+      "sourceManifest": "tests/fixtures/corpus/calibration-v2.json",
+      "split": "calibration",
+      "class": "challenging",
+      "language": "en",
+      "audio": {
+        "frames": 80000,
+        "path": "artifacts/corpus/audio/calibration-en-room-5s.wav",
+        "sampleRate": 16000,
+        "sha256": "91d7d1bf89611ff27bc1d4db11c05eb5580c6c5db44e241722c2498bf2996b59"
+      },
+      "referenceUtf8Sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expectedOutcome": "Empty"
+    },
+    {
+      "id": "diagnostic-de-controlled-300s",
+      "sourceManifest": "artifacts/diagnostic-speech/long-control-v1/manifest.json",
+      "split": "acceptance",
+      "class": "challenging",
+      "language": "de",
+      "audio": {
+        "path": "artifacts/diagnostic-speech/long-control-v1/controlled-300s.wav",
+        "sha256": "80b79393de147e78e9b9a86bad3d88998dae4056a9fe10a080ef2468c92dc25b",
+        "frames": 4800000,
+        "sampleRate": 16000
+      },
+      "referenceUtf8Sha256": "d51d6da9e44fa66e85d8158d6630ef1750436c4b6650ea1324816a8fa51e018c",
+      "expectedOutcome": "Local"
+    }
+  ]
+}

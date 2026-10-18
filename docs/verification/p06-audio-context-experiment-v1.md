@@ -65,6 +65,51 @@ unverändertem Einspeisetakt und Stop-/Textgrenzen. Keine Dateilatenz als L.
 Alle fehlgeschlagenen oder unvollständigen Läufe bleiben erhalten; kein
 selektives Wiederholen und keine nachträgliche Lockerung des Jitterbudgets.
 
+### Qualitätsprüfung vor den Echtzeitvergleichen
+
+Die [prospektive Auswahl](../../tests/fixtures/corpus/p06-context-quality-selection-v1.json)
+und das daraus unverändert zusammengeführte
+[Eingabemanifest](../../tests/fixtures/corpus/p06-context-quality-manifest-v1.json)
+enthalten100 eindeutige Fälle: alle ursprünglichen90 Abnahmefälle, das
+bestehende Fünfer-Supplement, genau die vier schon verwendeten Kalibrierrollen
+für Raumrauschen/Nachlauf und den kontrollierten300s-Fall. Originalreihenfolge,
+Referenzen, Klassen und Audiohashes bleiben erhalten. Die zusätzlichen Rollen
+werden nicht in die ursprünglichen WER-Nenner eingerechnet.
+
+Der erste native Vergleich verwendet neue Dateiausgaben beider Varianten aus
+demselben Binary und gemeinsamen Decoderwrapper. Die Reihenfolge wird vorab
+auf Reference→Reduced→Reduced→Reference festgelegt, jeder Block in einem neuen
+Prozess und mit identischer Fallreihenfolge. Das sind zwei vollständige
+Qualitätsvergleiche in wechselnder Variantenreihenfolge, keine Zeitmessungen
+für L. Keine Wiederholungsgewichtung erzeugt zusätzliche Referenzwörter.
+
+Primäre WER-Gruppen bleiben DE/EN jeweils clean/challenging des ursprünglichen
+90er-Korpus. Die erlaubte Verschlechterung wird gegen die neue gleichcode-
+Baseline exakt als `200*(Edits_candidate-Edits_reference)<=Referenztokens`
+geprüft; zusätzlich clean absolut höchstens10% je Sprache. Supplement,
+Kalibrierrollen und controlled300 erhalten getrennte Verhaltens-/Inhaltsurteile.
+Die neue Reference-Ausgabe wird vollständig mit den historischen Ausgaben
+verglichen. Bei Drift wird deren Ursache/Verwendbarkeit geklärt, statt auf einen
+günstigeren historischen Nenner auszuweichen. Kontextrecords müssen zur
+tatsächlichen Variante und vorbereiteten Eingabe passen; fehlende oder
+widersprüchliche Nachweise sind kein bestandener Lauf.
+
+Alle geänderten vollständigen Kandidatenpaare und ihre festen Anker werden auf
+neue Negations-/Zahlen-/Segmentfehler gelesen. Exakt identische Paare dürfen
+ihre gebundenen historischen Urteile behalten. Neue Ausgabe bei festen Empty-
+Fällen, verlorene legitime Kurz-/A22-Sprache und neue unzulässige Segmentfehler
+verhindern die Aktivierung unabhängig vom numerischen WER-Ergebnis. Bestehende
+Geräuschgrenzen und lokale Wort-/Namensfehler bleiben sichtbar; kein neues
+universelles Nullfehlergate. Jeder Block bleibt einzeln auswertbar; kein
+Ausmitteln eines verfehlten Vergleichs durch den anderen Block.
+
+Erst bei bestandener Qualitäts-/Kontextprüfung folgen neue gepaarte
+Echtzeitläufe beider Varianten, einschließlich neuer Baselinezeiten. Diese
+Dateiprüfung ersetzt weder die zentralen30er-Läufe noch die übrigen zehn
+warmen Läufe, Ressourcen- oder Abbruchnachweise. Alle konkreten Kommandos,
+Parametersätze und freien Ausgabeziele werden vor dem ersten Modellstart
+zusätzlich in einem unveränderlichen Runfreeze gebunden.
+
 ## Entscheidung nach dem bestehenden Plan
 
 Der Einzelversuch wird erst nach vollständigem Vergleich bewertet:
