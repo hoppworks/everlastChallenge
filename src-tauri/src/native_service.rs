@@ -7,7 +7,7 @@ use macos_integration::{
     delivery::DeliveryToken,
     main_delivery::{self, Command, Environment, Reply},
     target::{
-        ProcessIdentity, TargetApproval,
+        HoldReason, ProcessIdentity, TargetApproval, TargetError,
         worker::{TargetEvent, TargetWorker},
     },
 };
@@ -247,6 +247,62 @@ impl NativeBackend {
         }
     }
 }
+// User-facing typed capture result only. This message does not assert that
+// recording stopped, continues, or produced a retained transcript.
+fn target_capture_message(error: TargetError) -> String {
+    let (reason, next_step) = match error {
+        TargetError::Permission => (
+            "Bedienungshilfen sind nicht freigegeben.",
+            "Prüfe vor dem nächsten Diktat die Freigabe für diese App in den Systemeinstellungen unter Datenschutz & Sicherheit > Bedienungshilfen.",
+        ),
+        TargetError::SecureInput => (
+            "macOS schützt die aktuelle Eingabe durch die sichere Tastatureingabe.",
+            "Wähle nach der geschützten Eingabe für das nächste Diktat ein normales, beschreibbares Textfeld.",
+        ),
+        TargetError::Field(HoldReason::SecureField) => (
+            "Das fokussierte Textfeld ist geschützt.",
+            "Wähle für das nächste Diktat ein normales, beschreibbares Textfeld.",
+        ),
+        TargetError::Process => (
+            "Die Ziel-App konnte nicht zuverlässig erkannt werden.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Changed => (
+            "Die Ziel-App oder das fokussierte Feld hat sich während der Prüfung geändert.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Accessibility(_) => (
+            "Das Startziel konnte über die Bedienungshilfen nicht geprüft werden.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Value => (
+            "Die Ziel-App liefert keine eindeutigen Angaben zum Startziel.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Field(HoldReason::UnconfirmedField) => (
+            "Das fokussierte Element konnte nicht als geeignetes Textfeld bestätigt werden.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Field(HoldReason::NotEditable) => (
+            "Das fokussierte Textfeld ist deaktiviert oder nicht beschreibbar.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Field(HoldReason::UnknownEditability) => (
+            "Ob das fokussierte Textfeld beschreibbar ist, konnte nicht bestätigt werden.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::StaleApproval => (
+            "Die Zielprüfung ist nicht mehr gültig.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+        TargetError::Cancelled => (
+            "Die Prüfung wurde beendet, bevor ein Startziel bestätigt war.",
+            "Wähle für das nächste Diktat ein beschreibbares Textfeld.",
+        ),
+    };
+    format!("Startziel nicht erfasst: {reason} {next_step}")
+}
+
 impl Backend for NativeBackend {
     type Approval = TargetApproval;
     type Backup = Snapshot;
@@ -268,7 +324,7 @@ impl Backend for NativeBackend {
             } = self.event(token, deadline)?
                 && id == session
             {
-                return result.map_err(|error| error.to_string());
+                return result.map_err(target_capture_message);
             }
         }
         Err("Target capture reply did not match session".into())
@@ -1087,5 +1143,39 @@ mod tests {
         capture(&commands, &results, &third)?;
         service.join()?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod target_capture_message_tests {
+    use super::{HoldReason, TargetError, target_capture_message};
+
+    #[test]
+    fn unconfirmed_field_explains_failure_and_offers_a_next_dictation_without_text_promise() {
+        let message = target_capture_message(TargetError::Field(HoldReason::UnconfirmedField));
+        assert!(message.starts_with("Startziel nicht erfasst:"));
+        assert!(message.contains("nicht als geeignetes Textfeld bestätigt"));
+        assert!(message.contains("für das nächste Diktat ein beschreibbares Textfeld"));
+        assert!(message.contains("nächste Diktat"));
+        assert!(!message.contains("Aufnahme läuft weiter"));
+        assert!(!message.contains("Transkript gespeichert"));
+        assert!(!message.contains("UnconfirmedField"));
+    }
+
+    #[test]
+    fn permission_and_secure_input_offer_distinct_safe_next_steps() {
+        let permission = target_capture_message(TargetError::Permission);
+        assert!(permission.contains("Systemeinstellungen"));
+        assert!(permission.contains("Bedienungshilfen"));
+        for error in [
+            TargetError::SecureInput,
+            TargetError::Field(HoldReason::SecureField),
+        ] {
+            let message = target_capture_message(error);
+            assert!(message.contains("beschreibbares Textfeld"));
+            assert!(message.contains("nächste Diktat"));
+            assert!(!message.contains("ausschalten"));
+            assert!(!message.contains("deaktivieren"));
+        }
     }
 }
