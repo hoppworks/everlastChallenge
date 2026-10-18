@@ -27,6 +27,10 @@ use std::{
 use tauri::{Emitter, Manager};
 use tokio::sync::{Semaphore, oneshot};
 
+#[cfg(feature = "measurement")]
+#[path = "desktop/start_observer.rs"]
+mod start_observer;
+
 pub const SNAPSHOT_EVENT: &str = "dictation:snapshot";
 struct Shared {
     view: view::Snapshot,
@@ -90,6 +94,12 @@ enum SettingsCommand {
     },
 }
 struct Inner {
+    #[cfg(feature = "measurement")]
+    native_starts: Mutex<start_observer::Observer>,
+    #[cfg(feature = "measurement")]
+    native_starts_enabled: bool,
+    #[cfg(feature = "measurement")]
+    native_starts_lost: AtomicBool,
     shared: Mutex<Shared>,
     closing: AtomicBool,
     refresh: AtomicBool,
@@ -104,7 +114,78 @@ struct Inner {
 #[derive(Clone)]
 pub struct Desktop(Arc<Inner>);
 impl Desktop {
+    #[cfg(feature = "measurement")]
+    fn start_measurement(&self, action: impl FnOnce(&mut start_observer::Observer)) {
+        if !self.0.native_starts_enabled {
+            return;
+        }
+        // Observation must never wait for another observer or block a real command.
+        if let Ok(mut observer) = self.0.native_starts.try_lock() {
+            action(&mut observer);
+        } else {
+            self.0.native_starts_lost.store(true, Ordering::Release);
+        }
+    }
+    #[cfg(feature = "measurement")]
+    fn start_measurement_interference(&self, reason: &'static str) {
+        self.start_measurement(|o| o.invalidate(reason));
+    }
+    fn start_measurement_begin(&self, _origin: hotkeys::NativeOrigin) -> Option<u64> {
+        #[cfg(feature = "measurement")]
+        {
+            if !self.0.native_starts_enabled {
+                return None;
+            }
+            let Some(at) = _origin.received_at else {
+                self.0.native_starts_lost.store(true, Ordering::Release);
+                return None;
+            };
+            if let Ok(mut o) = self.0.native_starts.try_lock() {
+                return o.begin(at);
+            }
+            self.0.native_starts_lost.store(true, Ordering::Release);
+        }
+        None
+    }
+    fn start_measurement_ack(&self, _ticket: Option<u64>, _success: bool) {
+        #[cfg(feature = "measurement")]
+        if let Some(ticket) = _ticket {
+            let state = self
+                .runtime()
+                .ok()
+                .and_then(|r| r.snapshot().ok())
+                .map(|s| native_start_state(&s));
+            let at = std::time::Instant::now();
+            self.start_measurement(|o| o.ack(ticket, _success, state, at));
+        }
+    }
+    /// Developer-only readout. No IPC, export side effect, automatic recording or pass decision.
+    #[cfg(feature = "measurement")]
+    pub fn native_start_observations(&self) -> serde_json::Value {
+        if !self.0.native_starts_enabled {
+            return serde_json::json!({"schemaVersion":1,"kind":"native-start-upper-bounds-v1","enabled":false,"qualification":false});
+        }
+        let Ok(mut o) = self.0.native_starts.try_lock() else {
+            return serde_json::json!({"kind":"native-start-upper-bounds-v1", "invalid":true, "error":"observer-unavailable"});
+        };
+        o.expire(std::time::Instant::now());
+        serde_json::json!({"schemaVersion":1,"kind":"native-start-upper-bounds-v1","enabled":true,
+            "maximumRecords":start_observer::MAX_RECORDS,"pendingOrdinal":o.pending_ordinal(),
+            "overflowAttempts":o.overflow(),"counterError":o.counter_error(),
+            "observerContentionOrPoison":self.0.native_starts_lost.load(Ordering::Acquire),
+            "qualification":false,"exactCpalLatency":false,"L":null,
+            "records":o.records().iter().map(|r|serde_json::json!({"ordinal":r.ordinal,"session":r.sid,
+                "observedUpperNanos":r.upper_nanos,"ackOffsetNanos":r.ack_nanos,"reason":r.reason})).collect::<Vec<_>>()})
+    }
+
     pub fn spawn(app: tauri::AppHandle) -> Result<Self, String> {
+        Self::spawn_inner(app, false)
+    }
+    #[cfg(feature = "measurement")]
+    pub fn spawn_observing_native_start(app: tauri::AppHandle) -> Result<Self, String> {
+        Self::spawn_inner(app, true)
+    }
+    fn spawn_inner(app: tauri::AppHandle, _observe_native_starts: bool) -> Result<Self, String> {
         let (requests, receive) = bounded(8);
         let desktop = Self(Arc::new(Inner {
             shared: Mutex::new(Shared {
@@ -124,6 +205,12 @@ impl Desktop {
             prompts: Arc::new(Semaphore::new(1)),
             admission: Mutex::new(Admission::default()),
             requests,
+            #[cfg(feature = "measurement")]
+            native_starts: Mutex::new(start_observer::Observer::default()),
+            #[cfg(feature = "measurement")]
+            native_starts_enabled: _observe_native_starts,
+            #[cfg(feature = "measurement")]
+            native_starts_lost: AtomicBool::new(false),
         }));
         let owner = desktop.clone();
         let worker = thread::Builder::new()
@@ -135,6 +222,26 @@ impl Desktop {
             .map_err(|error| error.to_string())?;
         *desktop.0.worker.lock().map_err(|_| "Desktop lock failed")? = Some(worker);
         Ok(desktop)
+    }
+    fn install_hotkeys(
+        &self,
+        app: tauri::AppHandle,
+        key: crate::settings::Hotkey,
+    ) -> Result<Hotkeys, hotkeys::HotkeyError> {
+        let callback = self.clone();
+        #[cfg(feature = "measurement")]
+        {
+            Hotkeys::install_observed(
+                app,
+                key,
+                move |event| callback.hotkey(event),
+                self.0.native_starts_enabled,
+            )
+        }
+        #[cfg(not(feature = "measurement"))]
+        {
+            Hotkeys::install(app, key, move |event| callback.hotkey(event))
+        }
     }
     pub fn snapshot(&self) -> Result<view::Snapshot, String> {
         Ok(self
@@ -267,6 +374,8 @@ impl Desktop {
     }
     /// Called by the native notification observer. Never joins workers or resumes recording.
     pub fn set_suspended(&self, sleeping: bool) -> Result<(), String> {
+        #[cfg(feature = "measurement")]
+        self.start_measurement_interference("power-transition");
         let mut suspended = self.0.admission.lock().map_err(|_| "Power lock failed")?;
         suspended.suspended = sleeping;
         if !suspended.suspended {
@@ -333,6 +442,8 @@ impl Desktop {
         }
     }
     pub fn download(&self) -> Result<(), String> {
+        #[cfg(feature = "measurement")]
+        self.start_measurement_interference("model-setup");
         if let Ok(mut shared) = self.0.shared.lock() {
             shared.action_error = None;
         }
@@ -341,6 +452,8 @@ impl Desktop {
             .map_err(|error| error.to_string())
     }
     pub fn cancel_setup(&self) -> Result<(), String> {
+        #[cfg(feature = "measurement")]
+        self.start_measurement_interference("model-setup-cancel");
         self.app_client()?
             .cancel_setup()
             .map_err(|error| error.to_string())
@@ -351,11 +464,24 @@ impl Desktop {
         delivery: bool,
         toggle: bool,
     ) -> Result<oneshot::Receiver<Result<(), String>>, String> {
+        self.start_request_tagged(process, delivery, toggle, None)
+    }
+    fn start_request_tagged(
+        &self,
+        process: Option<ProcessIdentity>,
+        delivery: bool,
+        toggle: bool,
+        _measurement_ticket: Option<u64>,
+    ) -> Result<oneshot::Receiver<Result<(), String>>, String> {
         let mut admission = self
             .0
             .admission
             .lock()
             .map_err(|_| "Admission lock failed")?;
+        #[cfg(feature = "measurement")]
+        if _measurement_ticket.is_none() {
+            self.start_measurement_interference("another-ui-or-native-start");
+        }
         if admission.suspended {
             return Err("Aufnahme während des Ruhezustands nicht verfügbar".into());
         }
@@ -375,6 +501,17 @@ impl Desktop {
             shared.settings.clone()
         };
         let runtime = self.runtime()?;
+        #[cfg(feature = "measurement")]
+        if let Some(ticket) = _measurement_ticket {
+            let state = runtime.snapshot().ok().map(|s| native_start_state(&s));
+            self.start_measurement(|o| {
+                if let Some(state) = state {
+                    o.admit(ticket, state, admission.pending_starts == 0);
+                } else {
+                    o.invalidate("admission-snapshot-unavailable");
+                }
+            });
+        }
         let stopping = toggle
             && matches!(
                 runtime
@@ -419,12 +556,16 @@ impl Desktop {
             .map_err(|_| "Aufnahmeanfrage beendet")?
     }
     pub fn stop_recording(&self, session: u64) -> Result<(), String> {
+        #[cfg(feature = "measurement")]
+        self.start_measurement_interference("ui-stop");
         valid_id(session)?;
         self.runtime()?
             .stop(session)
             .map_err(|error| error.to_string())
     }
     pub fn cancel_recording(&self, session: u64) -> Result<(), String> {
+        #[cfg(feature = "measurement")]
+        self.start_measurement_interference("ui-cancel");
         valid_id(session)?;
         self.runtime()?
             .cancel(session)
@@ -454,6 +595,8 @@ impl Desktop {
     fn hotkey(&self, event: hotkeys::Event) {
         match event {
             hotkeys::Event::Cancel { session } => {
+                #[cfg(feature = "measurement")]
+                self.start_measurement_interference("hotkey-cancel");
                 let result = self
                     .runtime()
                     .and_then(|runtime| runtime.cancel(session).map_err(|error| error.to_string()));
@@ -461,35 +604,53 @@ impl Desktop {
                     self.action_error(error);
                 }
             }
-            hotkeys::Event::Toggle { process } => {
+            hotkeys::Event::Toggle {
+                process,
+                origin: _origin,
+            } => {
                 // A second press is a priority stop, before ordinary request admission.
                 if let Ok(runtime) = self.runtime()
                     && let Ok(snapshot) = runtime.snapshot()
                     && matches!(snapshot.session.phase, Phase::Starting | Phase::Recording)
                     && let Some(session) = snapshot.session.session
                 {
+                    #[cfg(feature = "measurement")]
+                    self.start_measurement_interference("hotkey-priority-stop");
                     if let Err(error) = runtime.stop(session) {
                         self.action_error(error.to_string());
                     }
                     return;
                 }
+                let measured_ticket = self.start_measurement_begin(_origin);
                 let Ok(permit) = self.0.admissions.clone().try_acquire_owned() else {
+                    self.start_measurement_ack(measured_ticket, false);
                     self.action_error("Zu viele laufende Anfragen".into());
                     return;
                 };
-                match self.start_request(process, true, true) {
+                match self.start_request_tagged(process, true, true, measured_ticket) {
                     Ok(reply) => {
                         let desktop = self.clone();
                         tauri::async_runtime::spawn(async move {
                             let _permit = permit;
                             match reply.await {
-                                Ok(Ok(())) => {}
-                                Ok(Err(error)) => desktop.action_error(error),
-                                Err(_) => desktop.action_error("Aufnahmeanfrage beendet".into()),
+                                Ok(Ok(())) => {
+                                    desktop.start_measurement_ack(measured_ticket, true);
+                                }
+                                Ok(Err(error)) => {
+                                    desktop.start_measurement_ack(measured_ticket, false);
+                                    desktop.action_error(error);
+                                }
+                                Err(_) => {
+                                    desktop.start_measurement_ack(measured_ticket, false);
+                                    desktop.action_error("Aufnahmeanfrage beendet".into());
+                                }
                             }
                         });
                     }
-                    Err(error) => self.action_error(error),
+                    Err(error) => {
+                        self.start_measurement_ack(measured_ticket, false);
+                        self.action_error(error);
+                    }
                 }
             }
         }
@@ -670,6 +831,8 @@ impl Desktop {
         hotkeys: &mut Option<Hotkeys>,
         app: &tauri::AppHandle,
     ) {
+        #[cfg(feature = "measurement")]
+        self.start_measurement_interference("settings-or-device-request");
         match request {
             SettingsCommand::Reset {
                 reply,
@@ -757,6 +920,8 @@ impl Desktop {
         }
     }
     fn close(&self) -> bool {
+        #[cfg(feature = "measurement")]
+        self.start_measurement_interference("shutdown");
         let first = {
             let _admission = self
                 .0
@@ -935,13 +1100,10 @@ impl Desktop {
             if let Err(error) = self.refresh_device_inventory() {
                 self.action_error(error);
             }
-            let callback = self.clone();
             if self.0.closing.load(Ordering::Acquire) {
                 return Ok(());
             }
-            match Hotkeys::install(app.clone(), settings.hotkey, move |event| {
-                callback.hotkey(event)
-            }) {
+            match self.install_hotkeys(app.clone(), settings.hotkey) {
                 Ok(owner) => hotkeys = Some(owner),
                 Err(error) => self.action_error(format!("Tastenkürzel nicht verfügbar: {error}")),
             }
@@ -963,6 +1125,13 @@ impl Desktop {
                     .map(|runtime| runtime.snapshot())
                     .transpose()
                     .map_err(|error| error.to_string())?;
+                #[cfg(feature = "measurement")]
+                self.start_measurement(|o| {
+                    o.observe(
+                        runtime.as_ref().map(native_start_state),
+                        std::time::Instant::now(),
+                    )
+                });
                 let changing_settings = suspended.changing_settings;
                 let refreshing_devices = suspended.refreshing_devices;
                 drop(suspended);
@@ -975,6 +1144,11 @@ impl Desktop {
                         self.action_error(error.to_string());
                     }
                     if let Some(error) = hotkeys.take_error().map_err(|error| error.to_string())? {
+                        #[cfg(feature = "measurement")]
+                        if self.0.native_starts_enabled {
+                            self.0.native_starts_lost.store(true, Ordering::Release);
+                            self.start_measurement_interference("native-hotkey-transport-error");
+                        }
                         self.action_error(error);
                     }
                 }
@@ -1113,14 +1287,11 @@ impl HotkeyRebinder for DesktopBinder<'_> {
             (Some(key), Some(owner)) => owner
                 .reconfigure(key.clone())
                 .map_err(|error| error.to_string()),
-            (Some(key), None) => {
-                let desktop = self.desktop.clone();
-                Hotkeys::install(self.app.clone(), key.clone(), move |event| {
-                    desktop.hotkey(event)
-                })
+            (Some(key), None) => self
+                .desktop
+                .install_hotkeys(self.app.clone(), key.clone())
                 .map(|owner| *self.hotkeys = Some(owner))
-                .map_err(|error| error.to_string())
-            }
+                .map_err(|error| error.to_string()),
             (None, Some(owner)) => owner
                 .shutdown()
                 .map(|()| *self.hotkeys = None)
@@ -1319,6 +1490,20 @@ fn project(
     result
 }
 
+#[cfg(feature = "measurement")]
+fn native_start_state(s: &crate::runtime::RuntimeSnapshot) -> start_observer::State {
+    start_observer::State {
+        phase: match s.session.phase {
+            Phase::Idle => start_observer::Phase::Idle,
+            Phase::Starting => start_observer::Phase::Starting,
+            Phase::Recording => start_observer::Phase::Recording,
+            _ => start_observer::Phase::Other,
+        },
+        sid: s.session.session,
+        ready: s.model_ready,
+    }
+}
+
 struct Finish(Arc<Inner>);
 impl Drop for Finish {
     fn drop(&mut self) {
@@ -1350,6 +1535,12 @@ mod tests {
             prompts: Arc::new(Semaphore::new(1)),
             admission: Mutex::new(Admission::default()),
             requests,
+            #[cfg(feature = "measurement")]
+            native_starts: Mutex::new(start_observer::Observer::default()),
+            #[cfg(feature = "measurement")]
+            native_starts_enabled: false,
+            #[cfg(feature = "measurement")]
+            native_starts_lost: AtomicBool::new(false),
         }))
     }
     #[test]

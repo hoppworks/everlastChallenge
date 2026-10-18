@@ -14,6 +14,9 @@ use tauri::{
     menu::{Menu, MenuItem},
     tray::TrayIconBuilder,
 };
+#[cfg(feature = "measurement")]
+mod native_start_export;
+
 #[derive(Clone)]
 struct NativeTray {
     tray: tauri::tray::TrayIcon<tauri::Wry>,
@@ -42,6 +45,18 @@ fn refresh_hotkey_labels(desktop: &Desktop, app: &tauri::AppHandle) -> Result<()
     Ok(())
 }
 fn run() -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(feature = "measurement")]
+    let native_start_target = match native_start_export::Target::from_option(std::env::var_os(
+        native_start_export::ENVIRONMENT,
+    )) {
+        Ok(target) => target,
+        Err(_) => {
+            eprintln!("Native start observation opt-in rejected; recording behavior unchanged");
+            None
+        }
+    };
+    #[cfg(feature = "measurement")]
+    let native_start_enabled = native_start_target.is_some();
     let app = tauri::Builder::default()
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
@@ -59,7 +74,15 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             ipc::settings_reset,
             ipc::devices_refresh
         ])
-        .setup(|app| {
+        .setup(move |app| {
+            #[cfg(feature = "measurement")]
+            let desktop = if native_start_enabled {
+                Desktop::spawn_observing_native_start(app.handle().clone())
+            } else {
+                Desktop::spawn(app.handle().clone())
+            }
+            .map_err(std::io::Error::other)?;
+            #[cfg(not(feature = "measurement"))]
             let desktop = Desktop::spawn(app.handle().clone()).map_err(std::io::Error::other)?;
             app.manage(desktop);
             let open =
@@ -213,6 +236,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             if desktop.begin_shutdown() {
                 let desktop = desktop.inner().clone();
                 let app = app.clone();
+                #[cfg(feature = "measurement")]
+                let export_target = native_start_target.clone();
                 std::thread::spawn(move || {
                     let code = match desktop.join() {
                         Ok(()) => 0,
@@ -221,6 +246,22 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                             1
                         }
                     };
+                    #[cfg(feature = "measurement")]
+                    if native_start_export::export_if_selected(export_target.as_ref(), || {
+                        serde_json::to_vec(&serde_json::json!({
+                            "schemaVersion":1,"kind":"native-start-upper-bound-export-v1",
+                            "processId":std::process::id(),"controlledShutdownJoined":code==0,
+                            "qualification":false,"exactCpalLatency":false,"L":null,
+                            "observations":desktop.native_start_observations(),
+                        }))
+                        .map_err(|_| "observation-serialization-failed")
+                    })
+                    .is_err()
+                    {
+                        eprintln!(
+                            "Native start observation export failed; cleanup exit status unchanged"
+                        );
+                    }
                     app.exit(code);
                 });
             }

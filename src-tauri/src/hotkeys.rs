@@ -16,9 +16,28 @@ use std::sync::{
 };
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
+/// Zero-sized without measurement; timestamped before host gate/dispatch otherwise.
+#[derive(Clone, Copy)]
+pub struct NativeOrigin {
+    #[cfg(feature = "measurement")]
+    pub received_at: Option<std::time::Instant>,
+}
+impl NativeOrigin {
+    fn now(_observe: bool) -> Self {
+        Self {
+            #[cfg(feature = "measurement")]
+            received_at: _observe.then(std::time::Instant::now),
+        }
+    }
+}
 pub enum Event {
-    Toggle { process: Option<ProcessIdentity> },
-    Cancel { session: u64 },
+    Toggle {
+        process: Option<ProcessIdentity>,
+        origin: NativeOrigin,
+    },
+    Cancel {
+        session: u64,
+    },
 }
 #[derive(Debug, thiserror::Error)]
 pub enum HotkeyError {
@@ -75,22 +94,26 @@ impl Gate {
         }
     }
 }
-type Handler = Arc<dyn Fn(ShortcutState) + Send + Sync>;
-type Dispatch = Arc<dyn Fn(Kind, Arc<Gate>) + Send + Sync>;
+type Handler = Arc<dyn Fn(ShortcutState, NativeOrigin) + Send + Sync>;
+type Dispatch = Arc<dyn Fn(Kind, Arc<Gate>, NativeOrigin) + Send + Sync>;
 trait Registry: Send {
     fn escape_pressed(&self) -> bool;
     fn register(&mut self, key: Shortcut, handler: Handler) -> Result<(), String>;
     fn unregister(&mut self, key: Shortcut) -> Result<(), String>;
 }
-struct NativeRegistry(tauri::AppHandle);
+struct NativeRegistry(tauri::AppHandle, bool);
 impl Registry for NativeRegistry {
     fn escape_pressed(&self) -> bool {
         macos_integration::keyboard::escape_key_pressed()
     }
     fn register(&mut self, key: Shortcut, handler: Handler) -> Result<(), String> {
+        let observe = self.1;
         self.0
             .global_shortcut()
-            .on_shortcut(key, move |_, _, event| handler(event.state))
+            .on_shortcut(key, move |_, _, event| {
+                let origin = NativeOrigin::now(observe);
+                handler(event.state, origin);
+            })
             .map_err(|error| error.to_string())
     }
     fn unregister(&mut self, key: Shortcut) -> Result<(), String> {
@@ -125,11 +148,29 @@ impl Hotkeys {
         key: Hotkey,
         callback: impl Fn(Event) + Send + Sync + 'static,
     ) -> Result<Self, HotkeyError> {
+        Self::install_inner(app, key, callback, false)
+    }
+    /// Explicit developer opt-in; normal installation retains no origin clocks.
+    #[cfg(feature = "measurement")]
+    pub fn install_observed(
+        app: tauri::AppHandle,
+        key: Hotkey,
+        callback: impl Fn(Event) + Send + Sync + 'static,
+        enabled: bool,
+    ) -> Result<Self, HotkeyError> {
+        Self::install_inner(app, key, callback, enabled)
+    }
+    fn install_inner(
+        app: tauri::AppHandle,
+        key: Hotkey,
+        callback: impl Fn(Event) + Send + Sync + 'static,
+        observe: bool,
+    ) -> Result<Self, HotkeyError> {
         let errors = Arc::new(Mutex::new(None));
         let failures = Arc::clone(&errors);
         let callback = Arc::new(callback);
         let dispatcher = app.clone();
-        let dispatch: Dispatch = Arc::new(move |kind, gate| {
+        let dispatch: Dispatch = Arc::new(move |kind, gate, _origin| {
             let Some(pending) = gate.reserve() else {
                 record_error(
                     &failures,
@@ -160,7 +201,10 @@ impl Hotkeys {
                                 None
                             }
                         };
-                        callback(Event::Toggle { process });
+                        callback(Event::Toggle {
+                            process,
+                            origin: _origin,
+                        });
                     }
                     Kind::Cancel(session) => callback(Event::Cancel { session }),
                 }
@@ -168,7 +212,12 @@ impl Hotkeys {
                 record_error(&failures, error.to_string());
             }
         });
-        Self::with_registry(Box::new(NativeRegistry(app)), key, dispatch, errors)
+        Self::with_registry(
+            Box::new(NativeRegistry(app, observe)),
+            key,
+            dispatch,
+            errors,
+        )
     }
     fn with_registry(
         registry: Box<dyn Registry>,
@@ -208,9 +257,9 @@ impl Hotkeys {
         self.registry
             .register(
                 key,
-                Arc::new(move |state| {
+                Arc::new(move |state, origin| {
                     if event_gate.accept(state) {
-                        dispatch(kind, Arc::clone(&event_gate));
+                        dispatch(kind, Arc::clone(&event_gate), origin);
                     }
                 }),
             )
@@ -456,7 +505,7 @@ mod tests {
             let cancelled_sessions = Arc::new(Mutex::new(Vec::new()));
             let recorded_sessions = Arc::clone(&cancelled_sessions);
             let (toggle_actions, cancel_actions) = (Arc::clone(&toggles), Arc::clone(&cancels));
-            let dispatch: Dispatch = Arc::new(move |kind, gate| {
+            let dispatch: Dispatch = Arc::new(move |kind, gate, _origin| {
                 if gate.enabled.load(Ordering::Acquire) {
                     match kind {
                         Kind::Toggle => {
@@ -495,13 +544,13 @@ mod tests {
                 .cloned()
                 .ok_or("handler missing")?;
             let state = Arc::clone(&self.state);
-            Ok(Arc::new(move |event| {
+            Ok(Arc::new(move |event, origin| {
                 if key == Shortcut::new(None, Code::Escape)
                     && let Ok(mut state) = state.lock()
                 {
                     state.escape_pressed = matches!(event, ShortcutState::Pressed);
                 }
-                handler(event);
+                handler(event, origin);
             }))
         }
     }
@@ -513,16 +562,16 @@ mod tests {
         assert!(fixture.handler(escape).is_err());
         fixture.owner.enable_cancel(Some(1))?;
         let handler = fixture.handler(escape)?;
-        handler(ShortcutState::Pressed);
+        handler(ShortcutState::Pressed, NativeOrigin::now(false));
         fixture.owner.enable_cancel(Some(1))?;
-        handler(ShortcutState::Pressed);
+        handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(fixture.cancels.load(Ordering::Acquire), 1);
-        handler(ShortcutState::Released);
-        handler(ShortcutState::Pressed);
+        handler(ShortcutState::Released, NativeOrigin::now(false));
+        handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(fixture.cancels.load(Ordering::Acquire), 2);
         fixture.owner.enable_cancel(None)?;
-        handler(ShortcutState::Released);
-        handler(ShortcutState::Pressed);
+        handler(ShortcutState::Released, NativeOrigin::now(false));
+        handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(fixture.cancels.load(Ordering::Acquire), 2);
         assert!(fixture.handler(escape).is_err());
         Ok(())
@@ -534,12 +583,12 @@ mod tests {
         let mut fixture = Fixture::new()?;
         let escape = Shortcut::new(None, Code::Escape);
         fixture.owner.enable_cancel(Some(11))?;
-        fixture.handler(escape)?(ShortcutState::Pressed);
+        fixture.handler(escape)?(ShortcutState::Pressed, NativeOrigin::now(false));
         fixture.owner.enable_cancel(None)?;
         // The OS does not deliver a shortcut release while it is unregistered.
         fixture.state.lock().map_err(|_| "lock")?.escape_pressed = false;
         fixture.owner.enable_cancel(Some(12))?;
-        fixture.handler(escape)?(ShortcutState::Pressed);
+        fixture.handler(escape)?(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(
             *fixture.cancelled_sessions.lock().map_err(|_| "lock")?,
             vec![11, 12]
@@ -555,7 +604,7 @@ mod tests {
         fixture.state.lock().map_err(|_| "lock")?.escape_pressed = true;
         fixture.owner.enable_cancel(Some(11))?;
         let handler = fixture.handler(escape)?;
-        handler(ShortcutState::Pressed);
+        handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert!(
             fixture
                 .cancelled_sessions
@@ -563,18 +612,18 @@ mod tests {
                 .map_err(|_| "lock")?
                 .is_empty()
         );
-        handler(ShortcutState::Released);
-        handler(ShortcutState::Pressed);
+        handler(ShortcutState::Released, NativeOrigin::now(false));
+        handler(ShortcutState::Pressed, NativeOrigin::now(false));
         fixture.owner.enable_cancel(None)?;
         fixture.owner.enable_cancel(Some(12))?;
         let handler = fixture.handler(escape)?;
-        handler(ShortcutState::Pressed);
+        handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(
             *fixture.cancelled_sessions.lock().map_err(|_| "lock")?,
             vec![11]
         );
-        handler(ShortcutState::Released);
-        handler(ShortcutState::Pressed);
+        handler(ShortcutState::Released, NativeOrigin::now(false));
+        handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(
             *fixture.cancelled_sessions.lock().map_err(|_| "lock")?,
             vec![11, 12]
@@ -588,16 +637,16 @@ mod tests {
         let mut fixture = Fixture::new()?;
         let escape = Shortcut::new(None, Code::Escape);
         fixture.owner.enable_cancel(Some(11))?;
-        fixture.handler(escape)?(ShortcutState::Pressed);
+        fixture.handler(escape)?(ShortcutState::Pressed, NativeOrigin::now(false));
         fixture.owner.enable_cancel(Some(12))?;
         let new_handler = fixture.handler(escape)?;
-        new_handler(ShortcutState::Pressed);
+        new_handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(
             *fixture.cancelled_sessions.lock().map_err(|_| "lock")?,
             vec![11]
         );
-        new_handler(ShortcutState::Released);
-        new_handler(ShortcutState::Pressed);
+        new_handler(ShortcutState::Released, NativeOrigin::now(false));
+        new_handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(
             *fixture.cancelled_sessions.lock().map_err(|_| "lock")?,
             vec![11, 12]
@@ -613,9 +662,9 @@ mod tests {
         fixture.owner.enable_cancel(Some(11))?;
         let old_handler = fixture.handler(escape)?;
         fixture.owner.enable_cancel(Some(12))?;
-        old_handler(ShortcutState::Pressed);
+        old_handler(ShortcutState::Pressed, NativeOrigin::now(false));
         let new_handler = fixture.handler(escape)?;
-        new_handler(ShortcutState::Pressed);
+        new_handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(
             *fixture.cancelled_sessions.lock().map_err(|_| "lock")?,
             vec![12]
@@ -644,9 +693,9 @@ mod tests {
             })
         );
         assert!(fixture.handler(old).is_err());
-        old_handler(ShortcutState::Pressed);
+        old_handler(ShortcutState::Pressed, NativeOrigin::now(false));
         let new_handler = fixture.handler(Shortcut::new(Some(Modifiers::ALT), Code::KeyG))?;
-        new_handler(ShortcutState::Pressed);
+        new_handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(fixture.toggles.load(Ordering::Acquire), 1);
         Ok(())
     }
@@ -668,9 +717,9 @@ mod tests {
             fixture.owner.current_binding(),
             Some(crate::settings::Settings::default().hotkey)
         );
-        old_handler(ShortcutState::Pressed);
+        old_handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(fixture.toggles.load(Ordering::Acquire), 1);
-        old_handler(ShortcutState::Released);
+        old_handler(ShortcutState::Released, NativeOrigin::now(false));
         {
             let mut state = fixture.state.lock().map_err(|_| "lock")?;
             state.fail_register = false;
@@ -682,8 +731,8 @@ mod tests {
             Some(crate::settings::Settings::default().hotkey)
         );
         let abandoned_handler = fixture.handler(new)?;
-        abandoned_handler(ShortcutState::Pressed);
-        old_handler(ShortcutState::Pressed);
+        abandoned_handler(ShortcutState::Pressed, NativeOrigin::now(false));
+        old_handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(fixture.toggles.load(Ordering::Acquire), 2);
         // A failed rollback owns one disabled registration; retry its removal
         // before another replacement, so failures cannot grow an unbounded list.
@@ -708,8 +757,8 @@ mod tests {
                 .handlers
                 .is_empty()
         );
-        old_handler(ShortcutState::Released);
-        old_handler(ShortcutState::Pressed);
+        old_handler(ShortcutState::Released, NativeOrigin::now(false));
+        old_handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(fixture.toggles.load(Ordering::Acquire), 2);
         assert!(matches!(
             fixture.owner.enable_cancel(Some(1)),
@@ -733,7 +782,7 @@ mod tests {
             .push(escape.id());
         assert!(fixture.owner.enable_cancel(None).is_err());
         assert!(fixture.owner.enable_cancel(Some(1)).is_err());
-        escape_handler(ShortcutState::Pressed);
+        escape_handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(fixture.cancels.load(Ordering::Acquire), 0);
         assert!(fixture.owner.shutdown().is_err());
         assert!(fixture.handler(toggle).is_err());
@@ -771,7 +820,7 @@ mod tests {
         assert!(fixture.owner.shutdown().is_err());
         assert!(fixture.handler(toggle).is_ok());
         assert_eq!(fixture.owner.current_binding(), None);
-        handler(ShortcutState::Pressed);
+        handler(ShortcutState::Pressed, NativeOrigin::now(false));
         assert_eq!(fixture.toggles.load(Ordering::Acquire), 0);
         fixture
             .state
