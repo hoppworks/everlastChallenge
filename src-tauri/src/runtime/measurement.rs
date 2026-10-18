@@ -64,8 +64,35 @@ impl Trace {
         at: Instant,
         decode_timing: Option<crate::inference_service::DecodeTiming>,
     ) -> Result<(), RuntimeError> {
+        let kept = matches!(next.phase, Phase::Recording | Phase::Finalizing)
+            || (next.phase == Phase::Idle
+                && matches!(next.outcome, Some(Outcome::Local | Outcome::Empty)));
         if candidate
-            && previous.phase == Phase::Finalizing
+            && kept
+            && let Some(timing) = decode_timing
+        {
+            let mut trace = self
+                .value
+                .lock()
+                .map_err(|_| RuntimeError::Synchronization)?;
+            if trace.session == previous.session {
+                trace.decode_timing = Some(match trace.decode_timing {
+                    None => timing,
+                    Some(old) => crate::inference_service::DecodeTiming {
+                        elapsed: old
+                            .elapsed
+                            .checked_add(timing.elapsed)
+                            .ok_or(RuntimeError::Synchronization)?,
+                        input_frames: old
+                            .input_frames
+                            .checked_add(timing.input_frames)
+                            .ok_or(RuntimeError::Synchronization)?,
+                    },
+                });
+            }
+        }
+        if candidate
+            && matches!(previous.phase, Phase::Recording | Phase::Finalizing)
             && next.phase == Phase::Idle
             && matches!(next.outcome, Some(Outcome::Local | Outcome::Empty))
         {
@@ -75,7 +102,6 @@ impl Trace {
                 .map_err(|_| RuntimeError::Synchronization)?;
             if trace.session == previous.session && trace.t_terminal.is_none() {
                 trace.t_terminal = Some(at);
-                trace.decode_timing = decode_timing;
                 if next.outcome == Some(Outcome::Local) {
                     trace.t_text = Some(at);
                 }
@@ -134,14 +160,19 @@ struct ReplayAudio {
     pending_input: Receiver<ReplayInput>,
     trace: Arc<Trace>,
     native: NativeEndpoint,
+    pretranscription: bool,
 }
 impl AudioDriver for ReplayAudio {
     fn start(&mut self, session: u64, _: Option<String>) -> Result<(), String> {
         if self.owner.active.is_some() {
             return Err("Replay owner is still occupied".into());
         }
-        let handle = CaptureHandle::start_replay(session, self.format, self.ready.clone())
-            .map_err(|e| e.to_string())?;
+        let handle = if self.pretranscription {
+            CaptureHandle::start_pretranscription_replay(session, self.format, self.ready.clone())
+        } else {
+            CaptureHandle::start_replay(session, self.format, self.ready.clone())
+        }
+        .map_err(|e| e.to_string())?;
         self.owner.active = Some((session, handle));
         Ok(())
     }
@@ -172,6 +203,14 @@ impl AudioDriver for ReplayAudio {
     }
     fn shutdown(&mut self) -> Result<(), String> {
         self.owner.shutdown()
+    }
+    fn pretranscription(&self) -> bool {
+        self.pretranscription
+    }
+    fn allow_seal(&self, epoch: u64) {
+        if let Some((_, handle)) = &self.owner.active {
+            handle.allow_seal(epoch);
+        }
     }
     fn measurement_trace(&self) -> Option<Arc<Trace>> {
         Some(Arc::clone(&self.trace))
@@ -227,10 +266,26 @@ impl MeasuredStopHandle {
 }
 
 impl MeasuredRuntime {
+    /// Experimental confirmed-pause pretranscription; never selected by app starts.
+    pub fn spawn_pretranscription(
+        inference: InferenceService,
+        generation: u64,
+        format: AudioFormat,
+    ) -> Result<Self, RuntimeError> {
+        Self::spawn_inner(inference, generation, format, true)
+    }
     pub fn spawn(
         inference: InferenceService,
         generation: u64,
         format: AudioFormat,
+    ) -> Result<Self, RuntimeError> {
+        Self::spawn_inner(inference, generation, format, false)
+    }
+    fn spawn_inner(
+        inference: InferenceService,
+        generation: u64,
+        format: AudioFormat,
+        pretranscription: bool,
     ) -> Result<Self, RuntimeError> {
         format.validate().map_err(service_error)?;
         let (ready, input) = bounded(1);
@@ -243,6 +298,7 @@ impl MeasuredRuntime {
             pending_input: input.clone(),
             trace: Arc::clone(&trace),
             native: endpoint,
+            pretranscription,
         };
         let runtime = Runtime::with_audio(inference, generation, native, audio)?;
         Ok(Self {
@@ -436,6 +492,8 @@ impl<A: AudioDriver> Actor<A> {
 
 #[cfg(test)]
 mod tests {
+    #[path = "pretranscription_tests.rs"]
+    mod pretranscription_tests;
     #[path = "measurement_stop_tests.rs"]
     mod stop_handle_tests;
 
@@ -886,6 +944,7 @@ mod tests {
                     session,
                     generation,
                     job_id,
+                    timeline_range: sample_range.clone(),
                     sample_range,
                     result: Ok("untrusted completion".into()),
                 },
@@ -905,6 +964,7 @@ mod tests {
                 generation: 1,
                 job_id: 1,
                 sample_range: job.sample_range,
+                timeline_range: job.timeline_range,
                 result: Ok("accepted completion".into()),
             },
             Some(crate::inference_service::DecodeTiming {
@@ -946,6 +1006,7 @@ mod tests {
                 generation: 1,
                 job_id: 1,
                 sample_range: 0..3200,
+                timeline_range: 0..3200,
                 result: Ok("duplicate completion".into()),
             },
             Some(crate::inference_service::DecodeTiming {

@@ -79,6 +79,10 @@ fn drain_events(
                 }
             }
             CaptureEvent::MaximumWarning { .. } => {}
+            CaptureEvent::Segment { .. } | CaptureEvent::SegmentedFinished { .. } => {
+                run.audio_failure =
+                    Some("Unexpected segmented event in full-recording audio probe".into());
+            }
         }
     }
 }

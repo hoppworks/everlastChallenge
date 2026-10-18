@@ -28,31 +28,62 @@ pub(super) fn record(
     maximum: &mut bool,
     progress: &ProgressSlot,
 ) -> Result<Vec<f32>, CaptureError> {
-    if stop.load(Ordering::Acquire) {
+    record_inner(
+        RecordingOwner {
+            session,
+            events,
+            stop,
+            maximum,
+            progress,
+        },
+        format,
+        ready,
+        None,
+    )
+}
+
+pub(super) fn record_segmented(
+    owner: RecordingOwner<'_>,
+    format: AudioFormat,
+    ready: Sender<ReplayInput>,
+    link: &super::pretranscription::SegmentLink,
+) -> Result<Vec<f32>, CaptureError> {
+    record_inner(owner, format, ready, Some(link))
+}
+
+fn record_inner(
+    owner: RecordingOwner<'_>,
+    format: AudioFormat,
+    ready: Sender<ReplayInput>,
+    segmentation: Option<&super::pretranscription::SegmentLink>,
+) -> Result<Vec<f32>, CaptureError> {
+    if owner.stop.load(Ordering::Acquire) {
         return Ok(Vec::new());
     }
     let processor = AudioProcessor::new(format)?;
     let (port, reader) = capture_buffer(format)?;
     let started = Instant::now();
-    RecordingOwner {
-        session,
-        events,
-        stop,
-        maximum,
-        progress,
-    }
-    .run(processor, reader, (), started, move || {
-        ready
-            .try_send(ReplayInput {
-                port,
-                started,
-                format,
-            })
-            .map_err(|error| match error {
-                crossbeam_channel::TrySendError::Full(_) => CaptureError::EventOverflow,
-                crossbeam_channel::TrySendError::Disconnected(_) => CaptureError::ControllerGone,
-            })
-    })
+    owner.run_inner(
+        processor,
+        reader,
+        (),
+        started,
+        move || {
+            ready
+                .try_send(ReplayInput {
+                    port,
+                    started,
+                    format,
+                })
+                .map_err(|error| match error {
+                    crossbeam_channel::TrySendError::Full(_) => CaptureError::EventOverflow,
+                    crossbeam_channel::TrySendError::Disconnected(_) => {
+                        CaptureError::ControllerGone
+                    }
+                })
+        },
+        segmentation,
+    )
 }
 
 #[cfg(test)]

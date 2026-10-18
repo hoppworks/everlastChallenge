@@ -398,6 +398,12 @@ trait AudioDriver: Send + 'static {
     }
     fn shutdown(&mut self) -> Result<(), String>;
     #[cfg(feature = "measurement")]
+    fn pretranscription(&self) -> bool {
+        false
+    }
+    #[cfg(feature = "measurement")]
+    fn allow_seal(&self, _epoch: u64) {}
+    #[cfg(feature = "measurement")]
     fn measurement_trace(&self) -> Option<Arc<measurement::Trace>> {
         None
     }
@@ -443,18 +449,14 @@ impl AudioDriver for CpalAudio {
         while let Some(event) = handle.next_event() {
             events.push(event);
         }
-        let finished = events
-            .iter()
-            .any(|event| matches!(event, CaptureEvent::Finished { .. }));
+        let finished = events.iter().any(|event| event.is_finished());
         if finished || handle.is_finished() {
             // Close the drain/is_finished race: Finished may have been sent
             // after the first drain but before is_finished became true.
             while let Some(event) = handle.next_event() {
                 events.push(event);
             }
-            let finished = events
-                .iter()
-                .any(|event| matches!(event, CaptureEvent::Finished { .. }));
+            let finished = events.iter().any(|event| event.is_finished());
             let Some((_, handle)) = self.active.take() else {
                 return events;
             };
@@ -467,7 +469,7 @@ impl AudioDriver for CpalAudio {
                 });
             } else if let Err(error) = joined {
                 for event in &mut events {
-                    if let CaptureEvent::Finished { result, .. } = event {
+                    if let Some(result) = event.result_mut() {
                         *result = Err(error);
                         break;
                     }
@@ -505,6 +507,14 @@ impl Runtime {
         audio: impl AudioDriver,
     ) -> Result<Self, RuntimeError> {
         let controller = Controller::default();
+        #[cfg(feature = "measurement")]
+        let controller = {
+            let mut controller = controller;
+            if audio.pretranscription() {
+                controller.enable_pretranscription();
+            }
+            controller
+        };
         #[cfg(feature = "measurement")]
         let timing = audio.measurement_trace();
         let shared = Arc::new(Mutex::new(Shared {
@@ -764,8 +774,11 @@ impl<A: AudioDriver> Actor<A> {
         #[cfg(feature = "measurement")]
         let previous = self.controller.snapshot();
         #[cfg(feature = "measurement")]
-        let candidate = matches!(&event, Event::InferenceFinished { session, generation, job_id, result: Ok(_), .. }
-            if previous.session == Some(*session) && *generation == self.generation && *job_id == *session);
+        let candidate = self.controller.inference_matches(&event)
+            && matches!(&event, Event::InferenceFinished { result: Ok(_), .. });
+        #[cfg(feature = "measurement")]
+        let audio_final = matches!(&event, Event::SegmentedFinished { session, result: Ok(_), .. }
+            if previous.session == Some(*session));
         #[cfg(feature = "measurement")]
         let decode_timing = decode_timing.filter(|timing| matches!(&event,
             Event::InferenceFinished { sample_range, .. } if timing.input_frames == sample_range.len()));
@@ -780,7 +793,7 @@ impl<A: AudioDriver> Actor<A> {
                     .accepted(
                         &previous,
                         &self.controller.snapshot(),
-                        candidate,
+                        candidate || audio_final,
                         adopted,
                         decode_timing,
                     )
@@ -936,6 +949,28 @@ impl<A: AudioDriver> Actor<A> {
     fn poll(&mut self) -> Result<(), RuntimeError> {
         for event in self.audio.poll() {
             let event = match event {
+                #[cfg(feature = "measurement")]
+                CaptureEvent::Segment { session, prefix } => Event::Segment {
+                    session,
+                    timeline_range: prefix.timeline_range,
+                    samples: prefix.samples,
+                },
+                #[cfg(feature = "measurement")]
+                CaptureEvent::SegmentedFinished {
+                    session,
+                    base,
+                    result,
+                    maximum,
+                } => {
+                    if self.controller.audio_is_unreleased(session) && maximum {
+                        self.maximum_reached = true;
+                    }
+                    Event::SegmentedFinished {
+                        session,
+                        base,
+                        result: result.map_err(|e| e.to_string()),
+                    }
+                }
                 CaptureEvent::Started { session, .. } => Event::AudioStarted(session),
                 CaptureEvent::Finished {
                     session,
@@ -983,6 +1018,7 @@ impl<A: AudioDriver> Actor<A> {
                         generation: done.generation,
                         job_id: done.job_id,
                         sample_range: done.sample_range,
+                        timeline_range: done.timeline_range,
                         result: done.result.map_err(|error| error.to_string()),
                     },
                     #[cfg(feature = "measurement")]
@@ -990,6 +1026,16 @@ impl<A: AudioDriver> Actor<A> {
                 )
                 .map_err(service_error)?;
             self.execute(actions)?;
+        }
+        #[cfg(feature = "measurement")]
+        if self.audio.pretranscription()
+            && let Some(epoch) = self.controller.seal_available()
+            && self
+                .inference
+                .as_ref()
+                .is_some_and(|s| s.busy().is_ok_and(|busy| !busy))
+        {
+            self.audio.allow_seal(epoch);
         }
         if self
             .inference
@@ -2311,6 +2357,7 @@ mod tests {
             generation: 1,
             job_id: 99,
             sample_range: 0..800,
+            timeline_range: 0..800,
             audio: Arc::new(vec![0.1; 800]),
             language: Language::German,
             token: WorkToken::default(),

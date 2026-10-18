@@ -93,6 +93,7 @@ fn job(session: u64, audio: Arc<Vec<f32>>) -> Job {
         generation: GENERATION,
         job_id: session * 101,
         sample_range: 0..audio.len(),
+        timeline_range: 0..audio.len(),
         audio,
         language: Language::German,
         token: WorkToken::default(),

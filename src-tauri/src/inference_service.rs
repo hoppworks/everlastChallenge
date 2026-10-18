@@ -45,7 +45,10 @@ pub struct Job {
     pub session: u64,
     pub generation: u64,
     pub job_id: u64,
+    /// Local slice in immutable storage (which may physically retain a suffix).
     pub sample_range: Range<usize>,
+    /// Global, disjoint recording frames; equal length, independent origin.
+    pub timeline_range: Range<usize>,
     // Arc<Vec> moves the existing journal buffer without copying its samples.
     pub audio: Arc<Vec<f32>>,
     pub language: Language,
@@ -72,7 +75,10 @@ pub struct Completed {
     pub session: u64,
     pub generation: u64,
     pub job_id: u64,
+    /// Local slice in immutable storage (which may physically retain a suffix).
     pub sample_range: Range<usize>,
+    /// Global, disjoint recording frames; equal length, independent origin.
+    pub timeline_range: Range<usize>,
     pub result: Result<String, InferenceError>,
     #[cfg(feature = "measurement")]
     pub decode_timing: Option<DecodeTiming>,
@@ -111,6 +117,13 @@ struct Shared {
     ready: AtomicBool,
     shutdown: AtomicBool,
     slots: Mutex<Slots>,
+    #[cfg(test)]
+    completion_barrier: Mutex<Option<CompletionBarrier>>,
+}
+#[cfg(test)]
+struct CompletionBarrier {
+    reached: Sender<()>,
+    release: Receiver<()>,
 }
 
 struct ReadyGuard(Arc<Shared>);
@@ -186,6 +199,9 @@ impl InferenceService {
             || job.job_id == 0
             || job.sample_range.start > job.sample_range.end
             || job.sample_range.end > job.audio.len()
+            || job.timeline_range.start > job.timeline_range.end
+            || job.timeline_range.end > dictation_core::audio::MAX_SAMPLES
+            || job.timeline_range.len() != job.sample_range.len()
             || !job.token.is_valid()
             || job.audio.len() > dictation_core::audio::MAX_SAMPLES
             || job.audio.iter().any(|sample| !sample.is_finite())
@@ -347,6 +363,8 @@ fn inference_loop(
         } else {
             Ok(String::new())
         };
+        // Release the actual PCM before advertising completion or idle.
+        drop(job.audio);
         let mut slots = shared.slots.lock().map_err(|_| ServiceError::Poisoned)?;
         slots.active = None;
         if job.token.is_valid() && !shared.shutdown.load(Ordering::Acquire) {
@@ -362,11 +380,29 @@ fn inference_loop(
                 generation: job.generation,
                 job_id: job.job_id,
                 sample_range: job.sample_range,
+                timeline_range: job.timeline_range,
                 result,
                 #[cfg(feature = "measurement")]
                 decode_timing,
                 token: job.token,
             });
+        }
+        drop(slots);
+        #[cfg(test)]
+        if let Some(barrier) = shared
+            .completion_barrier
+            .lock()
+            .map_err(|_| ServiceError::Poisoned)?
+            .take()
+        {
+            barrier
+                .reached
+                .send(())
+                .map_err(|_| ServiceError::Stopped)?;
+            barrier
+                .release
+                .recv_timeout(std::time::Duration::from_secs(2))
+                .map_err(|_| ServiceError::Stopped)?;
         }
     }
 }
@@ -375,6 +411,47 @@ fn inference_loop(
 mod tests {
     use super::*;
     use std::time::{Duration, Instant};
+
+    #[test]
+    fn completed_publication_and_idle_never_retain_the_job_audio()
+    -> Result<(), Box<dyn std::error::Error>> {
+        struct Immediate;
+        impl Decoder for Immediate {
+            fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+                Ok("done".into())
+            }
+        }
+        let service = InferenceService::with_decoder(Immediate)?;
+        wait_ready(&service)?;
+        let (reached, published) = crossbeam_channel::bounded(1);
+        let (release, released) = crossbeam_channel::bounded(1);
+        *service
+            .shared
+            .completion_barrier
+            .lock()
+            .map_err(|_| "barrier poisoned")? = Some(CompletionBarrier {
+            reached,
+            release: released,
+        });
+        let work = job(1, 1);
+        let storage = Arc::downgrade(&work.audio);
+        service.submit(work)?;
+        published.recv_timeout(Duration::from_secs(2))?;
+        let idle = !service.busy()?;
+        let completed = service.take_result()?.is_some();
+        let reclaimed = storage.upgrade().is_none();
+        release.send(())?;
+        service.shutdown()?;
+        assert!(
+            idle && completed,
+            "actual worker must have published completion while held"
+        );
+        assert!(
+            reclaimed,
+            "completion/idle must imply the worker released its PCM Arc"
+        );
+        Ok(())
+    }
 
     #[test]
     fn initialization_failure_remains_observable_after_worker_exit()
@@ -405,6 +482,7 @@ mod tests {
             generation,
             job_id: session,
             sample_range: 0..320,
+            timeline_range: 0..320,
             audio: Arc::new(vec![0.1; 320]),
             language: Language::German,
             token: WorkToken::default(),
@@ -440,6 +518,7 @@ mod tests {
             audio: Arc::new(vec![0.1, 0.2, 0.3, 0.4]),
             job_id: 42,
             sample_range: 1..3,
+            timeline_range: 100..102,
             ..job(7, 9)
         })?;
         wait_idle(&service)?;
@@ -449,6 +528,7 @@ mod tests {
             (7, 9, 42)
         );
         assert_eq!(completed.sample_range, 1..3);
+        assert_eq!(completed.timeline_range, 100..102);
         #[cfg(feature = "measurement")]
         assert_eq!(
             completed
@@ -461,6 +541,7 @@ mod tests {
         assert!(matches!(
             service.submit(Job {
                 sample_range: 0..321,
+                timeline_range: 0..321,
                 ..job(8, 9)
             }),
             Err(ServiceError::InvalidJob)
@@ -638,6 +719,7 @@ mod tests {
             generation: 1,
             job_id: 1,
             sample_range: 0..320,
+            timeline_range: 0..320,
             audio: Arc::new(vec![0.1; 320]),
             language: Language::German,
             token: WorkToken::default(),
@@ -650,6 +732,7 @@ mod tests {
             generation: 1,
             job_id: 2,
             sample_range: 0..320,
+            timeline_range: 0..320,
             audio: queued,
             language: Language::German,
             token: WorkToken::default(),
@@ -705,6 +788,7 @@ mod tests {
         service.submit(Job {
             audio: Arc::new(vec![0.1, 0.2, 0.3, 0.4]),
             sample_range: 1..3,
+            timeline_range: 1..3,
             ..job(7, 9)
         })?;
         let entered_at = entry.recv_timeout(Duration::from_secs(2))?;

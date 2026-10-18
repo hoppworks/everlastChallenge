@@ -44,6 +44,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             generation: 1,
             job_id,
             sample_range: 0..samples.len(),
+            timeline_range: 0..samples.len(),
             audio: Arc::clone(&samples),
             language: options.language,
             token: WorkToken::default(),

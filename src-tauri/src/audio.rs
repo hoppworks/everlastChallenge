@@ -22,6 +22,8 @@ use std::{
 const CLOSED: usize = 1 << (usize::BITS - 1);
 
 #[cfg(feature = "measurement")]
+pub mod pretranscription;
+#[cfg(feature = "measurement")]
 pub mod replay;
 
 #[derive(Debug, thiserror::Error)]
@@ -330,6 +332,18 @@ impl CaptureReader {
 }
 
 pub enum CaptureEvent {
+    #[cfg(feature = "measurement")]
+    Segment {
+        session: u64,
+        prefix: pretranscription::SealedPrefix,
+    },
+    #[cfg(feature = "measurement")]
+    SegmentedFinished {
+        session: u64,
+        base: usize,
+        result: Result<Vec<f32>, CaptureError>,
+        maximum: bool,
+    },
     Started {
         session: u64,
         format: AudioFormat,
@@ -343,6 +357,25 @@ pub enum CaptureEvent {
         result: Result<Vec<f32>, CaptureError>,
         maximum: bool,
     },
+}
+
+impl CaptureEvent {
+    pub(crate) fn is_finished(&self) -> bool {
+        match self {
+            Self::Finished { .. } => true,
+            #[cfg(feature = "measurement")]
+            Self::SegmentedFinished { .. } => true,
+            _ => false,
+        }
+    }
+    pub(crate) fn result_mut(&mut self) -> Option<&mut Result<Vec<f32>, CaptureError>> {
+        match self {
+            Self::Finished { result, .. } => Some(result),
+            #[cfg(feature = "measurement")]
+            Self::SegmentedFinished { result, .. } => Some(result),
+            _ => None,
+        }
+    }
 }
 
 fn send_event(events: &Sender<CaptureEvent>, event: CaptureEvent) -> Result<(), CaptureError> {
@@ -359,6 +392,10 @@ pub struct CaptureHandle {
     worker: Option<JoinHandle<Result<(), CaptureError>>>,
     events: Receiver<CaptureEvent>,
     progress: Arc<ProgressSlot>,
+    #[cfg(feature = "measurement")]
+    segmentation: Option<Arc<pretranscription::SegmentLink>>,
+    #[cfg(feature = "measurement")]
+    session: u64,
 }
 
 impl CaptureHandle {
@@ -389,6 +426,42 @@ impl CaptureHandle {
         Self::spawn(session, move |events, stop, maximum, progress| {
             replay::record(session, format, ready, events, stop, maximum, progress)
         })
+    }
+
+    #[cfg(feature = "measurement")]
+    pub fn start_pretranscription_replay(
+        session: u64,
+        format: AudioFormat,
+        ready: Sender<replay::ReplayInput>,
+    ) -> Result<Self, CaptureError> {
+        if ready.capacity().is_none() {
+            return Err(CaptureError::EventOverflow);
+        }
+        let link = Arc::new(pretranscription::SegmentLink::default());
+        let owner_link = Arc::clone(&link);
+        let mut handle = Self::spawn(session, move |events, stop, maximum, progress| {
+            replay::record_segmented(
+                RecordingOwner {
+                    session,
+                    events,
+                    stop,
+                    maximum,
+                    progress,
+                },
+                format,
+                ready,
+                &owner_link,
+            )
+        })?;
+        handle.segmentation = Some(link);
+        Ok(handle)
+    }
+
+    #[cfg(feature = "measurement")]
+    pub(crate) fn allow_seal(&self, epoch: u64) {
+        if let Some(link) = &self.segmentation {
+            link.allow(epoch);
+        }
     }
 
     fn spawn(
@@ -429,6 +502,10 @@ impl CaptureHandle {
             worker: Some(worker),
             events: incoming,
             progress,
+            #[cfg(feature = "measurement")]
+            segmentation: None,
+            #[cfg(feature = "measurement")]
+            session,
         })
     }
 
@@ -438,6 +515,14 @@ impl CaptureHandle {
 
     pub fn next_event(&self) -> Option<CaptureEvent> {
         // Disconnection has no additional event; join retains worker errors.
+        #[cfg(feature = "measurement")]
+        if let Some(link) = &self.segmentation {
+            #[cfg(test)]
+            if !link.pause_poll() {
+                return None;
+            }
+            return link.poll(self.session, &self.events);
+        }
         self.events.try_recv().ok()
     }
 
@@ -615,12 +700,34 @@ impl<S> Drop for RecordingSource<S> {
 impl RecordingOwner<'_> {
     fn run<S>(
         self,
+        processor: AudioProcessor,
+        reader: CaptureReader,
+        source: S,
+        started: Instant,
+        activate: impl FnOnce() -> Result<(), CaptureError>,
+    ) -> Result<Vec<f32>, CaptureError> {
+        self.run_inner(
+            processor,
+            reader,
+            source,
+            started,
+            activate,
+            #[cfg(feature = "measurement")]
+            None,
+        )
+    }
+
+    fn run_inner<S>(
+        self,
         mut processor: AudioProcessor,
         mut reader: CaptureReader,
         source: S,
         started: Instant,
         activate: impl FnOnce() -> Result<(), CaptureError>,
+        #[cfg(feature = "measurement")] segmentation: Option<&pretranscription::SegmentLink>,
     ) -> Result<Vec<f32>, CaptureError> {
+        #[cfg(feature = "measurement")]
+        let mut pauses = dictation_core::audio::pauses::ConfirmedPauses::default();
         let source = RecordingSource {
             source: Some(source),
             gate: Arc::clone(&reader.gate),
@@ -663,6 +770,10 @@ impl RecordingOwner<'_> {
                     thread::sleep(Duration::from_millis(2));
                 } else {
                     processor.push_interleaved(chunk)?;
+                }
+                #[cfg(feature = "measurement")]
+                if let Some(link) = segmentation {
+                    link.advance(&mut processor, &mut pauses)?;
                 }
                 let elapsed = started.elapsed();
                 if elapsed >= next_progress {
@@ -735,6 +846,10 @@ mod tests {
             worker: None,
             events: incoming,
             progress: Arc::new(ProgressSlot::default()),
+            #[cfg(feature = "measurement")]
+            segmentation: None,
+            #[cfg(feature = "measurement")]
+            session: 4,
         };
         send_event(
             &events,
@@ -917,6 +1032,10 @@ mod tests {
             worker: Some(worker),
             events: incoming,
             progress: Arc::new(ProgressSlot::default()),
+            #[cfg(feature = "measurement")]
+            segmentation: None,
+            #[cfg(feature = "measurement")]
+            session: 4,
         };
         let started = Instant::now();
         drop(handle);

@@ -2,6 +2,8 @@
 
 use rubato::{FftFixedIn, Resampler};
 
+pub mod pauses;
+
 pub const OUTPUT_RATE: usize = 16_000;
 pub const MAX_SECONDS: usize = 300;
 pub const MAX_SAMPLES: usize = OUTPUT_RATE * MAX_SECONDS;
@@ -93,6 +95,7 @@ pub struct AudioProcessor {
     journal: Vec<f32>,
     remaining_delay: usize,
     input_frames: usize,
+    sealed_frames: usize,
 }
 
 impl AudioProcessor {
@@ -126,6 +129,7 @@ impl AudioProcessor {
             journal,
             remaining_delay,
             input_frames: 0,
+            sealed_frames: 0,
         })
     }
 
@@ -159,6 +163,34 @@ impl AudioProcessor {
         Ok(())
     }
 
+    /// Irreversibly stable output on the global recording timeline. Rounded
+    /// final output may be shorter than resampler look-ahead, so never seal it.
+    pub fn stable_samples(&self) -> (usize, &[f32]) {
+        let stable_end = (self.input_frames * OUTPUT_RATE / self.format.sample_rate as usize)
+            .min(self.sealed_frames + self.journal.len());
+        (
+            self.sealed_frames,
+            &self.journal[..stable_end - self.sealed_frames],
+        )
+    }
+
+    /// Move the existing journal into immutable storage, copying only its
+    /// unsealed suffix. Caller must release the previous frozen storage first.
+    pub fn seal_prefix(&mut self, global_cut: usize) -> Result<Vec<f32>, AudioError> {
+        let (base, stable) = self.stable_samples();
+        if global_cut <= base || global_cut > base + stable.len() {
+            return Err(AudioError::IncompleteFrame);
+        }
+        let local_cut = global_cut - base;
+        let mut suffix = Vec::new();
+        suffix
+            .try_reserve_exact(MAX_SAMPLES)
+            .map_err(|_| AudioError::Allocation)?;
+        suffix.extend_from_slice(&self.journal[local_cut..]);
+        self.sealed_frames = global_cut;
+        Ok(std::mem::replace(&mut self.journal, suffix))
+    }
+
     fn process_block(&mut self, limit: usize) -> Result<(), AudioError> {
         let Some(resampler) = &mut self.resampler else {
             return Ok(());
@@ -169,7 +201,8 @@ impl AudioProcessor {
         self.pending.clear();
         let skip = self.remaining_delay.min(produced);
         self.remaining_delay -= skip;
-        let take = (produced - skip).min(limit.saturating_sub(self.journal.len()));
+        let take =
+            (produced - skip).min(limit.saturating_sub(self.sealed_frames + self.journal.len()));
         self.journal
             .extend_from_slice(&self.output[0][skip..skip + take]);
         Ok(())
@@ -186,19 +219,19 @@ impl AudioProcessor {
                 self.process_block(expected)?;
             }
             for _ in 0..8 {
-                if self.journal.len() >= expected {
+                if self.sealed_frames + self.journal.len() >= expected {
                     break;
                 }
                 self.pending.resize(CHUNK, 0.0);
                 self.process_block(expected)?;
             }
         }
-        if self.journal.len() < expected {
+        if self.sealed_frames + self.journal.len() < expected {
             return Err(AudioError::Resampler(
                 "flush did not produce complete audio".into(),
             ));
         }
-        self.journal.truncate(expected);
+        self.journal.truncate(expected - self.sealed_frames);
         Ok(self.journal)
     }
 }

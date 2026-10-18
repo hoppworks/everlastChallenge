@@ -422,6 +422,7 @@ fn infer(
             generation: 1,
             job_id: id,
             sample_range: 0..frames,
+            timeline_range: 0..frames,
             audio: Arc::new(samples),
             language,
             token: token.clone(),

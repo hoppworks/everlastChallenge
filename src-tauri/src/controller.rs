@@ -12,6 +12,9 @@ use macos_integration::{
 };
 use std::{num::NonZeroU64, ops::Range, sync::Arc};
 
+#[cfg(feature = "measurement")]
+mod pretranscription;
+
 #[derive(Clone)]
 pub struct SessionSettings {
     pub device: Option<String>,
@@ -41,6 +44,18 @@ pub enum Action {
 }
 
 pub enum Event {
+    #[cfg(feature = "measurement")]
+    Segment {
+        session: u64,
+        timeline_range: Range<usize>,
+        samples: Arc<Vec<f32>>,
+    },
+    #[cfg(feature = "measurement")]
+    SegmentedFinished {
+        session: u64,
+        base: usize,
+        result: Result<Vec<f32>, String>,
+    },
     AudioStarted(u64),
     AudioFinished {
         session: u64,
@@ -51,6 +66,7 @@ pub enum Event {
         generation: u64,
         job_id: u64,
         sample_range: Range<usize>,
+        timeline_range: Range<usize>,
         result: Result<String, String>,
     },
     DeliveryFinished {
@@ -85,12 +101,18 @@ struct Active {
     released: bool,
     audio: Option<Vec<f32>>,
     expected_range: Option<Range<usize>>,
+    #[cfg(feature = "measurement")]
+    run: Option<pretranscription::Run>,
 }
 
 #[derive(Default)]
 pub struct Controller {
     core: Machine,
     active: Option<Active>,
+    #[cfg(feature = "measurement")]
+    pretranscription: bool,
+    #[cfg(feature = "measurement")]
+    next_job: u64,
 }
 
 impl Controller {
@@ -158,6 +180,8 @@ impl Controller {
             released: false,
             audio: None,
             expected_range: None,
+            #[cfg(feature = "measurement")]
+            run: self.pretranscription.then(pretranscription::Run::default),
         });
         self.actions(effects)
     }
@@ -192,8 +216,43 @@ impl Controller {
         Ok(vec![])
     }
 
+    #[cfg(feature = "measurement")]
+    pub(crate) fn inference_matches(&self, event: &Event) -> bool {
+        let Event::InferenceFinished {
+            session,
+            generation,
+            job_id,
+            sample_range,
+            timeline_range,
+            ..
+        } = event
+        else {
+            return false;
+        };
+        if self.core.session_id() != Some(*session) {
+            return false;
+        }
+        let Some(active) = &self.active else {
+            return false;
+        };
+        if !active.work_token.is_valid() {
+            return false;
+        }
+        if active.run.is_some() {
+            return self.segment_matches(*generation, *job_id, sample_range, timeline_range);
+        }
+        self.core.phase() == Phase::Finalizing
+            && active.released
+            && *generation == active.settings.generation
+            && *job_id == *session
+            && active.expected_range.as_ref() == Some(sample_range)
+            && sample_range == timeline_range
+    }
+
     pub fn accept(&mut self, event: Event) -> Result<Vec<Action>, ControllerError> {
         let session = match &event {
+            #[cfg(feature = "measurement")]
+            Event::Segment { session, .. } | Event::SegmentedFinished { session, .. } => *session,
             Event::AudioStarted(id) => *id,
             Event::AudioFinished { session, .. }
             | Event::InferenceFinished { session, .. }
@@ -208,6 +267,55 @@ impl Controller {
         }
         let mut effects = Vec::new();
         match event {
+            #[cfg(feature = "measurement")]
+            Event::Segment {
+                timeline_range,
+                samples,
+                ..
+            } => {
+                actions.extend(self.accept_segment(session, timeline_range, samples)?);
+                return Ok(actions);
+            }
+            #[cfg(feature = "measurement")]
+            Event::SegmentedFinished { base, result, .. } => {
+                let active = self.active.as_mut().ok_or(ControllerError::Resource)?;
+                if active.released {
+                    return Ok(actions);
+                }
+                active.released = true;
+                match result {
+                    Ok(audio)
+                        if !matches!(self.core.phase(), Phase::Cancelling | Phase::Starting) =>
+                    {
+                        let run = active.run.as_mut().ok_or(ControllerError::Resource)?;
+                        let final_frames = base
+                            .checked_add(audio.len())
+                            .ok_or(ControllerError::Resource)?;
+                        if base != run.next_start
+                            || final_frames > dictation_core::audio::MAX_SAMPLES
+                        {
+                            return Err(ControllerError::Resource);
+                        }
+                        run.final_frames = Some(final_frames);
+                        run.final_rest = Some(audio);
+                        effects.extend(self.core.stop(session)?);
+                    }
+                    Err(message) if self.core.phase() != Phase::Cancelling => {
+                        effects.extend(self.core.accept(Fact::Failed {
+                            id: session,
+                            message,
+                        })?);
+                    }
+                    Ok(_) if self.core.phase() == Phase::Starting => {
+                        effects.extend(self.core.accept(Fact::Failed {
+                            id: session,
+                            message: "Audio ended before stream start was confirmed".into(),
+                        })?);
+                    }
+                    _ => {}
+                }
+                effects.extend(self.core.accept(Fact::AudioReleased(session))?);
+            }
             Event::AudioStarted(id) => effects.extend(self.core.accept(Fact::AudioStarted(id))?),
             Event::AudioFinished { result, .. } => {
                 let active = self.active.as_mut().ok_or(ControllerError::Resource)?;
@@ -243,15 +351,24 @@ impl Controller {
                 generation,
                 job_id,
                 sample_range,
+                timeline_range,
                 result,
                 ..
             } => {
+                #[cfg(feature = "measurement")]
+                if self.active.as_ref().is_some_and(|a| a.run.is_some()) {
+                    if self.segment_matches(generation, job_id, &sample_range, &timeline_range) {
+                        actions.extend(self.segment_result(result)?);
+                    }
+                    return Ok(actions);
+                }
                 let active = self.active.as_ref().ok_or(ControllerError::Resource)?;
                 if self.core.phase() != Phase::Finalizing
                     || !active.released
                     || generation != active.settings.generation
                     || job_id != session
                     || active.expected_range.as_ref() != Some(&sample_range)
+                    || sample_range != timeline_range
                 {
                     return Ok(actions);
                 }
@@ -294,6 +411,11 @@ impl Controller {
                 }
                 Effect::StopAudio(session) => actions.push(Action::StopAudio(session)),
                 Effect::Transcribe(session) => {
+                    #[cfg(feature = "measurement")]
+                    if active.run.is_some() {
+                        actions.extend(self.segmented_jobs()?);
+                        continue;
+                    }
                     let audio = active.audio.take().ok_or(ControllerError::Resource)?;
                     let sample_range = 0..audio.len();
                     active.expected_range = Some(sample_range.clone());
@@ -301,6 +423,7 @@ impl Controller {
                         session,
                         generation: active.settings.generation,
                         job_id: session,
+                        timeline_range: sample_range.clone(),
                         sample_range,
                         audio: Arc::new(audio),
                         language: active.settings.language,
@@ -320,6 +443,10 @@ impl Controller {
                     active.work_token.cancel();
                     active.delivery_token.cancel();
                     active.audio = None;
+                    #[cfg(feature = "measurement")]
+                    {
+                        active.run = None;
+                    }
                     actions.push(Action::CancelInference(session));
                     actions.push(Action::AbortDelivery(session));
                 }
@@ -392,6 +519,7 @@ mod tests {
                     generation: 7,
                     job_id: 1,
                     sample_range: 0..800,
+                    timeline_range: 0..800,
                     result: Ok("old text".into())
                 })?
                 .is_empty()
@@ -420,6 +548,7 @@ mod tests {
             generation: 7,
             job_id: 1,
             sample_range: 0..800,
+            timeline_range: 0..800,
             result: Ok("new text".into()),
         })?;
         let delivered_token = match &actions[..] {
@@ -508,6 +637,7 @@ mod tests {
             generation: 7,
             job_id: 1,
             sample_range: 0..800,
+            timeline_range: 0..800,
             result: Ok("fixture words".into()),
         })?;
         assert_eq!(controller.snapshot().phase, Phase::Idle);
@@ -531,6 +661,7 @@ mod tests {
             generation: 7,
             job_id: 1,
             sample_range: 0..800,
+            timeline_range: 0..800,
             result: Ok("must never be retained".into()),
         })?;
         assert_eq!(controller.snapshot().text, None);
