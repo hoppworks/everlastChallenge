@@ -116,7 +116,20 @@ pub async fn transcript_copy(
     let admission = std::sync::Arc::new(desktop.ui_permit()?);
     let text = desktop.text()?;
     main_call(app, admission, move || {
-        ui_services::manual_copy(&text).map_err(|error| error.to_string())
+        ui_services::manual_copy(&text).map_err(|error| {
+            match error {
+                ui_services::UiServicesError::InvalidText => {
+                    "Der Text ist leer oder zu lang zum Kopieren."
+                }
+                ui_services::UiServicesError::Clipboard => {
+                    "Der Text konnte nicht in die Zwischenablage geschrieben werden. Die Zwischenablage kann jetzt leer sein."
+                }
+                ui_services::UiServicesError::MainThread | ui_services::UiServicesError::Unavailable => {
+                    "Kopieren ist derzeit nicht verfügbar."
+                }
+            }
+            .to_owned()
+        })
     })
     .await
 }
