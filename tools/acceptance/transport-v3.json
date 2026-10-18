@@ -1,0 +1,203 @@
+{
+  "schemaVersion": 1,
+  "kind": "reproducible-isolated-transport-acceptance-source-v3",
+  "sourceBaseRevision": "d2546c438b8f5079f52b5415c181a0fe9129d98b",
+  "patch": {
+    "path": "tools/acceptance/transport-v3.patch",
+    "bytes": 24488,
+    "sha256": "bc780dbcc8431a7371df02bf297930116da3247317c8bf1563f10ae52752bf97"
+  },
+  "files": [
+    {
+      "path": "src-tauri/Cargo.toml",
+      "base": {
+        "bytes": 1854,
+        "sha256": "d087a55345bdea6e08e4c2233f4f794f7a3d39eed0d78a8110d70471b3d9f62a"
+      },
+      "target": {
+        "bytes": 1933,
+        "sha256": "63b04e206405a9583ff8345b5b71f329afe1a61d284ef521754053f1598686ba"
+      }
+    },
+    {
+      "path": "crates/macos-integration/Cargo.toml",
+      "base": {
+        "bytes": 945,
+        "sha256": "14be4d5bc3c6528b345b5631459329d4b851385967fa6fb7eacd9a5d3c60f8b9"
+      },
+      "target": {
+        "bytes": 957,
+        "sha256": "4ad3500b87c6b897722acb5590a7f8375bb4a61ede2422fedad0edecba994bc2"
+      }
+    },
+    {
+      "path": "crates/macos-integration/src/lib.rs",
+      "base": {
+        "bytes": 526,
+        "sha256": "dff30163bc5a1d60e440c5a09b38049d8f9601f14355e61ef362e124445336d5"
+      },
+      "target": {
+        "bytes": 625,
+        "sha256": "f3262d56f40cc8c0c041e8b70259cb5f785488d157ac455546d4c9476e7da7b4"
+      }
+    },
+    {
+      "path": "crates/macos-integration/src/acceptance_identity.rs",
+      "base": null,
+      "target": {
+        "bytes": 732,
+        "sha256": "05f2cd4beda725e24606e7ad840bd8f802a1993974b5115481616bcc1244d21c"
+      }
+    },
+    {
+      "path": "src-tauri/examples/transport_acceptance/Info.plist",
+      "base": null,
+      "target": {
+        "bytes": 701,
+        "sha256": "af366e96cb07a910a8928d336289c47c03103a76a1a6e26a599ea4750b96de0d"
+      }
+    },
+    {
+      "path": "src-tauri/examples/transport_acceptance/assets/index.html",
+      "base": null,
+      "target": {
+        "bytes": 88,
+        "sha256": "27767b0a6a132a75507df1c4ed34bb67bee7dc66cf78a50fd2dee53a8a6a31f0"
+      }
+    },
+    {
+      "path": "src-tauri/examples/transport_acceptance/state.rs",
+      "base": null,
+      "target": {
+        "bytes": 4536,
+        "sha256": "0a60aa40a130cc1874335bc7869c0b78bc3890d1370af8157ed841fcdb63ff13"
+      }
+    },
+    {
+      "path": "src-tauri/examples/transport_acceptance/tauri.conf.json",
+      "base": null,
+      "target": {
+        "bytes": 433,
+        "sha256": "7222201906a42f20ebb55859de66b8d168ff6f1abaf7d4e46a2a68382662c514"
+      }
+    },
+    {
+      "path": "src-tauri/examples/transport_acceptance/transport-fixture.txt",
+      "base": null,
+      "target": {
+        "bytes": 68,
+        "sha256": "78ce796361f50b77b1c86a693c9ba3bb02be2be8dc7fcd0e5ddfd4305da0c5b7"
+      }
+    },
+    {
+      "path": "src-tauri/examples/transport_acceptance.rs",
+      "base": null,
+      "target": {
+        "bytes": 15435,
+        "sha256": "795678e9650bb529ebf5927ca1b17695b22941d63eed740c08ddf9fd8fe31fdb"
+      }
+    }
+  ],
+  "supportBindings": [
+    {
+      "path": "src-tauri/icons/icon.png",
+      "bytes": 6050,
+      "sha256": "29b2585744122df159cdc87a8c3db1a8a0ff4696963de693e447f8fa2b80128e"
+    },
+    {
+      "path": ".cargo/config.toml",
+      "bytes": 40,
+      "sha256": "867049e39a2c207bba21bf98eb9858aef44b4e93adc5f766d2866748fe207b8b"
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 129670,
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089"
+    },
+    {
+      "path": "src-tauri/build.rs",
+      "bytes": 734,
+      "sha256": "3ea0d629c12cb8bc2f8e434f5c176cc93b66d5d9b0c51878120737a9fbf0a147"
+    },
+    {
+      "path": "src-tauri/src/hotkeys.rs",
+      "bytes": 32867,
+      "sha256": "e3658fd9e5fb69fcb2c55410a79954f2e682d66506e606e107836f4ea91624ed"
+    },
+    {
+      "path": "src-tauri/src/native_service.rs",
+      "bytes": 41970,
+      "sha256": "85325d614272dc73e3460915236cebbd15701c477ba346d5226e5e95ba4b7e7e"
+    },
+    {
+      "path": "src-tauri/src/runtime.rs",
+      "bytes": 97347,
+      "sha256": "a347f23fcea770e7b0cfc2e8a67b4894f45a49692ef49ae97e005ed455896a93"
+    }
+  ],
+  "configuration": {
+    "fixtureBytes": 68,
+    "fixtureSha256": "78ce796361f50b77b1c86a693c9ba3bb02be2be8dc7fcd0e5ddfd4305da0c5b7",
+    "bundleIdentifier": "de.hoppworks.everlast-transport-acceptance",
+    "actualIdentityCheck": "main-thread NSBundle identifier, before arming/service; configuration never substituted",
+    "model": "none",
+    "microphone": "none",
+    "freeTextIPC": false,
+    "hotkey": "physical Control+Option+Shift+D",
+    "autoRetry": false,
+    "parameterPrintCLI": "none; fixed sources/config/Info/fixture bound"
+  },
+  "isolated47ChangedPaths": [
+    "src-tauri/Cargo.toml",
+    "crates/macos-integration/src/lib.rs",
+    "crates/macos-integration/Cargo.toml"
+  ],
+  "privateSourceArchive": {
+    "path": "artifacts/transport-acceptance-mac-candidate-v3/transport-acceptance-candidate-v3.tar.gz",
+    "bytes": 22564,
+    "sha256": "df898d511637e5b92da56bf2fa20e60cd0c5b1e6a8d8b03c9aa7b482f5b147f2"
+  },
+  "originalSourceAudit": {
+    "bytes": 6473,
+    "sha256": "7ffca54e76adbdc448ae6c13e5957b29ba17886168a1350dfd1c63d313c130d6"
+  },
+  "actualMacChecks": {
+    "toolchain": "rustc1.93.0 (254b59607); cargo1.93.0 (083ac5135)",
+    "initialCompile": "Exit101 missing origin field and unresolved icon",
+    "exampleTests": "6pass including100 synchronized exit racepairs",
+    "nativeHelperTest": "1pass spawned-worker rejection before NSBundle access",
+    "exampleBuild": "Exit0 Mac dev link, main never invoked",
+    "exampleStrictClippy": "initial Exit101 four collapsible_if; final dev+testProfile Exit0",
+    "nativeStrictClippy": "lib+tests Exit0",
+    "scopedFormatDiffCheck": "Exit0",
+    "patchReverseCheck": "Exit0"
+  },
+  "frozenDevBinary": {
+    "path": "artifacts/transport-acceptance-mac-candidate-v3/frozen-transport-acceptance",
+    "bytes": 30496040,
+    "sha256": "c18ad606586cec44302bac3e6574af1e5ee72a02cd0773d0bafc0b3033038ba1",
+    "mode": "0o700",
+    "profile": "dev",
+    "executed": false
+  },
+  "independentDeltaReview": {
+    "passed": true,
+    "scope": "archive/base/target/fullpatch/V2delta/terminalMacLogs/frozenMachOBinary; no repeated native execution"
+  },
+  "qualified": false,
+  "adapterRunExecuted": false,
+  "bundleBuilt": false,
+  "mainProductSourcesEdited": false,
+  "pending": [
+    "fresh separate bundle and actual license/resources/signature/CDHash binding",
+    "actual own bundle identity and user-controlled Accessibility setup",
+    "explicit arm, physical shortcut, intended recipient content/focus/restore checks",
+    "separate installed-product microphone/local-inference E2E"
+  ],
+  "limits": [
+    "This package targets the immutable base plus this exact patch in a separate tree only.",
+    "Three isolated source pins differ; no old 47-source quality approval is claimed for this adapter.",
+    "Dev link and pure contract tests do not prove runtime identity, permission or recipient acceptance.",
+    "No launch/key/clipboard/microphone/model operation was performed."
+  ]
+}

@@ -1,0 +1,694 @@
+--- a/src-tauri/Cargo.toml
++++ b/src-tauri/Cargo.toml
+@@ -66,3 +66,7 @@
+ [[example]]
+ name = "prefix_cache_probe"
+ required-features = ["measurement"]
++
++[[example]]
++name = "transport_acceptance"
++required-features = ["measurement"]
+--- a/crates/macos-integration/Cargo.toml
++++ b/crates/macos-integration/Cargo.toml
+@@ -8,7 +8,7 @@
+ [dependencies]
+ thiserror.workspace = true
+ objc2 = "=0.6.5"
+-objc2-foundation = { version = "=0.3.2", features = ["NSString", "NSArray", "NSData", "NSDictionary", "NSThread"] }
++objc2-foundation = { version = "=0.3.2", features = ["NSString", "NSArray", "NSData", "NSDictionary", "NSThread", "NSBundle"] }
+ objc2-app-kit = { version = "=0.3.2", features = ["NSPasteboard", "NSPasteboardItem", "NSWorkspace", "NSRunningApplication", "NSWindow", "NSView", "NSGlassEffectView"] }
+ objc2-av-foundation = { version = "=0.3.2", default-features = false, features = ["std", "AVCaptureDevice", "AVMediaFormat", "block2"] }
+ block2 = "=0.6.2"
+--- a/crates/macos-integration/src/lib.rs
++++ b/crates/macos-integration/src/lib.rs
+@@ -23,3 +23,6 @@
+ pub mod feedback;
+ 
+ pub mod thread_observation;
++
++/// Read-only identity for the separate developer acceptance bundle.
++pub mod acceptance_identity;
+--- /dev/null
++++ b/crates/macos-integration/src/acceptance_identity.rs
+@@ -0,0 +1,20 @@
++//! Read-only actual bundle identity for the separate native acceptance adapter.
++use objc2::MainThreadMarker;
++use objc2_foundation::NSBundle;
++pub fn main_bundle_identifier() -> Result<Option<String>, &'static str> {
++    let _main = MainThreadMarker::new().ok_or("Bundle identity requires main thread")?;
++    Ok(NSBundle::mainBundle()
++        .bundleIdentifier()
++        .map(|value| value.to_string()))
++}
++#[cfg(test)]
++mod tests {
++    #[test]
++    fn worker_rejects_before_appkit_bundle_access() -> Result<(), Box<dyn std::error::Error>> {
++        let result = std::thread::spawn(super::main_bundle_identifier)
++            .join()
++            .map_err(|_| "worker panicked")?;
++        assert!(result.is_err());
++        Ok(())
++    }
++}
+--- /dev/null
++++ b/src-tauri/examples/transport_acceptance/Info.plist
+@@ -0,0 +1,13 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0"><dict>
++<key>CFBundleIdentifier</key><string>de.hoppworks.everlast-transport-acceptance</string>
++<key>CFBundleName</key><string>Everlast UTF8 Transport Acceptance</string>
++<key>CFBundleExecutable</key><string>transport_acceptance</string>
++<key>CFBundlePackageType</key><string>APPL</string>
++<key>CFBundleVersion</key><string>1</string>
++<key>CFBundleShortVersionString</key><string>0.1.0</string>
++<key>LSMinimumSystemVersion</key><string>27.0</string>
++<key>LSUIElement</key><true/>
++<key>NSHighResolutionCapable</key><true/>
++</dict></plist>
+--- /dev/null
++++ b/src-tauri/examples/transport_acceptance/assets/index.html
+@@ -0,0 +1 @@
++<!doctype html><meta charset="utf-8"><title>No web UI: native menu adapter only</title>
+--- /dev/null
++++ b/src-tauri/examples/transport_acceptance/state.rs
+@@ -0,0 +1,156 @@
++//! One-shot admission for this separate adapter, never a recording state machine.
++#[derive(Default)]
++pub struct Gate {
++    ready: bool,
++    armed: bool,
++    busy: Option<u64>,
++    next: u64,
++    closed: bool,
++}
++impl Gate {
++    pub fn ready(&mut self) {
++        if !self.closed {
++            self.ready = true;
++        }
++    }
++    pub fn arm(&mut self) -> Result<(), &'static str> {
++        if self.closed || !self.ready || self.busy.is_some() {
++            return Err("Adapter nicht bereit oder noch belegt");
++        }
++        self.armed = true;
++        Ok(())
++    }
++    pub fn fire(&mut self) -> Result<Option<u64>, &'static str> {
++        if self.closed || !self.ready || !self.armed || self.busy.is_some() {
++            return Ok(None);
++        }
++        self.armed = false;
++        let id = self
++            .next
++            .checked_add(1)
++            .ok_or("Adapter-Sitzungsnummer erschöpft")?;
++        self.next = id;
++        self.busy = Some(id);
++        Ok(Some(id))
++    }
++    pub fn disarm(&mut self) {
++        self.armed = false;
++    }
++    pub fn complete(&mut self, id: u64) -> bool {
++        if self.busy == Some(id) {
++            self.busy = None;
++            true
++        } else {
++            false
++        }
++    }
++    pub fn close(&mut self) {
++        self.closed = true;
++        self.ready = false;
++        self.armed = false;
++    }
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn real_trigger_consumes_arm_once_and_owner_completion_is_required() -> Result<(), &'static str>
++    {
++        let mut g = Gate::default();
++        g.ready();
++        assert!(g.fire()?.is_none());
++        g.arm()?;
++        let id = g.fire()?.ok_or("trigger absent")?;
++        assert!(g.fire()?.is_none());
++        assert!(g.arm().is_err());
++        assert!(!g.complete(id + 1));
++        assert!(g.arm().is_err());
++        assert!(g.complete(id));
++        g.arm()?;
++        assert_eq!(g.fire()?, Some(id + 1));
++        Ok(())
++    }
++    #[test]
++    fn disarm_and_close_never_authorize_a_send_or_release_busy_owner() -> Result<(), &'static str> {
++        let mut g = Gate::default();
++        assert!(g.arm().is_err());
++        g.ready();
++        g.arm()?;
++        g.disarm();
++        assert!(g.fire()?.is_none());
++        g.arm()?;
++        let id = g.fire()?.ok_or("trigger absent")?;
++        g.disarm();
++        assert!(g.arm().is_err());
++        g.close();
++        assert!(g.complete(id));
++        g.ready();
++        assert!(g.arm().is_err());
++        Ok(())
++    }
++    #[test]
++    fn exhausted_session_identity_fails_closed() -> Result<(), &'static str> {
++        let mut g = Gate {
++            next: u64::MAX,
++            ..Gate::default()
++        };
++        g.ready();
++        g.arm()?;
++        assert!(g.fire().is_err());
++        Ok(())
++    }
++}
++
++/// One atomic modification order joins a UI Quit request with owner completion.
++#[derive(Default)]
++pub struct OwnerExit(std::sync::atomic::AtomicU8);
++impl OwnerExit {
++    pub fn request_quit(&self) -> bool {
++        self.0.fetch_or(1, std::sync::atomic::Ordering::AcqRel) & 2 != 0
++    }
++    pub fn finish(&self) -> bool {
++        self.0.fetch_or(2, std::sync::atomic::Ordering::AcqRel) & 1 != 0
++    }
++}
++#[cfg(test)]
++mod owner_exit_tests {
++    use super::OwnerExit;
++    #[test]
++    fn owner_finish_before_quit_allows_the_original_ui_exit() {
++        let exit = OwnerExit::default();
++        assert!(!exit.finish());
++        assert!(exit.request_quit());
++    }
++    #[test]
++    fn simultaneous_quit_and_owner_completion_cannot_both_miss() -> Result<(), &'static str> {
++        use std::sync::{Arc, Barrier};
++        for _ in 0..100 {
++            let exit = Arc::new(OwnerExit::default());
++            let barrier = Arc::new(Barrier::new(2));
++            let other = Arc::clone(&exit);
++            let ready = Arc::clone(&barrier);
++            let worker = std::thread::spawn(move || {
++                ready.wait();
++                other.finish()
++            });
++            barrier.wait();
++            let ui_exit = exit.request_quit();
++            let owner_exit = worker.join().map_err(|_| "owner test panicked")?;
++            assert_ne!(
++                ui_exit, owner_exit,
++                "one modification must observe the other"
++            );
++        }
++        Ok(())
++    }
++
++    #[test]
++    fn quit_during_registration_is_completed_on_startup_failure() {
++        let exit = OwnerExit::default();
++        assert!(!exit.request_quit());
++        assert!(
++            exit.finish(),
++            "the first pending Quit must exit after failed startup"
++        );
++    }
++}
+--- /dev/null
++++ b/src-tauri/examples/transport_acceptance/tauri.conf.json
+@@ -0,0 +1,21 @@
++{
++  "productName": "Everlast UTF8 Transport Acceptance",
++  "version": "0.1.0",
++  "identifier": "de.hoppworks.everlast-transport-acceptance",
++  "build": {
++    "frontendDist": "assets"
++  },
++  "app": {
++    "windows": [],
++    "security": {
++      "capabilities": [],
++      "csp": "default-src 'none'; object-src 'none'; base-uri 'none'"
++    }
++  },
++  "bundle": {
++    "active": false,
++    "icon": [
++      "../../icons/icon.png"
++    ]
++  }
++}
+--- /dev/null
++++ b/src-tauri/examples/transport_acceptance/transport-fixture.txt
+@@ -0,0 +1,2 @@
++Ärger über Öl: 7,50 Euro.
++Zeile 2: Grüße aus Köln, Nummer 42.
+--- /dev/null
++++ b/src-tauri/examples/transport_acceptance.rs
+@@ -0,0 +1,430 @@
++//! Separate installed adapter. No microphone, decoder, arbitrary text or product IPC.
++#![forbid(unsafe_code)]
++#[path = "transport_acceptance/state.rs"]
++mod state;
++use crossbeam_channel::{Receiver, Sender, bounded};
++use dictation_core::session::DeliveryResult;
++use everlast_dictation::{
++    hotkeys::{Event, Hotkeys},
++    native_service::NativeService,
++    runtime::{NativeCommand, NativeEndpoint, NativeResult},
++    settings::{Hotkey, PhysicalKey},
++};
++use macos_integration::{
++    acceptance_identity, clipboard::snapshot_helper_main, delivery::DeliveryToken,
++    target::ProcessIdentity,
++};
++use sha2::{Digest, Sha256};
++use std::{
++    num::NonZeroU64,
++    sync::{
++        Arc, Mutex,
++        atomic::{AtomicBool, Ordering},
++    },
++    thread,
++    time::{Duration, Instant},
++};
++use tauri::{
++    Manager,
++    menu::{Menu, MenuItem},
++    tray::TrayIconBuilder,
++};
++const IDENTIFIER: &str = "de.hoppworks.everlast-transport-acceptance";
++const FIXTURE: &str = include_str!("transport_acceptance/transport-fixture.txt");
++const FIXTURE_SHA: &str = "78ce796361f50b77b1c86a693c9ba3bb02be2be8dc7fcd0e5ddfd4305da0c5b7";
++struct Shared {
++    gate: Mutex<state::Gate>,
++    active: Mutex<Option<DeliveryToken>>,
++    closing: AtomicBool,
++    exit: state::OwnerExit,
++}
++impl Shared {
++    fn cancel(&self) {
++        if let Ok(mut gate) = self.gate.lock() {
++            gate.disarm();
++        }
++        if let Ok(active) = self.active.lock()
++            && let Some(token) = active.as_ref()
++        {
++            token.cancel();
++        }
++    }
++    fn close(&self) {
++        self.closing.store(true, Ordering::Release);
++        if let Ok(mut gate) = self.gate.lock() {
++            gate.close();
++        }
++        self.cancel();
++    }
++}
++struct Attempt {
++    session: NonZeroU64,
++    process: ProcessIdentity,
++    token: DeliveryToken,
++}
++type Status = MenuItem<tauri::Wry>;
++fn status(app: &tauri::AppHandle, item: &Status, text: &str) {
++    let item = item.clone();
++    let text = text.to_owned();
++    if app
++        .run_on_main_thread(move || {
++            if item.set_text(text).is_err() {
++                eprintln!("Adapterstatus konnte nicht gesetzt werden");
++            }
++        })
++        .is_err()
++    {
++        eprintln!("Adapterstatus nicht zustellbar");
++    }
++}
++fn finish(shared: &Shared, session: NonZeroU64) {
++    if let Ok(mut active) = shared.active.lock()
++        && active
++            .as_ref()
++            .is_some_and(|token| token.session() == session)
++    {
++        *active = None;
++    }
++    if let Ok(mut gate) = shared.gate.lock() {
++        gate.complete(session.get());
++    }
++}
++fn response(
++    receive: &Receiver<NativeResult>,
++    token: &DeliveryToken,
++    shared: &Shared,
++    timeout: Duration,
++) -> Result<NativeResult, &'static str> {
++    let deadline = Instant::now() + timeout;
++    loop {
++        if shared.closing.load(Ordering::Acquire) || (!token.is_pending() && !token.is_committed())
++        {
++            return Err("Transporttest abgebrochen");
++        }
++        match receive.recv_timeout(Duration::from_millis(20)) {
++            Ok(value) => return Ok(value),
++            Err(crossbeam_channel::RecvTimeoutError::Disconnected) => {
++                return Err("Nativdienst beendet");
++            }
++            Err(crossbeam_channel::RecvTimeoutError::Timeout) if Instant::now() < deadline => {}
++            Err(_) => return Err("Native Antwortfrist überschritten"),
++        }
++    }
++}
++fn attempt(
++    app: &tauri::AppHandle,
++    shared: &Shared,
++    request: &Attempt,
++) -> Result<&'static str, &'static str> {
++    let (send, requests) = bounded(2);
++    let (responses, receive) = bounded(2);
++    let service = NativeService::for_app(
++        NativeEndpoint {
++            requests,
++            responses,
++        },
++        app.clone(),
++    )
++    .map_err(|_| "Nativdienst konnte nicht starten")?;
++    let result = (|| {
++        send.try_send(NativeCommand::Capture {
++            session: request.session,
++            process: Some(request.process),
++            token: request.token.clone(),
++        })
++        .map_err(|_| "Zielerfassung nicht zugestellt")?;
++        match response(&receive, &request.token, shared, Duration::from_secs(5))? {
++            NativeResult::Captured {
++                session,
++                result: Ok(()),
++            } if session == request.session.get() => {}
++            _ => return Err("Startziel nicht bestätigt – nichts versandt"),
++        }
++        send.try_send(NativeCommand::Deliver {
++            session: request.session.get(),
++            text: FIXTURE.to_owned(),
++            token: request.token.clone(),
++        })
++        .map_err(|_| "Transportauftrag nicht zugestellt")?;
++        let result = match response(&receive, &request.token, shared, Duration::from_secs(15))? {
++            NativeResult::Delivered {
++                session,
++                result: DeliveryResult::Sent,
++            } if session == request.session.get() => {
++                Ok("Einfügebefehl versandt – Empfang selbst prüfen")
++            }
++            NativeResult::Delivered {
++                session,
++                result: DeliveryResult::Held(_),
++            } if session == request.session.get() => Ok("Zurückgehalten – nichts erneut versuchen"),
++            _ => Err("Transport fehlgeschlagen oder Ergebnis unklar – kein Retry"),
++        };
++        // Let the service's unchanged 500ms restore lease expire. No receipt claim.
++        let until = Instant::now() + Duration::from_millis(600);
++        while Instant::now() < until && !shared.closing.load(Ordering::Acquire) {
++            thread::sleep(Duration::from_millis(10));
++        }
++        result
++    })();
++    if result.is_err() {
++        request.token.cancel();
++    }
++    // Event loop stays alive: join may need main-thread Clipboard cleanup.
++    if service.join().is_err() {
++        shared.close();
++        return Err("Native Bereinigung fehlgeschlagen – Adapter gesperrt");
++    }
++    result
++}
++fn owner(
++    app: tauri::AppHandle,
++    shared: Arc<Shared>,
++    item: Status,
++    receive: Receiver<Attempt>,
++    send: Sender<Attempt>,
++) {
++    let callback_shared = Arc::clone(&shared);
++    let callback_app = app.clone();
++    let callback_item = item.clone();
++    let installed = Hotkeys::install(
++        app.clone(),
++        Hotkey {
++            key: PhysicalKey::D,
++            option: true,
++            command: false,
++            control: true,
++            shift: true,
++        },
++        move |event| match event {
++            Event::Cancel { session } => {
++                if let Ok(active) = callback_shared.active.lock()
++                    && let Some(token) = active.as_ref().filter(|t| t.session().get() == session)
++                {
++                    token.cancel();
++                }
++            }
++            Event::Toggle { process, origin: _ } => {
++                let fired = callback_shared
++                    .gate
++                    .lock()
++                    .ok()
++                    .and_then(|mut gate| gate.fire().ok())
++                    .flatten();
++                let Some(id) = fired.and_then(NonZeroU64::new) else {
++                    return;
++                };
++                let Some(process) = process else {
++                    finish(&callback_shared, id);
++                    status(
++                        &callback_app,
++                        &callback_item,
++                        "Kein Startziel – erneut ausdrücklich scharfschalten",
++                    );
++                    return;
++                };
++                let token = DeliveryToken::new(id);
++                if let Ok(mut active) = callback_shared.active.lock() {
++                    *active = Some(token.clone());
++                } else {
++                    token.cancel();
++                    finish(&callback_shared, id);
++                    return;
++                }
++                if callback_shared.closing.load(Ordering::Acquire) {
++                    token.cancel();
++                }
++                if send
++                    .try_send(Attempt {
++                        session: id,
++                        process,
++                        token: token.clone(),
++                    })
++                    .is_err()
++                {
++                    token.cancel();
++                    finish(&callback_shared, id);
++                    status(
++                        &callback_app,
++                        &callback_item,
++                        "Auftrag nicht angenommen – nichts versandt",
++                    );
++                }
++            }
++        },
++    );
++    let mut hotkeys = match installed {
++        Ok(value) => value,
++        Err(_) => {
++            status(
++                &app,
++                &item,
++                "Testhotkey nicht registriert – Adapter nicht bereit",
++            );
++            owner_finished(&app, &shared);
++            return;
++        }
++    };
++    if let Ok(mut gate) = shared.gate.lock() {
++        gate.ready();
++    }
++    status(
++        &app,
++        &item,
++        "Nicht scharf – zuerst im Menü einmal vorbereiten",
++    );
++    while !shared.closing.load(Ordering::Acquire) {
++        if !matches!(hotkeys.take_error(), Ok(None)) {
++            status(&app, &item, "Hotkeyfehler – Adapter gesperrt");
++            shared.close();
++            break;
++        }
++        match receive.recv_timeout(Duration::from_millis(20)) {
++            Ok(request) => {
++                let enabled = hotkeys.enable_cancel(Some(request.session.get()));
++                let result = if enabled.is_ok() {
++                    attempt(&app, &shared, &request)
++                } else {
++                    Err("Abbruchhotkey nicht verfügbar – nichts versandt")
++                };
++                let disabled = hotkeys.enable_cancel(None);
++                finish(&shared, request.session);
++                status(&app, &item, result.unwrap_or_else(|message| message));
++                if disabled.is_err() {
++                    shared.close();
++                }
++            }
++            Err(crossbeam_channel::RecvTimeoutError::Disconnected) => {
++                shared.close();
++            }
++            Err(crossbeam_channel::RecvTimeoutError::Timeout) => {}
++        }
++    }
++    shared.cancel();
++    if hotkeys.shutdown().is_err() {
++        eprintln!("Testhotkeys konnten nicht vollständig entfernt werden");
++    }
++    owner_finished(&app, &shared);
++}
++fn owner_finished(app: &tauri::AppHandle, shared: &Shared) {
++    if shared.exit.finish() {
++        app.exit(0);
++    }
++}
++fn main() -> Result<(), Box<dyn std::error::Error>> {
++    if let Some(result) = snapshot_helper_main() {
++        return result.map_err(Into::into);
++    }
++    if FIXTURE.len() != 68 || format!("{:x}", Sha256::digest(FIXTURE.as_bytes())) != FIXTURE_SHA {
++        return Err("Embedded Transportfixture stimmt nicht".into());
++    }
++    let shared = Arc::new(Shared {
++        gate: Mutex::new(state::Gate::default()),
++        active: Mutex::new(None),
++        closing: AtomicBool::new(false),
++        exit: state::OwnerExit::default(),
++    });
++    let setup_shared = Arc::clone(&shared);
++    let worker = Arc::new(Mutex::new(None::<thread::JoinHandle<()>>));
++    let setup_worker = Arc::clone(&worker);
++    let context: tauri::Context<tauri::Wry> =
++        tauri::generate_context!("examples/transport_acceptance/tauri.conf.json");
++    let app = tauri::Builder::default()
++        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
++        .setup(move |app| {
++            let actual =
++                acceptance_identity::main_bundle_identifier().map_err(std::io::Error::other)?;
++            if actual.as_deref() != Some(IDENTIFIER) || app.config().identifier != IDENTIFIER {
++                return Err("Separates installiertes Transport-Testbundle erforderlich".into());
++            }
++            let own = ProcessIdentity::read(i32::try_from(std::process::id())?)?;
++            eprintln!(
++                "Transportadapter {:?}; bundle={}; fixtureSha256={}",
++                own, IDENTIFIER, FIXTURE_SHA
++            );
++            let item = MenuItem::with_id(app, "status", "Initialisierung", false, None::<&str>)?;
++            let arm =
++                MenuItem::with_id(app, "arm", "Fixture einmal vorbereiten", true, None::<&str>)?;
++            let cancel = MenuItem::with_id(
++                app,
++                "cancel",
++                "Abbrechen / Vormerkung löschen",
++                true,
++                None::<&str>,
++            )?;
++            let quit = MenuItem::with_id(app, "quit", "Testadapter beenden", true, None::<&str>)?;
++            let help = MenuItem::with_id(
++                app,
++                "help",
++                "Ziel selbst fokussieren, dann Control+Option+Shift+D",
++                false,
++                None::<&str>,
++            )?;
++            let menu = Menu::with_items(app, &[&item, &help, &arm, &cancel, &quit])?;
++            let ui_shared = Arc::clone(&setup_shared);
++            let ui_item = item.clone();
++            let tray = TrayIconBuilder::new()
++                .title("UTF-8 Test")
++                .tooltip("Separater Transport-Testadapter")
++                .menu(&menu)
++                .show_menu_on_left_click(true)
++                .on_menu_event(move |app, event| match event.id().as_ref() {
++                    "arm" => {
++                        let accepted = ui_shared
++                            .gate
++                            .lock()
++                            .ok()
++                            .is_some_and(|mut gate| gate.arm().is_ok());
++                        status(
++                            app,
++                            &ui_item,
++                            if accepted {
++                                "Einmal scharf – Ziel selbst fokussieren, dann Hotkey"
++                            } else {
++                                "Nicht bereit oder noch belegt"
++                            },
++                        );
++                    }
++                    "cancel" => {
++                        ui_shared.cancel();
++                        status(app, &ui_item, "Abbruch angefordert / Vormerkung gelöscht");
++                    }
++                    "quit" => {
++                        ui_shared.close();
++                        if ui_shared.exit.request_quit() {
++                            app.exit(0);
++                        }
++                    }
++                    _ => {}
++                })
++                .build(app)?;
++            app.manage(tray);
++            let (send, receive) = bounded(1);
++            let handle = app.handle().clone();
++            let state = Arc::clone(&setup_shared);
++            let join = thread::Builder::new()
++                .name("transport-acceptance-owner".into())
++                .spawn(move || owner(handle, state, item, receive, send))?;
++            *setup_worker
++                .lock()
++                .map_err(|_| "Adapterowner-Lock fehlerhaft")? = Some(join);
++            Ok(())
++        })
++        .build(context)?;
++    app.run(move |_, event| {
++        if let tauri::RunEvent::ExitRequested { api, .. } = event
++            && !shared.exit.request_quit()
++        {
++            api.prevent_exit();
++            shared.close();
++        }
++    });
++    // Native/hotkey cleanup completed before finished permits event-loop exit.
++    if let Some(join) = worker
++        .lock()
++        .map_err(|_| "Adapterowner-Lock fehlerhaft")?
++        .take()
++    {
++        join.join().map_err(|_| "Adapterowner panicked")?;
++    }
++    Ok(())
++}
