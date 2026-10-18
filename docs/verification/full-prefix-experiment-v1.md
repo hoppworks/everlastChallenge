@@ -83,3 +83,22 @@ Parameterbedingungen verlangen einen frischen betroffenen Vergleich. Keine
 Fortsetzung unvollständiger Prozessblöcke, selektive Wiederholung oder Mischung
 alter und neuer Kandidaten. Fehler und nicht ausgeführte Zeilen bleiben erhalten.
 P06 und die finale Modellwahl bleiben bis zur vollständigen Abnahme offen.
+
+## Übertragung zwischen Qualitäts- und Leistungswerkzeugen
+
+Der gebundene Single-Runner-Qualitätsnachweis bleibt seiner tatsächlichen
+Binärdatei und Revision zugeordnet. Ein zusätzlicher Batchwrapper für die
+zentralen Leistungsblöcke erhält einen eigenen prospektiven Quellen-, Parameter-
+und Binaryfreeze. Beide Leistungsarme und beide Paarrollen verwenden dieses
+identische Batchbinary. Alte Referenzzahlen ersetzen keinen dieser Blöcke.
+
+Die Übernahme des Qualitätsnachweises verlangt einen expliziten Hashvergleich
+aller gemeinsamen RecordingOwner-, Controller-, Cache-, Engine-, Service- und
+Runnerquellen gegen den Qualitätsfreeze. Der neue Wrapper muss unabhängig
+dieselbe Konfigurationsauswahl, Workerinitialisierung, Runtime und
+`one_full_prefix`-Strecke sowie eine frische Session je Slot belegen.
+Die zusätzlichen Batchslots ändern weder Eingaben noch Decoderalgorithmus.
+Ein zusätzlicher Wrapper allein verlangt damit keinen neuen Korpuslauf;
+Änderungen der gemeinsamen Qualitätsalgorithmus-, Eingabe- oder Decoderstrecke
+invalidieren dagegen die betroffenen Nachweise. Wrapperprüfung und tatsächliche
+Leistungsabnahme bleiben erforderlich; ein neuer Build allein belegt beides nicht.
