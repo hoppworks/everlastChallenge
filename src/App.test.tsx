@@ -116,7 +116,7 @@ test("native settings requests survive initial delivery and only reopen for a hi
     screen.getByRole("heading", { name: "Einstellungen" }),
   );
   const permission = screen.getByRole("button", {
-    name: "Mikrofonzugriff anfragen",
+    name: "Mikrofone aktualisieren",
   });
   permission.focus();
   view.publish({ ...initial, revision: 2, settingsRequest: 8 });
@@ -312,7 +312,12 @@ test.each([false, true])(
 );
 
 test("permission panel forwards user requests, respects busy, and can be closed", async () => {
-  const view = connected();
+  const initial = snapshot();
+  initial.permissions = {
+    microphone: "notDetermined",
+    accessibility: "notDetermined",
+  };
+  const view = connected(initial);
   fireEvent.click(await screen.findByRole("button", { name: "Einstellungen" }));
   expect(screen.getByRole("region", { name: "Einstellungen" })).toBeDefined();
   fireEvent.click(
@@ -336,7 +341,7 @@ test("permission panel forwards user requests, respects busy, and can be closed"
   await waitFor(() =>
     expect(ipc.command).toHaveBeenCalledWith("accessibility_request"),
   );
-  view.publish({ ...snapshot(), settingsBusy: true });
+  view.publish({ ...initial, settingsBusy: true });
   expect(
     (
       screen.getByRole("button", {
@@ -553,4 +558,44 @@ test("renders the authoritative maximum-stop fact without dispatching another ac
   ).toBeDefined();
   expect(ipc.command).not.toHaveBeenCalled();
   expect(ipc.sessionCommand).not.toHaveBeenCalled();
+});
+
+test("permission denial replaces the request with recovery guidance and follows refreshed snapshots", async () => {
+  const value = snapshot();
+  value.permissions = { microphone: "notDetermined", accessibility: "granted" };
+  const view = connected(value);
+  fireEvent.click(await screen.findByRole("button", { name: "Einstellungen" }));
+  fireEvent.click(
+    screen.getByRole("button", { name: "Mikrofonzugriff anfragen" }),
+  );
+  await waitFor(() =>
+    expect(ipc.command).toHaveBeenCalledWith("microphone_request"),
+  );
+  view.publish({
+    ...value,
+    revision: 2,
+    permissions: { microphone: "denied", accessibility: "denied" },
+  });
+  expect(
+    screen.queryByRole("button", { name: "Mikrofonzugriff anfragen" }),
+  ).toBeNull();
+  expect(
+    screen.queryByRole("button", { name: "Bedienungshilfen freigeben" }),
+  ).toBeNull();
+  expect(
+    screen.getByText(
+      /Systemeinstellungen → Datenschutz & Sicherheit → Mikrofon/,
+    ),
+  ).toBeDefined();
+  expect(screen.getByText(/Kehre nach der Änderung/)).toBeDefined();
+  expect(ipc.command).toHaveBeenCalledTimes(1);
+  view.publish({
+    ...value,
+    revision: 3,
+    permissions: { microphone: "granted", accessibility: "granted" },
+  });
+  expect(
+    screen.queryByText(/Systemeinstellungen → Datenschutz & Sicherheit/),
+  ).toBeNull();
+  expect(ipc.command).toHaveBeenCalledTimes(1);
 });

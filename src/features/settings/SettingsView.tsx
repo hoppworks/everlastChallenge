@@ -34,6 +34,26 @@ const permissionLabels: Record<
   restricted: "Vom System eingeschränkt",
   unavailable: "Nicht verfügbar",
 };
+const microphoneHelp: Partial<
+  Record<AppViewProps["permissions"]["microphone"], string>
+> = {
+  denied:
+    "Öffne Systemeinstellungen → Datenschutz & Sicherheit → Mikrofon und aktiviere Everlast Dictation.",
+  restricted:
+    "Der Mikrofonzugriff ist durch System- oder Verwaltungsvorgaben eingeschränkt. Prüfe diese Vorgaben oder wende dich an die Geräteverwaltung.",
+  unavailable:
+    "Der Mikrofonstatus konnte nicht ermittelt werden. Kehre zur App zurück, um ihn erneut zu prüfen.",
+};
+const accessibilityHelp: Partial<
+  Record<AppViewProps["permissions"]["accessibility"], string>
+> = {
+  denied:
+    "Öffne Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen und aktiviere Everlast Dictation.",
+  restricted:
+    "Die Bedienungshilfen sind durch System- oder Verwaltungsvorgaben eingeschränkt. Prüfe diese Vorgaben oder wende dich an die Geräteverwaltung.",
+  unavailable:
+    "Der Status der Bedienungshilfen konnte nicht ermittelt werden. Kehre zur App zurück, um ihn erneut zu prüfen.",
+};
 const keys = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(
   "",
 ) as SettingsDraft["hotkey"]["key"][];
@@ -261,22 +281,48 @@ export function SettingsView(props: SettingsViewProps) {
             <dd>{permissionLabels[permissions.accessibility]}</dd>
           </div>
         </dl>
-        <div className="app-actions">
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={props.onMicrophone}
-          >
-            Mikrofonzugriff anfragen
-          </button>
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={props.onAccessibility}
-          >
-            Bedienungshilfen freigeben
-          </button>
-        </div>
+        {microphoneHelp[permissions.microphone] && (
+          <p className="settings-help" id="microphone-permission-help">
+            {microphoneHelp[permissions.microphone]}
+          </p>
+        )}
+        {accessibilityHelp[permissions.accessibility] && (
+          <p className="settings-help" id="accessibility-permission-help">
+            {accessibilityHelp[permissions.accessibility]}
+          </p>
+        )}
+        {(permissions.microphone === "denied" ||
+          permissions.microphone === "restricted" ||
+          permissions.accessibility === "denied" ||
+          permissions.accessibility === "restricted") && (
+          <p className="settings-help">
+            Kehre nach der Änderung zu Everlast Dictation zurück. Die App prüft
+            den Status dann erneut.
+          </p>
+        )}
+        {(permissions.microphone === "notDetermined" ||
+          permissions.accessibility === "notDetermined") && (
+          <div className="app-actions">
+            {permissions.microphone === "notDetermined" && (
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={props.onMicrophone}
+              >
+                Mikrofonzugriff anfragen
+              </button>
+            )}
+            {permissions.accessibility === "notDetermined" && (
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={props.onAccessibility}
+              >
+                Bedienungshilfen freigeben
+              </button>
+            )}
+          </div>
+        )}
       </section>
     </section>
   );

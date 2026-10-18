@@ -184,6 +184,10 @@ test.each(["busy", "refreshing", "restart"] as const)(
   "prevents refresh while %s and keeps closing available",
   (reason) => {
     const p = props();
+    p.permissions = {
+      microphone: "notDetermined",
+      accessibility: "notDetermined",
+    };
     p.busy = reason === "busy";
     p.preferences.refreshing = reason === "refreshing";
     p.preferences.needsRestart = reason === "restart";
@@ -213,6 +217,10 @@ test.each(["busy", "refreshing", "restart"] as const)(
 
 test("refresh and permission controls call only their own actions", () => {
   const p = props();
+  p.permissions = {
+    microphone: "notDetermined",
+    accessibility: "notDetermined",
+  };
   render(<SettingsView {...p} />);
   fireEvent.click(
     screen.getByRole("button", { name: "Mikrofone aktualisieren" }),
@@ -292,4 +300,47 @@ test("layout labels change while option values and the unsaved physical selectio
     true,
   );
   expect(p.onSave).not.toHaveBeenCalled();
+});
+
+test("denied permissions give concrete recovery steps without promising another prompt", () => {
+  const p = props();
+  p.permissions = { microphone: "denied", accessibility: "denied" };
+  render(<SettingsView {...p} />);
+  expect(
+    screen.getByText(
+      /Systemeinstellungen → Datenschutz & Sicherheit → Mikrofon/,
+    ),
+  ).toBeDefined();
+  expect(
+    screen.getByText(
+      /Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen/,
+    ),
+  ).toBeDefined();
+  expect(screen.getAllByText(/aktiviere Everlast Dictation/)).toHaveLength(2);
+  expect(
+    screen.queryByRole("button", { name: "Mikrofonzugriff anfragen" }),
+  ).toBeNull();
+  expect(
+    screen.queryByRole("button", { name: "Bedienungshilfen freigeben" }),
+  ).toBeNull();
+  expect(
+    screen.queryByRole("button", { name: "Mikrofonstatus prüfen" }),
+  ).toBeNull();
+  expect(p.onMicrophone).not.toHaveBeenCalled();
+  expect(p.onAccessibility).not.toHaveBeenCalled();
+});
+
+test("restricted permissions explain system restrictions without a self-approval promise", () => {
+  const p = props();
+  p.permissions = { microphone: "restricted", accessibility: "restricted" };
+  render(<SettingsView {...p} />);
+  expect(screen.getAllByText(/System- oder Verwaltungsvorgaben/)).toHaveLength(
+    2,
+  );
+  expect(screen.queryByText(/aktiviere Everlast Dictation/)).toBeNull();
+  expect(
+    screen.queryByRole("button", { name: /anfragen|freigeben/ }),
+  ).toBeNull();
+  expect(p.onMicrophone).not.toHaveBeenCalled();
+  expect(p.onAccessibility).not.toHaveBeenCalled();
 });
