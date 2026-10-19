@@ -170,6 +170,62 @@
     "Fixed reference-before-candidate order is not counterbalanced; speed change is descriptive.",
     "NativeFull is not stop-to-text L; encode includes Conv/Encoder/Cross and is not GPU utilization.",
     "Candidate is a diagnostic short-audio variant; no whole-product or long-audio policy has been qualified.",
-    "Historical 47-source quality approval is not transferred to this derivative."
-  ]
+    "Historical 47-source quality approval is not transferred to this derivative.",
+    "Opposite-order calibration gives 7.592% reduction, below 10%; the initial 11.764% is not a reproducible 10% qualification."
+  ],
+  "reverseCalibration": {
+    "prospectiveFreeze": {
+      "path": "artifacts/p06-audio-context-1400-mac-v2/pilot-reverse-v1/prospective-freeze.json",
+      "bytes": 4901,
+      "sha256": "7991cba5f3c1652ea0da72ccc56fce1d6b7edb0cd8170a0e196be906b1336846",
+      "mode": "0o600"
+    },
+    "independentReadback": {
+      "path": "artifacts/p06-audio-context-1400-mac-v2/pilot-reverse-v1/independent-reverse-readback-v1.json",
+      "bytes": 4597,
+      "sha256": "c1918da1c09be863b26d997b1001e51d03df0d5bf614cad775aa1474def76ce5",
+      "mode": "0o600"
+    },
+    "order": [
+      "candidate1400",
+      "reference"
+    ],
+    "warmupPerArm": 1,
+    "measuredPerArm": 3,
+    "metrics": {
+      "candidate1400": {
+        "nativeFullMeasuredNanos": [
+          955425459,
+          955912000,
+          956993625
+        ],
+        "nativeFullMedianNanos": 955912000,
+        "nativeEncodeMeasuredMicros": [
+          855234,
+          855222,
+          856825
+        ],
+        "nativeEncodeMedianMicros": 855234,
+        "allFourTextHashesMatchPrior": true
+      },
+      "reference": {
+        "nativeFullMeasuredNanos": [
+          1034441083,
+          1034841375,
+          1034447792
+        ],
+        "nativeFullMedianNanos": 1034447792,
+        "nativeEncodeMeasuredMicros": [
+          932191,
+          932463,
+          932554
+        ],
+        "nativeEncodeMedianMicros": 932463,
+        "allFourTextHashesMatchPrior": true
+      }
+    },
+    "nativeFullMedianReductionPercent": 7.592049846049653,
+    "allEightTextHashesMatchPrior": true,
+    "atLeast10PercentObserved": false
+  }
 }
