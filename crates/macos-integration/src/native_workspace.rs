@@ -19,10 +19,10 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WorkspaceAction {
-    Copy,
-    Clear,
+    Copy { text: String },
+    Clear { expected_text: String },
     Download,
     CancelSetup,
     Settings,
@@ -83,13 +83,17 @@ impl WorkspaceState {
         }
         Ok(())
     }
-    fn allows(&self, action: WorkspaceAction) -> bool {
+    fn allows(&self, action: &WorkspaceAction) -> bool {
         if self.recovery.is_some() {
-            return action == WorkspaceAction::ResetSettingsConfirmed;
+            return *action == WorkspaceAction::ResetSettingsConfirmed;
         }
         match action {
-            WorkspaceAction::Copy => self.can_copy && !self.transcript.is_empty(),
-            WorkspaceAction::Clear => self.can_clear && !self.transcript.is_empty(),
+            WorkspaceAction::Copy { text } => {
+                self.can_copy && !self.transcript.is_empty() && text == &self.transcript
+            }
+            WorkspaceAction::Clear { expected_text } => {
+                self.can_clear && !self.transcript.is_empty() && expected_text == &self.transcript
+            }
             WorkspaceAction::Download => self.can_download,
             WorkspaceAction::CancelSetup => self.can_cancel_setup,
             WorkspaceAction::Settings => self.can_settings,
@@ -122,13 +126,23 @@ struct Core {
 }
 impl Core {
     fn dispatch(&self, action: WorkspaceAction) {
-        if !self.active.get() || !self.state.borrow().allows(action) {
+        if !self.active.get() || !self.state.borrow().allows(&action) {
             return;
         }
         if catch_unwind(AssertUnwindSafe(|| (self.callback)(action))).is_err() {
             self.active.set(false);
             eprintln!("Native workspace callback failed; actions disabled");
         }
+    }
+    fn dispatch_text(&self, clear: bool) {
+        let text = self.state.borrow().transcript.clone();
+        self.dispatch(if clear {
+            WorkspaceAction::Clear {
+                expected_text: text,
+            }
+        } else {
+            WorkspaceAction::Copy { text }
+        });
     }
     fn reset_with_confirmation(&self, confirm: impl FnOnce() -> bool) {
         if !self.active.get() {
@@ -150,9 +164,9 @@ define_class!(
     struct WorkspaceTarget;
     impl WorkspaceTarget {
         #[unsafe(method(copyText:))]
-        fn copy_text(&self, _: Option<&AnyObject>) { let _owner = self.retain(); self.ivars().core.dispatch(WorkspaceAction::Copy); }
+        fn copy_text(&self, _: Option<&AnyObject>) { let _owner = self.retain(); self.ivars().core.dispatch_text(false); }
         #[unsafe(method(clearText:))]
-        fn clear_text(&self, _: Option<&AnyObject>) { let _owner = self.retain(); self.ivars().core.dispatch(WorkspaceAction::Clear); }
+        fn clear_text(&self, _: Option<&AnyObject>) { let _owner = self.retain(); self.ivars().core.dispatch_text(true); }
         #[unsafe(method(download:))]
         fn download(&self, _: Option<&AnyObject>) { let _owner = self.retain(); self.ivars().core.dispatch(WorkspaceAction::Download); }
         #[unsafe(method(cancelSetup:))]
@@ -659,19 +673,18 @@ impl<O: HasWindowHandle + 'static> NativeWorkspace<O> {
             };
             v.bytes.setStringValue(&NSString::from_str(&bytes));
         }
+        let text_actions_allowed = state.recovery.is_none() && !state.transcript.is_empty();
+        v.copy.setEnabled(text_actions_allowed && state.can_copy);
+        v.clear.setEnabled(text_actions_allowed && state.can_clear);
         for (button, action) in [
-            (&v.copy, WorkspaceAction::Copy),
-            (&v.clear, WorkspaceAction::Clear),
             (&v.download, WorkspaceAction::Download),
             (&v.cancel_setup, WorkspaceAction::CancelSetup),
             (&v.settings, WorkspaceAction::Settings),
             (&v.reset, WorkspaceAction::ResetSettingsConfirmed),
         ] {
-            let enabled = state.allows(action);
+            let enabled = state.allows(&action);
             button.setEnabled(enabled);
-            if !matches!(action, WorkspaceAction::Copy | WorkspaceAction::Clear) {
-                button.setHidden(!enabled);
-            }
+            button.setHidden(!enabled);
         }
         if self.core.state.borrow().transcript != state.transcript {
             v.text.setString(&NSString::from_str(&state.transcript));
@@ -847,8 +860,10 @@ mod tests {
             ..WorkspaceState::default()
         });
         for action in [
-            WorkspaceAction::Copy,
-            WorkspaceAction::Clear,
+            WorkspaceAction::Copy { text: "old".into() },
+            WorkspaceAction::Clear {
+                expected_text: "old".into(),
+            },
             WorkspaceAction::Download,
             WorkspaceAction::CancelSetup,
             WorkspaceAction::Settings,

@@ -285,9 +285,25 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     click(&copy);
     click(&*button(&body, "Löschen")?);
     click(&*button(&body, "Berechtigungen prüfen")?);
-    assert_eq!(receive.try_recv()?, WorkspaceAction::Copy);
-    assert_eq!(receive.try_recv()?, WorkspaceAction::Clear);
+    // The callback can be handled after the view has advanced to a new result.
+    workspace.update(WorkspaceState {
+        transcript: "Replacement B".into(),
+        ..state.clone()
+    })?;
+    assert_eq!(
+        receive.try_recv()?,
+        WorkspaceAction::Copy {
+            text: "Erster Text".into()
+        }
+    );
+    assert_eq!(
+        receive.try_recv()?,
+        WorkspaceAction::Clear {
+            expected_text: "Erster Text".into()
+        }
+    );
     assert_eq!(receive.try_recv()?, WorkspaceAction::Settings);
+    workspace.update(state.clone())?;
     assert!(
         body.subviews()
             .iter()

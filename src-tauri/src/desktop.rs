@@ -1514,6 +1514,7 @@ impl Drop for Finish {
 
 #[cfg(test)]
 mod tests {
+    mod native_ack_contract;
     use super::*;
     use crate::{controller::SessionSnapshot, model::REFERENCE, runtime::RuntimeSnapshot};
     pub(super) fn unstarted_desktop() -> Desktop {

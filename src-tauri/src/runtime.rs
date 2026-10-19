@@ -70,7 +70,10 @@ pub fn native_mailbox() -> (NativePort, NativeEndpoint) {
 
 enum Request {
     Start(StartRequest),
-    Clear(oneshot::Sender<Result<(), String>>),
+    Clear {
+        expected_text: Option<String>,
+        reply: oneshot::Sender<Result<(), String>>,
+    },
     #[cfg(feature = "measurement")]
     MeasuredStart(measurement::StartRequest),
 }
@@ -158,7 +161,7 @@ fn reject_pending(requests: &crate::control::ControlRx<Request>) {
                 .reply
                 .send(Err("Controller is closed".into()))
                 .is_err(),
-            Request::Clear(reply) => reply.send(Err("Controller is closed".into())).is_err(),
+            Request::Clear { reply, .. } => reply.send(Err("Controller is closed".into())).is_err(),
             #[cfg(feature = "measurement")]
             Request::MeasuredStart(request) => request
                 .reply
@@ -263,7 +266,29 @@ impl Client {
     }
     pub fn clear_text(&self) -> Result<oneshot::Receiver<Result<(), String>>, MailboxError> {
         let (reply, receive) = oneshot::channel();
-        self.control.request(Request::Clear(reply))?;
+        self.control.request(Request::Clear {
+            expected_text: None,
+            reply,
+        })?;
+        Ok(receive)
+    }
+    /// Clear only the displayed text, comparing on the serial owner at dequeue.
+    pub fn clear_text_if_unchanged(
+        &self,
+        expected_text: String,
+    ) -> Result<oneshot::Receiver<Result<(), String>>, MailboxError> {
+        let (reply, receive) = oneshot::channel();
+        if expected_text.is_empty()
+            || expected_text.len() > 256 * 1024
+            || expected_text.contains('\0')
+        {
+            let _closed = reply.send(Err("Der angezeigte Text ist leer oder ungültig.".into()));
+            return Ok(receive);
+        }
+        self.control.request(Request::Clear {
+            expected_text: Some(expected_text),
+            reply,
+        })?;
         Ok(receive)
     }
     pub fn stop(&self, session: u64) -> Result<(), MailboxError> {
@@ -619,10 +644,15 @@ impl Runtime {
                             Ok(actions) => actor.execute(actions)?,
                             Err(error) => actor.error = Some(error.to_string()),
                         },
-                        Some(Control::Request(Request::Clear(reply))) => {
-                            actor.controller.clear_text();
+                        Some(Control::Request(Request::Clear { expected_text, reply })) => {
+                            let result = if expected_text.as_deref().is_some_and(|expected| actor.controller.snapshot().text.as_deref() != Some(expected)) {
+                                Err("Der angezeigte Text hat sich inzwischen geändert. Bitte prüfe den aktuellen Text und versuche es erneut.".into())
+                            } else {
+                                actor.controller.clear_text();
+                                Ok(())
+                            };
                             actor.publish()?;
-                            if reply.send(Ok(())).is_err() { /* requester no longer waiting */ }
+                            if reply.send(result).is_err() { /* requester no longer waiting */ }
                         }
                         #[cfg(feature = "measurement")]
                         Some(Control::Request(Request::MeasuredStart(request))) => {
@@ -1457,6 +1487,50 @@ mod tests {
                 _ => Err("delivery missing".into()),
             }
         }
+    }
+
+    #[test]
+    fn displayed_text_clear_preserves_replacement_and_compares_at_dequeue()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        fixture.deliver()?;
+        fixture.native.responses.send(NativeResult::Delivered {
+            session: 1,
+            result: DeliveryResult::Held("controlled target".into()),
+        })?;
+        let client = fixture.runtime.client();
+        wait_for(&client, |state| state.session.phase == Phase::Idle)?;
+        fixture.pause()?;
+        let stale = client.clear_text_if_unchanged("displayed earlier A".into())?;
+        fixture.proceed()?;
+        let rejected = acknowledged(stale)?.is_err();
+        let retained = client.snapshot()?.session.text;
+        // Finish cleanup before asserting so a failed regression cannot strand an owner.
+        if !rejected || retained.as_deref() != Some("fixture words") {
+            fixture.runtime.join()?;
+            assert!(
+                rejected,
+                "stale displayed text must not clear replacement B"
+            );
+            assert_eq!(retained.as_deref(), Some("fixture words"));
+            return Ok(());
+        }
+        fixture.pause()?;
+        // Both requests are queued while B is still observable. A caller-side
+        // comparison would pass, but the first request changes it before dequeue.
+        let first = client.clear_text_if_unchanged("fixture words".into())?;
+        let raced = client.clear_text_if_unchanged("fixture words".into())?;
+        fixture.proceed()?;
+        accepted(first)?;
+        let raced_result = acknowledged(raced)?;
+        let state = client.snapshot()?;
+        fixture.runtime.join()?;
+        assert!(
+            raced_result.is_err(),
+            "conditional clear must compare at owner dequeue"
+        );
+        assert!(state.session.text.is_none());
+        Ok(())
     }
 
     #[test]
@@ -2569,6 +2643,7 @@ mod tests {
     -> Result<(), Box<dyn std::error::Error>> {
         panic_cleanup_contract(Some(true))
     }
+    mod cpal_adapter_contract;
     mod full_prefix_native_contract;
     mod maximum_contract;
     mod restart_contract;

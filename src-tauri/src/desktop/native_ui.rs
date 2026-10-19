@@ -50,18 +50,17 @@ impl Desktop {
     /// Called by AppKit on the main thread. Only acknowledgement waits leave it.
     pub fn native_workspace_action(&self, action: WorkspaceAction) {
         let result = self.native_begin_action().and_then(|()| match action {
-            WorkspaceAction::Copy => {
+            WorkspaceAction::Copy { text } => {
                 let _permit = self.ui_permit()?;
-                let text = self.text()?;
                 ui_services::manual_copy(&text).map_err(|error| match error {
                     ui_services::UiServicesError::InvalidText => "Der Text ist leer oder zu lang zum Kopieren.".into(),
                     ui_services::UiServicesError::Clipboard => "Der Text konnte nicht in die Zwischenablage geschrieben werden. Die Zwischenablage kann jetzt leer sein.".into(),
                     ui_services::UiServicesError::MainThread | ui_services::UiServicesError::Unavailable => "Kopieren ist derzeit nicht verfügbar.".into(),
                 })
             }
-            WorkspaceAction::Clear => {
+            WorkspaceAction::Clear { expected_text } => {
                 let permit = self.ui_permit()?;
-                let reply = self.runtime()?.clear_text().map_err(|error| error.to_string())?;
+                let reply = self.runtime()?.clear_text_if_unchanged(expected_text).map_err(|error| error.to_string())?;
                 self.native_wait(permit, reply, "Textanfrage beendet");
                 Ok(())
             }
@@ -191,7 +190,9 @@ mod tests {
         let permits = (0..16)
             .map(|_| desktop.ui_permit())
             .collect::<Result<Vec<_>, _>>()?;
-        desktop.native_workspace_action(WorkspaceAction::Copy);
+        desktop.native_workspace_action(WorkspaceAction::Copy {
+            text: "displayed text".into(),
+        });
         assert_eq!(
             desktop
                 .0
