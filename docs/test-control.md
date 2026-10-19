@@ -22,6 +22,114 @@ Start admission additionally requires that the actual frontmost application's PI
 
 The check obtains native process identity; the configured PID alone is not target authority. It does not activate any app. Setup must be ready, the runtime idle, existing microphone and Accessibility permissions granted, Secure Input inactive, and the configured device the **system-default microphone**. Permission dialogs, OS settings changes, arbitrary foreign targets, configuration updates, text injection, and generic UI/AX commands are absent from this API. The ordinary capture/target/delivery checks still run.
 
+## Manual build and launch on this Mac
+
+This sequence is for the **current local workspace on the already prepared Mac**,
+not a promise that a fresh checkout contains a certificate, models or prior
+permissions. First complete the README dependencies (`npm run setup`). The
+user-approved local Code Signing identity and `.everlast-signing.json` must
+already exist; this sequence creates/imports no identity and changes no trust.
+The existing model cache and OS permissions remain necessary.
+
+Normal `npm run release` and `npm run release:local` leave `test-control` off.
+The following commands explicitly build it in a **new private target directory**.
+Run the blocks in the same terminal from the repository root; stop immediately
+if any command fails. Before launching
+the developer app, quit the currently running Everlast normally through its
+menu or **⌘Q**. Closing its window is insufficient: the process would retain
+the global hotkey. Keep the installed app and historical ZIP untouched; this
+sequence launches its new bundle directly instead of copying it to `/Applications`.
+
+Create a private workspace and build the disposable recipient:
+
+```sh
+umask 077
+repo_root="$(pwd -P)"
+mkdir -p "$repo_root/artifacts"
+dev_root="$(mktemp -d "$repo_root/artifacts/manual-test-control.XXXXXX")"
+CARGO_TARGET_DIR="$dev_root/target" MACOSX_DEPLOYMENT_TARGET=27.0 cargo build --locked --release \
+  -p macos-integration --example native_text_recipient --target aarch64-apple-darwin
+recipient_app="$dev_root/Everlast Native Recipient.app"
+mkdir -p "$recipient_app/Contents/MacOS"
+cp "$dev_root/target/aarch64-apple-darwin/release/examples/native_text_recipient" \
+  "$recipient_app/Contents/MacOS/native_text_recipient"
+cat > "$recipient_app/Contents/Info.plist" <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleIdentifier</key><string>de.hoppworks.everlast-native-autonomous-recipient</string>
+<key>CFBundleExecutable</key><string>native_text_recipient</string>
+<key>CFBundleName</key><string>Everlast Native Recipient</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleVersion</key><string>1</string>
+<key>LSMinimumSystemVersion</key><string>27.0</string>
+</dict></plist>
+PLIST
+signing_id="$(node -p 'JSON.parse(require("node:fs").readFileSync(".everlast-signing.json", "utf8")).signingIdentity')"
+codesign --force --sign "$signing_id" --timestamp=none --options runtime "$recipient_app"
+codesign --verify --deep --strict "$recipient_app"
+```
+
+Build and sign the developer app. The explicit feature switch is the difference
+from the normal release commands:
+
+```sh
+CARGO_TARGET_DIR="$dev_root/target" MACOSX_DEPLOYMENT_TARGET=27.0 npm run tauri -- build \
+  --bundles app --target aarch64-apple-darwin --features test-control
+dev_app="$dev_root/target/aarch64-apple-darwin/release/bundle/macos/Everlast Dictation.app"
+node scripts/sign-local-bundle.mjs "$dev_app"
+```
+
+Start only the newly built recipient, record its actual PID, then start the
+new developer app with the endpoint directory in **its own process environment**.
+The short canonical `/private/tmp` path avoids the macOS Unix-socket path limit;
+it is newly created, private, and contains only this test session's control files:
+
+```sh
+EVERLAST_RECIPIENT_REPORT_DIR="$dev_root/recipient-report" \
+  "$recipient_app/Contents/MacOS/native_text_recipient" \
+  > "$dev_root/recipient.log" 2>&1 &
+recipient_pid=$!
+control_dir="$(mktemp -d /private/tmp/everlast-control.XXXXXX)"
+chmod 700 "$control_dir"
+printf '{"recipientPid":%s}\n' "$recipient_pid" > "$control_dir/config.json"
+chmod 600 "$control_dir/config.json"
+EVERLAST_TEST_CONTROL_DIR="$control_dir" \
+  "$dev_app/Contents/MacOS/everlast-dictation" > "$dev_root/app.log" 2>&1 &
+dev_pid=$!
+```
+
+Wait for the developer app to finish setup and expose `control.sock`, then:
+
+```sh
+node scripts/test-control.mjs --control-dir "$control_dir" status
+```
+
+Setting `EVERLAST_TEST_CONTROL_DIR` only on this **Node client** cannot activate
+an endpoint in an already running app. Finder/`open` launch is deliberately not
+used above: the direct executable receives the specified environment and gives
+an unambiguous process PID. If either process exits, inspect its private log;
+do not reuse its PID or a stale socket. Quit both test apps normally after the
+session; keep the private directory as evidence if needed.
+
+For a real start, click the recipient's editable field and confirm its own
+report has `frontmostIsSelf=true`; local `applicationActive`/`windowKey` alone
+are insufficient. Typing a command in Terminal moves the foreground away from
+the recipient. One manual way to allow the click before the command is:
+
+```sh
+(sleep 5; node scripts/test-control.mjs --control-dir "$control_dir" start \
+  > "$dev_root/start.json") &
+```
+
+During those five seconds click the recipient field. Afterwards query `status`
+and use only its non-null `controlledSessionId` for `stop` or `cancel`, never
+a guessed `sessionId`. Terminal focus must again be returned to the recipient
+before an intended delivery; the same five-second delay can be used for a
+single `stop SID` command. No automatic retry follows a rejected start. This
+manual sequence does not claim a successful recording, foreground assignment,
+or delivery, and does not replace the separate physical-hotkey acceptance.
+
 ## Commands and replies
 
 Each connection carries one UTF-8 newline-terminated JSON request (maximum 1,024 bytes including newline), then one newline-terminated JSON reply and EOF. Requests deny unknown keys and duplicate fields. `schemaVersion` must be `1`.

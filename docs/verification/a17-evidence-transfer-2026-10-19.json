@@ -1,0 +1,156 @@
+{
+  "kind": "a17-historical-source-transfer-and-current-private-pasteboard-proof",
+  "checkedAtUtc": "2026-10-19T13:34:50.375128+00:00",
+  "baselineCommit": "f592fcdcfcea9ce709acb7345709ca6cf1948aef",
+  "currentCommit": "f87943c93a1bd2792ec908b455bd645625b88a6f",
+  "sourcePins": [
+    {
+      "path": "crates/macos-integration/src/clipboard.rs",
+      "bytes": 22925,
+      "sha256": "41605ce849bd02b892837ffd838d5df733487c2b3e8f04ed7e8ea6138cb47cab",
+      "mode": "0o644",
+      "baselineCommitSha256": "41605ce849bd02b892837ffd838d5df733487c2b3e8f04ed7e8ea6138cb47cab",
+      "historicalCommitSha256": "41605ce849bd02b892837ffd838d5df733487c2b3e8f04ed7e8ea6138cb47cab",
+      "unchangedFromBaseline": true,
+      "unchangedFromHistorical": true
+    },
+    {
+      "path": "crates/macos-integration/src/paste.rs",
+      "bytes": 5226,
+      "sha256": "060fd4a4e8fb93f4ed81631be1de09618f26533ffe7d5d7d95bb28bcf07e9f3f",
+      "mode": "0o644",
+      "baselineCommitSha256": "060fd4a4e8fb93f4ed81631be1de09618f26533ffe7d5d7d95bb28bcf07e9f3f",
+      "historicalCommitSha256": "060fd4a4e8fb93f4ed81631be1de09618f26533ffe7d5d7d95bb28bcf07e9f3f",
+      "unchangedFromBaseline": true,
+      "unchangedFromHistorical": true
+    },
+    {
+      "path": "crates/macos-integration/src/keyboard.rs",
+      "bytes": 7002,
+      "sha256": "f8ef4a7e123a7211cdce8a9b759db94c88d16f47f13b6b01db86a571f4c8d9b4",
+      "mode": "0o644",
+      "baselineCommitSha256": "f8ef4a7e123a7211cdce8a9b759db94c88d16f47f13b6b01db86a571f4c8d9b4",
+      "historicalCommitSha256": "1fd9e34818c7b700ca11b67cf403c00d531232780413b1cbc9206045b94059b4",
+      "unchangedFromBaseline": true,
+      "unchangedFromHistorical": false
+    },
+    {
+      "path": "crates/macos-integration/src/main_delivery.rs",
+      "bytes": 6224,
+      "sha256": "67bf92b3ae61dce9242953a25c8f59a07d98d0b4c5526607d80c6ef25f6d7910",
+      "mode": "0o644",
+      "baselineCommitSha256": "67bf92b3ae61dce9242953a25c8f59a07d98d0b4c5526607d80c6ef25f6d7910",
+      "historicalCommitSha256": "67bf92b3ae61dce9242953a25c8f59a07d98d0b4c5526607d80c6ef25f6d7910",
+      "unchangedFromBaseline": true,
+      "unchangedFromHistorical": true
+    },
+    {
+      "path": "crates/macos-integration/examples/clipboard_probe.rs",
+      "bytes": 7724,
+      "sha256": "7b424286bf0b8bb9e8fb02552df3128e8d51b9e206b38c4ea4a3c0dc48d1a4ce",
+      "mode": "0o644",
+      "baselineCommitSha256": "7b424286bf0b8bb9e8fb02552df3128e8d51b9e206b38c4ea4a3c0dc48d1a4ce",
+      "historicalCommitSha256": "7b424286bf0b8bb9e8fb02552df3128e8d51b9e206b38c4ea4a3c0dc48d1a4ce",
+      "unchangedFromBaseline": true,
+      "unchangedFromHistorical": true
+    }
+  ],
+  "historicalEvidence": {
+    "commit": "e73a9f5b74e2322c9bf63a668a6da9be016394c2",
+    "pathAtCommit": "docs/execution-log.md",
+    "sha256": "960e90069a89bd2046fc0fc24eca4b82a1dc1e9912b09ad8e69ddda727df5dea",
+    "retainedCopy": {
+      "path": "artifacts/a17-current-private-pasteboard-v1/historical-execution-log-e73a9f5.md",
+      "bytes": 33768,
+      "sha256": "960e90069a89bd2046fc0fc24eca4b82a1dc1e9912b09ad8e69ddda727df5dea",
+      "mode": "0o600"
+    },
+    "sections": [
+      "P02 — begrenzte Clipboard-Sicherung und Wiederherstellung",
+      "P02 — native Zustände auf dem Hauptthread"
+    ],
+    "separateHistoricalRawOutputLocated": false
+  },
+  "newExecution": {
+    "command": [
+      "/Users/hoppworks/projects/everlastChallenge/target/debug/examples/clipboard_probe"
+    ],
+    "binarySha256": "7b0a1d1599becd95b1621851ec7274b4019ff46d5c4f6b72b890bc74e2773ad7",
+    "startedUtc": "2026-10-19T13:34:26.872850+00:00",
+    "pid": 7322,
+    "exitCode": 0,
+    "endedUtc": "2026-10-19T13:34:28.661326+00:00",
+    "wallSeconds": 1.78837175,
+    "processWaited": true,
+    "stdout.logSha256": "3d6d7dc754252bf3ca353cbfb0554185cfa6174968f0d2215dc83b148c6173a8",
+    "stderr.logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "newBuild": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--offline",
+      "-p",
+      "macos-integration",
+      "--example",
+      "clipboard_probe"
+    ],
+    "startedUtc": "2026-10-19T13:34:22.279081+00:00",
+    "head": "f87943c93a1bd2792ec908b455bd645625b88a6f",
+    "exitCode": 0,
+    "endedUtc": "2026-10-19T13:34:23.236031+00:00"
+  },
+  "artifacts": [
+    {
+      "path": "artifacts/a17-current-private-pasteboard-v1/build-start.json",
+      "bytes": 262,
+      "sha256": "27be4cae2fcad404d5ba851851119440d6eaedfaef1a08ebe3975333d6ca0a6f",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/a17-current-private-pasteboard-v1/build-result.json",
+      "bytes": 329,
+      "sha256": "88618143d8dd967bfe6364658d85017a0bff0e352b0af96528d0948a411e2e57",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/a17-current-private-pasteboard-v1/build.log",
+      "bytes": 181,
+      "sha256": "8c25ae64e3ea58437a47d4eedce2e483581aaaa29207ba6efbc6429d89cad4f8",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/a17-current-private-pasteboard-v1/execution.json",
+      "bytes": 565,
+      "sha256": "c9aee5cbc0aa6dc25e91a5275ac7ad10e4b255051932920067c4ebf40fcd6090",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/a17-current-private-pasteboard-v1/stdout.log",
+      "bytes": 174,
+      "sha256": "3d6d7dc754252bf3ca353cbfb0554185cfa6174968f0d2215dc83b148c6173a8",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/a17-current-private-pasteboard-v1/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": "0o600"
+    }
+  ],
+  "privatePasteboardOwnershipCheckPassed": true,
+  "generalClipboardAccessed": false,
+  "keyboardEventsPosted": false,
+  "ASRExecuted": false,
+  "installedApplicationExercised": false,
+  "fullA17InstalledDeliveryAcceptance": false,
+  "limits": [
+    "Historical execution is attested by its contemporaneous committed log; no separate old raw console output was located.",
+    "One new execution of the unchanged clipboard_probe was explicitly authorized to retain current raw evidence.",
+    "Only a fresh unique named NSPasteboard was created; foreign change means controlled replacement on that board, not user clipboard content.",
+    "Passes replacement/restore/ownership/cancellation and stale-cleanup contracts; does not prove installed automatic paste or a real user copy during its restore timer.",
+    "Keyboard source is identical to f592fcd but differs from the old e73a9f5; no historical keyboard/layout acceptance is transferred.",
+    "No global package completion or P06 acceptance."
+  ]
+}

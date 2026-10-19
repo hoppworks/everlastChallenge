@@ -64,7 +64,9 @@ anderer Apps noch zum Umgehen von Computersteuerungsbeschränkungen verwendet.
 
 Die Offline-Tests verändern keine Freigaben. Der ursprüngliche Prüfstand war
 R6 ohne eingerichtete Signieridentität. Nach ausdrücklicher Freigabe wurde
-inzwischen eine lokale Identität eingerichtet und Build A installiert; siehe
+inzwischen eine lokale Identität eingerichtet und zunächst Build A installiert.
+Aktuell läuft der [Entwickler-Testbuild `f592fcd`](verification/test-control-2026-10-19.md)
+mit derselben lokalen Identität; R6 bleibt als historisches ZIP verfügbar. Siehe
 den [Signierungsbeleg](verification/local-signing-2026-10-19.md).
 
 Die zwei lokal signierten Builds B und A haben eine kompatible Designated

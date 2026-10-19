@@ -1,0 +1,124 @@
+{
+  "kind": "a18-own-carbon-registration-collision-component-proof",
+  "checkedAtUtc": "2026-10-19T13:34:50.375128+00:00",
+  "currentCommit": "f87943c93a1bd2792ec908b455bd645625b88a6f",
+  "execution": {
+    "command": [
+      "/usr/bin/clang",
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-Wno-deprecated-declarations",
+      "artifacts/a18-carbon-collision-v1/probe.c",
+      "-framework",
+      "Carbon",
+      "-o",
+      "artifacts/a18-carbon-collision-v1/probe"
+    ],
+    "exitCode": 0,
+    "sourceSha256": "6a61b428d0c24c65bee1d9506a9a509ab30d2905a556e1216119fefb2f495bcc",
+    "binarySha256": "5f6d7e68977672ade49aea383b9004934f898b5da22b2ae7e23233abd80cb2c4",
+    "pid": 7196,
+    "startedUtc": "2026-10-19T13:34:11.763121+00:00",
+    "endedUtc": "2026-10-19T13:34:11.922818+00:00",
+    "durationSeconds": 0.15955725000000004,
+    "runExitCode": 0,
+    "processWaited": true,
+    "result": {
+      "outcome": "passed",
+      "keyCode": 90,
+      "modifiers": 6912,
+      "exclusive": true,
+      "initial": 0,
+      "duplicate": -9878,
+      "stillOwned": -9878,
+      "releaseFirst": 0,
+      "reacquire": 0,
+      "releaseSecond": 0,
+      "cleanupFirst": 0,
+      "cleanupUnexpected": 0,
+      "cleanupSecond": 0,
+      "keyboardEventsPosted": false,
+      "foreignReferencesRemoved": false
+    }
+  },
+  "artifacts": [
+    {
+      "path": "artifacts/a18-carbon-collision-v1/probe.c",
+      "bytes": 3333,
+      "sha256": "6a61b428d0c24c65bee1d9506a9a509ab30d2905a556e1216119fefb2f495bcc",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/a18-carbon-collision-v1/probe",
+      "bytes": 33656,
+      "sha256": "5f6d7e68977672ade49aea383b9004934f898b5da22b2ae7e23233abd80cb2c4",
+      "mode": "0o700"
+    },
+    {
+      "path": "artifacts/a18-carbon-collision-v1/build.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/a18-carbon-collision-v1/execution.json",
+      "bytes": 1061,
+      "sha256": "c26f23cbab35f908aacb8ca1228cf0f3359cd726ebf7c90b57af7f29efc0fb91",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/a18-carbon-collision-v1/stdout.json",
+      "bytes": 285,
+      "sha256": "6a468284c8e6c3c3c3978fd36b543f847d72dd3c51e3a421089be5709ef53a7a",
+      "mode": "0o600"
+    },
+    {
+      "path": "artifacts/a18-carbon-collision-v1/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": "0o600"
+    }
+  ],
+  "sdkBindings": [
+    {
+      "path": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/CarbonEvents.h",
+      "bytes": 634637,
+      "sha256": "21a8e446d56ec3ab23d8c168b5486df41c833fa6f38a4a19199cef50b3b21278",
+      "mode": "0o644"
+    },
+    {
+      "path": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/CarbonEventsCore.h",
+      "bytes": 109345,
+      "sha256": "dcf2bb524f4577fd7ea7940c57372dc980c911047cece6e8e810de6c213cf81c",
+      "mode": "0o644"
+    },
+    {
+      "path": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/Events.h",
+      "bytes": 29094,
+      "sha256": "b80b0c6e10ea4a06494d02399424cb806cc04a2971724688cb2063e04f2149d6",
+      "mode": "0o644"
+    }
+  ],
+  "host": {
+    "macOS": "27.0.1",
+    "build": "26A434",
+    "architecture": "arm64"
+  },
+  "combination": "Control+Command+Option+Shift+F20",
+  "registrationMode": "kEventHotKeyExclusive",
+  "ownCollisionPassed": true,
+  "keyboardEventsPosted": false,
+  "foreignRegistrationRemoved": false,
+  "settingsChanged": false,
+  "installedApplicationExercised": false,
+  "fullA18Accepted": false,
+  "limits": [
+    "First exclusive registration succeeded; otherwise the probe would stop inconclusive without removing any existing registration.",
+    "Both same-process duplicate attempts returned eventHotKeyExistsErr (-9878). The first owned reference remained valid and unregistered successfully.",
+    "After release, re-registration and final unregistration both succeeded. Only references returned by this probe were eligible for cleanup.",
+    "No event handler, event loop, event posting, UI scripting, user key press, microphone, settings or certificate operation.",
+    "Direct Carbon component evidence, not the application settings rollback/registration UI and not a physical hotkey delivery test."
+  ]
+}

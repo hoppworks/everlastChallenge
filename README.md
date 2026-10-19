@@ -6,7 +6,7 @@ Aktueller installierter Prüfstand: [lokal signierter Entwickler-Testbuild aus `
 
 **Testversion (19.10.2026):** Die stabile Referenzfassung ist als lokale Testversion bereitgestellt. Die experimentellen FullPrefix-/Kontext-1400-Optimierungen sind nicht aktiv. Die Referenz hat ihre dokumentierte Modellqualitätsprüfung bestanden, erreicht aber das geplante Stop-bis-Text-Ziel von einer Sekunde nicht durchgehend. Die vollständige Leistungs-, Installations- und integrierte Produktabnahme bleibt offen. [P04 ist im bestätigten Standardmikrofonumfang technisch belegt](docs/verification/p04-standard-microphone-technical-v1.md); zusätzliche Geräte-/Bluetooth-Tests sind nicht erforderlich. Tatsächliche Belege stehen im [Ausführungsprotokoll](docs/execution-log.md), der vollständige Zielumfang im [Implementierungsplan](IMPLEMENTATION_PLAN.md).
 
-Die [Einstellungswiederherstellung](docs/verification/r4-settings-recovery-2026-10-19.md) ist im installierten R4 geprüft. Der dabei gefundene falsche Status ist in R5 korrigiert und gezielt sichtbar geprüft; die jetzt installierte R6 enthält diesen Anzeige-Fix.
+Die [Einstellungswiederherstellung](docs/verification/r4-settings-recovery-2026-10-19.md) wurde seinerzeit im installierten R4 geprüft. Der dabei gefundene falsche Status ist in R5 korrigiert und gezielt sichtbar geprüft; das historische R6-Paket und der aktuelle Entwicklerbuild enthalten diesen Anzeige-Fix.
 
 Der [reale Fünf-Minuten-Hotkeylauf](docs/verification/r4-hotkey-maximum-2026-10-19.md) bestätigt den automatischen Aufnahmestopp. Das Startfeld wurde dabei nicht bestätigt, daher keine Einfügung; zusätzliche Texte bei langem Nachlauf und die vollständige Vorwarnungs-/Fokusabnahme bleiben offen.
 
@@ -27,7 +27,7 @@ Geprüfte Ausgangsumgebung: macOS 27.0.1, arm64, Rust/Cargo 1.93.0, Node 22.23.1
 5. Tests: `npm test`; Regel-Fixtures: `npm run test:guardrails`.
 6. Coverage: `npm run coverage`. Die Mindestwerte sind 90 % Kern-Zeilen und jeweils 80 % Frontend-Zeilen, Statements, Funktionen und Zweige. Die positiven/negativen instrumentierten Regel-Fixtures prüfen, dass die Grenzen tatsächlich durchgesetzt werden.
 7. Vollständige Prüfung: `npm run verify`. Zusätzlich benötigt: cargo-deny 0.19.0 und gitleaks 8.30.1 (vorhandene lokale Werkzeuge). Der Coverage-Lauf verwendet das lokale LLVM 21 aus Xcode passend zu rustc 1.93.0. Setup/Verify ändern keine globale Toolchain.
-8. Lokales Release bauen: `npm run release`. Der Befehl prüft anschließend Signatur, Mikrofon-Nutzungsbeschreibung und signiertes Audio-Input-Entitlement. Ein vorhandenes Bundle lässt sich mit `npm run verify:bundle` erneut prüfen. Ein erzeugtes Bundle ist erst nach den Installations-/Laufzeitprüfungen im Plan ein abgenommenes Artefakt.
+8. Normalen Release ohne Entwickler-Testzugang bauen: `npm run release` (Ad-hoc-Signatur) oder nach bereits eingerichteter lokaler Identität `npm run release:local` (lokales Zertifikat). Der Befehl prüft anschließend Signatur, Mikrofon-Nutzungsbeschreibung und signiertes Audio-Input-Entitlement. Ein vorhandenes Bundle lässt sich mit `npm run verify:bundle` erneut prüfen. Keiner dieser Befehle aktiviert `test-control`; dafür gilt ausschließlich die gesonderte [Entwickleranleitung](docs/test-control.md#manual-build-and-launch-on-this-mac). Ein erzeugtes Bundle ist erst nach den Installations-/Laufzeitprüfungen im Plan ein abgenommenes Artefakt.
 
 ## Aktuellen Entwicklungsstand ausprobieren
 
@@ -36,7 +36,7 @@ WER-Auswertung sind im [Korpus-Leitfaden](tests/fixtures/corpus/README.md)
 dokumentiert. Dateibackend-Ergebnisse ersetzen keine Echtzeit- oder installierte
 App-Abnahme.
 
-Der lokale Release-Build liegt unter `target/aarch64-apple-darwin/release/bundle/`: als App im Unterordner `macos`, als DMG in `dmg`. Dieser direkte Entwicklungsstart ersetzt die noch offene Prüfung des heruntergeladenen, quarantänierten Installationsartefakts nicht.
+Bei Standard-Targetverzeichnis liegt der normale Release-Build unter `target/aarch64-apple-darwin/release/bundle/`: `npm run release` erzeugt App (`macos`) und DMG (`dmg`), `npm run release:local` ausschließlich die lokal signierte App (`macos`). Dieser direkte Entwicklungsstart ersetzt die noch offene Prüfung des heruntergeladenen, quarantänierten Installationsartefakts nicht.
 
 Beim Start wird nur der eigene Modellcache geprüft. Mit **Modell laden** lässt sich das vorläufige Referenzmodell `large-v3-turbo-q5_0` (574 MB) von der im Fenster verlinkten, festgelegten Hugging-Face-Revision herunterladen. Die App prüft Größe und SHA-256 vor dem Laden. **Einrichtung abbrechen** beendet den Vorgang; ein neuer Versuch muss ausdrücklich gestartet werden. Ein erfolgreicher Download samt Modellinitialisierung ist im nativen Bundle geprüft. Die endgültige Modellwahl folgt erst nach den Qualitäts- und Leistungsmessungen. Zusätzlich benötigt der aktuelle Quellstand den fest gepinnten Silero-Sprachdetektor (0,9 MB). Die Einrichtung prüft beide Dateien und lädt fehlende Dateien nach ausdrücklichem Start; vorhandene geprüfte Dateien zählen zum Bereitstellungsfortschritt. Erst nach erfolgreichem Laden beider Modelle ist die Modelleinrichtung bereit. Der Sprachdetektor prüft die gesamte Aufnahme über eine getrennte pegelnormierte Kopie; bei erkannten Sprachanteilen erhält Whisper seine bisherigen Audiodaten unverändert. Fehler werden angezeigt und nicht als Stille behandelt. Im aktuellen Quellstand sperren Prüfung eines vorhandenen Cacheordners und Download den betreffenden Modellbestand gegen parallele Einrichtung. Beim Neustart werden ausschließlich eindeutig zugehörige Teildateien nachweislich beendeter Prozesse entfernt; aktive oder unklare Dateien bleiben erhalten. Eine belegte Sperre wird mit bewusstem erneutem Versuch gemeldet.
 
@@ -61,8 +61,9 @@ numerische Oracle-Abweichung.
 
 ## Fehler beheben
 
-Die folgenden Schritte beschreiben den aktuellen Quellstand. R6 ist lokal
-installiert; die vollständige Produkt- und Installationsabnahme steht noch aus.
+Die folgenden Schritte beschreiben den aktuellen Quellstand. Installiert ist
+der Entwickler-Testbuild `f592fcd`; R6 bleibt separat als historisches Testpaket
+verfügbar. Die vollständige Produkt- und Installationsabnahme steht noch aus.
 
 | Beobachtung | Nächster Schritt |
 | --- | --- |
