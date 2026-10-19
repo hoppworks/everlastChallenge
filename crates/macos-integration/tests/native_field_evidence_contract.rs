@@ -17,6 +17,7 @@ struct BridgeMetadata {
     modern_enabled: bool,
     enabled: Option<bool>,
     value_settable: bool,
+    selected_text_settable: bool,
 }
 
 #[allow(
@@ -42,8 +43,11 @@ fn bridged_metadata<T: AsRef<NSObject> + NSAccessibility + objc2::Message>(
     let writable = view
         .as_ref()
         .accessibilityIsAttributeSettable(&NSString::from_str("AXValue"));
+    let selected_text_settable = view
+        .as_ref()
+        .accessibilityIsAttributeSettable(&NSString::from_str("AXSelectedText"));
     println!(
-        "ownedBridge={name}; modernEnabled={}; enabledPresent={}; enabledValue={:?}; enabledCFType={kind:?}; valueSettable={writable}",
+        "ownedBridge={name}; modernEnabled={}; enabledPresent={}; enabledValue={:?}; enabledCFType={kind:?}; valueSettable={writable}; selectedTextSettable={selected_text_settable}",
         view.isAccessibilityEnabled(),
         enabled.is_some(),
         number.map(|value| value.boolValue())
@@ -52,6 +56,7 @@ fn bridged_metadata<T: AsRef<NSObject> + NSAccessibility + objc2::Message>(
         modern_enabled: view.isAccessibilityEnabled(),
         enabled: number.map(|value| value.boolValue()),
         value_settable: writable,
+        selected_text_settable,
     }
 }
 
@@ -76,6 +81,7 @@ fn evidence(name: &str, view: &NSView, editable: bool) -> FieldEvidence {
         // isEditable is observed above; it is NOT a cross-process AXValue
         // IsAttributeSettable measurement or proof of target delivery.
         value_settable: Some(editable),
+        selected_text_settable: None,
     }
 }
 fn run() -> Result<(), Box<dyn std::error::Error>> {
@@ -136,8 +142,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     // AXEnabled here: absent + writable is shared with the normal control.
     assert_eq!(normal.enabled, None);
     assert!(normal.value_settable);
+    assert!(normal.selected_text_settable);
     assert_eq!(readonly.enabled, None);
     assert!(!readonly.value_settable);
+    assert!(!readonly.selected_text_settable);
     assert_eq!(restored, normal);
     assert!(enabled.modern_enabled);
     assert!(!disabled.modern_enabled);
@@ -148,6 +156,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     assert!(enabled_readonly.modern_enabled);
     assert_eq!(enabled_readonly.enabled, None);
     assert!(!enabled_readonly.value_settable);
+    assert!(!enabled_readonly.selected_text_settable);
     let line = evidence("NSTextField", &singleline, singleline.isEditable());
     let password = evidence("NSSecureTextField", &secure, secure.isEditable());
     for (name, cell) in [
@@ -158,6 +167,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let bridge = bridged_metadata(name, &*cell);
             assert_eq!(bridge.enabled, Some(true));
             assert!(bridge.value_settable);
+            assert!(!bridge.selected_text_settable);
             println!(
                 "ownControl={name}; role={:?}; subrole={:?}; enabled={}",
                 cell.accessibilityRole().map(|v| v.to_string()),
@@ -203,7 +213,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     // not a blanket eligibility(None) success. No AX transport status is guessed.
     assert_eq!(area.eligibility(), Err(HoldReason::UnconfirmedField));
     println!(
-        "confirmed: readonly toggles legacy writability; explicit accessibility-disabled NSTextView remains absent-Enabled and writable, indistinguishable from normal by those two legacy fields; secure cell is marked; no cross-process AX status or Notes field queried"
+        "confirmed: readonly toggles legacy writability; explicit accessibility-disabled NSTextView remains absent-Enabled with both replacement capabilities true, indistinguishable from normal by these legacy fields; secure cell is marked; no cross-process AX status or Notes field queried"
     );
     Ok(())
 }

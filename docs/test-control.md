@@ -183,3 +183,34 @@ Background I/O has a 250-ms whole-request read deadline, a bounded single pendin
 ## Evidence boundary
 
 Focused transport tests exercise actual local Unix sockets, permissions/collisions, malformed requests, privacy projection, exact session ownership, failed asynchronous admission/retry, and bounded expiry with a controlled handler. Separate Desktop/Runtime tests cover the actor receipt and shutdown handshake. These tests do not claim microphone capture, foreign AX success, physical hotkey dispatch, or delivered target text. Actual signed-app runs, source/binary binding, recipient observations, and native acceptance remain separate evidence.
+
+## Read-only field inspection
+
+```sh
+node scripts/test-control.mjs --control-dir /absolute/private/directory inspect
+```
+
+`inspect` accepts no session or target argument. It uses only the configured
+recipient PID, verifies its kernel identity and one of the three existing
+own-recipient bundle identifiers before and after reading, and requires the
+already granted Accessibility permission. It does not require that recipient
+to be frontmost. It never starts a recording, activates a window, captures a
+delivery target, changes settings, or creates an approval. Results are diagnostic
+observations only and cannot be replayed as delivery authority.
+
+The `snapshot` contains 17 fixed scalar fields: kind, PID, a four-value role,
+role/subrole/enabled read statuses and integer error codes, the interpreted
+secure/enabled flags, the `AXValue` and `AXSelectedText` replacement capabilities
+with error codes, and the current eligibility result/reason. It does not read
+`AXValue`, selected text, titles or arbitrary strings. Unknown types/statuses
+and extra client-response fields fail validation. The transport projection
+cannot disclose additional internal fields. Reads are bounded and the existing
+15-minute endpoint lifetime still applies.
+
+The production field policy accepts a known ordinary text role with a positive
+value or selected-text replacement capability when no explicit disabled state
+is reported. A writable selection range alone never establishes editability.
+Actual permission failures, secure fields, foreign processes, explicit negative
+editability and wholly unknown capability remain rejected. This diagnostic is
+separate from the new bounded production post-send content check: its optional
+snapshot stays solely in the AX owner memory and is never part of this endpoint.

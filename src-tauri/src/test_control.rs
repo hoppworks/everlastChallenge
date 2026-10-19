@@ -25,6 +25,7 @@ const TICK: Duration = Duration::from_millis(100);
 const MAX_REQUEST: usize = 1024;
 
 pub trait Handler {
+    fn inspect(&self, recipient_pid: i32) -> Result<Value, String>;
     fn status(&self) -> Result<Value, String>;
     fn start(&self, recipient_pid: i32) -> Result<(), String>;
     fn stop(&self, session: u64) -> Result<(), String>;
@@ -230,6 +231,7 @@ impl Control {
     ) -> Result<Value, String> {
         validate_request(&request)?;
         match request.op.as_str() {
+            "inspect" => public_inspection(handler, self.recipient_pid),
             "status" => public_status(handler),
             "start" => {
                 if self.start_pending || self.owned.is_some() || self.ending {
@@ -325,6 +327,84 @@ fn public_status(handler: &impl Handler) -> Result<Value, String> {
     }
     Ok(Value::Object(output))
 }
+
+// A second strict projection prevents future diagnostics from exporting titles,
+// text, arbitrary role/subrole strings, or observations of another process.
+fn public_inspection(handler: &impl Handler, recipient_pid: i32) -> Result<Value, String> {
+    let source = handler.inspect(recipient_pid)?;
+    let mut output = serde_json::Map::new();
+    for key in [
+        "kind",
+        "pid",
+        "role",
+        "roleRead",
+        "roleErrorCode",
+        "secure",
+        "subroleRead",
+        "subroleErrorCode",
+        "enabled",
+        "enabledRead",
+        "enabledErrorCode",
+        "valueSettable",
+        "valueSettableErrorCode",
+        "selectedTextSettable",
+        "selectedTextSettableErrorCode",
+        "captureEligible",
+        "holdReason",
+    ] {
+        output.insert(
+            key.into(),
+            source
+                .get(key)
+                .ok_or("incomplete recipient metadata")?
+                .clone(),
+        );
+    }
+    if output["kind"] != "own-test-recipient-field-metadata"
+        || output["pid"].as_i64() != Some(i64::from(recipient_pid))
+        || !matches!(
+            output["role"].as_str(),
+            Some("textField" | "textArea" | "comboBox" | "other")
+        )
+        || !output["captureEligible"].is_boolean()
+        || !(output["holdReason"].is_null()
+            || matches!(
+                output["holdReason"].as_str(),
+                Some("unconfirmedField" | "notEditable" | "unknownEditability" | "secureField")
+            ))
+    {
+        return Err("invalid recipient metadata".into());
+    }
+    for key in ["secure", "enabled", "valueSettable", "selectedTextSettable"] {
+        if !(output[key].is_null() || output[key].is_boolean()) {
+            return Err("invalid recipient metadata flag".into());
+        }
+    }
+    for key in ["roleRead", "subroleRead", "enabledRead"] {
+        if !matches!(
+            output[key].as_str(),
+            Some("value" | "unsupported" | "noValue" | "error" | "wrongType" | "missingValue")
+        ) {
+            return Err("invalid recipient metadata status".into());
+        }
+    }
+    for key in [
+        "roleErrorCode",
+        "subroleErrorCode",
+        "enabledErrorCode",
+        "valueSettableErrorCode",
+        "selectedTextSettableErrorCode",
+    ] {
+        if !output[key].is_null()
+            && output[key]
+                .as_i64()
+                .is_none_or(|n| i32::try_from(n).is_err())
+        {
+            return Err("invalid recipient metadata code".into());
+        }
+    }
+    Ok(Value::Object(output))
+}
 fn io_error(error: impl std::fmt::Display) -> String {
     format!("test-control I/O: {error}")
 }
@@ -377,7 +457,7 @@ fn validate_request(request: &Request) -> Result<(), String> {
         return Err("unsupported schemaVersion".into());
     }
     match request.op.as_str() {
-        "status" | "start" if request.session.is_none() => Ok(()),
+        "status" | "start" | "inspect" if request.session.is_none() => Ok(()),
         "stop" | "cancel" if request.session.is_some_and(|id| id > 0) => Ok(()),
         _ => Err("invalid operation or session".into()),
     }
@@ -502,12 +582,31 @@ mod protocol_tests {
         pending: bool,
         stopped: Vec<u64>,
         shutdowns: usize,
+        inspections: Vec<i32>,
+        inspection_override: Option<Value>,
     }
     #[derive(Default)]
     struct Fake {
         state: Mutex<FakeState>,
     }
     impl Handler for Fake {
+        fn inspect(&self, recipient_pid: i32) -> Result<Value, String> {
+            let mut state = self.state.lock().map_err(|_| "test lock")?;
+            state.inspections.push(recipient_pid);
+            if let Some(value) = &state.inspection_override {
+                return Ok(value.clone());
+            }
+            Ok(
+                json!({"kind":"own-test-recipient-field-metadata", "pid": recipient_pid,
+                "role":"textArea", "roleRead":"value", "roleErrorCode":null,
+                "secure":false, "subroleRead":"unsupported", "subroleErrorCode":-25205,
+                "enabled":null, "enabledRead":"noValue", "enabledErrorCode":-25212,
+                "valueSettable":true, "valueSettableErrorCode":null,
+                "selectedTextSettable":null, "selectedTextSettableErrorCode":-25205,
+                "captureEligible":false, "holdReason":"unknownEditability",
+                "privateText":"must never leave the process", "windowTitle":"private sentinel"}),
+            )
+        }
         fn status(&self) -> Result<Value, String> {
             let state = self.state.lock().map_err(|_| "test lock")?;
             Ok(
@@ -551,6 +650,63 @@ mod protocol_tests {
             op: op.into(),
             session,
         }
+    }
+    #[test]
+    fn inspection_is_scoped_private_and_does_not_claim_or_change_a_session()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (_temp, mut control) = fixture()?;
+        let handler = Fake::default();
+        handler.state.lock().map_err(|_| "test lock")?.session = Some(99);
+        let value = control.execute(&handler, request("inspect", None), Instant::now())?;
+        assert_eq!(value["pid"], 123);
+        assert_eq!(value["enabledRead"], "noValue");
+        assert_eq!(value["enabledErrorCode"], -25212);
+        assert_eq!(
+            value.as_object().ok_or("metadata object missing")?.len(),
+            17
+        );
+        assert!(!value.to_string().contains("private"));
+        let state = handler.state.lock().map_err(|_| "test lock")?;
+        assert_eq!(state.inspections, [123]);
+        assert_eq!(state.session, Some(99));
+        assert_eq!(state.starts, 0);
+        assert!(state.stopped.is_empty());
+        assert_eq!(state.shutdowns, 0);
+        assert!(!control.start_pending);
+        assert_eq!(control.owned, None);
+        assert_eq!(control.start_deadline, None);
+        assert!(validate_request(&request("inspect", Some(99))).is_err());
+        assert!(
+            serde_json::from_str::<Request>(r#"{"schemaVersion":1,"op":"inspect","pid":999}"#)
+                .is_err()
+        );
+        Ok(())
+    }
+    #[test]
+    fn inspection_rejects_wrong_process_and_untrusted_metadata_values()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let handler = Fake::default();
+        let original = handler.inspect(123)?;
+        for (key, invalid) in [
+            ("pid", json!(999)),
+            ("role", json!("private field text")),
+            ("enabledRead", json!("private error text")),
+            ("secure", json!("private text")),
+            ("enabledErrorCode", json!(2_147_483_648_u64)),
+        ] {
+            let mut value = original.clone();
+            value[key] = invalid;
+            handler
+                .state
+                .lock()
+                .map_err(|_| "test lock")?
+                .inspection_override = Some(value);
+            assert!(
+                public_inspection(&handler, 123).is_err(),
+                "accepted invalid {key}"
+            );
+        }
+        Ok(())
     }
     #[test]
     fn pending_start_never_claims_an_unrelated_session_and_expiry_revokes_pending()
@@ -706,6 +862,41 @@ mod protocol_tests {
             let value: Value = serde_json::from_slice(&response)?;
             assert_eq!(value["ok"], false);
         }
+        Ok(())
+    }
+    #[test]
+    fn real_socket_inspection_routes_only_configured_pid_and_filters_private_fields()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (_temp, mut control) = fixture()?;
+        let path = control.socket.path.clone();
+        let client = thread::spawn(move || -> Result<Value, String> {
+            let mut stream = UnixStream::connect(path).map_err(io_error)?;
+            stream
+                .set_read_timeout(Some(Duration::from_secs(3)))
+                .map_err(io_error)?;
+            stream
+                .write_all(b"{\"schemaVersion\":1,\"op\":\"inspect\"}\n")
+                .map_err(io_error)?;
+            let mut bytes = Vec::new();
+            stream.read_to_end(&mut bytes).map_err(io_error)?;
+            serde_json::from_slice(&bytes).map_err(io_error)
+        });
+        let handler = Fake::default();
+        let deadline = Instant::now() + Duration::from_secs(3);
+        while !client.is_finished() && Instant::now() < deadline {
+            control.poll(&handler);
+            thread::sleep(Duration::from_millis(5));
+        }
+        let reply = client.join().map_err(|_| "client panicked")??;
+        assert_eq!(reply["ok"], true);
+        assert_eq!(reply["op"], "inspect");
+        assert_eq!(reply["snapshot"]["pid"], 123);
+        assert!(reply["snapshot"].get("privateText").is_none());
+        assert!(reply["snapshot"].get("windowTitle").is_none());
+        let state = handler.state.lock().map_err(|_| "test lock")?;
+        assert_eq!(state.inspections, [123]);
+        assert_eq!(state.starts, 0);
+        assert!(state.stopped.is_empty());
         Ok(())
     }
 }

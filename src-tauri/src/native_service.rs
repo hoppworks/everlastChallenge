@@ -9,7 +9,7 @@ use macos_integration::{
     paste::PasteError,
     target::{
         HoldReason, ProcessIdentity, TargetApproval, TargetError,
-        worker::{TargetEvent, TargetWorker, WorkerError},
+        worker::{PostSendObservation, TargetEvent, TargetWorker, WorkerError},
     },
 };
 use std::{
@@ -27,6 +27,19 @@ const STEP_LIMIT: Duration = Duration::from_secs(2);
 const MODIFIER_LIMIT: Duration = Duration::from_secs(1);
 const RESTORE_DELAY: Duration = Duration::from_millis(500);
 const TICK: Duration = Duration::from_millis(10);
+
+fn wait_for_restore_deadline(
+    deadline: Instant,
+    now: impl Fn() -> Instant,
+    mut wait: impl FnMut(Duration),
+) {
+    while let Some(remaining) = deadline.checked_duration_since(now()) {
+        if remaining.is_zero() {
+            break;
+        }
+        wait(TICK.min(remaining));
+    }
+}
 
 type NativeError = String;
 
@@ -256,6 +269,13 @@ trait Backend: Send + 'static {
         approval: Self::Approval,
         token: &DeliveryToken,
     ) -> Result<(), NativeError>;
+    fn observe_after_send(
+        &mut self,
+        session: NonZeroU64,
+        expected: &str,
+        token: &DeliveryToken,
+        deadline: Instant,
+    ) -> Result<PostSendObservation, NativeError>;
     fn cleanup(&mut self, session: NonZeroU64) -> Result<(), NativeError>;
     fn shutdown(self) -> Result<(), NativeError>;
 }
@@ -530,6 +550,64 @@ impl Backend for NativeBackend {
     ) -> Result<(), NativeError> {
         self.unit(Command::Send { session, approval }, Some(token))
     }
+    fn observe_after_send(
+        &mut self,
+        session: NonZeroU64,
+        expected: &str,
+        token: &DeliveryToken,
+        deadline: Instant,
+    ) -> Result<PostSendObservation, NativeError> {
+        if !token.is_committed() || token.session() != session || expected.len() > 256 * 1024 {
+            return Err("Die Nachprüfung gehört nicht zur gesendeten Übergabe.".into());
+        }
+        {
+            let environment = match self
+                .main
+                .call(Command::Environment, Some(token), deadline)?
+            {
+                Reply::Environment(value) => value,
+                _ => return Err("Die Umgebung der Nachprüfung ist nicht bestätigt.".into()),
+            };
+            if !environment.accessibility_trusted || environment.secure_input {
+                return Err(
+                    "Das ursprüngliche Zielfeld lässt sich nach dem Senden nicht prüfen.".into(),
+                );
+            }
+            self.next_request = self
+                .next_request
+                .checked_add(1)
+                .ok_or("Anfragekennung erschöpft")?;
+            let request = NonZeroU64::new(self.next_request).ok_or("Ungültige Anfragekennung")?;
+            self.target
+                .observe_after_send(
+                    session,
+                    request,
+                    environment.process,
+                    token.clone(),
+                    expected.to_owned(),
+                )
+                .map_err(target_worker_message)?;
+            let observation = loop {
+                if Instant::now() >= deadline {
+                    return Err(
+                        "Die Nachprüfung der Übergabe hat ihr Zeitlimit überschritten.".into(),
+                    );
+                }
+                if let Some(TargetEvent::ObservedAfterSend {
+                    session: id,
+                    request: tag,
+                    result,
+                }) = self.target.next_event().map_err(target_worker_message)?
+                    && id == session
+                    && tag == request
+                {
+                    break result.map_err(target_approval_message)?;
+                }
+                thread::sleep(TICK.min(deadline.saturating_duration_since(Instant::now())));
+            };
+            Ok(observation)
+        }
+    }
     fn cleanup(&mut self, session: NonZeroU64) -> Result<(), NativeError> {
         self.unit(Command::Cleanup { session }, None)
     }
@@ -653,7 +731,10 @@ impl<B: Backend> Owner<B> {
         self.check(token)
     }
     fn cleanup(&mut self) -> Result<(), NativeError> {
-        if let Some((session, _)) = self.restore {
+        if let Some((session, deadline)) = self.restore {
+            // Post-send failures cannot shorten the recipient's pasteboard read window.
+            // Before commit the deadline is already due, so cancellation stays immediate.
+            wait_for_restore_deadline(deadline, Instant::now, thread::sleep);
             self.backend.cleanup(session)?;
             self.restore = None;
         }
@@ -708,6 +789,7 @@ impl<B: Backend> Owner<B> {
         self.check(token)?;
         // From here even an unacknowledged preparation must be cleaned up.
         self.restore = Some((session, Instant::now()));
+        let expected = text.clone();
         self.backend
             .prepare(session, environment.pasteboard_name, backup, text, token)?;
         let environment = self.environment(token, Instant::now() + STEP_LIMIT)?;
@@ -718,8 +800,18 @@ impl<B: Backend> Owner<B> {
         let approval = self.backend.approve(session, environment.process, token)?;
         self.check(token)?;
         self.backend.send(session, approval, token)?;
-        self.restore = Some((session, Instant::now() + RESTORE_DELAY));
-        Ok(())
+        let restore_at = Instant::now() + RESTORE_DELAY;
+        self.restore = Some((session, restore_at));
+        // Sending is irreversible. Observe only; never re-install, re-approve or retry paste.
+        match self
+            .backend
+            .observe_after_send(session, &expected, token, restore_at)?
+        {
+            PostSendObservation::Confirmed | PostSendObservation::Unverifiable => Ok(()),
+            PostSendObservation::Uncertain => {
+                Err("Der erwartete Text wurde im ursprünglichen Zielfeld nicht bestätigt.".into())
+            }
+        }
     }
     fn run(&mut self) -> Result<(), NativeError> {
         while !self.stopping.load(Ordering::Acquire) {
@@ -838,19 +930,29 @@ pub(crate) mod contract_support {
     struct State {
         effects: Vec<&'static str>,
         delivered: Vec<String>,
+        sent_at: Option<Instant>,
+        cleaned_at: Option<Instant>,
     }
 
     #[derive(Clone)]
     pub(crate) struct Sink {
         state: Arc<Mutex<State>>,
         target_available: Arc<AtomicBool>,
+        post_send: Arc<Mutex<Result<PostSendObservation, String>>>,
     }
     impl Sink {
         pub(crate) fn new() -> Self {
             Self {
                 state: Arc::new(Mutex::new(State::default())),
                 target_available: Arc::new(AtomicBool::new(true)),
+                post_send: Arc::new(Mutex::new(Ok(PostSendObservation::Confirmed))),
             }
+        }
+        pub(crate) fn set_post_send(&self, result: Result<PostSendObservation, String>) {
+            *self
+                .post_send
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner()) = result;
         }
         pub(crate) fn set_target_available(&self, available: bool) {
             self.target_available.store(available, Ordering::Release);
@@ -858,6 +960,14 @@ pub(crate) mod contract_support {
         pub(crate) fn observed(&self) -> Result<(Vec<&'static str>, Vec<String>), String> {
             let state = self.state.lock().map_err(|_| "contract sink poisoned")?;
             Ok((state.effects.clone(), state.delivered.clone()))
+        }
+        pub(crate) fn restore_delay(&self) -> Result<Duration, String> {
+            let state = self.state.lock().map_err(|_| "contract sink poisoned")?;
+            state
+                .cleaned_at
+                .zip(state.sent_at)
+                .map(|(cleaned, sent)| cleaned.saturating_duration_since(sent))
+                .ok_or("send/cleanup timestamps missing".into())
         }
         fn effect(&self, effect: &'static str) -> Result<(), String> {
             self.state
@@ -960,11 +1070,42 @@ pub(crate) mod contract_support {
                 .lock()
                 .map_err(|_| "contract sink poisoned")?;
             state.effects.push("send");
+            state.sent_at = Some(Instant::now());
             state.delivered.push(text.clone());
             Ok(())
         }
+        fn observe_after_send(
+            &mut self,
+            session: NonZeroU64,
+            expected: &str,
+            token: &DeliveryToken,
+            _: Instant,
+        ) -> Result<PostSendObservation, String> {
+            if !token.is_committed() || token.session() != session {
+                return Err("controlled observation lacks committed ownership".into());
+            }
+            self.sink.effect("observe-after-send")?;
+            let state = self
+                .sink
+                .state
+                .lock()
+                .map_err(|_| "contract sink poisoned")?;
+            if state.delivered.last().map(String::as_str) != Some(expected) {
+                return Err("controlled observed text differs".into());
+            }
+            self.sink
+                .post_send
+                .lock()
+                .map_err(|_| "contract sink poisoned")?
+                .clone()
+        }
         fn cleanup(&mut self, _: NonZeroU64) -> Result<(), String> {
             self.prepared = None;
+            self.sink
+                .state
+                .lock()
+                .map_err(|_| "contract sink poisoned")?
+                .cleaned_at = Some(Instant::now());
             self.sink.effect("cleanup")
         }
         fn shutdown(self) -> Result<(), String> {
@@ -987,6 +1128,34 @@ pub(crate) mod contract_support {
 mod tests {
     use super::*;
     use std::sync::atomic::AtomicUsize;
+
+    #[test]
+    fn restore_wait_honors_future_deadline_and_skips_precommit_due_time() {
+        use std::cell::Cell;
+        let start = Instant::now();
+        let now = Cell::new(start);
+        let calls = Cell::new(0);
+        let deadline = start + RESTORE_DELAY;
+        wait_for_restore_deadline(
+            deadline,
+            || now.get(),
+            |duration| {
+                assert!(now.get() < deadline);
+                assert!(duration <= TICK);
+                calls.set(calls.get() + 1);
+                now.set(now.get() + duration);
+            },
+        );
+        assert_eq!(now.get(), deadline);
+        assert!(calls.get() > 0);
+        let unexpected_waits = Cell::new(0);
+        wait_for_restore_deadline(
+            start,
+            || now.get(),
+            |_| unexpected_waits.set(unexpected_waits.get() + 1),
+        );
+        assert_eq!(unexpected_waits.get(), 0);
+    }
 
     #[derive(Default)]
     struct Trace {
@@ -1076,6 +1245,19 @@ mod tests {
             token.try_commit().map_err(|error| error.to_string())?;
             self.0.record(format!("send:{approval}"));
             Ok(())
+        }
+        fn observe_after_send(
+            &mut self,
+            _: NonZeroU64,
+            _: &str,
+            token: &DeliveryToken,
+            _: Instant,
+        ) -> Result<PostSendObservation, String> {
+            if !token.is_committed() {
+                return Err("not committed".into());
+            }
+            self.0.record("observe-after-send");
+            Ok(PostSendObservation::Unverifiable)
         }
         fn cleanup(&mut self, _: NonZeroU64) -> Result<(), String> {
             self.0.record("cleanup");
@@ -1197,6 +1379,7 @@ mod tests {
                 "install:2",
                 "approve:3",
                 "send:3",
+                "observe-after-send",
                 "cleanup",
                 "shutdown"
             ]

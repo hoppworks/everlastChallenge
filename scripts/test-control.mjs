@@ -3,7 +3,7 @@ import { lstatSync, realpathSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const OPS = ["status", "start", "stop", "cancel"];
+const OPS = ["status", "inspect", "start", "stop", "cancel"];
 const PHASES = [
   "Idle",
   "Starting",
@@ -26,6 +26,70 @@ function exact(value, keys) {
 }
 function protocol() {
   return new Error("Invalid test-control protocol reply");
+}
+function validMetadata(state) {
+  const keys = [
+    "kind",
+    "pid",
+    "role",
+    "roleRead",
+    "roleErrorCode",
+    "secure",
+    "subroleRead",
+    "subroleErrorCode",
+    "enabled",
+    "enabledRead",
+    "enabledErrorCode",
+    "valueSettable",
+    "valueSettableErrorCode",
+    "selectedTextSettable",
+    "selectedTextSettableErrorCode",
+    "captureEligible",
+    "holdReason",
+  ];
+  const reads = [
+    "value",
+    "unsupported",
+    "noValue",
+    "error",
+    "wrongType",
+    "missingValue",
+  ];
+  const code = (value) =>
+    value === null ||
+    (Number.isInteger(value) && value >= -2147483648 && value <= 2147483647);
+  const optionalBool = (value) => value === null || typeof value === "boolean";
+  return (
+    exact(state, keys) &&
+    state.kind === "own-test-recipient-field-metadata" &&
+    positive(state.pid) &&
+    ["textField", "textArea", "comboBox", "other"].includes(state.role) &&
+    [state.roleRead, state.subroleRead, state.enabledRead].every((value) =>
+      reads.includes(value),
+    ) &&
+    [
+      state.roleErrorCode,
+      state.subroleErrorCode,
+      state.enabledErrorCode,
+      state.valueSettableErrorCode,
+      state.selectedTextSettableErrorCode,
+    ].every(code) &&
+    [
+      state.secure,
+      state.enabled,
+      state.valueSettable,
+      state.selectedTextSettable,
+    ].every(optionalBool) &&
+    typeof state.captureEligible === "boolean" &&
+    (state.captureEligible
+      ? state.holdReason === null
+      : [
+          "unconfirmedField",
+          "notEditable",
+          "unknownEditability",
+          "secureField",
+        ].includes(state.holdReason))
+  );
 }
 function parseReply(bytes, op) {
   let value;
@@ -52,7 +116,9 @@ function parseReply(bytes, op) {
   )
     throw protocol();
   const state = value.snapshot;
-  if (state !== null) {
+  if (state !== null && op === "inspect") {
+    if (!validMetadata(state)) throw protocol();
+  } else if (state !== null) {
     if (
       !exact(state, [
         "setupReady",
@@ -112,7 +178,7 @@ export async function requestControl({
       : session !== undefined)
   )
     throw new Error(
-      "Expected status/start, or stop/cancel with a positive safe session ID",
+      "Expected status/inspect/start, or stop/cancel with a positive safe session ID",
     );
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 10 || timeoutMs > 30000)
     throw new Error("Timeout must be 10..30000 milliseconds");
@@ -217,7 +283,7 @@ export async function main(args, env = process.env) {
     (rawSession !== undefined && !/^[1-9]\d*$/.test(rawSession))
   )
     throw new Error(
-      "Usage: test-control.mjs [--control-dir ABS] status|start|stop SID|cancel SID [--timeout-ms N]",
+      "Usage: test-control.mjs [--control-dir ABS] status|inspect|start|stop SID|cancel SID [--timeout-ms N]",
     );
   return requestControl({
     controlDir,

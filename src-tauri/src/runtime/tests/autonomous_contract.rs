@@ -391,6 +391,7 @@ fn joined_native_owner_delivers_public_pcm_once_and_restores_its_preparation() -
             "environment",
             "approve",
             "send",
+            "observe-after-send",
             "cleanup",
             "shutdown",
         ]
@@ -464,5 +465,82 @@ fn joined_native_owner_cancelled_decode_never_reaches_platform_delivery() -> Tes
     let (effects, delivered) = sink.observed()?;
     assert!(delivered.is_empty());
     assert_eq!(effects, ["capture", "shutdown"]);
+    Ok(())
+}
+
+#[test]
+fn joined_postsend_observation_failure_never_retries_or_claims_held() -> TestResult {
+    use macos_integration::target::worker::PostSendObservation;
+    for observation in [
+        Ok(PostSendObservation::Uncertain),
+        Err("controlled target changed after send".to_owned()),
+        Err("controlled observation unavailable".to_owned()),
+    ] {
+        let mut fixture = Fixture::new()?;
+        let (service, sink) = fixture.attach_native_owner()?;
+        sink.set_post_send(observation);
+        let mut input = fixture.start_with_native_owner(true)?;
+        fixture.feed_and_stop(&mut input)?;
+        fixture.release.send(())?;
+        let state = wait_for(&fixture.client()?, |state| {
+            state.session.phase == Phase::Idle
+        })?;
+        assert!(matches!(state.session.outcome, Some(Outcome::Failed(_))));
+        assert_eq!(state.session.text.as_deref(), Some(TEXT));
+        fixture.finish(1)?;
+        service.join()?;
+        let (effects, delivered) = sink.observed()?;
+        assert_eq!(delivered, [TEXT]);
+        assert!(sink.restore_delay()? >= Duration::from_millis(500));
+        assert_eq!(
+            effects.iter().filter(|&&effect| effect == "send").count(),
+            1
+        );
+        assert_eq!(
+            effects
+                .iter()
+                .filter(|&&effect| effect == "cleanup")
+                .count(),
+            1
+        );
+        assert_eq!(
+            effects
+                .iter()
+                .filter(|&&effect| effect == "observe-after-send")
+                .count(),
+            1
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn joined_postsend_unverifiable_content_preserves_single_dispatch() -> TestResult {
+    use macos_integration::target::worker::PostSendObservation;
+    let mut fixture = Fixture::new()?;
+    let (service, sink) = fixture.attach_native_owner()?;
+    sink.set_post_send(Ok(PostSendObservation::Unverifiable));
+    let mut input = fixture.start_with_native_owner(true)?;
+    fixture.feed_and_stop(&mut input)?;
+    fixture.release.send(())?;
+    let state = wait_for(&fixture.client()?, |state| {
+        state.session.phase == Phase::Idle
+    })?;
+    assert_eq!(state.session.outcome, Some(Outcome::Sent));
+    fixture.finish(1)?;
+    service.join()?;
+    let (effects, delivered) = sink.observed()?;
+    assert_eq!(delivered, [TEXT]);
+    assert_eq!(
+        effects.iter().filter(|&&effect| effect == "send").count(),
+        1
+    );
+    assert_eq!(
+        effects
+            .iter()
+            .filter(|&&effect| effect == "cleanup")
+            .count(),
+        1
+    );
     Ok(())
 }

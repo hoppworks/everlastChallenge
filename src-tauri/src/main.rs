@@ -77,6 +77,9 @@ impl Drop for NativeWakeup {
 
 #[cfg(feature = "test-control")]
 impl test_control::Handler for Desktop {
+    fn inspect(&self, recipient_pid: i32) -> Result<serde_json::Value, String> {
+        self.test_control_inspect(recipient_pid)
+    }
     fn status(&self) -> Result<serde_json::Value, String> {
         self.test_control_status()
     }

@@ -41,6 +41,37 @@ impl State {
 }
 
 impl Desktop {
+    /// Metadata-only observation; never reserves admission or creates a Target.
+    pub fn test_control_inspect(&self, expected_pid: i32) -> Result<serde_json::Value, String> {
+        if self.0.test_control.lock().closed {
+            return Err("Test control expired".into());
+        }
+        use macos_integration::target::{FieldRole, HoldReason, inspection};
+        let metadata = inspection::inspect(expected_pid).map_err(str::to_owned)?;
+        let eligibility = metadata.evidence.eligibility();
+        let hold = eligibility.err().map(|reason| match reason {
+            HoldReason::UnconfirmedField => "unconfirmedField",
+            HoldReason::NotEditable => "notEditable",
+            HoldReason::UnknownEditability => "unknownEditability",
+            HoldReason::SecureField => "secureField",
+        });
+        Ok(serde_json::json!({
+            "kind": "own-test-recipient-field-metadata", "pid": metadata.pid,
+            "role": match metadata.role.value.unwrap_or(FieldRole::Other) {
+                FieldRole::TextField => "textField", FieldRole::TextArea => "textArea",
+                FieldRole::ComboBox => "comboBox", FieldRole::Other => "other",
+            },
+            "roleRead": metadata.role.status.as_str(), "roleErrorCode": metadata.role.error_code,
+            "secure": metadata.evidence.secure,
+            "subroleRead": metadata.subrole.status.as_str(), "subroleErrorCode": metadata.subrole.error_code,
+            "enabled": metadata.enabled.value,
+            "enabledRead": metadata.enabled.status.as_str(), "enabledErrorCode": metadata.enabled.error_code,
+            "valueSettable": metadata.value_settable, "valueSettableErrorCode": metadata.value_settable_error_code,
+            "selectedTextSettable": metadata.selected_text_settable, "selectedTextSettableErrorCode": metadata.selected_text_settable_error_code,
+            "captureEligible": eligibility.is_ok(), "holdReason": hold,
+        }))
+    }
+
     pub fn test_control_status(&self) -> Result<serde_json::Value, String> {
         // Hold ownership through the runtime read: an ACK cannot turn pending
         // into owned between two fields of this status snapshot.

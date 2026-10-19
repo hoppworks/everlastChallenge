@@ -1,0 +1,32 @@
+{
+  "baseCommit": "7f5df16",
+  "fullSoftwareProfilePassed": true,
+  "fullProfileRustTests": 446,
+  "uiTests": 215,
+  "nodeTests": 42,
+  "pythonQualityToolingTests": 204,
+  "laterDelta": "optional bounded AXNumberOfCharacters preflight before AXValue read",
+  "deltaTargetAndWorkerTestsPassed": 19,
+  "featureClippyPassed": true,
+  "independentReview": "Three findings corrected and re-reviewed; final size-preflight delta reviewed with no new findings.",
+  "actualOSInsertionProven": false,
+  "personalReviewComplete": false,
+  "artifacts": [
+    {
+      "path": "artifacts/autonomous-tests/1792418904514-7b52c894-278d-4987-bb3a-86b81a2cbc3e/report.json",
+      "sha256": "f0ab884020e487fb8bb9dc1efaa9539ed81f1c47c215f1949ecda472adad0d59"
+    },
+    {
+      "path": "artifacts/target-compatibility-v1/target-contracts.log",
+      "sha256": "67ab2411021fc061943d8d65eda816a663534438e8d0aa0e0f5a684146026897"
+    },
+    {
+      "path": "artifacts/target-compatibility-v1/feature-clippy.log",
+      "sha256": "6b7a5511dc47c8a634ea4b594e49a99107a9dc4108f932661781d66d9f6de140"
+    },
+    {
+      "path": "artifacts/autonomous-suite-v2/native-field-combined-capability.log",
+      "sha256": "9bdcecaa0005942ccbafb5b664a8da2a7260bf28112d396833183515bf2d48e6"
+    }
+  ]
+}

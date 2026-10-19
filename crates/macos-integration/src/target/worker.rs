@@ -14,11 +14,26 @@ use std::{
 
 const CAPACITY: usize = 8;
 
+/// Content confirmation is optional; stable identity alone never proves receipt.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PostSendObservation {
+    Confirmed,
+    Unverifiable,
+    Uncertain,
+}
+
 enum Request {
     Capture {
         session: NonZeroU64,
         process: ProcessIdentity,
         token: DeliveryToken,
+    },
+    ObserveAfterSend {
+        session: NonZeroU64,
+        request: NonZeroU64,
+        frontmost: ProcessIdentity,
+        token: DeliveryToken,
+        expected: String,
     },
     Approve {
         session: NonZeroU64,
@@ -31,6 +46,11 @@ pub enum TargetEvent {
     Captured {
         session: NonZeroU64,
         result: Result<(), TargetError>,
+    },
+    ObservedAfterSend {
+        session: NonZeroU64,
+        request: NonZeroU64,
+        result: Result<PostSendObservation, TargetError>,
     },
     Approved {
         session: NonZeroU64,
@@ -54,9 +74,17 @@ pub enum WorkerError {
 }
 
 trait Backend: 'static {
+    fn expire_observation(&mut self, _cancelled: bool) {}
     fn capture(&mut self, session: NonZeroU64, process: ProcessIdentity)
     -> Result<(), TargetError>;
     fn approve(&mut self, frontmost: ProcessIdentity) -> Result<TargetApproval, TargetError>;
+    fn observe_after_send(
+        &mut self,
+        _: ProcessIdentity,
+        _: &str,
+    ) -> Result<PostSendObservation, TargetError> {
+        Err(TargetError::Value)
+    }
 }
 
 #[derive(Default)]
@@ -64,6 +92,15 @@ struct NativeBackend {
     target: Option<Target>,
 }
 impl Backend for NativeBackend {
+    fn expire_observation(&mut self, cancelled: bool) {
+        if let Some(target) = &self.target {
+            if cancelled {
+                target.clear_observation();
+            } else {
+                target.expire_observation();
+            }
+        }
+    }
     fn capture(
         &mut self,
         session: NonZeroU64,
@@ -78,6 +115,16 @@ impl Backend for NativeBackend {
             .as_ref()
             .ok_or(TargetError::Changed)?
             .approve(frontmost)
+    }
+    fn observe_after_send(
+        &mut self,
+        frontmost: ProcessIdentity,
+        expected: &str,
+    ) -> Result<PostSendObservation, TargetError> {
+        self.target
+            .as_ref()
+            .ok_or(TargetError::Changed)?
+            .observe_after_send(frontmost, expected)
     }
 }
 
@@ -115,6 +162,9 @@ impl TargetWorker {
                 let mut current: Option<Entry> = None;
                 let mut highest_capture = None;
                 while !stopping.load(Ordering::Acquire) {
+                    backend.expire_observation(current.as_ref().is_some_and(|entry| {
+                        !entry.token.is_pending() && !entry.token.is_committed()
+                    }));
                     let request = match receive.recv_timeout(Duration::from_millis(20)) {
                         Ok(request) => request,
                         Err(mpsc::RecvTimeoutError::Timeout) => continue,
@@ -150,6 +200,32 @@ impl TargetWorker {
                                 Err(TargetError::Cancelled)
                             };
                             TargetEvent::Captured { session, result }
+                        }
+                        Request::ObserveAfterSend {
+                            session,
+                            request,
+                            frontmost,
+                            token,
+                            expected,
+                        } => {
+                            let result = match current.as_ref() {
+                                Some(entry)
+                                    if entry.session == session
+                                        && entry.token.same_work(&token)
+                                        && entry.token.is_committed() =>
+                                {
+                                    match &entry.failed {
+                                        Some(error) => Err(error.clone()),
+                                        None => backend.observe_after_send(frontmost, &expected),
+                                    }
+                                }
+                                _ => Err(TargetError::Cancelled),
+                            };
+                            TargetEvent::ObservedAfterSend {
+                                session,
+                                request,
+                                result,
+                            }
                         }
                         Request::Approve {
                             session,
@@ -228,6 +304,27 @@ impl TargetWorker {
         })
     }
 
+    /// Read-only observation; cannot create an approval or authorize another send.
+    pub fn observe_after_send(
+        &self,
+        session: NonZeroU64,
+        request: NonZeroU64,
+        frontmost: ProcessIdentity,
+        token: DeliveryToken,
+        expected: String,
+    ) -> Result<(), WorkerError> {
+        if token.session() != session || !token.is_committed() || expected.len() > 256 * 1024 {
+            return Err(WorkerError::Token);
+        }
+        self.submit(Request::ObserveAfterSend {
+            session,
+            request,
+            frontmost,
+            token,
+            expected,
+        })
+    }
+
     fn submit(&self, request: Request) -> Result<(), WorkerError> {
         if self.stop.load(Ordering::Acquire) {
             return Err(WorkerError::Stopped);
@@ -302,6 +399,82 @@ mod tests {
         entered: SyncSender<NonZeroU64>,
         release: Receiver<()>,
         session: Option<NonZeroU64>,
+    }
+
+    #[test]
+    fn post_send_requires_exact_committed_capture_and_keeps_approve_pending_only()
+    -> Result<(), Box<dyn std::error::Error>> {
+        struct Observer(Arc<AtomicUsize>);
+        impl Backend for Observer {
+            fn capture(&mut self, _: NonZeroU64, _: ProcessIdentity) -> Result<(), TargetError> {
+                Ok(())
+            }
+            fn approve(&mut self, _: ProcessIdentity) -> Result<TargetApproval, TargetError> {
+                Err(TargetError::Value)
+            }
+            fn observe_after_send(
+                &mut self,
+                _: ProcessIdentity,
+                _: &str,
+            ) -> Result<PostSendObservation, TargetError> {
+                self.0.fetch_add(1, Ordering::Relaxed);
+                Ok(PostSendObservation::Unverifiable)
+            }
+        }
+        let calls = Arc::new(AtomicUsize::new(0));
+        let owned_calls = Arc::clone(&calls);
+        let worker = TargetWorker::with_backend(move || Observer(owned_calls))?;
+        let original = DeliveryToken::new(id(1)?);
+        worker.capture(id(1)?, process(), original.clone())?;
+        assert!(matches!(
+            event(&worker)?,
+            TargetEvent::Captured { result: Ok(()), .. }
+        ));
+        assert!(matches!(
+            worker.observe_after_send(id(1)?, id(1)?, process(), original.clone(), "x".into()),
+            Err(WorkerError::Token)
+        ));
+        original.try_commit()?;
+        worker.approve(id(1)?, id(2)?, process())?;
+        assert!(matches!(
+            event(&worker)?,
+            TargetEvent::Approved {
+                result: Err(TargetError::Cancelled),
+                ..
+            }
+        ));
+        let forged = DeliveryToken::new(id(1)?);
+        forged.try_commit()?;
+        worker.observe_after_send(id(1)?, id(3)?, process(), forged, "x".into())?;
+        assert!(matches!(
+            event(&worker)?,
+            TargetEvent::ObservedAfterSend {
+                result: Err(TargetError::Cancelled),
+                ..
+            }
+        ));
+        worker.observe_after_send(id(1)?, id(4)?, process(), original.clone(), "x".into())?;
+        assert!(matches!(
+            event(&worker)?,
+            TargetEvent::ObservedAfterSend {
+                result: Ok(PostSendObservation::Unverifiable),
+                ..
+            }
+        ));
+        let newer = DeliveryToken::new(id(2)?);
+        worker.capture(id(2)?, process(), newer)?;
+        let _capture = event(&worker)?;
+        worker.observe_after_send(id(1)?, id(5)?, process(), original, "x".into())?;
+        assert!(matches!(
+            event(&worker)?,
+            TargetEvent::ObservedAfterSend {
+                result: Err(TargetError::Cancelled),
+                ..
+            }
+        ));
+        assert_eq!(calls.load(Ordering::Relaxed), 1);
+        worker.shutdown()?;
+        Ok(())
     }
 
     #[test]

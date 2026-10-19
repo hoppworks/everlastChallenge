@@ -26,6 +26,25 @@ const response = (op, changes = {}) => ({
   error: null,
   ...changes,
 });
+const fieldMetadata = {
+  kind: "own-test-recipient-field-metadata",
+  pid: 123,
+  role: "textArea",
+  roleRead: "value",
+  roleErrorCode: null,
+  secure: false,
+  subroleRead: "noValue",
+  subroleErrorCode: -25212,
+  enabled: null,
+  enabledRead: "noValue",
+  enabledErrorCode: -25212,
+  valueSettable: true,
+  valueSettableErrorCode: null,
+  selectedTextSettable: null,
+  selectedTextSettableErrorCode: -25205,
+  captureEligible: false,
+  holdReason: "unknownEditability",
+};
 
 async function withServer(handler, run) {
   const directory = realpathSync(mkdtempSync("/tmp/elc-"));
@@ -55,6 +74,40 @@ function reply(value) {
   return (socket) =>
     socket.once("data", () => socket.end(`${JSON.stringify(value)}\n`));
 }
+
+test("inspect accepts only bounded own-field metadata, without text or session authority", async () => {
+  const expected = response("inspect", { snapshot: fieldMetadata });
+  await withServer(reply(expected), async (controlDir) => {
+    assert.deepEqual(
+      await requestControl({ controlDir, op: "inspect" }),
+      expected,
+    );
+    await assert.rejects(
+      requestControl({ controlDir, op: "inspect", session: 1 }),
+    );
+  });
+  for (const extra of [
+    { transcript: "PRIVATE_SENTINEL" },
+    { role: "PRIVATE_SENTINEL" },
+    { pid: 0 },
+    { enabledErrorCode: 1.5 },
+    { captureEligible: "true" },
+    { enabledRead: "PRIVATE_SENTINEL" },
+  ]) {
+    await withServer(
+      reply(response("inspect", { snapshot: { ...fieldMetadata, ...extra } })),
+      async (controlDir) => {
+        await assert.rejects(
+          requestControl({ controlDir, op: "inspect" }),
+          (error) => {
+            assert.doesNotMatch(error.message, /PRIVATE_SENTINEL/);
+            return /protocol/i.test(error.message);
+          },
+        );
+      },
+    );
+  }
+});
 
 test("one bounded request preserves operation/session and accepts fragmented sanitized reply", async () => {
   for (const op of ["status", "start", "stop", "cancel"]) {
