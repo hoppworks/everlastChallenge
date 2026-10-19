@@ -4,7 +4,7 @@ Native Diktier-App für Apple Silicon und macOS 27. Rust/Tauri 2 mit nativer App
 
 Aktueller installierter Prüfstand: normaler, lokal signierter Build `212d5e7`
 ohne Entwickler-Steuerkanal. Modellbereitschaft und beide Berechtigungen wurden
-angezeigt; die vollständige Einfügeabnahme steht noch aus. Die mehrstufige
+angezeigt; die vollständige Einfügeabnahme steht noch aus. Ein [getrennter Entwicklertest](docs/verification/native-delivery-success-2026-10-19.md) bestätigt inzwischen echte Mikrofonaufnahme und einmalige Einfügung in den eigenen nativen Testempfänger. Die mehrstufige
 [native Zielerkennung](docs/verification/target-compatibility-2026-10-19.md)
 und Prüfung nach einmaligem Versand sind implementiert und automatisiert geprüft.
 

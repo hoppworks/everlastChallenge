@@ -214,3 +214,24 @@ Actual permission failures, secure fields, foreign processes, explicit negative
 editability and wholly unknown capability remain rejected. This diagnostic is
 separate from the new bounded production post-send content check: its optional
 snapshot stays solely in the AX owner memory and is never part of this endpoint.
+
+## Confirm independent recipient receipt
+
+Actor Idle/outcome=sent is not itself recipient confirmation. The recipient's
+250-ms publication may still precede that actor response. After a completed
+controlled run, the optional read-only diagnostic below polls for a later
+sequence and post-terminal timestamp from the same recipient:
+
+```sh
+node scripts/recipient-delivery.mjs /absolute/recipient/snapshot.json /absolute/attempt.json
+```
+
+The attempt is the preserved own-run record containing recipientPid, the
+last recipient sequence, endedAtUtc and the completed actor snapshot. The
+reader accepts bounded owned regular files and emits only fixed diagnostic
+fields, boundaries and hashes. It starts no recording and grants no target
+approval. Keep an exact copy of relevant telemetry if byte-for-byte future
+readback is needed: the publisher replaces its current snapshot periodically.
+An [actual successful run](verification/native-delivery-success-2026-10-19.md)
+separates public-sentence recognition, one-time receiver text and global-hotkey
+acceptance; only the first two were proved in that controlled run.

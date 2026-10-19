@@ -1,0 +1,72 @@
+{
+  "kind": "actual-microphone-own-target-delivery",
+  "sourceCommit": "212d5e7193e72c34cfacd1873ec58771fcdfeeca",
+  "developerBinarySha256": "d2a36ab33ff9f6d70f421f9172888ab3cab745ece29feae8a8772332dc7e8f74",
+  "recipientBinarySha256": "43d2a95541dfc3367658518f1d1d91f77699ccdf9faf78a55dea7125cb90d5d9",
+  "systemDefaultMicrophone": true,
+  "publicFixtureId": "fleurs-de-dev-1517",
+  "publicFixtureSha256": "b892cf9dc80c437f0a78c6f261d83dda196252e31a1e415032981472d3ea9137",
+  "oneUserClickForActualFocus": true,
+  "automaticStartPlaybackStop": true,
+  "recognizedExpectedPublicSentence": true,
+  "actualOwnTargetTextExactOnce": true,
+  "shortcutCharacterPresent": false,
+  "terminalPhase": "Idle",
+  "microphoneRecordingEnded": true,
+  "physicalGlobalHotkeyProven": false,
+  "normalReleaseBinaryRunProven": false,
+  "fullProductAcceptance": false,
+  "independentReadbackPassed": true,
+  "nodeTestsPassed": 47,
+  "originalEarlyFalseVerdictPreserved": true,
+  "snapshotRace": "Initial recipient tick149ms before actor Idle; later separate publication and direct CUA field read confirm receipt",
+  "readbackLimit": "Original watcher remains one-shot; standalone recipient-delivery CLI performs synchronized readback. Its observed transient report bytes were overwritten by publisher, so only preserved output/helper/attempt bindings and separate confirmed snapshot remain independently available.",
+  "artifacts": [
+    {
+      "path": "artifacts/native-raise-probe-v1/autonomous-e2e-attempt.json",
+      "sha256": "4327c6e5c34949e0c04ed45eed37624b444004108e43d00cb35e27c575626976"
+    },
+    {
+      "path": "artifacts/native-raise-probe-v1/readback/confirmed-delivery.json",
+      "sha256": "0420d03848ba7e58fe6183ee6f28494397b514db8d50feafde7d4229fb61b9c9"
+    },
+    {
+      "path": "artifacts/native-raise-probe-v1/readback/synchronized-confirmation.json",
+      "sha256": "86cb4bb0520409031a2bb2278a1c55da1328f0080c3011000c549e387648741b"
+    },
+    {
+      "path": "artifacts/native-raise-probe-v1/readback/bound-synchronized-confirmation.json",
+      "sha256": "cc313410ff7d089e7fbc25512e50485fe8c5fc6558dbf2bd9dd0145f31096381"
+    },
+    {
+      "path": "artifacts/native-raise-probe-v1/readback/as-executed-watcher.py",
+      "sha256": "5d68237780156240c345f11256436c4fe7677aeb89e7365206e68f03c37e287b"
+    },
+    {
+      "path": "artifacts/native-raise-probe-v1/readback/observation-red.log",
+      "sha256": "7ff3024a5346612d7afdf596508500236a0033f42a2b9eac5031f3a0f4128545"
+    },
+    {
+      "path": "artifacts/native-raise-probe-v1/readback/readback-green.log",
+      "sha256": "e0f6476f7a346afc81f2ed98b122a17ab2bd80e170c33adeda937c961abff866"
+    },
+    {
+      "path": "artifacts/native-raise-probe-v1/readback/file-entry-red.log",
+      "sha256": "8d37c5efc4228b32db5cfc682101f536c2564ff47b36787af25d2d79de0c2fde"
+    },
+    {
+      "path": "artifacts/native-raise-probe-v1/readback/node-tests.log",
+      "sha256": "a6bcbcd042479de3c3b59d9f9c81909bced3873146e9e49ff54eefe145340f49"
+    }
+  ],
+  "readbackCommand": [
+    "node",
+    "scripts/recipient-delivery.mjs",
+    "/Users/hoppworks/projects/everlastChallenge/artifacts/native-raise-probe-v1/recipient-report/snapshot.json",
+    "/Users/hoppworks/projects/everlastChallenge/artifacts/native-raise-probe-v1/autonomous-e2e-attempt.json"
+  ],
+  "readbackCodeHashes": {
+    "scripts/recipient-observation.mjs": "e53be97b6ad5a595d31cbb52d2ac0e3607c5521f6091b2c129ac02e653213240",
+    "scripts/recipient-delivery.mjs": "01b9d605e464d3815a1147084169d4c5f5bbcc58d82de0a6284401cde9920c72"
+  }
+}
