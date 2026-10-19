@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "sourceCommit": "212d5e7193e72c34cfacd1873ec58771fcdfeeca",
+  "appSha256": "c79d838d2c999a907a850217d131b6c1b5b6d0bc6881505cb906b195210eae2b",
+  "fixtureSha256": "b892cf9dc80c437f0a78c6f261d83dda196252e31a1e415032981472d3ea9137",
+  "artifactHashes": {
+    "artifacts/native-local-maximum-v1/preparation.json": "c59059b08f5e8acb57cdb840ddd5e8d5d5c478b8d66acdc21a4fafcf9196b7bb",
+    "artifacts/native-local-maximum-v1/observations.json": "fb4e5839029bf2ae8870d11e37c5fe7f942d1746e259741c74b1ad5fd9ae09de"
+  },
+  "result": {
+    "schema": 1,
+    "observationSource": "CUA AX observations, transcribed status/time fields; not an internal capture trace",
+    "startedAt": "2026-10-19T14:57:46.298Z",
+    "manualStopIssued": false,
+    "manualCancelIssued": false,
+    "samples": [
+      {
+        "utc": "2026-10-19T14:57:46.478Z",
+        "elapsedMs": 180,
+        "displayedElapsed": "0:00",
+        "status": "Aufnahme läuft"
+      },
+      {
+        "utc": "2026-10-19T14:58:19.438Z",
+        "elapsedMs": 33140,
+        "displayedElapsed": "0:32",
+        "status": "Aufnahme läuft"
+      },
+      {
+        "utc": "2026-10-19T14:59:27.479Z",
+        "elapsedMs": 101181,
+        "displayedElapsed": "1:40",
+        "status": "Aufnahme läuft"
+      },
+      {
+        "utc": "2026-10-19T15:00:37.221Z",
+        "elapsedMs": 170923,
+        "displayedElapsed": "2:50",
+        "status": "Aufnahme läuft"
+      },
+      {
+        "utc": "2026-10-19T15:01:36.148Z",
+        "elapsedMs": 229850,
+        "displayedElapsed": "3:49",
+        "status": "Aufnahme läuft"
+      },
+      {
+        "utc": "2026-10-19T15:02:25.066Z",
+        "elapsedMs": 278768,
+        "displayedElapsed": "4:38",
+        "status": "Aufnahme endet bei 5 Minuten"
+      },
+      {
+        "utc": "2026-10-19T15:02:59.705Z",
+        "elapsedMs": 313407,
+        "displayedElapsed": null,
+        "status": "5-Minuten-Grenze erreicht · Diktat ist fertig"
+      }
+    ],
+    "terminalStartButtonEnabled": true,
+    "publicSentenceIncluded": true,
+    "additionalUnplayedTextObserved": true,
+    "recognitionQualityPass": false,
+    "physicalGlobalHotkeyTested": false,
+    "fullA26Pass": false,
+    "microphoneTextSaved": false,
+    "audioSaved": false
+  },
+  "scope": "Local native button-started microphone capture; warning and automatic maximum stop observed; no exact deadline or hotkey acceptance claim"
+}

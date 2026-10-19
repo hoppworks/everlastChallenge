@@ -76,6 +76,19 @@ Anzeigeprüfungen bleiben vertagt. Fehlende OS-Nachweise bleiben offen und werde
 nicht durch kontrollierte Tests als erledigt markiert. Sie blockieren weitere
 Softwareentwicklung und deren Regressionssuite nicht.
 
+## Weiterarbeiten bis zum gebündelten menschlichen Abschluss
+
+Nach jedem Ergebnis wird die nächste ausführbare technische Aufgabe bearbeitet:
+Produktfehler und ihre Regressionen, unabhängiger Review, Dokumentation,
+Artefaktvorbereitung oder eine erlaubte native Prüfung. Ein ausstehender
+physischer Hotkeynachweis ist keine Startbedingung für diese Aufgaben. Auch
+technische Teile nachfolgender Pakete dürfen bei erfüllten fachlichen
+Voraussetzungen vorbereitet und geprüft werden; ihr formaler Abschluss folgt
+weiterhin den Paketabhängigkeiten.
+
+Die verbleibenden menschlichen Schritte werden für einen gemeinsamen
+Abschlussblock vorbereitet:
+
 ## Automatischer Zustandsbericht des eigenen Testfensters
 
 Das Entwickler-Example `native_text_recipient` kann optional alle 250 ms
