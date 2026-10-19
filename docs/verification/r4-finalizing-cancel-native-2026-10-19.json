@@ -1,0 +1,28 @@
+{
+  "observedAtUtc": "2026-10-19T10:20:27.490Z",
+  "installedProductSource": "ee1a6a4f78fca3b45026a8de835e997c914b43ec",
+  "installedBinarySha256": "efea6ec2df880186788ff775b9beea61be8c53cd61c9485c932ca6f043bc83f5",
+  "pid": 68490,
+  "fixture": {
+    "path": "artifacts/native-recipient-test-v1/public-speech-with-lead-in.wav",
+    "sha256": "aa927da85bfa1fb301d648644216b1bc5bd7007519669c9dcca7f8b47d511718"
+  },
+  "actualSequence": {
+    "recordingStartedUtc": "2026-10-19T10:17:12.422Z",
+    "recordingObserved": true,
+    "processingObserved": true,
+    "nativeCancelButtonClicked": true,
+    "cancelStatus": "Diktat abgebrochen",
+    "newRecordingObserved": true,
+    "newRecordingCancelled": true,
+    "laterStatus": "Diktat abgebrochen",
+    "laterTextEmpty": true,
+    "copyDisabled": true
+  },
+  "physicalEscapeTested": false,
+  "automaticRecipientDeliveryTested": false,
+  "startingPhaseCancelTested": false,
+  "privateAudioSaved": false,
+  "privateTranscriptSaved": false,
+  "previousUnsuccessfulAttemptsRetained": true
+}
