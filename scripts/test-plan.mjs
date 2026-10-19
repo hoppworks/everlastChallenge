@@ -72,6 +72,8 @@ export function buildPlan(profile = "regression") {
           "native_preferences_contract",
           "--test",
           "native_field_evidence_contract",
+          "--test",
+          "power_notification_contract",
           "--example",
           "native_text_recipient",
           "--locked",

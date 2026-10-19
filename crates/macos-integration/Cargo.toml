@@ -56,5 +56,10 @@ name = "native_preferences_close_contract"
 path = "tests/native_preferences_close_contract.rs"
 harness = false
 
+[[test]]
+name = "power_notification_contract"
+path = "tests/power_notification_contract.rs"
+harness = false
+
 [lints]
 workspace = true

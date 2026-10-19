@@ -1,0 +1,28 @@
+{
+  "scope": "process-local native notification registration/mapping and logical removal; not machine Sleep/Wake",
+  "nativeTestPassed": true,
+  "wrongMappingMutationRejected": true,
+  "mutationExit": 101,
+  "productSourceRestored": true,
+  "independentReviewPassed": true,
+  "limits": [
+    "notifications posted on main thread only",
+    "logical silence after remove does not independently prove native token removal",
+    "standalone Drop path not exercised",
+    "no actual OS sleep or wake"
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/power-notification-contract-v1/green.log",
+      "sha256": "979adf629e889f422721f13c682db8aaa5c7f9f7ec78adccf7be5bf1ad8f558e"
+    },
+    {
+      "path": "artifacts/power-notification-contract-v1/mutation-red.log",
+      "sha256": "2583f122baa1aff3b0978d4223f2d98f391e671cff2a258f0f3fbbf74858ea87"
+    },
+    {
+      "path": "artifacts/power-notification-contract-v1/scheduler.log",
+      "sha256": "a58cc338c27859576b584f68ec8dc75df667e4c89500706218eb2cceb9c440aa"
+    }
+  ]
+}
