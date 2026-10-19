@@ -8,6 +8,7 @@ use macos_integration::{
     glass_header::GlassHeader,
     keyboard::LayoutObserver,
     power::{PowerEvent, PowerObserver},
+    termination::TerminationHook,
 };
 use tauri::{
     Emitter, Manager,
@@ -267,6 +268,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             _ => {}
         })
         .build(tauri::generate_context!())?;
+    // The delegate already exists here, before setup or model initialization.
+    // Redirect macOS/AppleEvent Quit through the same asynchronous shutdown
+    // handshake as our menu, rather than allowing native process teardown.
+    let exit_app = app.handle().clone();
+    let mut termination = Some(TerminationHook::install(move || exit_app.exit(0))?);
     let mut native_ui: Option<NativeUi> = None;
     app.run(move |app, event| {
         if matches!(event, tauri::RunEvent::Ready) {
@@ -293,6 +299,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             && let Some(mut ui) = native_ui.take()
         {
             ui.detach();
+        }
+        if matches!(event, tauri::RunEvent::Exit) {
+            drop(termination.take());
         }
         if let tauri::RunEvent::ExitRequested { api, code, .. } = event
             && let Some(desktop) = app.try_state::<Desktop>()

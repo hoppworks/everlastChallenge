@@ -27,5 +27,10 @@ name = "glass_header_contract"
 path = "tests/glass_header_contract.rs"
 harness = false
 
+[[test]]
+name = "termination_contract"
+path = "tests/termination_contract.rs"
+harness = false
+
 [lints]
 workspace = true
