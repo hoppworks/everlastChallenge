@@ -11,7 +11,7 @@ use macos_integration::{
 };
 use tauri::{
     Emitter, Manager,
-    menu::{Menu, MenuItem},
+    menu::{Menu, MenuItem, PredefinedMenuItem, Submenu},
     tray::TrayIconBuilder,
 };
 #[cfg(feature = "measurement")]
@@ -142,6 +142,38 @@ impl NativeUi {
     }
 }
 
+fn application_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
+    let menu = Menu::default(app)?;
+    // The pinned Tauri macOS default puts the application submenu first.
+    // Its predefined Quit invokes NSApplication.terminate directly, bypassing
+    // ExitRequested and the inference-worker join. Own that action instead.
+    menu.remove_at(0)?;
+    let quit = MenuItem::with_id(
+        app,
+        "application-quit",
+        "Everlast Dictation beenden",
+        true,
+        Some("CmdOrCtrl+Q"),
+    )?;
+    let application = Submenu::with_items(
+        app,
+        "Everlast Dictation",
+        true,
+        &[
+            &PredefinedMenuItem::about(app, Some("Über Everlast Dictation"), None)?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::services(app, None)?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::hide(app, None)?,
+            &PredefinedMenuItem::hide_others(app, None)?,
+            &PredefinedMenuItem::separator(app)?,
+            &quit,
+        ],
+    )?;
+    menu.insert(&application, 0)?;
+    Ok(menu)
+}
+
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "measurement")]
     let native_start_target = match native_start_export::Target::from_option(std::env::var_os(
@@ -156,6 +188,12 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "measurement")]
     let native_start_enabled = native_start_target.is_some();
     let app = tauri::Builder::default()
+        .menu(application_menu)
+        .on_menu_event(|app, event| {
+            if event.id().as_ref() == "application-quit" {
+                app.exit(0);
+            }
+        })
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             ipc::app_snapshot,
