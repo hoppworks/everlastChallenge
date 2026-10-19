@@ -37,6 +37,8 @@ sofortigen Abbruch eines bereits laufenden nativen Decoders.
 | Einstellungen und IPC | [settings.rs](../src-tauri/src/settings.rs), [preferences.rs](../src-tauri/src/preferences.rs), [startup_settings.rs](../src-tauri/src/startup_settings.rs), [ipc.rs](../src-tauri/src/ipc.rs) | validierte Eingaben, atomare private Speicherung/Rücknahme, Recovery, sitzungsgebundene Kommandos und gesperrte Änderungen während Arbeit |
 | Native Oberfläche und Zustandsprojektion | [Workspace](../crates/macos-integration/src/native_workspace.rs), [Preferences](../crates/macos-integration/src/native_preferences.rs), [Callback-Bridge](../src-tauri/src/desktop/native_ui.rs), [Projektion](../src-tauri/src/native_presentation.rs), [Desktop](../src-tauri/src/desktop.rs) und [Start](../src-tauri/src/main.rs) | Main-Thread-Besitz, Snapshotrevisionen statt eigener Sitzungsmaschine, Listener/Wakeup ohne Renderer, Abmeldung, Fensterlebensdauer und geordnetes Beenden; native Aktionen verwenden bestehende Admission und Runtime |
 | Historische React-/IPC-Oberfläche | [App.tsx](../src/App.tsx), [IPC-Client](../src/ipc/index.ts), [AppView](../src/features/app/AppView.tsx), [SettingsView](../src/features/settings/SettingsView.tsx), [RecoveryView](../src/features/settings/RecoveryView.tsx), [Vertrag](../src-tauri/src/contracts.rs) | Kompatibilitätscode; die aktuelle sichtbare Oberfläche läuft nicht über diese React-Komponenten. DOM-Tests sind kein Nachweis für AppKit |
+| Autonome technische Tests und eigener Beobachter | [Runner](../scripts/autonomous-tests.mjs), [öffentlicher Fixture-Connector](../src-tauri/src/runtime/tests/autonomous_contract.rs), [eigenes Testfenster](../crates/macos-integration/examples/native_text_recipient.rs) | Tatsächliche Runtime-/PCM-Verträge gegenüber kontrolliertem Decoder/Native-Endpunkt; frischer eigener Fensterbericht gegenüber realer Everlast-Zielerfassung; kein automatischer ASR-/UI-Lauf |
+| Lokale Bereitstellungswerkzeuge | [Signierhelper](../scripts/sign-local-bundle.mjs), [Kontinuitätsvergleich](../scripts/verify-signing-continuity.mjs) | Explizite Build-/Signierwirkung, erwartete Bundle-Struktur/Entitlements, echte Signaturprüfung; gleiche Requirement ist noch kein nachgewiesener Rechteerhalt |
 | Übernommenes SDK | [whisper-rs-Patches](../vendor/whisper-rs/PATCHES.md), [sys-/C++-Patches](../vendor/whisper-rs-sys/PATCHES.md), [Hotkey-Patch](../vendor/global-hotkey/PATCHES.md) | echte Herkunft/Lizenzen, unveränderte gegenüber eigenen Teilen, C-/Rust-Grenze, Pointerlebensdauer und Grenze der lokalen Regressionen |
 
 Native Copy-/Clear-Aktionen besitzen den tatsächlich angezeigten Text. Copy
@@ -70,6 +72,15 @@ Assertion-REDs, Fix und Grenzen der neuen Capture-/Settings-Verbundtests.
   [Echtzeitprotokoll](verification/paced-reference-protocol.md) enthalten die
   jeweiligen Laufbelege und Grenzen. Die private Audiodatei wird nicht als
   unabhängige Goldreferenz ausgegeben.
+
+Der [aktuelle Quellenaudit](verification/personal-review-v3-05413c2-delta.json)
+trennt die test-only Runtime-Modulregistrierung von den neuen ausführbaren
+Entwickler-/Signierwerkzeugen. Alle 107 ursprünglichen Anker bleiben gegenüber
+`2abf495` auf gleicher Zeile; E1/E2/O1/O2 bleiben erhalten. Die installierte
+lokal signierte B-App 0.1.1 stammt aus `40e7eaf`, nicht aus den späteren
+Helper-Commits. [A/B-Signaturvergleich](verification/local-signing-2026-10-19.md)
+und [eigener Beobachter](verification/native-recipient-observer-2026-10-19.md)
+sind technische Teilbelege; erste OS-Freigabe und realer A/B-Rechteerhalt bleiben offen.
 
 Für den aktuellen Inferenzpfad zusätzlich `Engine::transcribe` bis
 `decode::<false, _>` verfolgen: Der produktive Decoder erlaubt interne
