@@ -1,0 +1,94 @@
+{
+  "decision": "reject candidate; preserve qualified product path",
+  "reason": "Known real public speech is removed from decoderinput; unchanged WER17 does not prove preservation",
+  "candidateEndSample": 158848,
+  "lateSpeechOffsetSample": 640000,
+  "lateSpeechFrames": 168960,
+  "discardedKnownSpeechFrames": 168960,
+  "productFilesRestored": [
+    "src-tauri/src/transcription.rs",
+    "src-tauri/src/transcription/speech_gate.rs"
+  ],
+  "snapshotHashes": {
+    "artifacts/long-tail-integration-v1/rejected-source/src-tauri/src/transcription.rs": "a111a955c4008657a947df2475d6b296372078a7f1bc38ba02f90c156c475d3d",
+    "artifacts/long-tail-integration-v1/rejected-source/src-tauri/src/transcription/speech_gate.rs": "b17226056e36c49bbd7a6afd89d1ffd8793aa9c38cad0c8a465fa4211cd9c678"
+  },
+  "patchSha256": "b18d477a0d0b8c1d4d093fb8ae26b241f673d989363a5edb978551701a7256ca",
+  "sourceRevision": "3488f556421dcc60e34de6ca4fd06279c76bff5e",
+  "notInstalled": true,
+  "restoredReleaseSourcePinsVerified": [
+    "src-tauri/src/model.rs",
+    "src-tauri/src/pipeline.rs",
+    "src-tauri/src/transcription.rs",
+    "src-tauri/src/transcription/speech_gate.rs",
+    "src-tauri/src/transcription/phase.rs",
+    "src-tauri/src/audio.rs",
+    "crates/dictation-core/src/audio.rs",
+    "src-tauri/src/runtime.rs",
+    "src-tauri/src/inference_service.rs",
+    "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+    "vendor/whisper-rs/src/whisper_params.rs",
+    "vendor/whisper-rs/src/whisper_vad.rs",
+    "Cargo.lock"
+  ],
+  "restoredFilesEqualHead": true,
+  "normalAppSha256": "c79d838d2c999a907a850217d131b6c1b5b6d0bc6881505cb906b195210eae2b",
+  "candidateTestLogHashes": {
+    "artifacts/long-tail-integration-v1/01-stationary-red.log": "1823b698b9381ecfbf66cd48306be97d0d1645d9936c334be7958998a60cf471",
+    "artifacts/long-tail-integration-v1/02-stationary-green.log": "c9b2df2b89aeea7d45ef92c2967281c2d48e4ed79df73e851e2da6a7edce33c5",
+    "artifacts/long-tail-integration-v1/03-retention-and-boundaries-green.log": "33d7510f62025a4a02d87b7aa8b407f98b8b00adff8addd21332ffa238b285c8",
+    "artifacts/long-tail-integration-v1/04-focused-transcription.log": "90c02b043612d7eb17ad35b5c865ed2a17b6630487927f2381c937e190918bb4",
+    "artifacts/long-tail-integration-v1/05-focused-clippy.log": "fe96d7352e68ff2941a2544255034f96c55312373f8bbf2e2a8a67a105c105e3"
+  },
+  "scope": "Candidate code and tests archived, not integrated or installed. Original ASR long-tail limitation remains open.",
+  "qualifiedLongVadScreen": {
+    "path": "artifacts/long-tail-candidate-v1/qualified-long-vad.json",
+    "sha256": "d469709da2a766a606bf6503278f0920251fa25ca1492f5031791d1e84f2347c",
+    "rows": [
+      {
+        "id": "constructed-de-masked-300s",
+        "audio": {
+          "frames": 4800000,
+          "path": "artifacts/corpus/audio/constructed-de-masked-300s.wav",
+          "sampleRate": 16000,
+          "sha256": "ca2da7fb88fed220222002d631ab61c585ffb3f099ac3fc79ccc222d0e188e84"
+        },
+        "exitCode": 0,
+        "output": "frames=4800000 score_windows=9375\nthreshold=0.5 last_active_sample=Some(4587008)\nthreshold=0.1 last_active_sample=Some(4589568)\nthreshold=0.01 last_active_sample=Some(4593152)\nthreshold=0.001 last_active_sample=Some(4613632)\n"
+      },
+      {
+        "id": "fleurs-de-test-1732-thirty-second-v1",
+        "audio": {
+          "frames": 480000,
+          "path": "artifacts/corpus/audio/fleurs-de-test-1732-thirty-second-v1.wav",
+          "sampleRate": 16000,
+          "sha256": "045f4e0c1534e2d4240a10a2dbda1fad22c8ae9ca83809b2cd34e0a2a7510a2e"
+        },
+        "exitCode": 0,
+        "output": "frames=480000 score_windows=938\nthreshold=0.5 last_active_sample=Some(380928)\nthreshold=0.1 last_active_sample=Some(382464)\nthreshold=0.01 last_active_sample=Some(384000)\nthreshold=0.001 last_active_sample=Some(401920)\n"
+      },
+      {
+        "id": "fleurs-en-test-1670-thirty-second-v1",
+        "audio": {
+          "frames": 480000,
+          "path": "artifacts/corpus/audio/fleurs-en-test-1670-thirty-second-v1.wav",
+          "sampleRate": 16000,
+          "sha256": "ce7e66bfe03c6d4ce0a1975f7f399d873de5c412635c68fceb86331726bdcb96"
+        },
+        "exitCode": 0,
+        "output": "frames=480000 score_windows=938\nthreshold=0.5 last_active_sample=Some(465408)\nthreshold=0.1 last_active_sample=Some(465920)\nthreshold=0.01 last_active_sample=Some(468480)\nthreshold=0.001 last_active_sample=Some(469504)\n"
+      },
+      {
+        "id": "diagnostic-de-controlled-300s",
+        "audio": {
+          "path": "artifacts/diagnostic-speech/long-control-v1/controlled-300s.wav",
+          "sha256": "80b79393de147e78e9b9a86bad3d88998dae4056a9fe10a080ef2468c92dc25b",
+          "frames": 4800000,
+          "sampleRate": 16000
+        },
+        "exitCode": 0,
+        "output": "frames=4800000 score_windows=9375\nthreshold=0.5 last_active_sample=Some(4585984)\nthreshold=0.1 last_active_sample=Some(4586496)\nthreshold=0.01 last_active_sample=Some(4589056)\nthreshold=0.001 last_active_sample=Some(4591616)\n"
+      }
+    ]
+  }
+}

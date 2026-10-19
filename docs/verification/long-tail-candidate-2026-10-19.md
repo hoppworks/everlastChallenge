@@ -1,5 +1,9 @@
 # Isolierter Kandidat für langen Rauschnachlauf
 
+**Entscheidung:** Der anschließend integrierte Softwarekandidat wurde wegen
+belegten Verlusts später leiser Audioframes verworfen. Der Produktquellstand
+ist wiederhergestellt. [Gegenprobe und Rücksetzung](long-tail-candidate-rejection-2026-10-19.md).
+
 Die autonome Dateidiagnose wurde am 19.10.2026 mit der echten Silero-VAD
 und dem unveränderten Reference-Decoder erweitert. Kein Mikrofonzugriff,
 keine Produktquellen-, Installations- oder Parameteränderung.
