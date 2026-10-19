@@ -83,6 +83,16 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     assert!(!window.isVisible());
     let root = window.contentView().ok_or("root")?;
     let tabs = descendants::<NSTabView>(&root).pop().ok_or("native tabs")?;
+    // Opening a preferences pane with only static permission statuses must
+    // still give the user a keyboard entry point, without changing macOS's
+    // Keyboard navigation preference or opening a visible test window.
+    let initial = window
+        .initialFirstResponder()
+        .ok_or("preferences has no initial keyboard target")?;
+    assert_eq!(initial.downcast_ref::<NSTabView>(), Some(&*tabs));
+    assert!(window.makeFirstResponder(Some(&initial)));
+    let responder = window.firstResponder().ok_or("keyboard responder")?;
+    assert!(responder.downcast_ref::<NSTabView>().is_some());
     let labels: Vec<_> = tabs
         .tabViewItems()
         .iter()

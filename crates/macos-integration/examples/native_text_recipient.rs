@@ -7,14 +7,16 @@ use objc2::{
     DefinedClass, MainThreadMarker, MainThreadOnly, define_class, msg_send, rc::Retained, sel,
 };
 use objc2_app_kit::{
-    NSApplication, NSApplicationActivationPolicy, NSApplicationDelegate, NSBackingStoreType,
-    NSBorderType, NSButton, NSMenu, NSMenuItem, NSResponder, NSScrollView, NSTextField, NSTextView,
-    NSView, NSWindow, NSWindowStyleMask, NSWorkspace,
+    NSAccessibility, NSApplication, NSApplicationActivationPolicy, NSApplicationDelegate,
+    NSBackingStoreType, NSBorderType, NSMenu, NSMenuItem, NSResponder, NSScrollView, NSTextField,
+    NSTextView, NSView, NSWindow, NSWindowStyleMask, NSWorkspace,
 };
 use objc2_foundation::{
     NSBundle, NSNotification, NSObject, NSObjectProtocol, NSPoint, NSRect, NSRunLoop,
     NSRunLoopCommonModes, NSSize, NSString, NSTimer,
 };
+
+use sha2::{Digest, Sha256};
 
 use std::{
     cell::RefCell,
@@ -35,11 +37,18 @@ struct Snapshot {
     observed_unix_millis: u128,
     monotonic_since_launch_nanos: u128,
     process_id: u32,
+    process_started_unix_millis: u128,
+    field_utf8_bytes: usize,
+    field_sha256: Option<String>,
+    total_utf8_bytes: usize,
+    signal_state: String,
+    signal_run_id: Option<String>,
     application_active: bool,
     frontmost_is_self: bool,
     own_bundle_identifier: Option<String>,
     window_key: bool,
     focused_field: &'static str,
+    accessibility_focused: bool,
     expected_sentence_matches: bool,
     expected_sentence_occurrences: usize,
     shortcut_character_present: bool,
@@ -155,11 +164,35 @@ impl ReportDirectory {
             Some(_) => return Err(io::Error::other("invalid bounded own bundle identifier")),
             None => "null".to_owned(),
         };
+        let receipt_hash = match snapshot.field_sha256.as_deref() {
+            Some(hash)
+                if hash.len() == 64
+                    && hash
+                        .bytes()
+                        .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c)) =>
+            {
+                format!("\"{hash}\"")
+            }
+            None if snapshot.field_utf8_bytes == 0 => "null".into(),
+            _ => return Err(io::Error::other("invalid bounded own text digest")),
+        };
+        if snapshot.field_utf8_bytes > MAX_TEXT_BYTES
+            || snapshot.total_utf8_bytes > 2 * MAX_TEXT_BYTES
+        {
+            return Err(io::Error::other("invalid own text size"));
+        }
+        let signal_state =
+            serde_json::to_string(&snapshot.signal_state).map_err(io::Error::other)?;
+        let signal_run_id =
+            serde_json::to_string(&snapshot.signal_run_id).map_err(io::Error::other)?;
         let bytes = format!(
             concat!(
                 "{{\"schemaVersion\":1,\"kind\":\"everlast-own-native-recipient-status\",",
                 "\"sequence\":{},\"observedUnixMillis\":{},\"monotonicSinceLaunchNanos\":{},\"processId\":{},",
+                "\"processStartedUnixMillis\":{},\"fieldUtf8Bytes\":{},\"fieldSha256\":{},\"totalUtf8Bytes\":{},",
+                "\"signalState\":{},\"signalRunId\":{},",
                 "\"applicationActive\":{},\"frontmostIsSelf\":{},\"ownBundleIdentifier\":{},\"windowKey\":{},\"focusedField\":\"{}\",",
+                "\"accessibilityFocused\":{},",
                 "\"expectedSentenceMatches\":{},\"expectedSentenceOccurrences\":{},\"shortcutCharacterPresent\":{},",
                 "\"running\":{},\"status\":\"{}\",\"publicExpectedSentenceId\":\"fleurs-de-dev-1517\",",
                 "\"scope\":\"own-window-only; not foreign target capture or delivery proof\"}}\n"
@@ -168,11 +201,18 @@ impl ReportDirectory {
             snapshot.observed_unix_millis,
             snapshot.monotonic_since_launch_nanos,
             snapshot.process_id,
+            snapshot.process_started_unix_millis,
+            snapshot.field_utf8_bytes,
+            receipt_hash,
+            snapshot.total_utf8_bytes,
+            signal_state,
+            signal_run_id,
             snapshot.application_active,
             snapshot.frontmost_is_self,
             bundle,
             snapshot.window_key,
             snapshot.focused_field,
+            snapshot.accessibility_focused,
             snapshot.expected_sentence_matches,
             snapshot.expected_sentence_occurrences,
             snapshot.shortcut_character_present,
@@ -204,6 +244,15 @@ fn configured_report(path: Option<PathBuf>) -> io::Result<Option<ReportDirectory
     path.as_deref().map(ReportDirectory::create).transpose()
 }
 
+fn receipt_metrics(text: &str) -> io::Result<(usize, Option<String>)> {
+    if text.len() > MAX_TEXT_BYTES {
+        return Err(io::Error::other("own text exceeds observation bound"));
+    }
+    Ok((
+        text.len(),
+        (!text.is_empty()).then(|| format!("{:x}", Sha256::digest(text.as_bytes()))),
+    ))
+}
 fn text_metrics(text: &str) -> io::Result<(bool, usize, bool)> {
     if text.len() > MAX_TEXT_BYTES {
         return Err(io::Error::other("own text exceeds observation bound"));
@@ -214,13 +263,88 @@ fn text_metrics(text: &str) -> io::Result<(bool, usize, bool)> {
         text.contains('∂'),
     ))
 }
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct Signal {
+    schema_version: u8,
+    contract_id: String,
+    state: String,
+    observed_unix_millis: u128,
+    run_id: String,
+}
+fn decode_signal(bytes: &[u8], now: u128) -> io::Result<(String, String)> {
+    if bytes.len() > 1024 {
+        return Err(io::Error::other("signal too large"));
+    }
+    let signal: Signal = serde_json::from_slice(bytes).map_err(io::Error::other)?;
+    if signal.schema_version != 1
+        || signal.contract_id != "single-press-2026-10-19"
+        || !matches!(
+            signal.state.as_str(),
+            "ready" | "running" | "verifying" | "passed" | "failed"
+        )
+        || signal.run_id.len() != 32
+        || !signal
+            .run_id
+            .bytes()
+            .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+        || now > signal.observed_unix_millis.saturating_add(2000)
+        || signal.observed_unix_millis > now.saturating_add(100)
+    {
+        return Err(io::Error::other("invalid or stale signal"));
+    }
+    Ok((signal.state, signal.run_id))
+}
+fn check_signal_progress(
+    current: &str,
+    run: Option<&str>,
+    next: &str,
+    next_run: &str,
+) -> io::Result<()> {
+    let valid = match current {
+        "preparing" => matches!(next, "ready" | "failed"),
+        "ready" => matches!(next, "ready" | "running" | "failed"),
+        "running" => matches!(next, "running" | "verifying" | "failed"),
+        "verifying" => matches!(next, "verifying" | "passed" | "failed"),
+        "passed" => next == "passed",
+        "failed" => next == "failed",
+        _ => false,
+    };
+    if !valid || run.is_some_and(|run| run != next_run) {
+        return Err(io::Error::other("signal identity or phase regressed"));
+    }
+    Ok(())
+}
+fn missing_signal(current: &str) -> io::Result<()> {
+    if current == "preparing" {
+        Ok(())
+    } else {
+        Err(io::Error::other("active signal disappeared"))
+    }
+}
+fn signal_label(state: &str) -> &'static str {
+    match state {
+        "ready" => {
+            "Bitte jetzt einmal ⌥D drücken. Danach nichts weiter bedienen; ich übernehme den Rest."
+        }
+        "running" => "Test läuft. Wiedergabe und Stopp erfolgen automatisch.",
+        "verifying" => "Aufnahme beendet. Das Ergebnis wird automatisch geprüft.",
+        "passed" => "Test abgeschlossen. Keine weitere Bedienung erforderlich.",
+        "failed" => "Test beendet. Die Diagnose erfolgt automatisch; bitte nichts drücken.",
+        _ => "Test wird vorbereitet. Bitte noch nichts drücken.",
+    }
+}
 struct Reporting {
     app: Retained<NSApplication>,
     window: Retained<NSWindow>,
     multiline: Retained<NSTextView>,
     singleline: Retained<NSTextField>,
     directory: ReportDirectory,
+    instruction: Retained<NSTextField>,
+    signal_state: String,
+    signal_run_id: Option<String>,
     started: Instant,
+    started_unix_millis: u128,
     sequence: u32,
     stopped: bool,
 }
@@ -251,9 +375,20 @@ impl Reporting {
             .map(|editor| editor.string())
             .unwrap_or_else(|| self.singleline.stringValue());
         let bounded = multiline.length() <= MAX_TEXT_BYTES && singleline.length() <= MAX_TEXT_BYTES;
+        let mut receipt = (0, None);
+        let mut total_utf8_bytes = 0;
         let (matches, occurrences, shortcut, status) = if bounded {
             let a = multiline.to_string();
             let b = singleline.to_string();
+            total_utf8_bytes = a.len() + b.len();
+            let chosen_text = match focused {
+                "multiline" => a.as_str(),
+                "singleline" => b.as_str(),
+                _ => "",
+            };
+            if let Ok(metrics) = receipt_metrics(chosen_text) {
+                receipt = metrics;
+            }
             match (text_metrics(&a), text_metrics(&b)) {
                 (Ok(am), Ok(bm)) => {
                     let chosen = match focused {
@@ -275,6 +410,12 @@ impl Reporting {
                 .as_millis(),
             monotonic_since_launch_nanos: self.started.elapsed().as_nanos(),
             process_id: std::process::id(),
+            process_started_unix_millis: self.started_unix_millis,
+            field_utf8_bytes: receipt.0,
+            field_sha256: receipt.1,
+            total_utf8_bytes,
+            signal_state: self.signal_state.clone(),
+            signal_run_id: self.signal_run_id.clone(),
             application_active: self.app.isActive(),
             frontmost_is_self: NSWorkspace::sharedWorkspace()
                 .frontmostApplication()
@@ -286,6 +427,11 @@ impl Reporting {
                 .map(|id| id.to_string()),
             window_key: self.window.isKeyWindow(),
             focused_field: focused,
+            accessibility_focused: match focused {
+                "multiline" => self.multiline.isAccessibilityFocused(),
+                "singleline" => self.singleline.isAccessibilityFocused(),
+                _ => false,
+            },
             expected_sentence_matches: matches,
             expected_sentence_occurrences: occurrences,
             shortcut_character_present: shortcut,
@@ -293,12 +439,61 @@ impl Reporting {
             status,
         })
     }
+    fn refresh_signal(&mut self) -> io::Result<()> {
+        self.directory.verify()?;
+        let path = self.directory.path.join("signal.json");
+        let opened = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+            .open(path);
+        let mut file = match opened {
+            Ok(file) => file,
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {
+                return missing_signal(&self.signal_state);
+            }
+            Err(error) => return Err(error),
+        };
+        let meta = file.metadata()?;
+        if !meta.is_file()
+            || meta.nlink() != 1
+            || meta.mode() & 0o777 != 0o600
+            || meta.uid() != fs::metadata(&self.directory.path)?.uid()
+            || meta.len() > 1024
+        {
+            return Err(io::Error::other("invalid private signal file"));
+        }
+        let mut bytes = Vec::new();
+        Read::by_ref(&mut file).take(1025).read_to_end(&mut bytes)?;
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map_err(io::Error::other)?
+            .as_millis();
+        let (state, run_id) = decode_signal(&bytes, now)?;
+        check_signal_progress(
+            &self.signal_state,
+            self.signal_run_id.as_deref(),
+            &state,
+            &run_id,
+        )?;
+        self.signal_run_id = Some(run_id);
+        if self.signal_state != state {
+            self.instruction
+                .setStringValue(&NSString::from_str(signal_label(&state)));
+            self.signal_state = state;
+        }
+        Ok(())
+    }
     fn publish(&mut self, stopping: bool) -> io::Result<bool> {
         if self.stopped && !stopping {
             return Ok(false);
         }
         if self.sequence > MAX_REPORTS {
             return Ok(false);
+        }
+        if let Err(error) = self.refresh_signal() {
+            self.instruction
+                .setStringValue(&NSString::from_str(signal_label("failed")));
+            return Err(error);
         }
         self.sequence += 1;
         let status = if stopping {
@@ -342,13 +537,23 @@ impl Reporter {
     }
 }
 
+struct DelegateState {
+    reporter: Option<Retained<Reporter>>,
+    activation: Option<Retained<ActivateOwnField>>,
+}
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[ivars = RefCell<Option<Retained<Reporter>>>]
+    #[ivars = RefCell<DelegateState>]
     struct Delegate;
     unsafe impl NSObjectProtocol for Delegate {}
     unsafe impl NSApplicationDelegate for Delegate {
+        #[unsafe(method(applicationDidFinishLaunching:))]
+        fn did_finish_launching(&self, _: &NSNotification) {
+            if let Some(activation) = self.ivars().borrow().activation.as_ref() {
+                activation.prepare_own_field();
+            }
+        }
         #[unsafe(method(applicationShouldTerminateAfterLastWindowClosed:))]
         fn close_last(&self, _app: &NSApplication) -> bool {
             true
@@ -356,7 +561,7 @@ define_class!(
         #[unsafe(method(applicationWillTerminate:))]
         fn will_terminate(&self, _: &NSNotification) {
             let result = catch_unwind(AssertUnwindSafe(|| {
-                if let Some(reporter) = self.ivars().borrow().as_ref() { reporter.stop(); }
+                if let Some(reporter) = self.ivars().borrow().reporter.as_ref() { reporter.stop(); }
             }));
             if result.is_err() { eprintln!("Own-recipient final observation failed"); }
         }
@@ -374,34 +579,72 @@ define_class!(
     struct ActivateOwnField;
     unsafe impl NSObjectProtocol for ActivateOwnField {}
     impl ActivateOwnField {
-        #[unsafe(method(activateTestField:))]
-        fn activate_test_field(&self, _: &NSObject) {
-            // Only an explicit action activates our own application and controls.
-            // The observation timer never invokes this selector.
-            let result = catch_unwind(AssertUnwindSafe(|| {
-                let own = self.ivars();
-                own.app.activate();
-                own.window.makeKeyAndOrderFront(None);
-                own.window.makeFirstResponder(Some(&own.text));
-            }));
-            if result.is_err() { eprintln!("Own test field activation failed"); }
-        }
+
     }
 );
+impl ActivateOwnField {
+    fn prepare_own_field(&self) {
+        // Ordinary launch of this owned fixture activates only its own window.
+        // Never repeated by the passive status timer or during dictation.
+        let result = catch_unwind(AssertUnwindSafe(|| {
+            let own = self.ivars();
+            own.window.setInitialFirstResponder(Some(&own.text));
+            own.app.activate();
+            own.window.makeKeyAndOrderFront(None);
+            own.window.makeFirstResponder(Some(&own.text));
+        }));
+        if result.is_err() {
+            eprintln!("Own test field activation failed");
+        }
+    }
+}
 fn label(main: MainThreadMarker, text: &str, frame: NSRect) -> Retained<NSTextField> {
     let label = NSTextField::labelWithString(&NSString::from_str(text), main);
     label.setFrame(frame);
     label
 }
+fn own_process_started_unix_millis() -> io::Result<u128> {
+    let mut info = std::mem::MaybeUninit::<libc::proc_bsdinfo>::uninit();
+    let size =
+        i32::try_from(std::mem::size_of::<libc::proc_bsdinfo>()).map_err(io::Error::other)?;
+    let pid = i32::try_from(std::process::id()).map_err(io::Error::other)?;
+    // SAFETY: own PID only, writable aligned SDK structure, exact size checked
+    // before reading initialized fields. This is kernel identity, not launch time.
+    let received = unsafe {
+        libc::proc_pidinfo(
+            pid,
+            libc::PROC_PIDTBSDINFO,
+            0,
+            info.as_mut_ptr().cast(),
+            size,
+        )
+    };
+    if received != size {
+        return Err(io::Error::other("own process identity unavailable"));
+    }
+    // SAFETY: proc_pidinfo returned the full initialized SDK structure.
+    let info = unsafe { info.assume_init() };
+    if info.pbi_pid != std::process::id()
+        || info.pbi_start_tvsec == 0
+        || info.pbi_start_tvusec >= 1_000_000
+    {
+        return Err(io::Error::other("own process identity invalid"));
+    }
+    Ok(u128::from(info.pbi_start_tvsec) * 1000 + u128::from(info.pbi_start_tvusec) / 1000)
+}
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let started = Instant::now();
+    let started_unix_millis = own_process_started_unix_millis()?;
     let report_path = std::env::var_os("EVERLAST_RECIPIENT_REPORT_DIR").map(PathBuf::from);
     let directory = configured_report(report_path)?;
     let main = MainThreadMarker::new().ok_or("main thread required")?;
     let app = NSApplication::sharedApplication(main);
     app.setActivationPolicy(NSApplicationActivationPolicy::Regular);
     // SAFETY: NSObject's designated initializer on an allocated main-thread subclass.
-    let allocated = Delegate::alloc(main).set_ivars(RefCell::new(None));
+    let allocated = Delegate::alloc(main).set_ivars(RefCell::new(DelegateState {
+        reporter: None,
+        activation: None,
+    }));
     let delegate: Retained<Delegate> = unsafe { msg_send![super(allocated), init] };
     app.setDelegate(Some(objc2::runtime::ProtocolObject::from_ref(&*delegate)));
     let menu = NSMenu::new(main);
@@ -483,11 +726,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         "Isoliertes lokales Testziel – keine Speicherung oder Übertragung.",
         NSRect::new(NSPoint::new(20.0, 365.0), NSSize::new(600.0, 22.0)),
     ));
-    body.addSubview(&label(
+    let instruction = label(
         main,
-        "Eigenes Testfeld aktivieren, dann Test auslösen.",
-        NSRect::new(NSPoint::new(20.0, 338.0), NSSize::new(400.0, 22.0)),
-    ));
+        signal_label("preparing"),
+        NSRect::new(NSPoint::new(20.0, 328.0), NSSize::new(600.0, 38.0)),
+    );
+    instruction.setLineBreakMode(objc2_app_kit::NSLineBreakMode::ByWordWrapping);
+    instruction.setMaximumNumberOfLines(2);
+    body.addSubview(&instruction);
     body.addSubview(&label(
         main,
         "Testfeld (mehrzeilig)",
@@ -529,19 +775,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     });
     // SAFETY: initialize the declared own main-thread NSObject target.
     let activation: Retained<ActivateOwnField> = unsafe { msg_send![super(allocated), init] };
-    let activate_button = NSButton::initWithFrame(
-        main.alloc(),
-        NSRect::new(NSPoint::new(435.0, 334.0), NSSize::new(185.0, 28.0)),
-    );
-    activate_button.setTitle(&NSString::from_str("Testfeld aktivieren"));
-    // SAFETY: retained target outlives the run loop, and its selector has the
-    // standard single-object action signature. It only touches owned AppKit objects.
-    unsafe {
-        activate_button.setTarget(Some(&activation));
-        activate_button.setAction(Some(sel!(activateTestField:)));
-    }
-    body.addSubview(&activate_button);
+    delegate.ivars().borrow_mut().activation = Some(activation);
     window.setContentView(Some(&body));
+    window.setInitialFirstResponder(Some(&text));
     window.center();
     window.makeFirstResponder(Some(&text));
     let timer = if let Some(directory) = directory {
@@ -551,14 +787,18 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             multiline: text.clone(),
             singleline: line.clone(),
             directory,
+            instruction,
+            signal_state: "preparing".into(),
+            signal_run_id: None,
             started,
+            started_unix_millis,
             sequence: 0,
             stopped: false,
         };
         // SAFETY: initialize the declared NSObject subclass on its main thread.
         let allocated = Reporter::alloc(main).set_ivars(RefCell::new(state));
         let reporter: Retained<Reporter> = unsafe { msg_send![super(allocated), init] };
-        *delegate.ivars().borrow_mut() = Some(reporter.clone());
+        delegate.ivars().borrow_mut().reporter = Some(reporter.clone());
         // SAFETY: Reporter implements tick: with exactly NSTimer's public target/action signature;
         // the timer retains its target and is scheduled exclusively on the main run loop.
         let timer = unsafe {
@@ -583,7 +823,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(timer) = timer {
         timer.invalidate();
     }
-    if let Some(reporter) = delegate.ivars().borrow().as_ref() {
+    if let Some(reporter) = delegate.ivars().borrow().reporter.as_ref() {
         reporter.stop();
     }
     // Keep delegate and every native owner alive until the ordinary run loop ends.
@@ -624,11 +864,20 @@ mod tests {
             observed_unix_millis: 1_800_000_000_001,
             monotonic_since_launch_nanos: 31,
             process_id: 123,
+            process_started_unix_millis: 1_800_000_000_000,
+            field_utf8_bytes: 3,
+            field_sha256: Some(
+                "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad".into(),
+            ),
+            total_utf8_bytes: 3,
+            signal_state: "preparing".into(),
+            signal_run_id: None,
             application_active: true,
             frontmost_is_self: false,
             own_bundle_identifier: Some("org.example.own-test-recipient".into()),
             window_key: true,
             focused_field: "multiline",
+            accessibility_focused: true,
             expected_sentence_matches: true,
             expected_sentence_occurrences: 1,
             shortcut_character_present: false,
@@ -704,6 +953,69 @@ mod tests {
         assert_eq!(text_metrics("∂")?, (false, 0, true));
         assert_eq!(text_metrics("different test input")?, (false, 0, false));
         assert!(text_metrics(&"a".repeat(MAX_TEXT_BYTES + 1)).is_err());
+        Ok(())
+    }
+    #[test]
+    fn receipt_metrics_bind_actual_utf8_content_and_reject_duplicates() -> io::Result<()> {
+        assert_eq!(receipt_metrics("")?, (0, None));
+        assert_eq!(
+            receipt_metrics("abc")?,
+            (
+                3,
+                Some("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad".into())
+            )
+        );
+        assert_ne!(receipt_metrics("abcabc")?, receipt_metrics("abc")?);
+        assert_eq!(receipt_metrics("ä")?.0, 2);
+        assert!(receipt_metrics(&"a".repeat(MAX_TEXT_BYTES + 1)).is_err());
+        Ok(())
+    }
+    #[test]
+    fn signal_is_fixed_fresh_and_never_an_arbitrary_instruction() -> io::Result<()> {
+        let ready = br#"{"schemaVersion":1,"contractId":"single-press-2026-10-19","state":"ready","observedUnixMillis":10000,"runId":"0123456789abcdef0123456789abcdef"}"#;
+        assert_eq!(decode_signal(ready, 10000)?.0, "ready");
+        assert!(decode_signal(ready, 12001).is_err());
+        assert!(decode_signal(ready, 9899).is_err());
+        assert!(decode_signal(br#"{"schemaVersion":1,"contractId":"single-press-2026-10-19","state":"click","observedUnixMillis":10000,"runId":"0123456789abcdef0123456789abcdef"}"#, 10000).is_err());
+        assert!(decode_signal(br#"{"schemaVersion":1,"contractId":"single-press-2026-10-19","state":"ready","observedUnixMillis":10000,"runId":"0123456789abcdef0123456789abcdef","text":"press again"}"#, 10000).is_err());
+        Ok(())
+    }
+    #[test]
+    fn signal_progress_never_rearms_and_missing_signal_revokes_readiness() -> io::Result<()> {
+        let run = "0123456789abcdef0123456789abcdef";
+        check_signal_progress("preparing", None, "ready", run)?;
+        check_signal_progress("ready", Some(run), "ready", run)?;
+        check_signal_progress("ready", Some(run), "running", run)?;
+        check_signal_progress("running", Some(run), "verifying", run)?;
+        check_signal_progress("verifying", Some(run), "passed", run)?;
+        for state in ["running", "verifying", "passed", "failed"] {
+            assert!(check_signal_progress(state, Some(run), "ready", run).is_err());
+        }
+        assert!(
+            check_signal_progress(
+                "ready",
+                Some(run),
+                "running",
+                "abcdef0123456789abcdef0123456789"
+            )
+            .is_err()
+        );
+        assert!(missing_signal("ready").is_err());
+        assert!(missing_signal("preparing").is_ok());
+        Ok(())
+    }
+    #[test]
+    fn own_kernel_process_identity_is_stable_across_observations() -> io::Result<()> {
+        let first = own_process_started_unix_millis()?;
+        std::thread::sleep(std::time::Duration::from_millis(2));
+        assert_eq!(own_process_started_unix_millis()?, first);
+        assert!(
+            first
+                <= SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .map_err(io::Error::other)?
+                    .as_millis()
+        );
         Ok(())
     }
     #[test]

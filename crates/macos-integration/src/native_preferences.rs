@@ -670,6 +670,10 @@ impl NativePreferences {
         error.setFrame(NSRect::new(NSPoint::new(24., 8.), NSSize::new(552., 36.)));
         root.addSubview(&error);
         window.setContentView(Some(&root));
+        // Permission panes can contain no focusable form controls. Give the
+        // native tab view an initial keyboard target without overriding the
+        // user's system-wide Keyboard navigation setting.
+        window.setInitialFirstResponder(Some(&tabs));
         window.center();
         core.controls.replace(Some(Controls {
             tabs,

@@ -19,6 +19,7 @@ use tauri::{
 };
 #[cfg(feature = "measurement")]
 mod native_start_export;
+mod run_observer;
 #[cfg(feature = "test-control")]
 mod test_control;
 
@@ -106,6 +107,7 @@ struct NativeUi {
     preferences_revision: Option<u64>,
     settings_request: u32,
     wakeup: Option<NativeWakeup>,
+    run_observer: Option<run_observer::Observer>,
     #[cfg(feature = "test-control")]
     test_control: Option<test_control::Control>,
     desktop: Desktop,
@@ -177,6 +179,16 @@ impl NativeUi {
             }))?
         };
         window.show()?;
+        let run_observer =
+            match app.path().app_data_dir().ok().and_then(|root| {
+                run_observer::Observer::from_env(native_desktop.clone(), root).ok()
+            }) {
+                Some(observer) => Some(observer),
+                None => {
+                    eprintln!("Read-only run observer unavailable");
+                    None
+                }
+            };
         Ok(Self {
             header,
             header_revision,
@@ -186,6 +198,7 @@ impl NativeUi {
             preferences_revision: None,
             settings_request: 0,
             wakeup: Some(wakeup),
+            run_observer,
             #[cfg(feature = "test-control")]
             test_control,
             desktop: native_desktop,
@@ -250,6 +263,11 @@ impl NativeUi {
     }
     fn detach(&mut self) {
         // Tauri exits the process directly; clean up native owners on Exit.
+        if let Some(mut observer) = self.run_observer.take()
+            && observer.close().is_err()
+        {
+            eprintln!("Read-only run observer failed");
+        }
         #[cfg(feature = "test-control")]
         if let Some(mut control) = self.test_control.take() {
             control.close(&self.desktop);
