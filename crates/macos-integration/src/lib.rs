@@ -25,3 +25,6 @@ pub mod ui_services;
 pub mod feedback;
 
 pub mod thread_observation;
+
+pub mod native_preferences;
+pub mod native_workspace;

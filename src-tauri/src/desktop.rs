@@ -31,6 +31,8 @@ use tokio::sync::{Semaphore, oneshot};
 #[path = "desktop/start_observer.rs"]
 mod start_observer;
 
+mod native_ui;
+
 pub const SNAPSHOT_EVENT: &str = "dictation:snapshot";
 struct Shared {
     view: view::Snapshot,
@@ -774,37 +776,37 @@ impl Desktop {
     }
     pub async fn refresh_devices(&self) -> Result<(), String> {
         let _permit = self.ui_permit()?;
-        let receive = {
-            let mut admission = self
-                .0
-                .admission
-                .lock()
-                .map_err(|_| "Admission lock failed")?;
-            if self.0.closing.load(Ordering::Acquire) {
-                return Err("Anwendung wird beendet".into());
-            }
-            if admission.refreshing_devices {
-                return Err("Mikrofonliste wird bereits aktualisiert".into());
-            }
-            admission.refreshing_devices = true;
-            let reservation = Reservation {
-                owner: Arc::clone(&self.0),
-                kind: ReservationKind::Devices,
-            };
-            drop(admission);
-            let (reply, receive) = oneshot::channel();
-            self.0
-                .requests
-                .try_send(SettingsCommand::Devices {
-                    reply,
-                    _reservation: reservation,
-                })
-                .map_err(|_| "Mikrofonliste konnte nicht angefragt werden".to_owned())?;
-            receive
-        };
-        receive
+        self.enqueue_devices()?
             .await
             .map_err(|_| "Mikrofonanfrage beendet".to_owned())?
+    }
+    fn enqueue_devices(&self) -> Result<oneshot::Receiver<Result<(), String>>, String> {
+        let mut admission = self
+            .0
+            .admission
+            .lock()
+            .map_err(|_| "Admission lock failed")?;
+        if self.0.closing.load(Ordering::Acquire) {
+            return Err("Anwendung wird beendet".into());
+        }
+        if admission.refreshing_devices {
+            return Err("Mikrofonliste wird bereits aktualisiert".into());
+        }
+        admission.refreshing_devices = true;
+        let reservation = Reservation {
+            owner: Arc::clone(&self.0),
+            kind: ReservationKind::Devices,
+        };
+        drop(admission);
+        let (reply, receive) = oneshot::channel();
+        self.0
+            .requests
+            .try_send(SettingsCommand::Devices {
+                reply,
+                _reservation: reservation,
+            })
+            .map_err(|_| "Mikrofonliste konnte nicht angefragt werden".to_owned())?;
+        Ok(receive)
     }
     fn refresh_device_inventory(&self) -> Result<(), String> {
         let result = crate::devices::input_devices();
@@ -1514,7 +1516,7 @@ impl Drop for Finish {
 mod tests {
     use super::*;
     use crate::{controller::SessionSnapshot, model::REFERENCE, runtime::RuntimeSnapshot};
-    fn unstarted_desktop() -> Desktop {
+    pub(super) fn unstarted_desktop() -> Desktop {
         let (requests, _) = bounded(8);
         Desktop(Arc::new(Inner {
             shared: Mutex::new(Shared {

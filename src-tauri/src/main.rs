@@ -7,11 +7,13 @@ use everlast_dictation::{
 use macos_integration::{
     glass_header::GlassHeader,
     keyboard::LayoutObserver,
+    native_preferences::NativePreferences,
+    native_workspace::NativeWorkspace,
     power::{PowerEvent, PowerObserver},
     termination::TerminationHook,
 };
 use tauri::{
-    Emitter, Manager,
+    Emitter, Listener, Manager,
     menu::{Menu, MenuItem, PredefinedMenuItem, Submenu},
     tray::TrayIconBuilder,
 };
@@ -45,9 +47,41 @@ fn refresh_hotkey_labels(desktop: &Desktop, app: &tauri::AppHandle) -> Result<()
     }
     Ok(())
 }
+// Native views must wake for backend updates without a renderer subscription.
+// The listener only queues a wake; it never reads Desktop while emit holds its lock.
+struct NativeWakeup {
+    app: tauri::AppHandle,
+    event: tauri::EventId,
+}
+impl NativeWakeup {
+    fn new(app: &tauri::AppHandle) -> Self {
+        let wake = app.clone();
+        let event = app.listen(everlast_dictation::desktop::SNAPSHOT_EVENT, move |_| {
+            if let Err(error) = wake.run_on_main_thread(|| {}) {
+                eprintln!("Native UI wake failed: {error}");
+            }
+        });
+        Self {
+            app: app.clone(),
+            event,
+        }
+    }
+}
+impl Drop for NativeWakeup {
+    fn drop(&mut self) {
+        self.app.unlisten(self.event);
+    }
+}
+
 struct NativeUi {
     header: GlassHeader<tauri::WebviewWindow>,
     header_revision: Option<u64>,
+    workspace: NativeWorkspace<tauri::WebviewWindow>,
+    workspace_revision: Option<u64>,
+    preferences: NativePreferences,
+    preferences_revision: Option<u64>,
+    settings_request: u32,
+    wakeup: Option<NativeWakeup>,
     desktop: Desktop,
     tray: NativeTray,
     feedback: Feedback,
@@ -61,12 +95,20 @@ impl NativeUi {
         let window = app
             .get_webview_window("main")
             .ok_or("The main dictation window is unavailable")?;
-        // Install native controls above Wry's unchanged, readable content root.
-        // The header owns this window handle until its explicit exit cleanup.
+        // AppKit owns the visible content and controls. The retained Wry root
+        // remains hidden until explicit native cleanup restores its ownership.
         let native_desktop = app.state::<Desktop>().inner().clone();
         let actions = native_desktop.clone();
         let mut header = GlassHeader::attach(window.clone(), move |action| {
             actions.native_action(action);
+        })?;
+        let workspace_actions = native_desktop.clone();
+        let workspace = NativeWorkspace::attach(window.clone(), move |action| {
+            workspace_actions.native_workspace_action(action);
+        })?;
+        let preference_actions = native_desktop.clone();
+        let preferences = NativePreferences::new(move |action| {
+            preference_actions.native_preferences_action(action);
         })?;
         let mut header_revision = None;
         let native_tray = app.state::<NativeTray>().inner().clone();
@@ -98,10 +140,17 @@ impl NativeUi {
         })?;
         // Subscribe before the initial read, closing the startup notification gap.
         refresh_hotkey_labels(&native_desktop, app)?;
+        let wakeup = NativeWakeup::new(app);
         window.show()?;
         Ok(Self {
             header,
             header_revision,
+            workspace,
+            workspace_revision: None,
+            preferences,
+            preferences_revision: None,
+            settings_request: 0,
+            wakeup: Some(wakeup),
             desktop: native_desktop,
             tray: native_tray,
             feedback,
@@ -112,6 +161,31 @@ impl NativeUi {
         })
     }
     fn update(&mut self) -> Result<(), String> {
+        if let Some((revision, state)) = self
+            .desktop
+            .native_workspace_after(self.workspace_revision)?
+        {
+            self.workspace
+                .update(state)
+                .map_err(|error| error.to_string())?;
+            self.workspace_revision = Some(revision);
+        }
+        if let Some((revision, state)) = self
+            .desktop
+            .native_preferences_after(self.preferences_revision)?
+        {
+            self.preferences
+                .update(state)
+                .map_err(|error| error.to_string())?;
+            self.preferences_revision = Some(revision);
+        }
+        let (request, recovering) = self.desktop.native_settings_request()?;
+        if request != self.settings_request {
+            self.settings_request = request;
+            if !recovering {
+                self.preferences.show().map_err(|error| error.to_string())?;
+            }
+        }
         if let Some((revision, state)) = self.desktop.native_header_after(self.header_revision)? {
             self.header
                 .update(state)
@@ -135,11 +209,26 @@ impl NativeUi {
     }
     fn detach(&mut self) {
         // Tauri exits the process directly; clean up native owners on Exit.
+        drop(self.wakeup.take());
+        if let Err(error) = self.preferences.detach() {
+            eprintln!("Native preferences cleanup failed: {error}");
+        }
+        if let Err(error) = self.workspace.detach() {
+            eprintln!("Native workspace cleanup failed: {error}");
+        }
         self.layout.remove();
         self.power.remove();
         if let Err(error) = self.header.detach() {
             eprintln!("Native window cleanup failed: {error}");
         }
+    }
+}
+
+fn request_native_settings(app: &tauri::AppHandle) {
+    if let Some(desktop) = app.try_state::<Desktop>()
+        && let Err(error) = desktop.request_settings()
+    {
+        eprintln!("Native preferences request failed: {error}");
     }
 }
 
@@ -156,12 +245,21 @@ fn application_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
         true,
         Some("CmdOrCtrl+Q"),
     )?;
+    let settings = MenuItem::with_id(
+        app,
+        "application-settings",
+        "Einstellungen …",
+        true,
+        Some("CmdOrCtrl+,"),
+    )?;
     let application = Submenu::with_items(
         app,
         "Everlast Dictation",
         true,
         &[
             &PredefinedMenuItem::about(app, Some("Über Everlast Dictation"), None)?,
+            &PredefinedMenuItem::separator(app)?,
+            &settings,
             &PredefinedMenuItem::separator(app)?,
             &PredefinedMenuItem::services(app, None)?,
             &PredefinedMenuItem::separator(app)?,
@@ -190,10 +288,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let native_start_enabled = native_start_target.is_some();
     let app = tauri::Builder::default()
         .menu(application_menu)
-        .on_menu_event(|app, event| {
-            if event.id().as_ref() == "application-quit" {
-                app.exit(0);
-            }
+        .on_menu_event(|app, event| match event.id().as_ref() {
+            "application-quit" => app.exit(0),
+            "application-settings" => request_native_settings(app),
+            _ => {}
         })
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
@@ -227,7 +325,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let quit = MenuItem::with_id(app, "quit", "Beenden", true, None::<&str>)?;
             let status =
                 MenuItem::with_id(app, "status", "Status wird geladen", false, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&status, &open, &quit])?;
+            let settings =
+                MenuItem::with_id(app, "settings", "Einstellungen …", true, None::<&str>)?;
+            let menu = Menu::with_items(app, &[&status, &open, &settings, &quit])?;
             let mut tray = TrayIconBuilder::new()
                 .tooltip("Everlast Dictation")
                 .menu(&menu)
@@ -240,6 +340,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                             eprintln!("Window open failed: {error}");
                         }
                     }
+                    "settings" => request_native_settings(app),
                     "quit" => app.exit(0),
                     _ => {}
                 });
