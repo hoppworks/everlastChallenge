@@ -49,6 +49,11 @@ test("development plan has no recipient or installed-app precondition", () => {
   const full = buildPlan("full");
   assert.ok(full.some((step) => step.id === "native-offscreen-contracts"));
   assert.ok(
+    full
+      .find((step) => step.id === "native-offscreen-contracts")
+      .args.includes("single_press_watchdog"),
+  );
+  assert.ok(
     full.every(
       (step) => !step.args.includes("native_preferences_close_contract"),
     ),

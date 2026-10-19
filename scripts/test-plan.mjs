@@ -76,6 +76,8 @@ export function buildPlan(profile = "regression") {
           "power_notification_contract",
           "--example",
           "native_text_recipient",
+          "--example",
+          "single_press_watchdog",
           "--locked",
         ],
         requireRustTests: true,
