@@ -129,7 +129,16 @@ function fresh(value, now) {
     now - value.observedUnixMillis <= 2000
   );
 }
-function validatePair(pair, frozen, now, previous) {
+function recipientFocused(r) {
+  return (
+    r.applicationActive &&
+    r.frontmostIsSelf &&
+    r.windowKey &&
+    r.accessibilityFocused &&
+    r.focusedField === "multiline"
+  );
+}
+function validatePair(pair, frozen, now, previous, waiting = false) {
   const p = pair?.product;
   const r = pair?.recipient;
   if (!fresh(p, now) || !fresh(r, now)) reject("stale-observation");
@@ -197,13 +206,7 @@ function validatePair(pair, frozen, now, previous) {
     reject("invalid-recipient-observation");
   if (!p.setupReady || !p.microphoneGranted || !p.accessibilityGranted)
     reject("product-not-ready");
-  if (
-    !r.applicationActive ||
-    !r.frontmostIsSelf ||
-    !r.windowKey ||
-    !r.accessibilityFocused ||
-    r.focusedField !== "multiline"
-  )
+  if (!(waiting && p.phase === "Idle") && !recipientFocused(r))
     reject("recipient-focus-lost");
   if (r.shortcutCharacterPresent) reject("shortcut-character-present");
   if (previous) {
@@ -323,6 +326,7 @@ export async function runSinglePress(options) {
       watchdog?.preflight,
       watchdog?.arm,
       watchdog?.disarm,
+      watchdog?.abort,
     ].every((value) => typeof value === "function") ||
     !integer(pollMillis) ||
     pollMillis < 10 ||
@@ -376,8 +380,14 @@ export async function runSinglePress(options) {
       state,
       observedUnixMillis: clock.now(),
     });
-  const read = async () => {
-    previous = validatePair(await observe(), frozen, clock.now(), previous);
+  const read = async (waiting = false) => {
+    previous = validatePair(
+      await observe(),
+      frozen,
+      clock.now(),
+      previous,
+      waiting,
+    );
     return previous;
   };
   const pause = async () => clock.sleep(pollMillis);
@@ -422,9 +432,11 @@ export async function runSinglePress(options) {
     let promptAcknowledged = false;
     while (startedAt === undefined) {
       await pause();
-      const { product: p, recipient: r } = await read();
-      await send("ready"); // Fresh heartbeat; never a new request or consumed budget.
-      if (r.signalState === "ready" && r.signalRunId === frozen.runId)
+      const { product: p, recipient: r } = await read(true);
+      const ready = recipientFocused(r);
+      await send(ready ? "ready" : "preparing"); // Same consumed gesture and deadline.
+      if (!ready) promptAcknowledged = false;
+      if (ready && r.signalState === "ready" && r.signalRunId === frozen.runId)
         promptAcknowledged = true;
       if (r.totalUtf8Bytes !== 0) reject("recipient-changed-before-start");
       if (clock.monotonic() - waitingAt > 120000) reject("start-timeout");
@@ -565,22 +577,45 @@ export async function runSinglePress(options) {
     } catch {
       failed ??= "cleanup-failed";
     }
-    // An unconfirmed cleanup must retain the independent safety deadline.
-    if (armed && cleanupConfirmed) {
+    // Publish the verdict before releasing the independent guard. A failed signal
+    // after the prompt must also revoke the product's ability to accept a late key.
+    try {
+      await send(failed ? "failed" : "passed");
+    } catch {
+      failed ??= "signal-failed";
+    }
+    if (armed && failed && report.gestureConsumed) {
+      try {
+        if ((await watchdog.abort(frozen))?.clean !== true)
+          failed ??= "watchdog-cleanup-unconfirmed";
+      } catch {
+        failed ??= "watchdog-cleanup-failed";
+      }
+    } else if (armed && cleanupConfirmed) {
       try {
         await watchdog.disarm(frozen);
       } catch {
         failed ??= "watchdog-cleanup-failed";
+        if (report.gestureConsumed) {
+          try {
+            await watchdog.abort(frozen);
+          } catch {
+            /* Guard remains armed. */
+          }
+        }
+      }
+    }
+    // A disarm failure can revise an already published success. Revoke the
+    // visible success as well; never leave a failed run labelled passed.
+    if (failed) {
+      try {
+        await send("failed");
+      } catch {
+        /* The report retains the failure. */
       }
     }
     report.state = failed ? "failed" : "passed";
     report.failure = failed;
-    try {
-      await send(report.state);
-    } catch {
-      report.state = "failed";
-      report.failure ??= "signal-failed";
-    }
     await emit();
   }
   return report;
@@ -698,9 +733,14 @@ export function createRecipientSignalAdapter(directory, runId) {
       value.contractId !== CONTRACT_ID ||
       value.runId !== runId ||
       !positive(value.observedUnixMillis) ||
-      !["ready", "running", "verifying", "passed", "failed"].includes(
-        value.state,
-      )
+      ![
+        "preparing",
+        "ready",
+        "running",
+        "verifying",
+        "passed",
+        "failed",
+      ].includes(value.state)
     )
       reject("invalid-signal");
     write({

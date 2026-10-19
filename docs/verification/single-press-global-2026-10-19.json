@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "kind": "normal-bundle-global-five-minute-acceptance",
+  "observedAtUtc": "2026-10-19T18:44:31.847292+00:00",
+  "runId": "36cfd551fa1342cdbad05fb4432d2d55",
+  "status": "passed-with-documented-recognition-errors",
+  "normalBundleSha256": "3310f2a3ec37d44a767a10e93958f491e7aeb92aacc728a0c428a20955579081",
+  "modelSha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+  "fixtureSha256": "da19d0d22bf6f26f1cbdba612da4b2af73372524ed2e88d1b1a34b76b8439691",
+  "observations": {
+    "ready": {
+      "observedUnixMillis": 1792434968894
+    },
+    "start": {
+      "observedUnixMillis": 1792434984962,
+      "sessionId": 1,
+      "elapsedMillis": 103
+    },
+    "warning": {
+      "observedUnixMillis": 1792435255087,
+      "elapsedMillis": 270274
+    },
+    "stop": {
+      "observedUnixMillis": 1792435285065,
+      "elapsedSinceStartMillis": 300194.96300000005,
+      "maximumReached": true
+    },
+    "receipt": {
+      "observedUnixMillis": 1792435311175,
+      "transcriptUtf8Bytes": 3300,
+      "transcriptSha256": "908102af2942bf01a94ed535f3b17cbf17c3b8851b40fa8043b2be7ca0c804de"
+    }
+  },
+  "globalStartObserved": true,
+  "physicalStartsInThisRun": 1,
+  "agentStartedMicrophone": false,
+  "automaticMaximumStopObserved": true,
+  "exactRecipientEquality": true,
+  "clipboardOutcome": "sent",
+  "transcriptUtf8Bytes": 3300,
+  "transcriptSha256": "908102af2942bf01a94ed535f3b17cbf17c3b8851b40fa8043b2be7ca0c804de",
+  "shortcutCharacterPresent": false,
+  "quality": {
+    "referenceWords": 425,
+    "hypothesisWords": 418,
+    "edits": 28,
+    "wer": 0.06588235294117648,
+    "requiredMaximumWer": 0.1,
+    "meetsWerThreshold": true,
+    "fullReferenceSentences": 25,
+    "observedFullSentences": 20,
+    "observedShortenedSentences": 5,
+    "observedFinalPartialSentence": 1,
+    "perfectRecognition": false,
+    "sourceFreeEvaluatorReport": "artifacts/single-press-focused-retry-v1/quality.json",
+    "warning": "unwantedText=false for nonempty reference is not evidence that no extra text occurred."
+  },
+  "independentReview": {
+    "reviewer": "r8_artifact_review",
+    "scope": "Actual run/config/prep/auth/ledger/normal/fixture/helper identity and independent in-memory frozen Unicode13 WER calculation",
+    "approved": true
+  },
+  "evidenceSha256": {
+    "artifacts/single-press-focused-retry-v1/result/report.json": "8c00628297991b60d6c4b71a4212358a900c5fe7eb1e5cd0564160c9ce5676d1",
+    "artifacts/single-press-focused-retry-v1/watchdog/report/snapshot.json": "fe4835a13d76c138564250f64eed86d60026a57486d28375890615b80b2867b3",
+    "artifacts/single-press-focused-retry-v1/config.json": "d8691e8a5fe65a5d500c2cde1f5d4337f518e8af80534b98dc60c356e46c66f9",
+    "artifacts/single-press-focused-retry-v1/preparation-proof.json": "82c6a56d58191e27d1ca102768a833252f0c6d21c56929bfa2d8ddd1699c8414",
+    "artifacts/single-press-focused-retry-v1/continuation-authorization.json": "0e083db32bfd5afc138244569dfe4f47aa9d1360646c13971b87feba136c0d48",
+    "artifacts/single-press-focused-retry-v1/run.mjs": "22adf3680a5d06f954288831ce117fccf30c138a878a75dc3183dc4df0fc6f98",
+    "artifacts/single-press-focused-retry-v1/quality.json": "c5141fc2d680f0ed00ce4e59bb3a1c70a0e46cec3fdacf6fdd2c779ce9a036b7",
+    "artifacts/single-press-focused-retry-v1/product-final.json": "557f00fee6c7218b5fa73f98dc22d7656598480b6cf9718fd943eb635aabbe36",
+    "artifacts/single-press-focused-retry-v1/recipient-final.json": "92a04f857c7c92068527a81beb8de8c8c948e0c29a6f7b59e9439ce9e0b16b82",
+    "artifacts/single-press-2026-10-19-focused-retry-v1/gesture-consumed.json": "a5eab1b462109e3c876eafa572cf700f8d781dadad7ce326eb26173c65a81065"
+  },
+  "limits": [
+    "Observation times are polling bounds; no invented exact CPAL timestamp.",
+    "Single repeated public sentence via speakers and system-default microphone; no new general corpus qualification.",
+    "The runtime runner reports transport only (qualityQualified=false); the separate bound quality evaluation establishes the 10% threshold result.",
+    "Existing two failed pre-start attempts and their ledgers remain preserved.",
+    "Visible UI tab/focus verification and personal R09 review remain separate."
+  ]
+}

@@ -31,7 +31,7 @@ test("gesture consumption survives a new ledger adapter and different run direct
   }
 });
 
-function fixture(overrides = {}) {
+function fixture(overrides = {}, startAt = 2000) {
   let elapsed = 0;
   let signalState = null;
   const runId = "a".repeat(32);
@@ -66,6 +66,10 @@ function fixture(overrides = {}) {
       preflight: async () => true,
       arm: async () => events.push("arm"),
       disarm: async () => events.push("disarm"),
+      abort: async () => {
+        events.push("abort");
+        return { clean: true };
+      },
     },
     signal: async ({ state }) => {
       signalState = state;
@@ -81,8 +85,8 @@ function fixture(overrides = {}) {
     },
     writeReport: async () => {},
     observe: async () => {
-      const recording = elapsed >= 2000 && elapsed < 302000;
-      const final = elapsed >= 303000;
+      const recording = elapsed >= startAt && elapsed < startAt + 300000;
+      const final = elapsed >= startAt + 301000;
       return {
         product: {
           schemaVersion: 1,
@@ -101,14 +105,14 @@ function fixture(overrides = {}) {
             ? "Recording"
             : final
               ? "Idle"
-              : elapsed >= 302000
+              : elapsed >= startAt + 300000
                 ? "Finalizing"
                 : "Idle",
-          sessionId: elapsed >= 2000 && !final ? 1 : null,
+          sessionId: elapsed >= startAt && !final ? 1 : null,
           outcome: final ? "sent" : null,
-          maximumWarning: elapsed >= 272000,
-          maximumReached: elapsed >= 302000,
-          elapsedMillis: recording ? elapsed - 2000 : 0,
+          maximumWarning: elapsed >= startAt + 270000,
+          maximumReached: elapsed >= startAt + 300000,
+          elapsedMillis: recording ? elapsed - startAt : 0,
           transcriptUtf8Bytes: final ? Buffer.byteLength(text) : 0,
           transcriptSha256: final ? sha : null,
           observerState: "observed",
@@ -224,7 +228,8 @@ test("stale, switched identity, bad warning, duplicate receipt and shortcut char
     assert.equal(f.events.filter((event) => event === "consume").length, 1);
     assert.ok(f.events.includes("cleanup"), mode);
     assert.ok(f.events.includes("audio:stop"), mode);
-    assert.ok(f.events.includes("disarm"), mode);
+    assert.ok(f.events.includes("abort"), mode);
+    assert.equal(f.events.includes("disarm"), false, mode);
   }
 });
 
@@ -493,4 +498,101 @@ test("read-only preflight shares readiness gates without consuming, signalling o
     /recipient-focus-lost/,
   );
   assert.deepEqual(bad.events, []);
+});
+
+test("transient focus loss while Idle waits without another consumed gesture", async () => {
+  const { runSinglePress } = await import("./single-press-runner.mjs");
+  const f = fixture({}, 8000);
+  const observe = f.options.observe;
+  f.options.observe = async () => {
+    const pair = await observe();
+    if (f.elapsed >= 2000 && f.elapsed < 6000)
+      pair.recipient.frontmostIsSelf = false;
+    return pair;
+  };
+  const result = await runSinglePress(f.options);
+  assert.equal(result.state, "passed");
+  assert.equal(f.events.filter((event) => event === "consume").length, 1);
+  assert.ok(f.events.includes("signal:preparing"));
+  assert.ok(
+    f.events.lastIndexOf("signal:ready") > f.events.indexOf("signal:preparing"),
+  );
+  assert.ok(f.events.includes("audio:start"));
+});
+
+test("start observed without focus fails before audio and aborts even an Idle-clean product", async () => {
+  const { runSinglePress } = await import("./single-press-runner.mjs");
+  const f = fixture();
+  const observe = f.options.observe;
+  f.options.observe = async () => {
+    const pair = await observe();
+    if (pair.product.phase === "Recording")
+      pair.recipient.frontmostIsSelf = false;
+    return pair;
+  };
+  const result = await runSinglePress(f.options);
+  assert.equal(result.failure, "recipient-focus-lost");
+  assert.equal(f.events.includes("audio:start"), false);
+  assert.ok(f.events.includes("abort"));
+  assert.equal(f.events.includes("disarm"), false);
+});
+
+test("unfocused Idle waiting retains the original deadline and rejects stale identity", async () => {
+  const { runSinglePress } = await import("./single-press-runner.mjs");
+  for (const mode of ["deadline", "stale", "identity"]) {
+    const f = fixture({}, 200000);
+    const observe = f.options.observe;
+    f.options.observe = async () => {
+      const pair = await observe();
+      if (f.elapsed >= 2000) {
+        pair.recipient.frontmostIsSelf = false;
+        if (mode === "stale") pair.recipient.observedUnixMillis -= 2001;
+        if (mode === "identity") pair.recipient.processId++;
+      }
+      return pair;
+    };
+    const result = await runSinglePress(f.options);
+    assert.equal(result.state, "failed", mode);
+    assert.equal(
+      result.failure,
+      mode === "deadline"
+        ? "start-timeout"
+        : mode === "stale"
+          ? "stale-observation"
+          : "invalid-recipient-observation",
+    );
+    assert.equal(f.events.filter((event) => event === "consume").length, 1);
+    assert.equal(f.events.includes("audio:start"), false);
+    assert.ok(f.events.includes("abort"));
+    assert.ok(f.elapsed <= 122000);
+  }
+});
+
+test("failed final signal after the prompt still aborts the bound product", async () => {
+  const { runSinglePress } = await import("./single-press-runner.mjs");
+  const f = fixture();
+  const signal = f.options.signal;
+  f.options.signal = async (value) => {
+    if (value.state === "passed") throw new Error("unavailable recipient");
+    return signal(value);
+  };
+  const result = await runSinglePress(f.options);
+  assert.equal(result.failure, "signal-failed");
+  assert.ok(f.events.includes("abort"));
+  assert.equal(f.events.includes("disarm"), false);
+});
+
+test("disarm failure revokes a published success and requests bound abort", async () => {
+  const { runSinglePress } = await import("./single-press-runner.mjs");
+  const f = fixture();
+  f.options.watchdog.disarm = async () => {
+    throw new Error("disarm failed");
+  };
+  const result = await runSinglePress(f.options);
+  assert.equal(result.failure, "watchdog-cleanup-failed");
+  assert.ok(f.events.includes("abort"));
+  assert.equal(
+    f.events.filter((event) => event.startsWith("signal:")).at(-1),
+    "signal:failed",
+  );
 });

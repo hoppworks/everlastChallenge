@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "kind": "current-r11-native-ui-readback",
+  "observedAtUtc": "2026-10-19T18:23:19.382041+00:00",
+  "normalCandidateSha256": "3310f2a3ec37d44a767a10e93958f491e7aeb92aacc728a0c428a20955579081",
+  "sourceSha256": {
+    "crates/macos-integration/src/native_preferences.rs": "f48dc3f5a49c012ded9915905d82923d37cb2d2c29665fbc79ce9fbfc21fb09a",
+    "crates/macos-integration/src/glass_header.rs": "6c5cd07b60be2191e82b80aaabf677de61e3a4a1e7abfc5b6449c0fecc7cf542",
+    "crates/macos-integration/src/native_workspace.rs": "decb6068164147924cfb3dd44a39fddebf3c420ab8fb4d160b5fb050811fa131"
+  },
+  "method": "Supported CUA native app actions and AX/screenshot observations; final process absence verified by pgrep.",
+  "observations": [
+    {
+      "action": "Open installed app",
+      "result": "Native main window; model checking, later Ready to dictate; last text empty."
+    },
+    {
+      "action": "Command-comma",
+      "result": "Native settings opens; Microphone and Accessibility both Freigegeben. German app labels, English macOS paths."
+    },
+    {
+      "action": "Tab; select Aufnahme; Tab; native Raise; Control-Tab; Command-Tab then Tab",
+      "result": "Native Aufnahme controls legible without clipping. AX continues reporting settings window focused; no confirmed focus-ring traversal."
+    },
+    {
+      "action": "Command-W",
+      "result": "Settings closes; main window Ready to dictate, Kopieren/L\u00f6schen disabled, empty text field focused."
+    },
+    {
+      "action": "Command-Q",
+      "result": "Normal app process absent in subsequent pgrep readback."
+    }
+  ],
+  "microphoneStarted": false,
+  "physicalOptionDSent": false,
+  "gestureLedgerReset": false,
+  "permissionChanges": false,
+  "osAppearanceChanges": false,
+  "savedPreferenceChanges": false,
+  "keyboardTraversalPassed": false,
+  "keyboardTraversalAssessment": "Inconclusive through this UI automation path; no visible ring/tab traversal proved. Alone this does not establish a product defect.",
+  "screenshots": "Viewed in CUA outputs in this session; no on-disk screenshot attachment claimed.",
+  "globalGPassed": false,
+  "limits": [
+    "No recording/warning/autostop/focus-neutrality coverage.",
+    "No VoiceOver or OS accessibility/appearance settings changed.",
+    "Working window shortcuts do not establish complete tab order or focus visibility."
+  ]
+}

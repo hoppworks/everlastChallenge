@@ -469,12 +469,19 @@ export function createWatchdogAdapter({
       );
       return { disarmed: true };
     },
-    async cleanup(frozen) {
+    async abort(frozen) {
+      return api.cleanup(frozen, { terminateIdle: true });
+    },
+    async cleanup(frozen, { terminateIdle = false } = {}) {
       try {
         bind(frozen);
         try {
           const status = product();
-          if (status.phase === "Idle" && status.sessionId === null)
+          if (
+            !terminateIdle &&
+            status.phase === "Idle" &&
+            status.sessionId === null
+          )
             return { clean: true };
         } catch {
           /* No assumption of cleanup from a failed read. */

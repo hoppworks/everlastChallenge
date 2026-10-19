@@ -440,3 +440,21 @@ test(
     }
   },
 );
+
+test("explicit abort terminates the bound product even when it is Idle", async () => {
+  const f = fixture();
+  try {
+    await f.api.arm(f.frozen);
+    assert.deepEqual(await f.api.abort(f.frozen), { clean: true });
+    assert.equal(
+      existsSync(path.join(f.newReportDirectory, "abort.json")),
+      true,
+    );
+    assert.equal(
+      existsSync(path.join(f.newReportDirectory, "disarm.json")),
+      false,
+    );
+  } finally {
+    f.dispose();
+  }
+});

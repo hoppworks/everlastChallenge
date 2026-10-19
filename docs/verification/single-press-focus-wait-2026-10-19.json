@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "scope": "Controlled regression only; no actual UI, microphone, playback, physical shortcut or product launch.",
+  "node": {
+    "passed": 39,
+    "skippedOptInNative": 1
+  },
+  "nativeUnitTests": 13,
+  "sources": {
+    "scripts/single-press-runner.mjs": "7579b40ae03588dc951d5fcc293df33173eeae81400dce57e5f926c3413304ae",
+    "scripts/single-press-runner.test.mjs": "d6cda8b0d193a5808e112826819fd68fb40e3140b299f4466e3880742736f7e7",
+    "scripts/single-press-watchdog-adapter.mjs": "43e1e3be4b106cceb79dd9ff630bb5db6d63ca8f8b7c804f4b1aed35f191126f",
+    "scripts/single-press-watchdog-adapter.test.mjs": "e7e2e66110222792b3b926b48434c34106caee846067e1032def33e72689da20",
+    "crates/macos-integration/examples/native_text_recipient.rs": "406a87e9b1cee7cfadafe76af02eb7253134b823356909317584e270152a825b"
+  },
+  "binary": {
+    "path": "target/debug/examples/native_text_recipient",
+    "sha256": "5a1dea4911b37d2adfee6092757d26c7f16c11ec7223d3441fe61e75427141fd"
+  },
+  "signalAtomicReplacement": {
+    "red": "signal-atomic-red.log",
+    "green": "signal-atomic-green.log",
+    "clippy": "signal-atomic-clippy.log",
+    "build": "signal-atomic-build.log",
+    "maximumAttempts": 8,
+    "deterministicWindows": [
+      "after open, before descriptor metadata",
+      "after bounded read, before descriptor/path validation"
+    ]
+  },
+  "kind": "single-press-waiting-and-signal-race-fix",
+  "independentReview": {
+    "reviewer": "r8_artifact_review",
+    "approved": true,
+    "actionableFindings": 0,
+    "scope": "Idle-only focus handling, same-run signal transitions, abort after consumed prompt, bounded atomic signal reader; no UI or microphone actions."
+  },
+  "evidenceSha256": {
+    "artifacts/single-press-focus-wait-v1/native-build.log": "6889885da6cc1db883e8b35c1a804f1313550cbc47a8cc3786746eff0032d439",
+    "artifacts/single-press-focus-wait-v1/native-clippy.log": "561712d430280d7adfb5bdea6a62805eda285673f1c6d1cb103fed7c8d39acf2",
+    "artifacts/single-press-focus-wait-v1/native-green.log": "c3587c27e7d11bbfc44e9e43f955b44c98d909bf0689aae6085a8219e39df6d9",
+    "artifacts/single-press-focus-wait-v1/native-red.log": "2704b88e71530f9318a3f87480260d5d2f92808c7e93dc3c68cdcc4b62bb35d1",
+    "artifacts/single-press-focus-wait-v1/node-green.log": "d9154de90139da25512da742867e610be061551c497a176378431432d526fb19",
+    "artifacts/single-press-focus-wait-v1/node-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/single-press-focus-wait-v1/node-red.log": "e580c9fcd6ec992edaf07c4d8a87a5d007eea4aa8a153ee3cc3331dc528f0222",
+    "artifacts/single-press-focus-wait-v1/signal-atomic-build.log": "4afac3e6e867d25f9bc0d454495c221f569b3bdc37fa5a14bef3ef66342e912f",
+    "artifacts/single-press-focus-wait-v1/signal-atomic-clippy.log": "18c1c721e0b4fd75d99ad9b21b7db0c099b4b4a76c4d6686c0bb3b68078a5f1d",
+    "artifacts/single-press-focus-wait-v1/signal-atomic-green.log": "1c41243d661c07544d34626b6c29c6c2c1d8fa41dd64622df4c4987ab8a2a341",
+    "artifacts/single-press-focus-wait-v1/signal-atomic-red.log": "99b6b2d03ba9f0bee206caa24f43539373e18337107367dfd2150a2979df4d97"
+  },
+  "rawEvidenceDirectory": "artifacts/single-press-focus-wait-v1",
+  "secretsCheck": {
+    "status": "passed",
+    "path": "artifacts/single-press-focus-wait-v1/final-secrets-clean.log",
+    "sha256": "958aa6a957637ed659af360ed531b673da39941352c51efdbf3bee1af22b81e6",
+    "scope": "Canonical repository scan after source changes; final documentation checked separately.",
+    "metadataEncoding": "Path/SHA records replace filename-as-key SHA maps; no new allowlist exclusion."
+  }
+}

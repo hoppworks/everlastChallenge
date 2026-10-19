@@ -263,6 +263,90 @@ fn text_metrics(text: &str) -> io::Result<(bool, usize, bool)> {
         text.contains('∂'),
     ))
 }
+#[derive(Clone, Copy)]
+enum SignalCheckpoint {
+    AfterOpen,
+    AfterRead,
+}
+enum SignalReadError {
+    Replaced,
+    Invalid(io::Error),
+}
+impl From<io::Error> for SignalReadError {
+    fn from(error: io::Error) -> Self {
+        Self::Invalid(error)
+    }
+}
+fn signal_metadata_valid(meta: &Metadata, owner: u32) -> bool {
+    meta.is_file() && meta.uid() == owner && meta.mode() & 0o777 == 0o600 && meta.len() <= 1024
+}
+fn signal_descriptor_valid(meta: &Metadata, owner: u32) -> Result<(), SignalReadError> {
+    if !signal_metadata_valid(meta, owner) || meta.nlink() > 1 {
+        return Err(io::Error::other("invalid private signal file").into());
+    }
+    if meta.nlink() == 0 {
+        return Err(SignalReadError::Replaced);
+    }
+    Ok(())
+}
+fn signal_read_attempt(
+    directory: &ReportDirectory,
+    attempt: usize,
+    checkpoint: &mut impl FnMut(SignalCheckpoint, usize) -> io::Result<()>,
+) -> Result<Vec<u8>, SignalReadError> {
+    directory
+        .verify()
+        .map_err(|error| io::Error::other(format!("signal directory: {error}")))?;
+    let owner = fs::symlink_metadata(&directory.path)?.uid();
+    let path = directory.path.join("signal.json");
+    let before = fs::symlink_metadata(&path)?;
+    if !signal_metadata_valid(&before, owner) || before.nlink() != 1 {
+        return Err(io::Error::other("invalid private signal file").into());
+    }
+    let mut file = OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(&path)?;
+    checkpoint(SignalCheckpoint::AfterOpen, attempt)?;
+    let opened = file.metadata()?;
+    signal_descriptor_valid(&opened, owner)?;
+    if identity(&opened) != identity(&before) {
+        return Err(SignalReadError::Replaced);
+    }
+    let mut bytes = Vec::new();
+    Read::by_ref(&mut file).take(1025).read_to_end(&mut bytes)?;
+    checkpoint(SignalCheckpoint::AfterRead, attempt)?;
+    signal_descriptor_valid(&file.metadata()?, owner)?;
+    if bytes.len() > 1024 {
+        return Err(io::Error::other("signal too large").into());
+    }
+    let current = fs::symlink_metadata(&path)?;
+    if !signal_metadata_valid(&current, owner) || current.nlink() != 1 {
+        return Err(io::Error::other("invalid private signal file").into());
+    }
+    if identity(&current) != identity(&opened) {
+        return Err(SignalReadError::Replaced);
+    }
+    directory
+        .verify()
+        .map_err(|error| io::Error::other(format!("signal directory: {error}")))?;
+    Ok(bytes)
+}
+// Only this atomically published signal is replaceable. The directory and owner
+// marker remain immutable; malformed contents never trigger a retry.
+fn read_signal_bytes_with(
+    directory: &ReportDirectory,
+    mut checkpoint: impl FnMut(SignalCheckpoint, usize) -> io::Result<()>,
+) -> io::Result<Vec<u8>> {
+    for attempt in 0..8 {
+        match signal_read_attempt(directory, attempt, &mut checkpoint) {
+            Ok(bytes) => return Ok(bytes),
+            Err(SignalReadError::Replaced) => std::thread::yield_now(),
+            Err(SignalReadError::Invalid(error)) => return Err(error),
+        }
+    }
+    Err(io::Error::other("signal replacement retry exhausted"))
+}
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Signal {
@@ -281,7 +365,7 @@ fn decode_signal(bytes: &[u8], now: u128) -> io::Result<(String, String)> {
         || signal.contract_id != "single-press-2026-10-19"
         || !matches!(
             signal.state.as_str(),
-            "ready" | "running" | "verifying" | "passed" | "failed"
+            "preparing" | "ready" | "running" | "verifying" | "passed" | "failed"
         )
         || signal.run_id.len() != 32
         || !signal
@@ -302,11 +386,11 @@ fn check_signal_progress(
     next_run: &str,
 ) -> io::Result<()> {
     let valid = match current {
-        "preparing" => matches!(next, "ready" | "failed"),
-        "ready" => matches!(next, "ready" | "running" | "failed"),
+        "preparing" => matches!(next, "preparing" | "ready" | "failed"),
+        "ready" => matches!(next, "preparing" | "ready" | "running" | "failed"),
         "running" => matches!(next, "running" | "verifying" | "failed"),
         "verifying" => matches!(next, "verifying" | "passed" | "failed"),
-        "passed" => next == "passed",
+        "passed" => matches!(next, "passed" | "failed"),
         "failed" => next == "failed",
         _ => false,
     };
@@ -315,8 +399,8 @@ fn check_signal_progress(
     }
     Ok(())
 }
-fn missing_signal(current: &str) -> io::Result<()> {
-    if current == "preparing" {
+fn missing_signal(current: &str, run: Option<&str>) -> io::Result<()> {
+    if current == "preparing" && run.is_none() {
         Ok(())
     } else {
         Err(io::Error::other("active signal disappeared"))
@@ -440,30 +524,13 @@ impl Reporting {
         })
     }
     fn refresh_signal(&mut self) -> io::Result<()> {
-        self.directory.verify()?;
-        let path = self.directory.path.join("signal.json");
-        let opened = OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
-            .open(path);
-        let mut file = match opened {
-            Ok(file) => file,
+        let bytes = match read_signal_bytes_with(&self.directory, |_, _| Ok(())) {
+            Ok(bytes) => bytes,
             Err(error) if error.kind() == io::ErrorKind::NotFound => {
-                return missing_signal(&self.signal_state);
+                return missing_signal(&self.signal_state, self.signal_run_id.as_deref());
             }
             Err(error) => return Err(error),
         };
-        let meta = file.metadata()?;
-        if !meta.is_file()
-            || meta.nlink() != 1
-            || meta.mode() & 0o777 != 0o600
-            || meta.uid() != fs::metadata(&self.directory.path)?.uid()
-            || meta.len() > 1024
-        {
-            return Err(io::Error::other("invalid private signal file"));
-        }
-        let mut bytes = Vec::new();
-        Read::by_ref(&mut file).take(1025).read_to_end(&mut bytes)?;
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map_err(io::Error::other)?
@@ -561,7 +628,7 @@ define_class!(
             if value.length() > 64 || !own_launch_url(&value.to_string()) { return; }
             let activation = {
                 let mut state = self.ivars().borrow_mut();
-                if state.url_activation_consumed || state.reporter.as_ref().is_some_and(|r| r.ivars().borrow().signal_state != "preparing") { return; }
+                if state.url_activation_consumed || state.reporter.as_ref().is_some_and(|r| { let state = r.ivars().borrow(); state.signal_state != "preparing" || state.signal_run_id.is_some() }) { return; }
                 state.url_activation_consumed = true;
                 state.activation.clone()
             };
@@ -858,6 +925,96 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn signal_replacement_at(stage: SignalCheckpoint) -> io::Result<()> {
+        let temp = Temp::new()?;
+        let directory = ReportDirectory::create(&temp.0.join("reports"))?;
+        let path = directory.path.join("signal.json");
+        let publish = |bytes: &[u8]| -> io::Result<()> {
+            let pending = directory.path.join("signal.pending");
+            let mut file = OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .mode(0o600)
+                .open(&pending)?;
+            file.write_all(bytes)?;
+            drop(file);
+            fs::rename(pending, &path)
+        };
+        publish(b"old")?;
+        let mut replaced = false;
+        let bytes = read_signal_bytes_with(&directory, |at, _| {
+            if !replaced && std::mem::discriminant(&at) == std::mem::discriminant(&stage) {
+                publish(b"new")?;
+                replaced = true;
+            }
+            Ok(())
+        })?;
+        assert!(replaced);
+        assert_eq!(
+            bytes, b"new",
+            "never accept bytes from the unlinked old signal"
+        );
+        Ok(())
+    }
+    #[test]
+    fn signal_atomic_replacement_after_open_reads_current_version() -> io::Result<()> {
+        signal_replacement_at(SignalCheckpoint::AfterOpen)
+    }
+    #[test]
+    fn signal_atomic_replacement_after_read_discards_old_bytes() -> io::Result<()> {
+        signal_replacement_at(SignalCheckpoint::AfterRead)
+    }
+    #[test]
+    fn signal_retry_is_bounded_and_unsafe_metadata_never_retries() -> io::Result<()> {
+        let temp = Temp::new()?;
+        let directory = ReportDirectory::create(&temp.0.join("reports"))?;
+        let signal = directory.path.join("signal.json");
+        let publish = || -> io::Result<()> {
+            let pending = directory.path.join("next");
+            let mut file = OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .mode(0o600)
+                .open(&pending)?;
+            file.write_all(b"{}")?;
+            drop(file);
+            fs::rename(pending, &signal)
+        };
+        publish()?;
+        let mut attempts = 0;
+        assert!(
+            read_signal_bytes_with(&directory, |at, _| {
+                if matches!(at, SignalCheckpoint::AfterOpen) {
+                    attempts += 1;
+                    publish()?;
+                }
+                Ok(())
+            })
+            .is_err()
+        );
+        assert_eq!(attempts, 8);
+        fs::hard_link(&signal, directory.path.join("hardlink"))?;
+        attempts = 0;
+        assert!(
+            read_signal_bytes_with(&directory, |_, _| {
+                attempts += 1;
+                Ok(())
+            })
+            .is_err()
+        );
+        assert_eq!(attempts, 0);
+        fs::remove_file(directory.path.join("hardlink"))?;
+        fs::write(&signal, [b'x'; 1025])?;
+        assert!(
+            read_signal_bytes_with(&directory, |_, _| {
+                attempts += 1;
+                Ok(())
+            })
+            .is_err()
+        );
+        assert_eq!(attempts, 0);
+        Ok(())
+    }
     #[test]
     fn launch_url_is_a_single_fixed_action_without_payload() {
         assert!(own_launch_url("everlast-autonomous-testziel://activate"));
@@ -1043,8 +1200,12 @@ mod tests {
             )
             .is_err()
         );
-        assert!(missing_signal("ready").is_err());
-        assert!(missing_signal("preparing").is_ok());
+        assert!(missing_signal("ready", Some(run)).is_err());
+        assert!(missing_signal("preparing", Some(run)).is_err());
+        check_signal_progress("ready", Some(run), "preparing", run)?;
+        check_signal_progress("preparing", Some(run), "ready", run)?;
+        assert!(check_signal_progress("running", Some(run), "preparing", run).is_err());
+        assert!(missing_signal("preparing", None).is_ok());
         Ok(())
     }
     #[test]
