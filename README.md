@@ -8,8 +8,8 @@ angezeigt; die vollständige Einfügeabnahme steht noch aus. Ein [getrennter Ent
 [native Zielerkennung](docs/verification/target-compatibility-2026-10-19.md)
 und Prüfung nach einmaligem Versand sind implementiert und automatisiert geprüft.
 
-Aktuelles lokales Testpaket: **Everlast-Dictation-Testversion-0.1.0-native-212d5e7-r8.zip**
-in `~/Downloads/`. Der [R8-Paketbeleg](docs/verification/testversion-package-r8.md)
+Aktuelles lokales Testpaket: **Everlast-Dictation-Testversion-0.1.0-native-212d5e7-r9.zip**
+in `~/Downloads/`. Der [R9-Paketbeleg](docs/verification/testversion-package-r9.md)
 nennt Quellstand, Buildfeatures und Prüfsummen. Ältere Pakete und die vorige
 Installation bleiben als Rückfallkopien erhalten. Kein öffentlicher Download;
 die [Kurzanleitung](TESTVERSION.md) beschreibt Einrichtung und bekannte Grenzen.
