@@ -16,6 +16,8 @@ beschreibt Installation und erste Einrichtung.
 
 Die [Einstellungswiederherstellung](docs/verification/r4-settings-recovery-2026-10-19.md) ist im installierten R4 geprüft. Der dabei gefundene falsche Status ist in R5 korrigiert und gezielt sichtbar geprüft; die installierte R4-App enthält diesen Anzeige-Fix noch nicht.
 
+Der [reale Fünf-Minuten-Hotkeylauf](docs/verification/r4-hotkey-maximum-2026-10-19.md) bestätigt den automatischen Aufnahmestopp. Das Startfeld wurde dabei nicht bestätigt, daher keine Einfügung; zusätzliche Texte bei langem Nachlauf und die vollständige Vorwarnungs-/Fokusabnahme bleiben offen.
+
 ## Lokal entwickeln
 
 Geprüfte Ausgangsumgebung: macOS 27.0.1, arm64, Rust/Cargo 1.93.0, Node 22.23.1, npm 10.9.8 und Xcode 27.1. Kein anderer Rechner wurde geprüft.

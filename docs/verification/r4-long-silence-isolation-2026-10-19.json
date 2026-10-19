@@ -1,0 +1,39 @@
+{
+  "purpose": "bounded file isolation, not qualification",
+  "binarySha256": "75d53f280c16f0a6fe6ca75ab78677d4a3a75765b48fb8d6605a882886426b2e",
+  "runs": [
+    {
+      "input": "original",
+      "exitCode": 0,
+      "wallSeconds": 7.9986891746521,
+      "wavSha256": "b892cf9dc80c437f0a78c6f261d83dda196252e31a1e415032981472d3ea9137",
+      "log": "/Users/hoppworks/projects/everlastChallenge/artifacts/long-silence-isolation-v1/original.log",
+      "referenceMatch": true,
+      "resultUtf8Bytes": 134,
+      "logSha256": "622c3adb7fac815689b842cc98cfdb479db7f07fac097a5fa9f4946f00ff3dfa"
+    },
+    {
+      "input": "long",
+      "exitCode": 0,
+      "wallSeconds": 4.584383010864258,
+      "wavSha256": "517eb0d691c7fe06c6358534e91a9ddf680cb52bb0129f292a160b6430bb2032",
+      "log": "/Users/hoppworks/projects/everlastChallenge/artifacts/long-silence-isolation-v1/long.log",
+      "referenceMatch": true,
+      "resultUtf8Bytes": 134,
+      "logSha256": "42928228c8fbba656b5f9accf537ed397a88c8ae73b313373e9ded74acb5550f"
+    }
+  ],
+  "inputs": {
+    "original": "artifacts/corpus/audio/fleurs-de-dev-1517.wav",
+    "long": "artifacts/long-silence-isolation-v1/public-300s.wav",
+    "longSha256": "517eb0d691c7fe06c6358534e91a9ddf680cb52bb0129f292a160b6430bb2032",
+    "longDurationSeconds": 300,
+    "longLeadSeconds": 35,
+    "sourceSpeechUnchanged": true,
+    "microphonePcmReplayed": false,
+    "purpose": "bounded two-input file isolation; no corpus or performance qualification"
+  },
+  "conclusion": "Long digital silence alone did not reproduce the extra text. Acoustic capture cause remains unresolved; no quality or latency qualification.",
+  "microphoneRecordingStarted": false,
+  "productSourceChanged": false
+}

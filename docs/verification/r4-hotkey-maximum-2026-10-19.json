@@ -1,0 +1,82 @@
+{
+  "fixture": {
+    "publicSource": "artifacts/corpus/audio/fleurs-de-dev-1517.wav",
+    "sourceSha256": "b892cf9dc80c437f0a78c6f261d83dda196252e31a1e415032981472d3ea9137",
+    "fixture": "artifacts/hotkey-maximum-preparation-v1/public-maximum-test.wav",
+    "fixtureSha256": "bc2b7b11958baca48af5db22fa07f7573161b133300ab7f12278677eeabee9fd",
+    "durationSeconds": 360,
+    "silenceLeadSeconds": 45,
+    "speechSeconds": 10.56,
+    "purpose": "one real hotkey maximum-duration lifecycle test, not corpus/performance qualification",
+    "recordingStarted": false,
+    "requiresPhysicalHotkeyStart": true
+  },
+  "outcome": {
+    "observedAtUtc": "2026-10-19T10:31:59.954Z",
+    "installedProductSource": "ee1a6a4f78fca3b45026a8de835e997c914b43ec",
+    "binarySha256": "efea6ec2df880186788ff775b9beea61be8c53cd61c9485c932ca6f043bc83f5",
+    "pid": 68490,
+    "physicalHotkeyStartRequestedAndUserReady": true,
+    "agentClickedStartOrStop": false,
+    "playbackStartUtc": "2026-10-19T10:23:10.176Z",
+    "recipientInitiallyEmpty": true,
+    "recipientHadShortcutCharacter": false,
+    "recipientEmptyAfterMaximum": true,
+    "productStatus": "5-Minuten-Grenze erreicht · Text wurde zurückgehalten",
+    "startTargetUnconfirmed": true,
+    "expectedPublicSentenceRecognized": true,
+    "additionalTextPresent": true,
+    "fullMicrophoneTranscriptPersisted": false,
+    "privateAudioSaved": false,
+    "warningAt270SecondsDirectlyObserved": false,
+    "windowObservationErrorDuringRecording": "ScreenCaptureKit -3812; no restart or reopen performed",
+    "automaticDeliveryAccepted": false,
+    "fullA26Accepted": false
+  },
+  "hardwareObservation": {
+    "samples": 4101,
+    "inputActiveGroups": 1,
+    "defaultInputDeviceIds": [
+      70
+    ],
+    "inputInactiveBefore": true,
+    "inputInactiveAfter": true,
+    "firstActiveUnix": 1792405400.648554,
+    "firstInactiveAfterUnix": 1792405700.630692,
+    "sampledStartToReleaseSeconds": 299.9821379184723,
+    "activityDurationBoundSeconds": [
+      299.87781381607056,
+      300.0838439464569
+    ],
+    "allProductSamplesAlive": true,
+    "nominalInputPollSeconds": 0.1,
+    "nominalResourcePollSeconds": 1,
+    "resourceValuesRepeatedBetweenPolls": true,
+    "rssKiB": {
+      "first": 168864,
+      "sampledMaximum": 346448,
+      "last": 295408
+    },
+    "fdCount": {
+      "first": 17,
+      "sampledMaximum": 17,
+      "last": 17
+    },
+    "observerExitCode": 0,
+    "observerTerminal": "stop-marker-observed",
+    "inputStillRunningAtObserverEnd": false,
+    "observationsSha256": "eaa7a76367ff701840310974959f2188a954f626049a0010d1832226a3c1385b",
+    "validResourceRows": 4091,
+    "initialRowsWithoutResourceValues": 10
+  },
+  "limits": {
+    "deviceWideActivityNotInternalJoinReceipt": true,
+    "noMicrophonePCMOrTranscriptSaved": true,
+    "warningAt270SecondsNotDirectlyObserved": true,
+    "noAutomaticDeliveryPass": true,
+    "noFlawlessTranscriptionPass": true,
+    "noP06Qualification": true,
+    "noWholePackageCompletion": true,
+    "noProofOfForegroundRecipientAtStart": true
+  }
+}
