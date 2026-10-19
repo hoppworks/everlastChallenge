@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "kind": "offline-real-setup-inference-product-transport-denial",
+  "sourceBaseCommit": "5af7bc570dcfeedce15c17977eb656d371964ffc",
+  "createdAtUtc": "2026-10-19T16:10:44.492495+00:00",
+  "changeScope": "cfg(test) in src-tauri/src/setup.rs only; no product behavior/API change",
+  "profile": "test; unoptimized + debuginfo; no latency qualification",
+  "command": [
+    "cargo",
+    "test",
+    "-p",
+    "everlast-dictation",
+    "--lib",
+    "setup::tests::real_cached_setup_and_inference_work_with_download_transport_denied",
+    "--locked",
+    "--",
+    "--ignored",
+    "--exact",
+    "--nocapture"
+  ],
+  "environment": {
+    "EVERLAST_OFFLINE_ASR": "/Users/hoppworks/Library/Application Support/de.hoppworks.everlast-dictation/models/ggml-large-v3-turbo-q5_0.bin",
+    "EVERLAST_OFFLINE_VAD": "/Users/hoppworks/Library/Application Support/de.hoppworks.everlast-dictation/models/ggml-silero-v5.1.2.bin",
+    "EVERLAST_OFFLINE_WAV": "/Users/hoppworks/projects/everlastChallenge/artifacts/corpus/audio/fleurs-de-dev-1517.wav"
+  },
+  "passed": true,
+  "executedTests": 1,
+  "ignoredTests": 0,
+  "filteredTests": 237,
+  "harnessSeconds": 60.66,
+  "realInferenceCalls": 1,
+  "nativeLoads": 1,
+  "cacheHitDownloads": 0,
+  "missingCacheWithoutDownload": "Missing; no ready service",
+  "explicitMissingCacheDownload": "Failed/Network; one denied transport attempt",
+  "readyServiceTransferredOnce": true,
+  "returnedJob": {
+    "session": 73,
+    "generation": 1,
+    "jobId": 81,
+    "sampleRange": [
+      0,
+      168960
+    ],
+    "timelineRange": [
+      0,
+      168960
+    ]
+  },
+  "transcriptUtf8Bytes": 134,
+  "transcriptSha256": "161df165fab1271854e8ff49cb989e6f2f9d9192b3c02a06e7384de01534f214",
+  "fixtureSha256": "b892cf9dc80c437f0a78c6f261d83dda196252e31a1e415032981472d3ea9137",
+  "modelSha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+  "vadSha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+  "cleanup": "Returned real inference service shutdown, both setup services joined; private TempDir cache removed by RAII",
+  "userCacheModified": false,
+  "microphoneUsed": false,
+  "osNetworkIsolation": false,
+  "installedAppChanged": false,
+  "clippyPassed": true,
+  "clippyCommand": [
+    "cargo",
+    "clippy",
+    "-p",
+    "everlast-dictation",
+    "--lib",
+    "--tests",
+    "--locked",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "limits": [
+    "Only Backend.download is denied; NativeBackend.inspect/load are real. This is not OS-level network blocking.",
+    "No installed GUI, hotkey, microphone, paste target, full corpus or performance acceptance.",
+    "A20 setup/cache/inference seam evidence; no automatic P08 or project completion."
+  ],
+  "sources": {
+    "src-tauri/src/setup.rs": "d5e99eafa613a949a259872a227d5ca9b68bd6e3ec3bce12f31a47bbefaa1636",
+    "src-tauri/src/model.rs": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2",
+    "src-tauri/src/model/cache.rs": "24711974203e66f1daee7a836f07ba342b6d5cb9e09314276094e8a45db4f56f",
+    "src-tauri/src/model/storage.rs": "b946d1cd3052f9269b61c3d12df433483d14bc1a4c17a742da570faf29759713",
+    "src-tauri/src/inference_service.rs": "f51915382161d372d04d3e8280434d1a5bb14b818f44063bad6c4a60fb958c97",
+    "src-tauri/src/transcription.rs": "066433cff9911eb0a187f0949330988b2ae8379e7347e6bd4b5065e664518a86",
+    "src-tauri/src/transcription/speech_gate.rs": "63448fa2d9afc7ae68031b9f7d505b693548cb975a2dc25c0b01c30908803d89",
+    "src-tauri/src/pipeline.rs": "4b7286ae91fc923c495e574d1a7986b80bec56ac082f9900974f1fcb0f40210c",
+    "Cargo.lock": "19e2971bb7408845bdbd7b0130ef7b2db2f1b21338f2cf716dffa17bcb19a066"
+  },
+  "artifacts": {
+    "artifacts/offline-setup-inference-v1/setup-as-tested.rs": "d5e99eafa613a949a259872a227d5ca9b68bd6e3ec3bce12f31a47bbefaa1636",
+    "artifacts/offline-setup-inference-v1/frozen-offline-setup-test": "56534c834f4fbf57fd0d7b33aea7c7d98ed7ac547386bce0075e4a5f1a4b5de6",
+    "artifacts/offline-setup-inference-v1/native-test.log": "664116c3990ee703ab8e9b78ae15c58337371defe192e8d34479b96364ee529e",
+    "artifacts/offline-setup-inference-v1/clippy.log": "c1c7c56d6b5b6693a1950f58645823351f0d452888ef3930c828edf905c89dc2",
+    "artifacts/offline-setup-inference-v1/cargo-fingerprint.json": "7f43f842f584cabacd96395b7a55605f1fe0f336ca6081070c7a867c84828409"
+  },
+  "independentReview": "passed; independent combined review of cfg(test)-only SetupService/cache/native inference seam"
+}

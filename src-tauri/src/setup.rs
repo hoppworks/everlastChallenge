@@ -451,6 +451,188 @@ mod tests {
         inference_service::Decoder,
         transcription::{InferenceError, Language},
     };
+
+    /// The only substituted boundary is download transport. Cache inspection,
+    /// native model loading and the returned inference worker stay productive.
+    struct OfflineNative {
+        downloads: std::sync::atomic::AtomicUsize,
+        loads: std::sync::atomic::AtomicUsize,
+    }
+    impl Backend for OfflineNative {
+        fn inspect(
+            &self,
+            directory: &Path,
+            definition: ModelDefinition,
+            cancel: &CancellationToken,
+        ) -> Result<Option<PathBuf>, ModelError> {
+            NativeBackend.inspect(directory, definition, cancel)
+        }
+        fn download(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            _: &CancellationToken,
+            _: &mut dyn FnMut(u64),
+        ) -> Result<PathBuf, ModelError> {
+            self.downloads
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            Err(ModelError::Network)
+        }
+        fn load(
+            &self,
+            path: PathBuf,
+            definition: ModelDefinition,
+        ) -> Result<InferenceService, Failure> {
+            self.loads.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            NativeBackend.load(path, definition)
+        }
+    }
+
+    #[test]
+    #[ignore = "explicit public audio and pinned model paths required; one native inference, no microphone"]
+    fn real_cached_setup_and_inference_work_with_download_transport_denied()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use crate::inference_service::{Job, WorkToken};
+        use sha2::{Digest, Sha256};
+        use std::{fs, os::unix::fs::PermissionsExt, sync::atomic::Ordering, time::Instant};
+        let required = |name| -> Result<PathBuf, Box<dyn std::error::Error>> {
+            let path =
+                PathBuf::from(std::env::var_os(name).ok_or("explicit fixture path missing")?);
+            if !path.is_absolute() || !fs::symlink_metadata(&path)?.is_file() {
+                return Err("fixture must be an absolute regular file".into());
+            }
+            Ok(path)
+        };
+        let source_asr = required("EVERLAST_OFFLINE_ASR")?;
+        let source_vad = required("EVERLAST_OFFLINE_VAD")?;
+        let source_wav = required("EVERLAST_OFFLINE_WAV")?;
+        let wav_bytes = fs::read(source_wav)?;
+        if format!("{:x}", Sha256::digest(&wav_bytes))
+            != "b892cf9dc80c437f0a78c6f261d83dda196252e31a1e415032981472d3ea9137"
+        {
+            return Err("public WAV identity mismatch".into());
+        }
+        let mut wav = hound::WavReader::new(std::io::Cursor::new(wav_bytes))?;
+        if wav.spec().sample_rate != 16_000
+            || wav.spec().channels != 1
+            || wav.spec().bits_per_sample != 16
+            || wav.spec().sample_format != hound::SampleFormat::Int
+        {
+            return Err("public WAV format mismatch".into());
+        }
+        let samples = Arc::new(
+            wav.samples::<i16>()
+                .map(|v| v.map(|v| f32::from(v) / 32768.0))
+                .collect::<Result<Vec<_>, _>>()?,
+        );
+        assert_eq!(samples.len(), 168_960);
+        let directory = tempfile::tempdir()?;
+        for (source, definition) in [(source_asr, model::REFERENCE), (source_vad, model::VAD)] {
+            let destination = directory.path().join(definition.file_name());
+            fs::copy(source, &destination)?;
+            fs::set_permissions(&destination, fs::Permissions::from_mode(0o600))?;
+            model::verify_file(&destination, definition)?;
+        }
+        let backend = Arc::new(OfflineNative {
+            downloads: std::sync::atomic::AtomicUsize::new(0),
+            loads: std::sync::atomic::AtomicUsize::new(0),
+        });
+        let setup = SetupService::with_backend(
+            directory.path().to_owned(),
+            model::REFERENCE,
+            backend.clone(),
+        );
+        setup.start(false)?;
+        let started = Instant::now();
+        loop {
+            let state = setup.snapshot()?;
+            if state.phase == Phase::Ready {
+                break;
+            }
+            if matches!(
+                state.phase,
+                Phase::Failed | Phase::Missing | Phase::Cancelled
+            ) || started.elapsed() > Duration::from_secs(120)
+            {
+                return Err("offline native setup failed to become ready".into());
+            }
+            thread::sleep(Duration::from_millis(2));
+        }
+        let service = setup
+            .take_ready()?
+            .ok_or("real inference service missing")?;
+        assert!(setup.take_ready()?.is_none());
+        assert!(service.ready());
+        assert_eq!(backend.loads.load(Ordering::SeqCst), 1);
+        assert_eq!(backend.downloads.load(Ordering::SeqCst), 0);
+        service.submit(Job {
+            session: 73,
+            generation: 1,
+            job_id: 81,
+            sample_range: 0..samples.len(),
+            timeline_range: 0..samples.len(),
+            audio: Arc::clone(&samples),
+            language: Language::German,
+            token: WorkToken::default(),
+        })?;
+        let started = Instant::now();
+        let completed = loop {
+            if let Some(result) = service.take_result()? {
+                break result;
+            }
+            if service.is_finished() || started.elapsed() > Duration::from_secs(30) {
+                return Err("offline native inference did not complete".into());
+            }
+            thread::sleep(Duration::from_millis(2));
+        };
+        assert_eq!(
+            (completed.session, completed.generation, completed.job_id),
+            (73, 1, 81)
+        );
+        assert_eq!(completed.sample_range, 0..168_960);
+        assert_eq!(completed.timeline_range, 0..168_960);
+        let text = completed.result?;
+        let transcript_sha256 = format!("{:x}", Sha256::digest(text.as_bytes()));
+        assert!(
+            text.len() == 134
+                && transcript_sha256
+                    == "161df165fab1271854e8ff49cb989e6f2f9d9192b3c02a06e7384de01534f214",
+            "public reference transcript identity mismatch"
+        );
+        service.shutdown()?;
+        setup.shutdown()?;
+        let missing = tempfile::tempdir()?;
+        let absent = SetupService::with_backend(
+            missing.path().to_owned(),
+            model::REFERENCE,
+            backend.clone(),
+        );
+        absent.start(false)?;
+        assert_eq!(finished(&absent)?.phase, Phase::Missing);
+        assert!(absent.take_ready()?.is_none());
+        assert_eq!(backend.downloads.load(Ordering::SeqCst), 0);
+        start_after_previous_worker(&absent, true)?;
+        let denied = finished(&absent)?;
+        assert_eq!(denied.phase, Phase::Failed);
+        assert_eq!(denied.failure, Some(Failure::Network));
+        assert!(absent.take_ready()?.is_none());
+        assert_eq!(backend.downloads.load(Ordering::SeqCst), 1);
+        assert_eq!(backend.loads.load(Ordering::SeqCst), 1);
+        absent.shutdown()?;
+        println!(
+            "offline_setup_inference: {}",
+            serde_json::json!({
+                "kind":"real-cached-setup-inference-with-denied-download-transport",
+                "modelId":model::REFERENCE.id(), "vadId":model::VAD.id(),
+                "fixtureFrames":samples.len(), "transcriptUtf8Bytes":text.len(),
+                "transcriptSha256":transcript_sha256, "loads":1,"downloadAttemptsDenied":1,
+                "downloadAttemptsOnCacheHit":0,"cacheMissWithoutDownload":"missing",
+                "setupAndInferenceShutdown":true,"osNetworkIsolation":false,
+                "microphoneUsed":false
+            })
+        );
+        Ok(())
+    }
     struct EmptyDecoder;
     impl Decoder for EmptyDecoder {
         fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
