@@ -1,0 +1,359 @@
+{
+  "schemaVersion": 1,
+  "kind": "reproducible-isolated-exact-state-counter-diagnostic-v2",
+  "sourceBaseRevision": "684343309d6e0536215bcd448a604ae7ea676d4e",
+  "privateMacSourceCommit": "28d85762a71c2723e600889338c2bd7adfa24c6e",
+  "patch": {
+    "path": "tools/measurement/exact-state-counter-v2.patch",
+    "bytes": 40424,
+    "sha256": "52bf0a888b94a95d020346a8d26bb7bf8e8b97338bd839d7a07aca28a5ea29b0",
+    "mode": "0o644"
+  },
+  "changes": [
+    {
+      "path": "portable/.cargo/config.toml",
+      "baseline": null,
+      "derivative": {
+        "bytes": 137,
+        "sha256": "6ae86c332eb678f62094c5e3ef4115b347a1fa2e2721cfec885f71eace849952"
+      }
+    },
+    {
+      "path": "portable/Cargo.lock",
+      "baseline": null,
+      "derivative": {
+        "bytes": 8778,
+        "sha256": "b91e1c18bbd4ab60accaefd6b18cba32529f80007abf30b87458c4b5586185bb"
+      }
+    },
+    {
+      "path": "portable/Cargo.toml",
+      "baseline": null,
+      "derivative": {
+        "bytes": 496,
+        "sha256": "e0a1b10ccf369ace59aae3489702d006eb1a46fa962df23fd0c46d408b149f30"
+      }
+    },
+    {
+      "path": "portable/src/lib.rs",
+      "baseline": null,
+      "derivative": {
+        "bytes": 5450,
+        "sha256": "f52de582471253b7a406ef6b834540649432b176aa9750d9fa949a588a0bc45d"
+      }
+    },
+    {
+      "path": "src-tauri/Cargo.toml",
+      "baseline": {
+        "bytes": 1854,
+        "sha256": "d087a55345bdea6e08e4c2233f4f794f7a3d39eed0d78a8110d70471b3d9f62a"
+      },
+      "derivative": {
+        "bytes": 2010,
+        "sha256": "dd74d4a45f781bd61b3594153c39224cc090db824519580389666e247073e1bc"
+      }
+    },
+    {
+      "path": "src-tauri/examples/engine_profile_probe/native_perf.rs",
+      "baseline": null,
+      "derivative": {
+        "bytes": 2025,
+        "sha256": "6dd43e6941008a348f7e168060ca1fd211ca35e51852269a601278af668a87c1"
+      }
+    },
+    {
+      "path": "src-tauri/examples/engine_profile_probe.rs",
+      "baseline": {
+        "bytes": 32818,
+        "sha256": "828ce973ec371f030a9ce4226b74ea2b429dafc008ff05f62817579d4dd9945b"
+      },
+      "derivative": {
+        "bytes": 36597,
+        "sha256": "6fbf4cb1cd6daabc4cda1ff806c75f41e0f1227b715b66f0d97e3003a8583964"
+      }
+    },
+    {
+      "path": "src-tauri/src/transcription/profile.rs",
+      "baseline": {
+        "bytes": 4346,
+        "sha256": "98b27afb592e2ab08761bb9e2c69531fa569a0e5deebebfc73ba28db7ded0b85"
+      },
+      "derivative": {
+        "bytes": 6438,
+        "sha256": "73001eb3431b4dd1a27e689e531c64ef41dcb26a252902bd77be0cf4084e5141"
+      }
+    },
+    {
+      "path": "src-tauri/src/transcription.rs",
+      "baseline": {
+        "bytes": 32251,
+        "sha256": "066433cff9911eb0a187f0949330988b2ae8379e7347e6bd4b5065e664518a86"
+      },
+      "derivative": {
+        "bytes": 33144,
+        "sha256": "0579d788f7b67d5b4f2936889a375109ea62b40944103f79fee61859970c5aee"
+      }
+    },
+    {
+      "path": "vendor/whisper-rs/Cargo.toml",
+      "baseline": {
+        "bytes": 1907,
+        "sha256": "fead7612fd1e7cc8a46fdd8790bcf1a06e55897ee12d997a371f42b3c2c9cabe"
+      },
+      "derivative": {
+        "bytes": 1972,
+        "sha256": "0cfccbd20125b7dc8ff9336b4b076d3c7604f91d93d9cdbc75cb253bdc902460"
+      }
+    },
+    {
+      "path": "vendor/whisper-rs/src/lib.rs",
+      "baseline": {
+        "bytes": 3416,
+        "sha256": "2218daa724d991a38eb121578861d00008ef4498460d916aed92d07252325c28"
+      },
+      "derivative": {
+        "bytes": 3539,
+        "sha256": "c29412768349b5126a04e346689a65685cf98a11747673f080bbb96202e74b99"
+      }
+    },
+    {
+      "path": "vendor/whisper-rs/src/whisper_state/mod.rs",
+      "baseline": {
+        "bytes": 12602,
+        "sha256": "3bb8bda10aabe8bb46ba0c1cb5da68128284dfe33b4ef7cc5d8654acee63bdd9"
+      },
+      "derivative": {
+        "bytes": 13611,
+        "sha256": "1e6ec1e79b52347b62aaee1d1ac208fa9116fd58dbe4d5f51f7356962b58e3b5"
+      }
+    },
+    {
+      "path": "vendor/whisper-rs-sys/Cargo.toml",
+      "baseline": {
+        "bytes": 1747,
+        "sha256": "662014946424b030a3887685a5e47994f9db9ed964433feb46de68920c41589e"
+      },
+      "derivative": {
+        "bytes": 1774,
+        "sha256": "22bce3c76c70ac6b6b741c30977a72beb9e96f320367987220b9fe83f069e112"
+      }
+    },
+    {
+      "path": "vendor/whisper-rs-sys/build.rs",
+      "baseline": {
+        "bytes": 14435,
+        "sha256": "c819290c9bee7ffbda54a38dfc0fbf825fb10de1455020999652a6ac85c460c6"
+      },
+      "derivative": {
+        "bytes": 15152,
+        "sha256": "3a82818343534977b72f57f2b680484f0d3c77ceb96d4d2570965905b06a57df"
+      }
+    },
+    {
+      "path": "vendor/whisper-rs-sys/tests/state_perf_abi.c",
+      "baseline": null,
+      "derivative": {
+        "bytes": 462,
+        "sha256": "17806f91babcd67dfd9726f74686c8e7f55e7d101f8f3946e744f587aeb941dd"
+      }
+    },
+    {
+      "path": "vendor/whisper-rs-sys/tests/state_perf_contract/CMakeLists.txt",
+      "baseline": null,
+      "derivative": {
+        "bytes": 846,
+        "sha256": "ba29f938225bb939b7725ba8af10d70f9aa0bc56dbf0b2883ee258fe7b7f243a"
+      }
+    },
+    {
+      "path": "vendor/whisper-rs-sys/tests/state_perf_contract.cpp",
+      "baseline": null,
+      "derivative": {
+        "bytes": 2412,
+        "sha256": "e1d57fbf4474d5196f68325cf6d0848adbb4bfbc6dfe5212e26fb2de9ac7a7ff"
+      }
+    },
+    {
+      "path": "vendor/whisper-rs-sys/whisper.cpp/include/whisper.h",
+      "baseline": {
+        "bytes": 35157,
+        "sha256": "0525b758571ab71c00ddd8ea2845f74af7c62dfa5100c5586655f75bdc5ef4be"
+      },
+      "derivative": {
+        "bytes": 35970,
+        "sha256": "a3214a85ca48e1d7efb7d10af2dcb6c808da6e8656f5edec4051d0f6d40da31b"
+      }
+    },
+    {
+      "path": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+      "baseline": {
+        "bytes": 330873,
+        "sha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e"
+      },
+      "derivative": {
+        "bytes": 331391,
+        "sha256": "a744968a167e9649aef97b35ebf26578280bde197919b96c3cfd9bb87aa8899d"
+      }
+    }
+  ],
+  "quality47Transfer": {
+    "historicalBasePinsVerified": 47,
+    "unchanged": [
+      "src-tauri/src/lib.rs",
+      "src-tauri/examples/corpus_probe/input.rs",
+      "src-tauri/src/transcription/prefix_cache/evidence.rs",
+      "src-tauri/src/audio.rs",
+      ".cargo/config.toml",
+      "Cargo.lock",
+      "src-tauri/src/audio/replay/clock.rs",
+      "src-tauri/src/controller.rs",
+      "crates/dictation-core/src/audio.rs",
+      "src-tauri/src/transcription/observation.rs",
+      "src-tauri/src/transcription/phase.rs",
+      "src-tauri/src/audio/full_prefix.rs",
+      "src-tauri/examples/paced_runtime_probe/full_prefix.rs",
+      "src-tauri/examples/paced_runtime_probe/full_prefix_configuration.rs",
+      "src-tauri/src/controller/full_prefix.rs",
+      "src-tauri/src/inference_service.rs",
+      "src-tauri/src/runtime/measurement/job_trace.rs",
+      "src-tauri/src/runtime/measurement.rs",
+      "src-tauri/src/model.rs",
+      "crates/macos-integration/src/lib.rs",
+      "crates/macos-integration/Cargo.toml",
+      "crates/macos-integration/src/realtime.rs",
+      "src-tauri/examples/paced_runtime_probe/options.rs",
+      "src-tauri/examples/paced_runtime_probe/parameters.rs",
+      "vendor/whisper-rs/src/whisper_params.rs",
+      "crates/dictation-core/src/audio/pauses.rs",
+      "src-tauri/src/pipeline.rs",
+      "src-tauri/src/audio/pretranscription.rs",
+      "src-tauri/src/transcription/prefix_cache.rs",
+      "src-tauri/examples/paced_runtime_probe/pretranscription.rs",
+      "src-tauri/examples/paced_runtime_probe/pretranscription_configuration.rs",
+      "src-tauri/examples/paced_runtime_probe.rs",
+      "src-tauri/examples/paced_runtime_probe/publisher.rs",
+      "crates/macos-integration/src/qos.rs",
+      "src-tauri/src/audio/replay.rs",
+      "src-tauri/examples/paced_runtime_probe/runner.rs",
+      "src-tauri/src/runtime.rs",
+      "src-tauri/src/audio/replay/schedule.rs",
+      "src-tauri/src/controller/pretranscription.rs",
+      "src-tauri/src/transcription/speech_gate.rs",
+      "src-tauri/examples/paced_runtime_probe/statistics.rs",
+      "vendor/whisper-rs/src/whisper_vad.rs",
+      "src-tauri/src/inference_service/observation.rs",
+      "Cargo.toml"
+    ],
+    "changed": [
+      "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+      "src-tauri/src/transcription.rs",
+      "src-tauri/Cargo.toml"
+    ],
+    "changedCount": 3,
+    "old47IdentityClaim": false
+  },
+  "sourceArchive": {
+    "path": "artifacts/p06-exact-state-counter-diagnostic-v2/source-packet-v2.tar.gz",
+    "bytes": 1277504,
+    "sha256": "407dc473ee6fdbf79aabbfe62c9b4dd1122fd75796c036ffb152b93bb7435cd0",
+    "mode": "0o600"
+  },
+  "sourcePacket": {
+    "path": "artifacts/p06-exact-state-counter-diagnostic-v2/packet.json",
+    "bytes": 13813,
+    "sha256": "2673b7058d8c8ee6e025b3476a7a5ecf1b8a6877ed25959b2a0aab61d06bcff8",
+    "mode": "0o600"
+  },
+  "sourceReview": {
+    "combinedReviewPassed": true,
+    "testInitializerFindingFixedInV2": true,
+    "scope": "typed ABI/ownership/success-only getter/feature boundary/source reconstruction/historical native evidence plus exact two-test V2 delta"
+  },
+  "portableVerification": {
+    "platform": "Linux x86_64 Workhorse",
+    "noModelAudioOrAsrCalls": true,
+    "noDownloads": true,
+    "nativeSyntheticContract": "GREEN with assertions explicitly enabled despite upstream Release",
+    "nativeCounterMutant": "RED for actual wrong mel value, exact bytes restored, GREEN",
+    "nativeErrorGetterGateMutant": "RED for calling capture after full failure, exact bytes restored, GREEN",
+    "rustDiagnosticTests": 7,
+    "rustIncludesRealBindgenAndLinkedNullGetter": true,
+    "defaultCargoCompileSmoke": "GREEN (0 behavior tests)",
+    "defaultNativeGetterSymbol": "ABSENT in normal archive",
+    "safeSharedBorrowNegative": "E0596 as expected",
+    "c11Abi": "GREEN 80B align8 offsets48/72",
+    "fallbackBindingGuard": "diagnostic rejects bundled bindings as expected",
+    "patchReconstruction": "git apply to separate exact base then all changed target hashes match",
+    "scopeV2": "Exactly one seven-test portable run on fresh target-v2; all native/mutant/ABI/default-symbol evidence above belongs to unchanged V1 implementation, not rerun."
+  },
+  "macVerification": {
+    "rustc": "1.93.0",
+    "defaultReleaseBuildExitCode": 0,
+    "diagnosticReleaseBuildExitCode": 0,
+    "exampleFeatureTests": 12,
+    "exampleFeatureTestsPassed": true,
+    "strictClippyTestProfilePassed": true,
+    "C11ABICompilationPassed": true,
+    "distinctNativeOutDirectories": true,
+    "defaultGetterSymbolAbsent": true,
+    "diagnosticGetterSymbolDefined": true
+  },
+  "macDefaultReadback": {
+    "path": "artifacts/p06-exact-state-counter-mac-v2/default-build-readback.json",
+    "bytes": 1571,
+    "sha256": "5f8d8ddf37cbe30e7e28540b9281b31faafb6485e6f2712999235e24e3c20f34",
+    "mode": "0o600"
+  },
+  "macDiagnosticReadback": {
+    "path": "artifacts/p06-exact-state-counter-mac-v2/diagnostic-build-readback.json",
+    "bytes": 2344,
+    "sha256": "88c4a5eeb917249babb7741a615cf4dd9f60b4ef4fe6c389a0b5de03dc2fa1d4",
+    "mode": "0o600"
+  },
+  "prospectiveCalibrationFreeze": {
+    "path": "artifacts/p06-exact-state-counter-mac-v2/pilot-v1/prospective-freeze.json",
+    "bytes": 652665,
+    "sha256": "802d7276d74fecdca1620d6dab960c818f48e0f90d74e29fd0fb69cccce99707",
+    "mode": "0o600"
+  },
+  "independentBuildPilotReadback": {
+    "path": "artifacts/p06-exact-state-counter-mac-v2/independent-build-pilot-readback-v1.json",
+    "bytes": 15368,
+    "sha256": "0fe4add7ff9f9de74ad38b647f059b005b0e24114f82feb56ffecca509e0decf",
+    "mode": "0o600"
+  },
+  "calibration": {
+    "fixtureId": "fleurs-de-dev-1510",
+    "language": "de",
+    "inputFrames": 144000,
+    "warmupCalls": 1,
+    "measuredCalls": 3,
+    "nativeFullMeasuredNanos": [
+      1000309125,
+      1000165250,
+      1000186583
+    ],
+    "nativeEncodeRawMeasuredMicros": [
+      901994,
+      901618,
+      901758
+    ],
+    "getterMeasuredWallNanos": [
+      0,
+      0,
+      125
+    ],
+    "allFourTextHashesMatchPriorProfile": true
+  },
+  "qualified": false,
+  "L": null,
+  "mainProductSourcesChanged": false,
+  "limits": [
+    "One separately designated calibration fixture; no central quality, latency or resource acceptance.",
+    "encodeUs covers existing Conv/Encoder/Cross scope, not isolated transformer or GPU utilization.",
+    "Raw counters/counts and signed residual remain diagnostic; no forced disjoint time partition.",
+    "Zero-duration getter readbacks reflect clock resolution, not zero observation overhead.",
+    "The existing upstream failed-full state/free/drop limitation is not fixed by this observation-only package.",
+    "No automatic transfer of the old 47-source quality approval or product activation."
+  ]
+}
