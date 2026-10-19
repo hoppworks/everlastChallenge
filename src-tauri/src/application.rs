@@ -25,13 +25,13 @@ pub struct Snapshot {
 }
 #[derive(Debug, thiserror::Error)]
 pub enum ApplicationError {
-    #[error("Application is closing")]
+    #[error("Die Anwendung wird beendet.")]
     Closed,
-    #[error("Application request queue is full")]
+    #[error("Es sind bereits zu viele Anwendungsanfragen offen.")]
     Busy,
-    #[error("Application synchronization failed")]
+    #[error("Der Anwendungszustand konnte nicht sicher abgeglichen werden.")]
     Synchronization,
-    #[error("Application worker failed: {0}")]
+    #[error("Der Hintergrunddienst der Anwendung ist fehlgeschlagen: {0}")]
     Worker(String),
 }
 struct State {
@@ -208,9 +208,11 @@ impl AppSupervisor {
                                     )
                                     .map_err(worker_error)?,
                                 );
-                                let start_native = factory
-                                    .take()
-                                    .ok_or_else(|| worker_error("Native factory consumed"))?;
+                                let start_native = factory.take().ok_or_else(|| {
+                                    worker_error(
+                                        "Der Dienst für die Übergabe wurde bereits eingerichtet.",
+                                    )
+                                })?;
                                 native_service =
                                     Some(start_native(endpoint).map_err(worker_error)?);
                                 state.runtime = runtime.as_ref().map(Runtime::client);
@@ -221,7 +223,7 @@ impl AppSupervisor {
                                 let snapshot = runtime.client().snapshot().map_err(worker_error)?;
                                 if !snapshot.running {
                                     return Err(worker_error(snapshot.error.unwrap_or_else(
-                                        || "Dictation runtime stopped unexpectedly".into(),
+                                        || "Der Diktierdienst wurde unerwartet beendet.".into(),
                                     )));
                                 }
                             }
@@ -229,7 +231,9 @@ impl AppSupervisor {
                                 .as_ref()
                                 .is_some_and(NativeService::is_finished)
                             {
-                                return Err(worker_error("Native service stopped unexpectedly"));
+                                return Err(worker_error(
+                                    "Der Dienst für die Übergabe wurde unerwartet beendet.",
+                                ));
                             }
                         }
                         match receive.recv_timeout(Duration::from_millis(10)) {
@@ -300,7 +304,9 @@ impl AppSupervisor {
             .take()
             .ok_or(ApplicationError::Closed)?
             .join()
-            .map_err(|_| ApplicationError::Worker("Supervisor panicked".into()))?;
+            .map_err(|_| {
+                ApplicationError::Worker("Die Anwendungssteuerung wurde unerwartet beendet.".into())
+            })?;
         joined.and(requested)
     }
 }
@@ -323,7 +329,8 @@ impl Drop for Exit {
                 state.snapshot.error = Some(error.to_string());
             }
             if !state.snapshot.closing && state.snapshot.error.is_none() {
-                state.snapshot.error = Some("Application owner stopped unexpectedly".into());
+                state.snapshot.error =
+                    Some("Der Hintergrunddienst der Anwendung wurde unerwartet beendet.".into());
             }
             state.runtime = None;
             state.snapshot.runtime_available = false;

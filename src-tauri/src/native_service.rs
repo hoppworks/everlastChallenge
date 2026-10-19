@@ -3,9 +3,10 @@ use crate::runtime::{NativeCommand, NativeEndpoint, NativeResult};
 use crossbeam_channel::{Sender, bounded};
 use dictation_core::session::DeliveryResult;
 use macos_integration::{
-    clipboard::{Snapshot, capture_bounded},
-    delivery::DeliveryToken,
-    main_delivery::{self, Command, Environment, Reply},
+    clipboard::{ClipboardError, Snapshot, capture_bounded},
+    delivery::{CommitError, DeliveryToken},
+    main_delivery::{self, Command, Environment, MainError, Reply},
+    paste::PasteError,
     target::{
         HoldReason, ProcessIdentity, TargetApproval, TargetError,
         worker::{TargetEvent, TargetWorker, WorkerError},
@@ -28,6 +29,50 @@ const RESTORE_DELAY: Duration = Duration::from_millis(500);
 const TICK: Duration = Duration::from_millis(10);
 
 type NativeError = String;
+
+fn clipboard_error_message(error: ClipboardError) -> String {
+    match error {
+        ClipboardError::Limit => "Der Inhalt der Zwischenablage überschreitet die Grenzen für eine sichere Sicherung.",
+        ClipboardError::Protocol => "Die Sicherung der Zwischenablage konnte nicht geprüft werden.",
+        ClipboardError::Memory => "Für die Sicherung der Zwischenablage steht nicht genügend Speicher zur Verfügung.",
+        ClipboardError::Changed => "Die Zwischenablage wurde zwischenzeitlich geändert. Prüfe ihren aktuellen Inhalt.",
+        ClipboardError::Unavailable => "Der Inhalt der Zwischenablage konnte nicht für die Sicherung gelesen werden.",
+        ClipboardError::Timeout => "Die Sicherung der Zwischenablage hat ihr Zeitlimit überschritten.",
+        ClipboardError::Cancelled => "Die Sicherung der Zwischenablage wurde beendet.",
+        ClipboardError::Helper => "Die Sicherung der Zwischenablage konnte nicht abgeschlossen werden.",
+        ClipboardError::Write => "Die Zwischenablage konnte nicht für die Übergabe vorbereitet werden.",
+        ClipboardError::Restore => "Der vorherige Inhalt der Zwischenablage konnte nicht wiederhergestellt werden. Die Zwischenablage kann jetzt leer sein oder einen anderen Inhalt enthalten.",
+        ClipboardError::Io(_) => "Beim Lesen oder Übertragen der Sicherung der Zwischenablage ist ein Fehler aufgetreten.",
+    }.into()
+}
+
+fn paste_error_message(error: PasteError) -> String {
+    match error {
+        PasteError::Clipboard(error) => clipboard_error_message(error),
+        PasteError::Keyboard(macos_integration::keyboard::KeyboardError::Unsupported) => "Im aktuellen Tastaturlayout ist die Einfügetastenkombination nicht eindeutig verfügbar.".into(),
+        PasteError::Target(error) => target_approval_message(error),
+        PasteError::Commit(CommitError::Cancelled) => "Die Übergabe wurde beendet.".into(),
+        PasteError::Commit(CommitError::AlreadyCommitted) => "Die Übergabe wurde bereits freigegeben. Prüfe den Inhalt des Zielfelds.".into(),
+        PasteError::ModifiersHeld => "Eine Zusatztaste ist noch gedrückt. Prüfe das Zielfeld vor dem nächsten Diktat.".into(),
+        PasteError::LayoutChanged => "Das Tastaturlayout wurde während der Übergabe geändert.".into(),
+        PasteError::EventConstruction => "Die Tastaturereignisse für die Übergabe konnten nicht vorbereitet werden.".into(),
+        PasteError::Cleanup { cause, cleanup } => format!("{} Bereinigung fehlgeschlagen: {}", paste_error_message(*cause), clipboard_error_message(cleanup)),
+    }
+}
+
+fn main_error_message(error: MainError) -> String {
+    match error {
+        MainError::WrongThread => {
+            "Die Übergabe konnte nicht auf dem Hauptthread ausgeführt werden.".into()
+        }
+        MainError::Busy => "Eine Übergabe auf dem Hauptthread ist noch nicht abgeschlossen.".into(),
+        MainError::Stale => "Der Übergabeschritt passt nicht mehr zur Sitzung.".into(),
+        MainError::Cancelled => "Die Übergabe wurde beendet.".into(),
+        MainError::Clipboard(error) => clipboard_error_message(error),
+        MainError::Paste(error) => paste_error_message(error),
+        MainError::Target(error) => target_approval_message(error),
+    }
+}
 
 /// Schedule this request once with AppHandle::run_on_main_thread, calling execute there.
 /// At most one scheduled request remains outstanding, even after its caller times out.
@@ -68,9 +113,9 @@ impl MainRequest {
             cleanup,
         } = self;
         let result = if permit.load(Ordering::Acquire) {
-            main_delivery::dispatch(command).map_err(|error| error.to_string())
+            main_delivery::dispatch(command).map_err(main_error_message)
         } else {
-            Err("Main-thread request expired".into())
+            Err("Die Hauptthread-Anfrage ist nicht mehr gültig.".into())
         };
         // Completion and abandonment share a linearization point. Once a reply
         // is visible the slot is free; otherwise this closure owns cleanup.
@@ -108,10 +153,10 @@ impl MainBridge {
             | Command::Cleanup { session } => Some(*session),
         };
         if Instant::now() >= deadline {
-            return Err("Main-thread deadline expired".into());
+            return Err("Die Hauptthread-Anfrage hat ihr Zeitlimit überschritten.".into());
         }
         if self.occupied.swap(true, Ordering::AcqRel) {
-            return Err("Main-thread request still outstanding".into());
+            return Err("Eine Hauptthread-Anfrage ist noch nicht abgeschlossen.".into());
         }
         let (reply, receive) = bounded(1);
         let permit = Arc::new(AtomicBool::new(true));
@@ -138,7 +183,7 @@ impl MainBridge {
             {
                 let _completed = completion
                     .lock()
-                    .map_err(|_| "Main completion lock poisoned")?;
+                    .map_err(|_| "Das Ergebnis der Hauptthread-Anfrage konnte nicht sicher übernommen werden.")?;
                 match receive.try_recv() {
                     Ok(result) => return result,
                     Err(crossbeam_channel::TryRecvError::Disconnected) => {
@@ -146,7 +191,10 @@ impl MainBridge {
                             token.cancel();
                         }
                         permit.store(false, Ordering::Release);
-                        return Err("Main-thread request lost".into());
+                        return Err(
+                            "Das Ergebnis der Hauptthread-Anfrage konnte nicht bestätigt werden."
+                                .into(),
+                        );
                     }
                     Err(crossbeam_channel::TryRecvError::Empty) => {}
                 }
@@ -159,7 +207,7 @@ impl MainBridge {
                         token.cancel();
                     }
                     permit.store(false, Ordering::Release);
-                    return Err("Main-thread request cancelled or timed out".into());
+                    return Err("Die Hauptthread-Anfrage wurde beendet oder hat ihr Zeitlimit überschritten. Ihr Ergebnis ist nicht bestätigt.".into());
                 }
             }
             thread::sleep(TICK.min(deadline.saturating_duration_since(Instant::now())));
@@ -241,7 +289,9 @@ impl NativeBackend {
             .call(command, token, Instant::now() + STEP_LIMIT)?
         {
             Reply::Prepared | Reply::Installed | Reply::Sent | Reply::Cleaned(_) => Ok(()),
-            Reply::Environment(_) => Err("Unexpected main-thread response".into()),
+            Reply::Environment(_) => {
+                Err("Die Antwort des Hauptthreads passt nicht zur Anfrage.".into())
+            }
         }
     }
 }
@@ -409,7 +459,7 @@ impl Backend for NativeBackend {
             .call(Command::Environment, Some(token), deadline)?
         {
             Reply::Environment(environment) => Ok(environment),
-            _ => Err("Missing native environment".into()),
+            _ => Err("Die Voraussetzungen für die Übergabe konnten nicht bestätigt werden.".into()),
         }
     }
     fn approve(
@@ -421,9 +471,9 @@ impl Backend for NativeBackend {
         self.next_request = self
             .next_request
             .checked_add(1)
-            .ok_or("Native request identifiers exhausted")?;
-        let request =
-            NonZeroU64::new(self.next_request).ok_or("Invalid native request identifier")?;
+            .ok_or("Für die Zielprüfung ist keine weitere Anfragekennung verfügbar.")?;
+        let request = NonZeroU64::new(self.next_request)
+            .ok_or("Die Anfragekennung der Zielprüfung ist ungültig.")?;
         self.target
             .approve(session, request, process)
             .map_err(target_worker_message)?;
@@ -443,7 +493,7 @@ impl Backend for NativeBackend {
         Err("Das ursprüngliche Textfeld konnte für diese Übergabe nicht eindeutig bestätigt werden.".into())
     }
     fn backup(&mut self, name: &str, token: &DeliveryToken) -> Result<Snapshot, NativeError> {
-        capture_bounded(&self.helper, name, token).map_err(|error| error.to_string())
+        capture_bounded(&self.helper, name, token).map_err(clipboard_error_message)
     }
     fn prepare(
         &mut self,
@@ -499,7 +549,7 @@ impl NativeService {
         let helper = std::env::current_exe().map_err(|error| error.to_string())?;
         Self::spawn(endpoint, helper, move |request| {
             app.run_on_main_thread(move || request.execute())
-                .map_err(|error| error.to_string())
+                .map_err(|_| "Die Hauptthread-Anfrage konnte nicht eingeplant werden.".to_owned())
         })
     }
 
@@ -561,9 +611,9 @@ impl NativeService {
         self.stop();
         self.worker
             .take()
-            .ok_or("Native worker missing")?
+            .ok_or("Der Dienst für die Übergabe ist nicht mehr verfügbar.")?
             .join()
-            .map_err(|_| "Native worker panicked")?
+            .map_err(|_| "Der Dienst für die Übergabe wurde unerwartet beendet.")?
     }
 }
 impl Drop for NativeService {
@@ -589,7 +639,7 @@ struct Owner<B: Backend> {
 impl<B: Backend> Owner<B> {
     fn check(&self, token: &DeliveryToken) -> Result<(), NativeError> {
         if self.stopping.load(Ordering::Acquire) || !token.is_pending() {
-            Err("Native delivery cancelled".into())
+            Err("Die Übergabe wurde beendet.".into())
         } else {
             Ok(())
         }
@@ -598,7 +648,7 @@ impl<B: Backend> Owner<B> {
         let mut current = self
             .token
             .lock()
-            .map_err(|_| "Native token lock poisoned")?;
+            .map_err(|_| "Die Zugehörigkeit der Übergabe konnte nicht sicher bestätigt werden.")?;
         *current = Some(token.clone());
         self.check(token)
     }
@@ -618,10 +668,10 @@ impl<B: Backend> Owner<B> {
         let environment = self.backend.environment(token, deadline)?;
         self.check(token)?;
         if !environment.accessibility_trusted {
-            return Err("Accessibility permission missing".into());
+            return Err("Die Freigabe für Bedienungshilfen fehlt. Prüfe vor dem nächsten Diktat Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen → Everlast Dictation.".into());
         }
         if environment.secure_input {
-            return Err("Secure input active".into());
+            return Err("Eine geschützte Eingabe ist aktiv. Wähle nach deren Abschluss für das nächste Diktat ein normales beschreibbares Textfeld.".into());
         }
         Ok(environment)
     }
@@ -634,12 +684,12 @@ impl<B: Backend> Owner<B> {
         if !self.captured.as_ref().is_some_and(|capture| {
             capture.valid && capture.session == session && capture.token.same_work(token)
         }) {
-            return Err("No matching frozen start target".into());
+            return Err("Das ursprüngliche Textfeld konnte dieser Übergabe nicht eindeutig zugeordnet werden.".into());
         }
         self.cleanup()?;
         self.track(token)?;
         if token.session() != session || text.is_empty() || text.len() > 256 * 1024 {
-            return Err("Invalid native delivery".into());
+            return Err("Die Übergabe ist ungültig.".into());
         }
         let deadline = Instant::now() + MODIFIER_LIMIT;
         let environment = loop {
@@ -648,7 +698,7 @@ impl<B: Backend> Owner<B> {
                 break environment;
             }
             if Instant::now() >= deadline {
-                return Err("Physical modifier keys remain held".into());
+                return Err("Eine Zusatztaste ist noch gedrückt. Lass die Zusatztasten los und prüfe das Zielfeld vor dem nächsten Diktat.".into());
             }
             thread::sleep(TICK.min(deadline.saturating_duration_since(Instant::now())));
         };
@@ -695,13 +745,13 @@ impl<B: Backend> Owner<B> {
                         .as_ref()
                         .is_some_and(|capture| capture.session >= session)
                     {
-                        Err("Start target already fixed for this session".into())
+                        Err("Das Startziel wurde für diese Sitzung bereits festgelegt.".into())
                     } else {
                         let result = self.track(&token).and_then(|()| {
                             if token.session() != session {
-                                return Err("Target token does not match session".into());
+                                return Err("Die Startzielanfrage passt nicht zu dieser Sitzung.".into());
                             }
-                            let process = process.ok_or("Start target not captured")?;
+                            let process = process.ok_or("Das Startziel wurde nicht erfasst. Wähle für das nächste Diktat ein beschreibbares Textfeld.")?;
                             self.backend.capture(session, process, &token)
                         });
                         self.captured = Some(Captured {
@@ -735,7 +785,7 @@ impl<B: Backend> Owner<B> {
                     })();
                     let result = waited.and_then(|()| match NonZeroU64::new(session) {
                         Some(id) => self.deliver(id, text, &token),
-                        None => Err("Invalid native session".into()),
+                        None => Err("Die Sitzung für die Übergabe ist ungültig.".into()),
                     });
                     let result = match result {
                         Ok(()) => DeliveryResult::Sent,
@@ -748,12 +798,12 @@ impl<B: Backend> Owner<B> {
                             };
                             match cleanup {
                                 Ok(()) if token.is_committed() => DeliveryResult::Failed(format!(
-                                    "Send committed but completion could not be confirmed: {error}"
+                                    "Der Abschluss der Übergabe konnte nicht bestätigt werden. Prüfe den Inhalt des Zielfelds. {error}"
                                 )),
                                 Ok(()) => DeliveryResult::Held(error),
-                                Err(cleanup) => {
-                                    DeliveryResult::Failed(format!("{error}; cleanup: {cleanup}"))
-                                }
+                                Err(cleanup) => DeliveryResult::Failed(format!(
+                                    "{error} Bereinigung fehlgeschlagen: {cleanup}"
+                                )),
                             }
                         }
                     };
@@ -769,7 +819,9 @@ impl<B: Backend> Owner<B> {
             self.endpoint
                 .responses
                 .try_send(response)
-                .map_err(|error| format!("Native response queue: {error}"))?;
+                .map_err(|error| {
+                    format!("Die Antwort der Übergabe konnte nicht zugestellt werden: {error}")
+                })?;
         }
         Ok(())
     }
