@@ -512,7 +512,7 @@ impl Reporting {
 define_class!(
     #[unsafe(super(NSObject))]
     #[thread_kind = MainThreadOnly]
-    #[ivars = RefCell<Reporting>]
+    #[ivars = RefCell<Box<Reporting>>]
     struct Reporter;
     unsafe impl NSObjectProtocol for Reporter {}
     impl Reporter {
@@ -796,7 +796,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             stopped: false,
         };
         // SAFETY: initialize the declared NSObject subclass on its main thread.
-        let allocated = Reporter::alloc(main).set_ivars(RefCell::new(state));
+        let allocated = Reporter::alloc(main).set_ivars(RefCell::new(Box::new(state)));
         let reporter: Retained<Reporter> = unsafe { msg_send![super(allocated), init] };
         delegate.ivars().borrow_mut().reporter = Some(reporter.clone());
         // SAFETY: Reporter implements tick: with exactly NSTimer's public target/action signature;
@@ -837,6 +837,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn reporter_ivars_fit_objective_c_runtime_alignment() {
+        assert!(
+            std::mem::align_of::<<Reporter as objc2::DefinedClass>::Ivars>()
+                <= std::mem::align_of::<usize>(),
+            "Reporter ivars must fit objc2 instance-ivar alignment"
+        );
+    }
     struct Temp(PathBuf);
     impl Temp {
         fn new() -> io::Result<Self> {

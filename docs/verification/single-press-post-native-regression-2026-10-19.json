@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kind": "single-press-post-native-regression",
+  "passed": true,
+  "reportPath": "artifacts/autonomous-tests/1792428092614-fa88aa85-3759-4e8b-9da8-e5cb844d34ee/report.json",
+  "reportSha256": "ed50b6a263c625cf2d98d48a6f31b7148e1c28d650dbd662fd42944c2ae2200b",
+  "executedRustTests": 472,
+  "uiTests": 215,
+  "nodePassed": 104,
+  "nodeOptionalSkipped": 1,
+  "pythonTests": 204,
+  "nativeClipboardIncluded": true,
+  "hostCampaignTestsOnly": true,
+  "actualMicrophoneOrPhysicalGesture": false,
+  "scope": "Full software regression after host/handoff/keyboard/clipboard changes. Later recipient ABI-only change separately has14example tests+Clippy+actualCUA launch; this original report is retained unchanged.",
+  "supplement": "docs/verification/native-recipient-alignment-2026-10-19.json"
+}

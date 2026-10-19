@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-recipient-startup-alignment-fix",
+  "observedFailure": "Two CUA launches ended exit101; objc2 Reporter Ivars alignment16 unsupported",
+  "fix": "RefCell<Box<Reporting>> keeps Objective-C instance ivars pointer-aligned and Rust heap payload correctly aligned",
+  "redCapableRegression": "cargo test -p macos-integration --example native_text_recipient reporter_ivars_fit_objective_c_runtime_alignment",
+  "redExitCode": 101,
+  "greenTests": 14,
+  "strictClippyPassed": true,
+  "actualCuaLaunchAfterFix": "window Everlast Testziel and native editable multiline field appeared; no panic",
+  "actualProcessId": 99303,
+  "actualRuntimeReadiness": {
+    "running": true,
+    "applicationActive": false,
+    "frontmostIsSelf": false,
+    "windowKey": false,
+    "focusedField": "multiline",
+    "accessibilityFocused": true
+  },
+  "readyForPhysicalGesture": false,
+  "diagnosticHookRemoved": true,
+  "independentReview": "recipient_metadata_review: no findings; heap alignment/drop/main-thread behavior correct",
+  "sha256": {
+    "crates/macos-integration/examples/native_text_recipient.rs": "b106a54bff1a42561c4beda71c21f13d8386495c5f1eca9058c556dcae93ebd7",
+    "artifacts/recipient-start-diagnostic-v1/panic.txt": "e6366f31f200dd79d9479c3bb0a0b3f08a9e0cde58c81c92f7bdc2127bb457e4",
+    "artifacts/recipient-ivars-alignment-red.log": "9017c0a55863fba1322d8a72d36607292b20955c7663d6aca47ab15f9caa4725",
+    "artifacts/recipient-ivars-alignment-green.log": "68d79c4eaf59d26130a75e17d2390331f29d7e902236bebe31963483c6ca35d8",
+    "artifacts/recipient-ivars-alignment-build.log": "6db22d518da6de5a407a219dd246211937ad11fcd11e3a01cc8069793c0fe46d",
+    "artifacts/recipient-ivars-alignment-clippy.log": "f7fb168d23bfe9f7dc3277e92484de3310dc505470df1aa19e99164a81c21d30"
+  },
+  "limits": [
+    "Actual startup fixed; foreground/key-window prerequisites still false after CUA background launch/raise/click. No ready signal, gesture, recording or delivery claimed."
+  ]
+}
