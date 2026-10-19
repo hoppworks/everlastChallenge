@@ -1,0 +1,53 @@
+{
+  "observedAtUtc": "2026-10-19T10:43:34.454820+00:00",
+  "artifact": "installed R4 ee1a6a4",
+  "binarySha256": "efea6ec2df880186788ff775b9beea61be8c53cd61c9485c932ca6f043bc83f5",
+  "method": "native CUA AX actions and subsequent AX readback; manually summarized, not raw event trace",
+  "observations": {
+    "settingsOpenedViaMainButton": true,
+    "tabs": [
+      "Aufnahme",
+      "Berechtigungen",
+      "Modell"
+    ],
+    "recordingSettings": {
+      "microphone": "Systemstandard",
+      "language": "Deutsch",
+      "physicalKey": "D (US-Position D)",
+      "option": true,
+      "command": false,
+      "control": false,
+      "shift": false,
+      "saveEnabled": false
+    },
+    "permissions": {
+      "microphone": "Freigegeben",
+      "accessibility": "Freigegeben",
+      "macosPathsLanguage": "English"
+    },
+    "model": {
+      "name": "large-v3-turbo-q5_0",
+      "state": "Für die lokale Erkennung bereit",
+      "detailsInitiallyCollapsed": true,
+      "detailsExpanded": true,
+      "displaySize": "574,0 MB",
+      "source": "https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-large-v3-turbo-q5_0.bin",
+      "detailsCollapsedAgain": true
+    },
+    "finalSelectedTab": "Berechtigungen"
+  },
+  "keyboardAttempts": {
+    "keys": [
+      "ctrl+Tab",
+      "Tab"
+    ],
+    "observedChange": false,
+    "focusedElement": "standard window Einstellungen",
+    "verdict": "unproven; synthetic event delivery/global activation not established, no product defect inferred"
+  },
+  "limits": [
+    "No full keyboard, VoiceOver or A23 acceptance",
+    "No recording, permission, settings-value or display changes",
+    "Recipient per-app focus does not prove global foreground; automatic delivery still open"
+  ]
+}
