@@ -2,7 +2,20 @@
 
 Native Diktier-App für Apple Silicon und macOS 27. Rust/Tauri 2 mit nativer AppKit-Oberfläche, lokale Whisper-Inferenz und systemnahe Audioaufnahme/Textübergabe.
 
-Aktueller installierter Prüfstand: [lokal signierter Entwickler-Testbuild aus `f592fcd`](docs/verification/test-control-2026-10-19.md), mit korrigierter Auswertung optionaler macOS-Unterrollen und begrenztem lokalem Testzugang. Mikrofon- und Accessibility-Freigaben blieben ohne erneute Anfrage erhalten. Das belegt diese Builds auf diesem Mac. Vorheriger Build und R6 bleiben als Rückfallkopien erhalten. `npm run release:local` verwendet die lokal eingerichtete Signieridentität ohne Developer-Account.
+Aktueller installierter Prüfstand: normaler, lokal signierter Build `212d5e7`
+ohne Entwickler-Steuerkanal. Modellbereitschaft und beide Berechtigungen wurden
+angezeigt; die vollständige Einfügeabnahme steht noch aus. Die mehrstufige
+[native Zielerkennung](docs/verification/target-compatibility-2026-10-19.md)
+und Prüfung nach einmaligem Versand sind implementiert und automatisiert geprüft.
+
+Aktuelles lokales Testpaket: **Everlast-Dictation-Testversion-0.1.0-native-212d5e7-r8.zip**
+in `~/Downloads/`. Der [R8-Paketbeleg](docs/verification/testversion-package-r8.md)
+nennt Quellstand, Buildfeatures und Prüfsummen. Ältere Pakete und die vorige
+Installation bleiben als Rückfallkopien erhalten. Kein öffentlicher Download;
+die [Kurzanleitung](TESTVERSION.md) beschreibt Einrichtung und bekannte Grenzen.
+`npm run release:local` verwendet die eingerichtete lokale Signieridentität
+ohne Developer-Account. Frühere Laufzeitnachweise bleiben in den jeweiligen
+Prüfberichten erhalten und ersetzen keine Abnahme des neuen Builds.
 
 **Testversion (19.10.2026):** Die stabile Referenzfassung ist als lokale Testversion bereitgestellt. Die experimentellen FullPrefix-/Kontext-1400-Optimierungen sind nicht aktiv. Die Referenz hat ihre dokumentierte Modellqualitätsprüfung bestanden, erreicht aber das geplante Stop-bis-Text-Ziel von einer Sekunde nicht durchgehend. Die vollständige Leistungs-, Installations- und integrierte Produktabnahme bleibt offen. [P04 ist im bestätigten Standardmikrofonumfang technisch belegt](docs/verification/p04-standard-microphone-technical-v1.md); zusätzliche Geräte-/Bluetooth-Tests sind nicht erforderlich. Tatsächliche Belege stehen im [Ausführungsprotokoll](docs/execution-log.md), der vollständige Zielumfang im [Implementierungsplan](IMPLEMENTATION_PLAN.md).
 
@@ -62,7 +75,7 @@ numerische Oracle-Abweichung.
 ## Fehler beheben
 
 Die folgenden Schritte beschreiben den aktuellen Quellstand. Installiert ist
-der Entwickler-Testbuild `f592fcd`; R6 bleibt separat als historisches Testpaket
+der normale Build `212d5e7`; R6 bleibt separat als historisches Testpaket
 verfügbar. Die vollständige Produkt- und Installationsabnahme steht noch aus.
 
 | Beobachtung | Nächster Schritt |

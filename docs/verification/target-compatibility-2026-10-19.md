@@ -28,3 +28,13 @@ Antwortlänge wird anschließend erneut kontrolliert. Die Ziel-App kann zwischen
 diesen Abfragen ihren Inhalt ändern; es wird keine atomare Größenbindung
 behauptet. Die [Dateibindung](target-compatibility-2026-10-19.json) trennt
 Vollprofil, spätere gezielte Prüfung und weiterhin fehlende OS-Abnahme.
+
+## Tatsächliche prozessübergreifende Metadatenprüfung
+
+Der lokal signierte Entwicklerbuild aus `212d5e7` las ausschließlich technische
+Metadaten des eigenen nativen Testempfängers. AXEnabled und die optionale
+Unterrolle waren mit -25205 nicht verfügbar; AXValue und AXSelectedText waren
+schreibbar. Die neue Klassifikation ergab `captureEligible: true`, während die
+alte zwingende Enabled-Bedingung das Feld zurückgehalten hätte. Beide Rechte
+blieben erhalten. Keine Aufnahme, kein Inhaltsabruf und keine Einfügung: Diese
+Beobachtung bestätigt die Zielklassifikation, nicht den vollständigen Versand.

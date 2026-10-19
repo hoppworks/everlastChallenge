@@ -1,0 +1,23 @@
+{
+  "observedAtUtc": "2026-10-19T14:15:54.074479+00:00",
+  "sourceCommit": "212d5e7193e72c34cfacd1873ec58771fcdfeeca",
+  "installedPath": "/Applications/Everlast Dictation.app",
+  "binarySha256": "c79d838d2c999a907a850217d131b6c1b5b6d0bc6881505cb906b195210eae2b",
+  "observationMethod": "CUA accessibility tree of installed main window and native Preferences permissions tab",
+  "mainWindow": {
+    "title": "Everlast Dictation",
+    "status": "Bereit zum Diktieren",
+    "recordButtonEnabled": true,
+    "copyButtonEnabled": false,
+    "deleteButtonEnabled": false
+  },
+  "preferences": {
+    "selectedTab": "Berechtigungen",
+    "microphone": "Freigegeben",
+    "accessibility": "Freigegeben"
+  },
+  "recordingStarted": false,
+  "permissionChanged": false,
+  "actualInsertionProven": false,
+  "fullAcceptance": false
+}

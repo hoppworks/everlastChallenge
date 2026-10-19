@@ -28,5 +28,14 @@
       "path": "artifacts/autonomous-suite-v2/native-field-combined-capability.log",
       "sha256": "9bdcecaa0005942ccbafb5b664a8da2a7260bf28112d396833183515bf2d48e6"
     }
-  ]
+  ],
+  "nativeMetadataObservation": {
+    "sourceCommit": "212d5e7193e72c34cfacd1873ec58771fcdfeeca",
+    "ownRecipientAccepted": true,
+    "enabledUnsupported": true,
+    "valueAndSelectedTextSettable": true,
+    "actualTextInsertionProven": false,
+    "proofPath": "artifacts/target-compatibility-v1/native-inspection-proof.json",
+    "proofSha256": "717e837351ce7e159431e2e037c950c364f50727a4b2e5df6093d9f9bb36480c"
+  }
 }
