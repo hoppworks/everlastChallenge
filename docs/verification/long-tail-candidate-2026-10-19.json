@@ -1,0 +1,288 @@
+{
+  "schema": 1,
+  "purpose": "isolated audio-tail candidate; not installed or selected for release",
+  "sourceCommit": "0ac8deab2e427c5bcbaf3517a85891a3fed6f9c0",
+  "normalAppSha256": "c79d838d2c999a907a850217d131b6c1b5b6d0bc6881505cb906b195210eae2b",
+  "vadProbeSha256": "8b53be9a3c2d899ea4951f9b04ea43f94f4c145d3c8912e0a3fdb6bed5014c43",
+  "corpusProbeSha256": "d424f3486431277838ed48d586732454736ddfc252abdecaa78eb5c330fa21f5",
+  "modelSha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+  "vadSha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+  "vadRows": [
+    {
+      "input": "artifacts/long-noise-isolation-v1/noise-low-60s.wav",
+      "exitCode": 0,
+      "output": "frames=960000 score_windows=1875\nthreshold=0.5 last_active_sample=Some(141824)\nthreshold=0.1 last_active_sample=Some(141824)\nthreshold=0.01 last_active_sample=Some(142848)\nthreshold=0.001 last_active_sample=Some(960000)\n",
+      "logSha256": "6fc32c424b470de110ba887c1432f356e8e4416bf6570cc0b04bb8044c7ce638"
+    },
+    {
+      "input": "artifacts/long-noise-isolation-v1/noise-medium.wav",
+      "exitCode": 0,
+      "output": "frames=4800000 score_windows=9375\nthreshold=0.5 last_active_sample=Some(141824)\nthreshold=0.1 last_active_sample=Some(141824)\nthreshold=0.01 last_active_sample=Some(171008)\nthreshold=0.001 last_active_sample=Some(4301824)\n",
+      "logSha256": "501c884293d209aad74fa50dfffd4b40e6ede5d5252da83bac568f1558b86d9f"
+    },
+    {
+      "input": "artifacts/long-tail-candidate-v1/late-quiet-0.1.wav",
+      "exitCode": 0,
+      "output": "frames=960000 score_windows=1875\nthreshold=0.5 last_active_sample=Some(781824)\nthreshold=0.1 last_active_sample=Some(782848)\nthreshold=0.01 last_active_sample=Some(784896)\nthreshold=0.001 last_active_sample=Some(788480)\n",
+      "logSha256": "e26e13d03b814f5d4d76d0b48416f6bf36353afd197b7cf88d66fd151832c564"
+    },
+    {
+      "input": "artifacts/long-tail-candidate-v1/late-quiet-0.01.wav",
+      "exitCode": 0,
+      "output": "frames=960000 score_windows=1875\nthreshold=0.5 last_active_sample=Some(780800)\nthreshold=0.1 last_active_sample=Some(784384)\nthreshold=0.01 last_active_sample=Some(796672)\nthreshold=0.001 last_active_sample=Some(960000)\n",
+      "logSha256": "e97dcd06386ca4b88319e24fc95f66bbae6b11505a47fa06c48934ed1ab08ec3"
+    },
+    {
+      "input": "artifacts/long-tail-candidate-v1/late-quiet-0.001.wav",
+      "exitCode": 0,
+      "output": "frames=960000 score_windows=1875\nthreshold=0.5 last_active_sample=Some(141824)\nthreshold=0.1 last_active_sample=Some(141824)\nthreshold=0.01 last_active_sample=Some(142848)\nthreshold=0.001 last_active_sample=Some(960000)\n",
+      "logSha256": "6fc32c424b470de110ba887c1432f356e8e4416bf6570cc0b04bb8044c7ce638"
+    }
+  ],
+  "candidate": {
+    "diagnosticOnly": true,
+    "threshold": 0.01,
+    "paddingSeconds": 1,
+    "pairs": [
+      {
+        "id": "noise-low-60s",
+        "original": "artifacts/long-noise-isolation-v1/noise-low-60s.wav",
+        "trimmed": "artifacts/long-tail-candidate-v1/noise-low-60s-trimmed.wav",
+        "endSample": 158848,
+        "lastVadSample": 142848,
+        "paddingSamples": 16000
+      },
+      {
+        "id": "noise-medium",
+        "original": "artifacts/long-noise-isolation-v1/noise-medium.wav",
+        "trimmed": "artifacts/long-tail-candidate-v1/noise-medium-trimmed.wav",
+        "endSample": 187008,
+        "lastVadSample": 171008,
+        "paddingSamples": 16000
+      },
+      {
+        "id": "late-quiet-0.1",
+        "original": "artifacts/long-tail-candidate-v1/late-quiet-0.1.wav",
+        "trimmed": "artifacts/long-tail-candidate-v1/late-quiet-0.1-trimmed.wav",
+        "endSample": 800896,
+        "lastVadSample": 784896,
+        "paddingSamples": 16000
+      },
+      {
+        "id": "late-quiet-0.01",
+        "original": "artifacts/long-tail-candidate-v1/late-quiet-0.01.wav",
+        "trimmed": "artifacts/long-tail-candidate-v1/late-quiet-0.01-trimmed.wav",
+        "endSample": 812672,
+        "lastVadSample": 796672,
+        "paddingSamples": 16000
+      },
+      {
+        "id": "late-quiet-0.001",
+        "original": "artifacts/long-tail-candidate-v1/late-quiet-0.001.wav",
+        "trimmed": "artifacts/long-tail-candidate-v1/late-quiet-0.001-trimmed.wav",
+        "endSample": 158848,
+        "lastVadSample": 142848,
+        "paddingSamples": 16000
+      }
+    ]
+  },
+  "verdicts": [
+    {
+      "id": "noise-low-60s-original",
+      "status": "ok",
+      "exactSingleSentence": false,
+      "exactDoubleSentence": false,
+      "textBytes": 147,
+      "expectedSentenceIsPrefix": true,
+      "exactKnownUnplayedSuffix": true
+    },
+    {
+      "id": "noise-low-60s-trimmed",
+      "status": "ok",
+      "exactSingleSentence": true,
+      "exactDoubleSentence": false,
+      "textBytes": 134,
+      "expectedSentenceIsPrefix": true,
+      "exactKnownUnplayedSuffix": false
+    },
+    {
+      "id": "noise-medium-original",
+      "status": "ok",
+      "exactSingleSentence": false,
+      "exactDoubleSentence": false,
+      "textBytes": 386,
+      "expectedSentenceIsPrefix": true,
+      "exactKnownUnplayedSuffix": false
+    },
+    {
+      "id": "noise-medium-trimmed",
+      "status": "ok",
+      "exactSingleSentence": true,
+      "exactDoubleSentence": false,
+      "textBytes": 134,
+      "expectedSentenceIsPrefix": true,
+      "exactKnownUnplayedSuffix": false
+    },
+    {
+      "id": "late-quiet-0.1-original",
+      "status": "ok",
+      "exactSingleSentence": false,
+      "exactDoubleSentence": true,
+      "textBytes": 269,
+      "expectedSentenceIsPrefix": true,
+      "exactKnownUnplayedSuffix": false
+    },
+    {
+      "id": "late-quiet-0.1-trimmed",
+      "status": "ok",
+      "exactSingleSentence": false,
+      "exactDoubleSentence": true,
+      "textBytes": 269,
+      "expectedSentenceIsPrefix": true,
+      "exactKnownUnplayedSuffix": false
+    },
+    {
+      "id": "late-quiet-0.01-original",
+      "status": "ok",
+      "exactSingleSentence": false,
+      "exactDoubleSentence": false,
+      "textBytes": 268,
+      "expectedSentenceIsPrefix": true,
+      "exactKnownUnplayedSuffix": false
+    },
+    {
+      "id": "late-quiet-0.01-trimmed",
+      "status": "ok",
+      "exactSingleSentence": false,
+      "exactDoubleSentence": false,
+      "textBytes": 268,
+      "expectedSentenceIsPrefix": true,
+      "exactKnownUnplayedSuffix": false
+    },
+    {
+      "id": "late-quiet-0.001-original",
+      "status": "ok",
+      "exactSingleSentence": false,
+      "exactDoubleSentence": false,
+      "textBytes": 147,
+      "expectedSentenceIsPrefix": true,
+      "exactKnownUnplayedSuffix": true
+    },
+    {
+      "id": "late-quiet-0.001-trimmed",
+      "status": "ok",
+      "exactSingleSentence": true,
+      "exactDoubleSentence": false,
+      "textBytes": 134,
+      "expectedSentenceIsPrefix": true,
+      "exactKnownUnplayedSuffix": false
+    }
+  ],
+  "wordVerdicts": {
+    "unicodeVersion": "13.0.0",
+    "rows": [
+      {
+        "id": "noise-low-60s-original",
+        "referenceWords": 17,
+        "hypothesisWords": 19,
+        "edits": 2,
+        "normalizedMatch": false
+      },
+      {
+        "id": "noise-low-60s-trimmed",
+        "referenceWords": 17,
+        "hypothesisWords": 17,
+        "edits": 0,
+        "normalizedMatch": true
+      },
+      {
+        "id": "noise-medium-original",
+        "referenceWords": 17,
+        "hypothesisWords": 53,
+        "edits": 36,
+        "normalizedMatch": false
+      },
+      {
+        "id": "noise-medium-trimmed",
+        "referenceWords": 17,
+        "hypothesisWords": 17,
+        "edits": 0,
+        "normalizedMatch": true
+      },
+      {
+        "id": "late-quiet-0.1-original",
+        "referenceWords": 34,
+        "hypothesisWords": 34,
+        "edits": 0,
+        "normalizedMatch": true
+      },
+      {
+        "id": "late-quiet-0.1-trimmed",
+        "referenceWords": 34,
+        "hypothesisWords": 34,
+        "edits": 0,
+        "normalizedMatch": true
+      },
+      {
+        "id": "late-quiet-0.01-original",
+        "referenceWords": 34,
+        "hypothesisWords": 34,
+        "edits": 1,
+        "normalizedMatch": false
+      },
+      {
+        "id": "late-quiet-0.01-trimmed",
+        "referenceWords": 34,
+        "hypothesisWords": 34,
+        "edits": 1,
+        "normalizedMatch": false
+      },
+      {
+        "id": "late-quiet-0.001-original",
+        "referenceWords": 34,
+        "hypothesisWords": 19,
+        "edits": 17,
+        "normalizedMatch": false
+      },
+      {
+        "id": "late-quiet-0.001-trimmed",
+        "referenceWords": 34,
+        "hypothesisWords": 17,
+        "edits": 17,
+        "normalizedMatch": false
+      }
+    ]
+  },
+  "artifactHashes": {
+    "artifacts/long-tail-candidate-v1/Cargo.toml": "2548021acfb9ec91a3413723f7d2a7fcd56e77faa66bfcea4ba5f9f4230317c4",
+    "artifacts/long-tail-candidate-v1/Cargo.lock": "b1cf5e406defce288bda3decbaa92bce06f22304ad21bbf21d87943faa2e3e7d",
+    "artifacts/long-tail-candidate-v1/src/main.rs": "023bc8065be3903760d524c2754d0ebeab338a13084917739e59b8b8eda354b9",
+    "artifacts/long-tail-candidate-v1/README.md": "0541ba267895164123b05111203d82f5b2f9dce6baab7820458f391129c07d1b",
+    "artifacts/long-tail-candidate-v1/build.log": "3f1c95ab3b85ce5380ea2e2717517c8d3d5e1c53c976ebd1edc99a10b21937f4",
+    "artifacts/long-tail-candidate-v1/corpus-build.log": "c825a10675562a4ab17c7be5f62e853cabf64064527fe78e71890dd97a1683b9",
+    "artifacts/long-tail-candidate-v1/late-quiet-inputs.json": "bba924e5f17ae26a01c7cb2b92841df62bf24d53be4422cd6c275eba9fe2415e",
+    "artifacts/long-tail-candidate-v1/vad-results.json": "f4fd8f2a28a27f0ac12c6a3979710043d810dbcbbda4009891500a5efed40173",
+    "artifacts/long-tail-candidate-v1/trim-candidate.json": "a5c85da6d5d24291809e58caf86643f8f19e3a5df19dcec5dbfc279327a1dd8a",
+    "artifacts/long-tail-candidate-v1/paired-inputs.json": "124859e87ee8e33f1d11d585c0d2d2e2b7eaac25cf6b167747bc5bcef4ef87ba",
+    "artifacts/long-tail-candidate-v1/paired-output.json": "d80e659fb5387fc4d9b0a07e74e92190e9a9d822e32d51d40c612e8e30b614a4",
+    "artifacts/long-tail-candidate-v1/paired-output.json.metadata.json": "0168f344ff17ef00868e86084423d71e4691cb0d2899afa43780654c0a1908a8",
+    "artifacts/long-tail-candidate-v1/paired-summary.json": "b56f600affccd451014cf0ea5214cdc7b368f26671e43330f2e394bd96e001df",
+    "artifacts/long-tail-candidate-v1/diagnostic-verdicts.json": "2403910fd6d3f9ee1307df50df664050bcb3eef08b5873cb8790613139bf7d75",
+    "artifacts/long-tail-candidate-v1/word-verdicts.json": "cef38bd67c11376b398d2c7d59d55fb1aa7b3e8d0116943071d539c1a122b2db",
+    "artifacts/long-tail-candidate-v1/noiseless-inputs.json": "4fd26e40ee89244c35028b3fee9dcc88e9d8554b60fbeb5cb4b609bd3cc50d81",
+    "artifacts/long-tail-candidate-v1/noiseless-output.json": "b3f8272de25caeacbca3bd305f65ede73cff2c10e1c0d0dc6315ec8df0eed8f2",
+    "artifacts/long-tail-candidate-v1/noiseless-output.json.metadata.json": "9b118de23392b753e5b1872152a1d3c0a07d54d7e2d9fa854bc93c0d2ca62aab",
+    "artifacts/long-tail-candidate-v1/vad-noiseless.log": "2fc19586f9eb4a48d4fbd3cc1811fd24751f0119b8c4d7f6ee01031e7ef9b211"
+  },
+  "conclusion": "Known unplayed suffix reproduced and removed by isolated audio-tail truncation; no observed WER increase in these five pairs; very quiet second speech still fails in both paths. Candidate not quality-qualified or integrated.",
+  "remaining": [
+    "Behavioral regression tests at real transcription seam",
+    "Conservative scope and quiet/late speech preservation",
+    "Compare final decoder input for existing qualification cases; re-evaluate all changed inputs",
+    "Update source/qualification bindings and release artifacts only after successful integrated validation"
+  ],
+  "microphoneUsed": false,
+  "productSourceChanged": false,
+  "appInstalled": false,
+  "fullA26Pass": false
+}
