@@ -1,0 +1,20 @@
+--- a/vendor/whisper-rs-sys/whisper.cpp/ggml/src/ggml-metal/ggml-metal.cpp
++++ b/vendor/whisper-rs-sys/whisper.cpp/ggml/src/ggml-metal/ggml-metal.cpp
+@@ -483,7 +483,7 @@
+         /* .context   = */ ctx,
+     };
+ 
+-    ggml_backend_metal_set_n_cb(backend, 1);
++    ggml_backend_metal_set_n_cb(backend, 2);
+ 
+     return backend;
+ }
+@@ -575,7 +575,7 @@
+         /* .context   = */ ctx,
+     };
+ 
+-    ggml_backend_metal_set_n_cb(backend, 1);
++    ggml_backend_metal_set_n_cb(backend, 2);
+ 
+     return backend;
+ 
