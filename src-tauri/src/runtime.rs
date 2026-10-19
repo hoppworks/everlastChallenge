@@ -2643,6 +2643,7 @@ mod tests {
     -> Result<(), Box<dyn std::error::Error>> {
         panic_cleanup_contract(Some(true))
     }
+    mod autonomous_contract;
     mod cpal_adapter_contract;
     mod full_prefix_native_contract;
     mod maximum_contract;

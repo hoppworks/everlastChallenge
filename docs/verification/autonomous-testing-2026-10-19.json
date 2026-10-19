@@ -1,0 +1,68 @@
+{
+  "observedAtUtc": "2026-10-19T12:48:55.462780+00:00",
+  "scope": "autonomous-offline-test-entrypoint-and-opt-in-own-recipient-observer",
+  "sourceFiles": [
+    {
+      "path": "scripts/autonomous-tests.mjs",
+      "sha256": "c1e468f619724980c957107447cdcd4762e79cac2d4161234e43c5f9486b3109"
+    },
+    {
+      "path": "scripts/autonomous-tests.test.mjs",
+      "sha256": "b1cf197b2c0c6eadd6ca9f588d1c1fe11a92200bcc74b71f2593b172b29aa718"
+    },
+    {
+      "path": "package.json",
+      "sha256": "5849a595a2f12bec97710627e8995ae0921e230b93cf385f106c93fc4a9d2702"
+    },
+    {
+      "path": "crates/macos-integration/examples/native_text_recipient.rs",
+      "sha256": "d64a4286b906474f608ad4ba7b3da26d2ee400af1b847cabb7016981ee671726"
+    },
+    {
+      "path": "src-tauri/src/runtime/tests/autonomous_contract.rs",
+      "sha256": "e70bada50a2af2ef766c6f9a68aea296490a65c13819f6e8006759e89e1e15ff"
+    },
+    {
+      "path": "src-tauri/src/runtime.rs",
+      "sha256": "1ed4eedd24f6388374a40adbe083c83ed0fb00a6286ec4b547c65a7a209ca5eb"
+    }
+  ],
+  "entrypoint": {
+    "command": "npm run test:autonomous",
+    "report": "artifacts/autonomous-tests/1792413975969-4d47dca2-b2dd-4675-a3c0-d129da8486fb/report.json",
+    "reportSha256": "39dc965a0a6c3f9f4ad7f4975e562b7d1003f15118e20465575d8c53388afc43",
+    "passed": true,
+    "steps": 9,
+    "executedRustTests": 84,
+    "nodeEntrypointTests": 6,
+    "elapsedSeconds": 24.335
+  },
+  "integrated": {
+    "command": "npm test",
+    "exitCode": 0,
+    "log": "artifacts/autonomous-tests/integrated-npm-test.log",
+    "logSha256": "4edf49a927c5863e984997d54cd57d8fec9d95d6f8c4b1a58ca5f436f7134916",
+    "hostLibraryTests": 228,
+    "nativeLibraryTests": 60,
+    "typescriptTests": 215,
+    "nodeTests": 19,
+    "pythonTests": 204
+  },
+  "independentReview": "Two findings corrected; delta readback no remaining code findings. Log hashes independently matched.",
+  "installedR6Changed": false,
+  "newMicrophoneRecording": false,
+  "nativeReporterLaunched": false,
+  "realAutomaticDeliveryProven": false,
+  "certificatesCreated": false,
+  "formalPackagesCompleted": [
+    "P00",
+    "P01",
+    "P05"
+  ],
+  "limits": [
+    "Decoder/native endpoints controlled; no Whisper quality or latency claim.",
+    "New recipient observer is compiled and unit tested; live GUI/timer/focus acceptance still open.",
+    "No source rebuild/sign/install of the existing R6.",
+    "Permission continuity across signed builds remains unproven."
+  ]
+}

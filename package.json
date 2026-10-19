@@ -20,7 +20,8 @@
     "release": "MACOSX_DEPLOYMENT_TARGET=27.0 tauri build --target aarch64-apple-darwin && node scripts/verify-bundle.mjs",
     "verify:bundle": "node scripts/verify-bundle.mjs",
     "check:contracts": "node scripts/check-contracts.mjs",
-    "test:quality": "/usr/bin/python3 -m unittest discover -s tests/quality"
+    "test:quality": "/usr/bin/python3 -m unittest discover -s tests/quality",
+    "test:autonomous": "node scripts/autonomous-tests.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.12.4",
