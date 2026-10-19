@@ -20,7 +20,12 @@ export const steps = [
   {
     id: "entrypoint-regressions",
     command: process.execPath,
-    args: ["--test", "scripts/autonomous-tests.test.mjs"],
+    args: [
+      "--test",
+      "scripts/autonomous-tests.test.mjs",
+      "scripts/sign-local-bundle.test.mjs",
+      "scripts/verify-signing-continuity.test.mjs",
+    ],
   },
   {
     id: "recipient-reporter",

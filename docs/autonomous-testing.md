@@ -75,3 +75,38 @@ oder Importieren einer Signieridentität benötigt nach dem Projektvertrag eine
 gesonderte ausdrückliche Freigabe. Die App-ID allein behebt wechselnde
 Ad-hoc-CDHashes nicht. Apples Hintergrund:
 [Inside Code Signing: Requirements](https://developer.apple.com/documentation/technotes/tn3127-inside-code-signing-requirements).
+
+## Rein lokaler Signierweg und vorbereiteter Vergleich
+
+Für zwei anschließend signierte Kandidaten steht eine rein lesende Prüfung bereit:
+
+```sh
+node scripts/verify-signing-continuity.mjs /absolut/erster.app /absolut/zweiter.app
+```
+
+Beide Signaturen müssen gültig sein; Identifier und nichtleere Designated
+Requirement müssen übereinstimmen, der Codehash muss verschieden sein und
+Ad-hoc-Signaturen werden abgelehnt. Ein Erfolg bedeutet ausschließlich, dass
+der Vergleich für einen tatsächlichen Rechte-Erhaltungstest geeignet ist.
+`permissionsPreserved` bleibt immer unbekannt, bis der echte App-Wechsel mit
+Rechtebeobachtung ausgeführt wurde. Der vorbereitete lokale Weg ersetzt
+keine Developer-ID-Distribution oder Notarisierung.
+
+## Lokale Builds nach der einmaligen Einrichtung
+
+```sh
+npm run release:local
+```
+
+Der Befehl liest den lokal eingerichteten Zertifikatsfingerprint aus der
+Git-ignorierten `.everlast-signing.json`, baut ausschließlich die Apple-Silicon-
+App und signiert sie mit dieser Identität. Private Schlüssel bleiben im
+Login-Schlüsselbund. Apple-Konto-/Notarisierungsvariablen werden dem lokalen
+Build nicht mitgegeben. Der Befehl installiert oder startet die App nicht.
+
+Vor der Signierung werden die erwartete App-ID, der eine Mach-O-Hauptprozess,
+Entitlements und das Fehlen zusätzlicher ausführbarer Bundles geprüft. Vorher
+und nachher folgt die Signatur-/Mikrofondeklarationsprüfung. Ohne gültige lokale
+Konfiguration stoppt der Befehl vor Build und Signierung. Für einen bereits
+gebauten Kandidaten kann `node scripts/sign-local-bundle.mjs /absolut/Build.app`
+verwendet werden. Es werden keine Vertrauenseinstellungen gesetzt.
