@@ -222,6 +222,101 @@ fn read_private(path: &Path, max: usize) -> io::Result<Vec<u8>> {
     }
     Ok(bytes)
 }
+// Only product snapshots are replaced by their publisher. Config, owner marker
+// and requests retain read_private's strict immutable inode/link validation.
+const SNAPSHOT_ATTEMPTS: usize = 8;
+#[derive(Clone, Copy)]
+enum SnapshotCheckpoint {
+    BeforeOpen,
+    AfterRead,
+}
+enum SnapshotReadError {
+    Replaced,
+    Invalid(io::Error),
+}
+impl From<io::Error> for SnapshotReadError {
+    fn from(value: io::Error) -> Self {
+        Self::Invalid(value)
+    }
+}
+fn snapshot_descriptor_private(metadata: &Metadata) -> Result<(), SnapshotReadError> {
+    if private(metadata, false) {
+        return Ok(());
+    }
+    // An opened old version becomes unlinked when rename replaces it. Never
+    // accept its bytes; retry a fresh pathname. Hard links and unsafe metadata
+    // are not replacement evidence and remain immediate failures.
+    if metadata.nlink() == 0
+        && metadata.uid() == uid()
+        && metadata.is_file()
+        && metadata.mode() & 0o777 == 0o600
+    {
+        return Err(SnapshotReadError::Replaced);
+    }
+    Err(SnapshotReadError::Invalid(error()))
+}
+fn snapshot_attempt(
+    path: &Path,
+    max: usize,
+    attempt: usize,
+    checkpoint: &mut impl FnMut(SnapshotCheckpoint, usize) -> io::Result<()>,
+) -> Result<Vec<u8>, SnapshotReadError> {
+    let parent = path.parent().ok_or_else(error)?;
+    canonical(parent)?;
+    if !private(&fs::symlink_metadata(parent)?, true) {
+        return Err(error().into());
+    }
+    let before = fs::symlink_metadata(path)?;
+    if !private(&before, false) || before.len() > max as u64 {
+        return Err(error().into());
+    }
+    checkpoint(SnapshotCheckpoint::BeforeOpen, attempt)?;
+    let mut file = OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
+        .open(path)?;
+    let opened = file.metadata()?;
+    snapshot_descriptor_private(&opened)?;
+    if opened.len() > max as u64 {
+        return Err(error().into());
+    }
+    if identity(&opened) != identity(&before) {
+        return Err(SnapshotReadError::Replaced);
+    }
+    let mut bytes = Vec::new();
+    Read::by_ref(&mut file)
+        .take(max as u64 + 1)
+        .read_to_end(&mut bytes)?;
+    checkpoint(SnapshotCheckpoint::AfterRead, attempt)?;
+    let after = file.metadata()?;
+    snapshot_descriptor_private(&after)?;
+    if bytes.len() > max || after.len() > max as u64 {
+        return Err(error().into());
+    }
+    let current = fs::symlink_metadata(path)?;
+    if !private(&current, false) || current.len() > max as u64 {
+        return Err(error().into());
+    }
+    if identity(&current) != identity(&opened) {
+        return Err(SnapshotReadError::Replaced);
+    }
+    Ok(bytes)
+}
+fn read_replaceable_snapshot_with(
+    path: &Path,
+    max: usize,
+    mut checkpoint: impl FnMut(SnapshotCheckpoint, usize) -> io::Result<()>,
+) -> io::Result<Vec<u8>> {
+    for attempt in 0..SNAPSHOT_ATTEMPTS {
+        match snapshot_attempt(path, max, attempt, &mut checkpoint) {
+            Ok(bytes) => return Ok(bytes),
+            Err(SnapshotReadError::Invalid(error)) => return Err(error),
+            Err(SnapshotReadError::Replaced) => std::thread::yield_now(),
+        }
+    }
+    Err(error())
+}
+
 fn nonce(value: &str) -> bool {
     value.len() == 32
         && value
@@ -269,7 +364,7 @@ impl ProductReport {
         }
         Ok(result)
     }
-    fn read(&self) -> io::Result<Product> {
+    fn verify_owner(&self) -> io::Result<()> {
         let parent = self.path.parent().ok_or_else(error)?;
         canonical(parent)?;
         if identity(&fs::symlink_metadata(parent)?) != self.directory
@@ -279,8 +374,22 @@ impl ProductReport {
         {
             return Err(error());
         }
-        let value: Product =
-            serde_json::from_slice(&read_private(&self.path, 4096)?).map_err(|_| error())?;
+        Ok(())
+    }
+    fn read(&self) -> io::Result<Product> {
+        self.read_with_checkpoint(|_, _| Ok(()))
+    }
+    fn read_with_checkpoint(
+        &self,
+        checkpoint: impl FnMut(SnapshotCheckpoint, usize) -> io::Result<()>,
+    ) -> io::Result<Product> {
+        self.verify_owner()?;
+        let bytes = read_replaceable_snapshot_with(&self.path, 4096, checkpoint)?;
+        // Stable immutable directory/marker identity must survive every snapshot
+        // read, including replacement retries. No retry covers owner/schema/PID
+        // or freshness failures.
+        self.verify_owner()?;
+        let value: Product = serde_json::from_slice(&bytes).map_err(|_| error())?;
         let wall = now()?;
         if value.schema_version != 1
             || value.kind != "everlast-one-press-product-status"
@@ -618,6 +727,215 @@ mod tests {
             if fs::remove_dir_all(&self.0).is_err() { /* Preserve primary assertion. */ }
         }
     }
+    fn put_private(path: &Path, bytes: &[u8]) -> io::Result<()> {
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .mode(0o600)
+            .open(path)?;
+        file.write_all(bytes)
+    }
+    #[test]
+    fn atomic_snapshot_replacement_between_stat_and_open_retries_the_new_inode()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let temp = Temporary::new()?;
+        let path = temp.0.join("snapshot.json");
+        let next = temp.0.join("next");
+        put_private(&path, b"old")?;
+        put_private(&next, b"new")?;
+        let mut attempts = 0;
+        let bytes = read_replaceable_snapshot_with(&path, 32, |stage, attempt| {
+            if matches!(stage, SnapshotCheckpoint::BeforeOpen) {
+                attempts += 1;
+                if attempt == 0 {
+                    fs::rename(&next, &path)?;
+                }
+            }
+            Ok(())
+        })?;
+        assert_eq!(bytes, b"new");
+        assert_eq!(attempts, 2);
+        Ok(())
+    }
+
+    #[test]
+    fn atomic_snapshot_unlinked_descriptor_is_not_accepted_as_current()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let temp = Temporary::new()?;
+        let path = temp.0.join("snapshot.json");
+        let next = temp.0.join("next");
+        put_private(&path, b"old")?;
+        put_private(&next, b"new")?;
+        let old = fs::File::open(&path)?;
+        let mut saw_unlinked = false;
+        let mut attempts = 0;
+        let bytes = read_replaceable_snapshot_with(&path, 32, |stage, attempt| {
+            if matches!(stage, SnapshotCheckpoint::BeforeOpen) {
+                attempts += 1;
+            }
+            if matches!(stage, SnapshotCheckpoint::AfterRead) && attempt == 0 {
+                fs::rename(&next, &path)?;
+                saw_unlinked = old.metadata()?.nlink() == 0;
+            }
+            Ok(())
+        })?;
+        assert!(saw_unlinked);
+        assert_eq!(bytes, b"new");
+        assert_eq!(attempts, 2);
+        assert!(!private(&old.metadata()?, false)); // Immutable reads remain strict.
+        Ok(())
+    }
+    #[test]
+    fn repeated_snapshot_replacement_has_a_fixed_retry_bound()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let temp = Temporary::new()?;
+        let path = temp.0.join("snapshot.json");
+        put_private(&path, b"value")?;
+        let mut attempts = 0;
+        let result = read_replaceable_snapshot_with(&path, 32, |stage, attempt| {
+            if matches!(stage, SnapshotCheckpoint::BeforeOpen) {
+                attempts += 1;
+                let next = temp.0.join(format!("next-{attempt}"));
+                put_private(&next, b"value")?;
+                fs::rename(next, &path)?;
+            }
+            Ok(())
+        });
+        assert!(result.is_err());
+        assert_eq!(attempts, SNAPSHOT_ATTEMPTS);
+        Ok(())
+    }
+    #[test]
+    fn snapshot_retry_does_not_cover_unsafe_mode_hardlinks_symlinks_or_size()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use std::os::unix::fs::{PermissionsExt, symlink};
+        let temp = Temporary::new()?;
+        let path = temp.0.join("snapshot.json");
+        put_private(&path, b"valid")?;
+        let mut attempts = 0;
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o644))?;
+        assert!(
+            read_replaceable_snapshot_with(&path, 32, |_, _| {
+                attempts += 1;
+                Ok(())
+            })
+            .is_err()
+        );
+        assert!(read_private(&path, 32).is_err());
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o600))?;
+        fs::hard_link(&path, temp.0.join("alias"))?;
+        assert!(
+            read_replaceable_snapshot_with(&path, 32, |_, _| {
+                attempts += 1;
+                Ok(())
+            })
+            .is_err()
+        );
+        assert!(read_private(&path, 32).is_err());
+        fs::remove_file(&path)?;
+        symlink(temp.0.join("alias"), &path)?;
+        assert!(
+            read_replaceable_snapshot_with(&path, 32, |_, _| {
+                attempts += 1;
+                Ok(())
+            })
+            .is_err()
+        );
+        assert!(read_private(&path, 32).is_err());
+        fs::remove_file(&path)?;
+        put_private(&path, b"too large")?;
+        assert!(
+            read_replaceable_snapshot_with(&path, 3, |_, _| {
+                attempts += 1;
+                Ok(())
+            })
+            .is_err()
+        );
+        assert_eq!(attempts, 0);
+        Ok(())
+    }
+    fn product_fixture()
+    -> Result<(Temporary, Config, serde_json::Value), Box<dyn std::error::Error>> {
+        let temp = Temporary::new()?;
+        let root = temp.0.join("product");
+        DirBuilder::new().mode(0o700).create(&root)?;
+        let run_id = "0123456789abcdef0123456789abcdef";
+        put_private(&root.join("owner"), run_id.as_bytes())?;
+        let config = Config {
+            schema_version: 1,
+            contract_id: CONTRACT.into(),
+            run_id: run_id.into(),
+            parent_pid: ppid(),
+            product_pid: std::process::id() as i32,
+            product_report: root.join("snapshot.json"),
+        };
+        let value = json!({"schemaVersion":1,"kind":"everlast-one-press-product-status","contractId":CONTRACT,
+            "runId":run_id,"processId":config.product_pid,"sequence":1,"observedUnixMillis":now()?,
+            "observerState":"observed","running":true,"phase":"Idle","sessionId":null});
+        put_private(&config.product_report, &serde_json::to_vec(&value)?)?;
+        Ok((temp, config, value))
+    }
+    #[test]
+    fn snapshot_replacement_cannot_replace_immutable_run_marker_or_directory()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for replace_directory in [false, true] {
+            let (temp, config, original) = product_fixture()?;
+            let report = ProductReport::arm(&config)?;
+            let mut changed = false;
+            let result = report.read_with_checkpoint(|stage, _| {
+                if matches!(stage, SnapshotCheckpoint::AfterRead) && !changed {
+                    changed = true;
+                    let root = temp.0.join("product");
+                    if replace_directory {
+                        fs::rename(&root, temp.0.join("previous"))?;
+                        DirBuilder::new().mode(0o700).create(&root)?;
+                        put_private(&root.join("owner"), config.run_id.as_bytes())?;
+                        put_private(&root.join("snapshot.json"), &serde_json::to_vec(&original)?)?;
+                    } else {
+                        let next = root.join("next-owner");
+                        put_private(&next, config.run_id.as_bytes())?;
+                        fs::rename(next, root.join("owner"))?;
+                    }
+                }
+                Ok(())
+            });
+            assert!(result.is_err());
+        }
+        Ok(())
+    }
+    #[test]
+    fn replaceable_snapshot_preserves_pid_schema_and_freshness_rejection()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (temp, config, original) = product_fixture()?;
+        let report = ProductReport::arm(&config)?;
+        for (key, value) in [
+            ("processId", json!(1)),
+            ("runId", json!("foreign")),
+            ("schemaVersion", json!(2)),
+            ("observedUnixMillis", json!(0)),
+            ("observerState", json!("expired")),
+        ] {
+            let mut changed = original.clone();
+            changed[key] = value;
+            let next = temp.0.join("next");
+            put_private(&next, &serde_json::to_vec(&changed)?)?;
+            fs::rename(&next, &config.product_report)?;
+            let mut reads = 0;
+            assert!(
+                report
+                    .read_with_checkpoint(|stage, _| {
+                        if matches!(stage, SnapshotCheckpoint::BeforeOpen) {
+                            reads += 1;
+                        }
+                        Ok(())
+                    })
+                    .is_err()
+            );
+            assert_eq!(reads, 1); // Invalid semantic data is never retried.
+        }
+        Ok(())
+    }
+
     #[test]
     fn actual_start_and_transition_define_independent_deadlines() {
         let mut watch = Deadlines::new();

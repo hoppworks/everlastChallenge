@@ -1,0 +1,260 @@
+{
+  "schemaVersion": 1,
+  "kind": "watchdog-atomic-product-snapshot-race-fix",
+  "status": "fixed-focused-verified-and-independently-reviewed",
+  "source": "crates/macos-integration/examples/single_press_watchdog.rs",
+  "sourceSha256": "001e92a00b8909b5c47b545cf07a86da63e80fc031845496d1d1978d0f2e25fd",
+  "actualProductOrGuiOperated": false,
+  "microphoneStarted": false,
+  "physicalKeyEventsSent": false,
+  "gestureLedgerChanged": false,
+  "diagnosis": {
+    "confirmedDefect": "Immutable-file read logic rejected legitimate atomic replacement of product snapshot: lstat/open inode mismatch or opened old inode nlink0 after rename.",
+    "originalIncidentRelationship": "Matches original observationInvalid failure class and is a plausible explanation; the failing original syscall was not captured, so this does not prove which exact original path failed.",
+    "originalIncidentDocumentation": "Root documents original G abort separately; original artifacts not modified."
+  },
+  "change": {
+    "mutableScope": "ProductReport snapshot.json only",
+    "maximumReadAttempts": 8,
+    "maximumBytesEach": 4096,
+    "retryTriggers": [
+      "valid private descriptor belongs to a replaced inode",
+      "valid private opened inode became unlinked",
+      "valid private pathname now names a different inode"
+    ],
+    "neverAcceptUnlinkedBytes": true,
+    "permanentFailuresNotRetried": [
+      "wrong owner or mode",
+      "nonregular/symlink/hardlinked file",
+      "oversize",
+      "invalid directory/marker identity",
+      "malformed JSON or schema",
+      "unknown PID/run identity",
+      "stale/future timestamp",
+      "regressing sequence or walltime"
+    ],
+    "stableOwnerCheckedBeforeAndAfter": true
+  },
+  "immutableAndProcessProtectionFunctions": {
+    "private": {
+      "unchanged": true,
+      "sha256": "469855cb7460a9c9ce1ee67e7d55b476186b90aefa637b9f8db264340f512b98"
+    },
+    "read_private": {
+      "unchanged": true,
+      "sha256": "67c8fb2d25ab3ccdd14027ea659c6731512a92e19e8757fb5197eb800b04e68d"
+    },
+    "allowed_identity": {
+      "unchanged": true,
+      "sha256": "2388a940726e9649ce431695ea966909c3869a512fe0acfe1087e1eeea276a1e"
+    },
+    "signal_owned": {
+      "unchanged": true,
+      "sha256": "3f88350043f37a1689fa31ac9d2ccc5c06d3e45493931351c394833c2683147c"
+    },
+    "cleanup": {
+      "unchanged": true,
+      "sha256": "e6b745451300d8367063ebde093b3f5ff25d44fbc4327da1a2d53369a57c366d"
+    },
+    "run": {
+      "unchanged": true,
+      "sha256": "8a3e3a38f4266b4be4d9c928c9ecdafd872b6f0f9ed9203b3b1cc97989a32d11"
+    }
+  },
+  "verification": {
+    "focusedRustTestsPassed": 11,
+    "focusedRustTestsFailed": 0,
+    "clippyWarningsDeniedPassed": true,
+    "deterministicFilesystemCases": [
+      "rename between stat/open retries newinode",
+      "rename afterread unlinksoldFD and retries rather than accepting oldbytes",
+      "continuousreplacement exhausts boundedattempts",
+      "unsafepermissions/hardlinks/symlinks/oversize fail withoutretry",
+      "owner marker/directory replacement rejected",
+      "unknownPID/run/schema/expiredtimestamp remain rejected"
+    ],
+    "baselineActualCli": [
+      {
+        "attempt": 0,
+        "armed": true,
+        "writes": 127,
+        "elapsedMillis": 143,
+        "exit": {
+          "code": 1,
+          "signal": null
+        },
+        "stderr": "",
+        "writeError": null,
+        "report": {
+          "armed": false,
+          "cleanupAttempted": true,
+          "cleanupConfirmed": true,
+          "contractId": "single-press-2026-10-19",
+          "kind": "everlast-single-press-watchdog",
+          "observedUnixMillis": 1792433783976,
+          "parentPid": 21544,
+          "processId": 21547,
+          "productPid": 21546,
+          "reason": "observationInvalid",
+          "runId": "74ddf285d201b9fc9d354857d7d245f0",
+          "schemaVersion": 1,
+          "sequence": 3,
+          "startObserved": false,
+          "state": "failed"
+        },
+        "finalSnapshotAgeMillis": 2,
+        "finalSnapshotValid": true,
+        "productExitedByWatchdog": true,
+        "finalOwnChildExit": {
+          "code": null,
+          "signal": "SIGTERM"
+        }
+      }
+    ],
+    "fixedActualCli": [
+      {
+        "attempt": 0,
+        "armed": true,
+        "writes": 5375,
+        "elapsedMillis": 6074,
+        "exit": {
+          "code": 0,
+          "signal": null
+        },
+        "stderr": "",
+        "writeError": null,
+        "report": {
+          "armed": false,
+          "cleanupAttempted": false,
+          "cleanupConfirmed": false,
+          "contractId": "single-press-2026-10-19",
+          "kind": "everlast-single-press-watchdog",
+          "observedUnixMillis": 1792433902699,
+          "parentPid": 21991,
+          "processId": 21996,
+          "productPid": 21995,
+          "reason": null,
+          "runId": "b1c07c51fed28ec8897e31b3c683efbc",
+          "schemaVersion": 1,
+          "sequence": 58,
+          "startObserved": false,
+          "state": "disarmed"
+        },
+        "finalSnapshotAgeMillis": 2,
+        "finalSnapshotValid": true,
+        "productExitedByWatchdog": false,
+        "finalOwnChildExit": {
+          "code": null,
+          "signal": "SIGTERM"
+        }
+      },
+      {
+        "attempt": 1,
+        "armed": true,
+        "writes": 5332,
+        "elapsedMillis": 6095,
+        "exit": {
+          "code": 0,
+          "signal": null
+        },
+        "stderr": "",
+        "writeError": null,
+        "report": {
+          "armed": false,
+          "cleanupAttempted": false,
+          "cleanupConfirmed": false,
+          "contractId": "single-press-2026-10-19",
+          "kind": "everlast-single-press-watchdog",
+          "observedUnixMillis": 1792433908807,
+          "parentPid": 21991,
+          "processId": 22018,
+          "productPid": 22017,
+          "reason": null,
+          "runId": "7d9ce3ee5f0b749cdd9bab12a580d3f3",
+          "schemaVersion": 1,
+          "sequence": 58,
+          "startObserved": false,
+          "state": "disarmed"
+        },
+        "finalSnapshotAgeMillis": 1,
+        "finalSnapshotValid": true,
+        "productExitedByWatchdog": false,
+        "finalOwnChildExit": {
+          "code": null,
+          "signal": "SIGTERM"
+        }
+      },
+      {
+        "attempt": 2,
+        "armed": true,
+        "writes": 5323,
+        "elapsedMillis": 6101,
+        "exit": {
+          "code": 0,
+          "signal": null
+        },
+        "stderr": "",
+        "writeError": null,
+        "report": {
+          "armed": false,
+          "cleanupAttempted": false,
+          "cleanupConfirmed": false,
+          "contractId": "single-press-2026-10-19",
+          "kind": "everlast-single-press-watchdog",
+          "observedUnixMillis": 1792433915299,
+          "parentPid": 21991,
+          "processId": 22070,
+          "productPid": 22069,
+          "reason": null,
+          "runId": "1856e7b2650227c09f8256502ef491dd",
+          "schemaVersion": 1,
+          "sequence": 58,
+          "startObserved": false,
+          "state": "disarmed"
+        },
+        "finalSnapshotAgeMillis": 1,
+        "finalSnapshotValid": true,
+        "productExitedByWatchdog": false,
+        "finalOwnChildExit": {
+          "code": null,
+          "signal": "SIGTERM"
+        }
+      }
+    ],
+    "fixedActualCliAllThreePass": true,
+    "stressWriterIntervalMillis": 1,
+    "realProductPublisherTypicalIntervalMillis": 250,
+    "actualCliUsesOnly": "owned benign /bin/sleep process plus private atomic JSON metadata; no app/mic/UI/hardware gestures"
+  },
+  "evidenceSha256": {
+    "artifacts/watchdog-atomic-snapshot-v1/baseline-source.rs": "4db61cc2eabb034f9c5647128f3c0eff9434ba260d6ade819005eb84e6765ab6",
+    "artifacts/watchdog-atomic-snapshot-v1/baseline-watchdog": "ba21c59294475449897381ef4bedabce7fa1b3639b04276633523d31f38e2144",
+    "artifacts/watchdog-atomic-snapshot-v1/baseline-build.log": "ab16be41f8479fb66b077b5b18bc6348f1ffce835d2ca10c3a4586159b0ad440",
+    "artifacts/watchdog-atomic-snapshot-v1/baseline-cli.log": "7fc085f1dda62008e3db685c4e972886340d522e04d92418ef6f4ef3e7a05416",
+    "artifacts/watchdog-atomic-snapshot-v1/baseline-result.json": "7fc085f1dda62008e3db685c4e972886340d522e04d92418ef6f4ef3e7a05416",
+    "artifacts/watchdog-atomic-snapshot-v1/atomic-cli-probe.mjs": "6894dd33424413079fd0c15924fec39c123da236621820a50a8661d351d4024b",
+    "artifacts/watchdog-atomic-snapshot-v1/red.log": "91fae90cec6ad9c63c6ad3e33918f3a718b073002ecbd86dca16d6192ebb3307",
+    "artifacts/watchdog-atomic-snapshot-v1/first-green.log": "daf0778a2340bcf5a1cb192b979445ddf822976bf7279dd02d28734fa077489c",
+    "artifacts/watchdog-atomic-snapshot-v1/final-focused-green.log": "8a9dd7c9409d1fd2a674271f104ea1125803ff4e281790d6ac1bd5959717e5bd",
+    "artifacts/watchdog-atomic-snapshot-v1/clippy.log": "5480f09d7e013a230ec13b914717a600ca1b859b246b310892a1f5950ff6e59b",
+    "artifacts/watchdog-atomic-snapshot-v1/final-build.log": "6db22d518da6de5a407a219dd246211937ad11fcd11e3a01cc8069793c0fe46d",
+    "artifacts/watchdog-atomic-snapshot-v1/fixed-watchdog": "9004dcd54e9d1ee15d71b60dc068ea1658c7945c841612d7631d68544db21b13",
+    "artifacts/watchdog-atomic-snapshot-v1/fixed-cli.log": "28a410c7681ee6d17b2f59b6356a36a2be38413a2e4046ce144e5f59cdc4c3d0",
+    "artifacts/watchdog-atomic-snapshot-v1/fixed-result.json": "28a410c7681ee6d17b2f59b6356a36a2be38413a2e4046ce144e5f59cdc4c3d0"
+  },
+  "limits": [
+    "Stress runner tests protocol and guarded process lifetime, not actual dictation or one-gesture acceptance.",
+    "Eight retries remain bounded and fail closed if no safe current snapshot can be obtained.",
+    "No product restart, new permission, security override, gesture retry or ledger reset was performed."
+  ],
+  "independentReview": {
+    "reviewer": "r8_artifact_review",
+    "scope": "Changed watchdog source and immutable baseline/fixed proof artifacts; read-only, no additional tests or process actions.",
+    "approved": true,
+    "actionableFindings": 0,
+    "sourceAndEvidenceHashesVerified": true,
+    "sixProtectedFunctionsByteEqualToBaseline": true,
+    "originalIncidentExactSyscallNotClaimed": true
+  },
+  "rawEvidenceDirectory": "artifacts/watchdog-atomic-snapshot-v1"
+}

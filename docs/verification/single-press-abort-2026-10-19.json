@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "kind": "single-press-aborted-before-observed-start",
+  "runId": "c8f703d5cdac105461852d20def543af",
+  "evidenceSha256": {
+    "artifacts/single-press-final-run-v3/result/report.json": "77f5143ebd97359b88dc81cfd4f8b0bc8e169dfe241098da730e48ce09681853",
+    "artifacts/single-press-final-run-v3/watchdog/report/snapshot.json": "a7d0e96cd9dfcf6cb00e4f1aeb56c059b230a0689220802c7b634bdf3b27b9f7",
+    "artifacts/single-press-2026-10-19/gesture-consumed.json": "0a71d21d6d17b08cdb4a01769e61f06a9e68add4aafddf7f688b665c9766057d",
+    "artifacts/watchdog-atomic-snapshot-v1/baseline-result.json": "7fc085f1dda62008e3db685c4e972886340d522e04d92418ef6f4ef3e7a05416"
+  },
+  "runnerFailure": "stale-observation",
+  "watchdogReason": "observationInvalid",
+  "startObserved": false,
+  "cleanupConfirmed": true,
+  "transportConfirmed": false,
+  "qualityQualified": false,
+  "gesturePromptConsumed": true,
+  "gestureLedgerReset": false,
+  "physicalKeyActuallyPressed": "not independently established",
+  "watchdogRaceReproducedSeparately": true,
+  "originalSpecificSyscallRaceProven": false,
+  "limits": [
+    "The original run did not record the exact filesystem syscall failure.",
+    "A separate no-GUI/no-microphone CLI stress reproduction establishes the atomic snapshot replacement race class.",
+    "The failed run does not satisfy the global physical-start or full five-minute release acceptance.",
+    "Existing independent valid host-start, handoff, corpus and local maximum-duration evidence remains retained."
+  ]
+}
