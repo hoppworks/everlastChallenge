@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kind": "single-press-integrated-software-verification",
+  "contractId": "single-press-2026-10-19",
+  "sourceRevisionBeforeEntryCommit": "cd1a81a",
+  "entrySourceHashes": {
+    "scripts/run-single-press.mjs": "ba2d308cc86994952c3fec33f62babb44904cda50c57621c61bf5182a8e1ca6d",
+    "scripts/run-single-press.test.mjs": "1fb4286918f808c24a79af0fd5de8021419492e671c1408df60577465b044317"
+  },
+  "fullReportPath": "artifacts/autonomous-tests/1792426664053-32a878bf-6de1-4c4f-bb7e-0508d8d0af3a/report.json",
+  "fullReportSha256": "74e1e1fba3f87c22aaae568b311f6077548d89e1aa3fac09446eb9f6d4f9ab36",
+  "fullPassed": true,
+  "rustTests": 463,
+  "uiTests": 215,
+  "nodeTestsPassed": 92,
+  "nodeOptionalSkipped": 1,
+  "pythonTests": 204,
+  "hardwareAcceptance": false,
+  "realGestureLedgerPresent": false,
+  "runtimeEnvironment": "CUA reported Mac locked; no UI retry or unlock bypass, installed app unchanged",
+  "independentReview": "CLI readback approved; actual installed-bundle codesign/plist parsing verified read-only; external UI-preparation statements still require real CUA observation"
+}
