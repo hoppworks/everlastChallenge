@@ -1,0 +1,68 @@
+{
+  "kind": "r9-real-browser-download-and-native-extraction",
+  "browser": "Brave Browser",
+  "browserVersion": "155.1.97.57",
+  "downloadOrigin": "loopback-only temporary HTTP server; no public publication",
+  "archivePath": "/Users/hoppworks/Downloads/Everlast-Dictation-212d5e7-r9-browser.zip",
+  "archiveBytes": 6820064,
+  "archiveSha256": "ff3329ac27c86f497c5aeb93d5b66d7f9f28630e7af914f0ab9c7c86e11a2933",
+  "sameArchiveAsReviewedR9": true,
+  "quarantineArchive": "0081;6ad62d31;Brave;5E135C04-4720-4610-A2B2-462FD5EB2548",
+  "whereFroms": [
+    "http://127.0.0.1:63908/"
+  ],
+  "nativeExtraction": {
+    "observedAtUtc": "2026-10-19T14:48:04.231523+00:00",
+    "extractedPath": "/Users/hoppworks/Downloads/Everlast Dictation Testversion",
+    "extractedRegularFiles": 468,
+    "byteAndModeEquality": true,
+    "extractionMethod": "Finder Cmd+O on browser-downloaded ZIP, native Archive Utility",
+    "appQuarantine": "0081;6ad62d31;Brave;5E135C04-4720-4610-A2B2-462FD5EB2548",
+    "strictSignatureAndMicrophoneDeclarations": true,
+    "binarySha256": "c79d838d2c999a907a850217d131b6c1b5b6d0bc6881505cb906b195210eae2b",
+    "gatekeeperAssessment": {
+      "exitCode": 3,
+      "stdout": "",
+      "stderr": "/Users/hoppworks/Downloads/Everlast Dictation Testversion/Everlast Dictation.app: rejected\n"
+    },
+    "appLaunched": false,
+    "installedCopyReplaced": false,
+    "gatekeeperBypassed": false
+  },
+  "localServerStopped": true,
+  "acceptanceComplete": false,
+  "gatekeeperOverridePerformed": false,
+  "installedNormalAppUnchanged": true,
+  "pending": [
+    "User-mediated Gatekeeper opening if needed",
+    "Fresh app data installation and runtime acceptance",
+    "Offline and integrated final acceptance",
+    "Personal review"
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/r9-browser-download-v1/serve.py",
+      "sha256": "010e5b4ad91ec92885e7058713bc9d32a246e7f071daf119cf130fa2709cbe7b"
+    },
+    {
+      "path": "artifacts/r9-browser-download-v1/server.json",
+      "sha256": "59be1d97a95192bbe8fa7c68f6c1f63d39e7dad4ddb7ab0039c7bae916437d40"
+    },
+    {
+      "path": "artifacts/r9-browser-download-v1/transfer.json",
+      "sha256": "3ea71732c469d0ea00607a3ef01ab3bed93c1f0d71ca6638a1f082e87670ac35"
+    },
+    {
+      "path": "artifacts/r9-browser-download-v1/download-file.json",
+      "sha256": "f20c433e9fdc2488be465e2d1298e47e66ec7dd6a4933693fbb1fdc326b872c2"
+    },
+    {
+      "path": "artifacts/r9-browser-download-v1/native-extraction.json",
+      "sha256": "d12af36388fb4cfb0e06d98c0962d9c7c0cc87428baf8650884ec0e5c22c09fa"
+    }
+  ],
+  "independentReadback": {
+    "passed": true,
+    "scope": "Five artifact bindings, downloaded ZIP/hash/quarantine/WhereFroms,468 extracted filebytes+modes,appquarantine+strictsignature,microphone declarations,installedbinary unchanged,serverstopped/portclosed; no successful Gatekeeper opening or fullP11"
+  }
+}
