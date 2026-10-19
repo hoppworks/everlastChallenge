@@ -22,7 +22,8 @@
     "check:contracts": "node scripts/check-contracts.mjs",
     "test:quality": "/usr/bin/python3 -m unittest discover -s tests/quality",
     "test:autonomous": "node scripts/autonomous-tests.mjs",
-    "release:local": "node scripts/sign-local-bundle.mjs --build"
+    "release:local": "node scripts/sign-local-bundle.mjs --build",
+    "test:control": "node scripts/test-control.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.12.4",

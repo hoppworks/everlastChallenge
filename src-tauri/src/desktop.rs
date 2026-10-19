@@ -32,6 +32,8 @@ use tokio::sync::{Semaphore, oneshot};
 mod start_observer;
 
 mod native_ui;
+#[cfg(feature = "test-control")]
+mod test_control;
 
 pub const SNAPSHOT_EVENT: &str = "dictation:snapshot";
 struct Shared {
@@ -96,6 +98,8 @@ enum SettingsCommand {
     },
 }
 struct Inner {
+    #[cfg(feature = "test-control")]
+    test_control: test_control::State,
     #[cfg(feature = "measurement")]
     native_starts: Mutex<start_observer::Observer>,
     #[cfg(feature = "measurement")]
@@ -190,6 +194,8 @@ impl Desktop {
     fn spawn_inner(app: tauri::AppHandle, _observe_native_starts: bool) -> Result<Self, String> {
         let (requests, receive) = bounded(8);
         let desktop = Self(Arc::new(Inner {
+            #[cfg(feature = "test-control")]
+            test_control: test_control::State::default(),
             shared: Mutex::new(Shared {
                 view: initial(),
                 client: None,
@@ -1520,6 +1526,8 @@ mod tests {
     pub(super) fn unstarted_desktop() -> Desktop {
         let (requests, _) = bounded(8);
         Desktop(Arc::new(Inner {
+            #[cfg(feature = "test-control")]
+            test_control: test_control::State::default(),
             shared: Mutex::new(Shared {
                 view: initial(),
                 client: None,

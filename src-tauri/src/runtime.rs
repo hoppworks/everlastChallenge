@@ -84,7 +84,26 @@ struct StartRequest {
     process: Option<ProcessIdentity>,
     delivery: bool,
     toggle: bool,
-    reply: oneshot::Sender<Result<(), String>>,
+    reply: StartReply,
+}
+
+enum StartReply {
+    Ordinary(oneshot::Sender<Result<(), String>>),
+    #[cfg(feature = "test-control")]
+    Controlled(oneshot::Sender<Result<u64, String>>),
+}
+impl StartReply {
+    fn send(self, result: Result<(), String>, _session: Option<u64>) -> bool {
+        match self {
+            Self::Ordinary(reply) => reply.send(result).is_err(),
+            #[cfg(feature = "test-control")]
+            Self::Controlled(reply) => reply
+                .send(result.and_then(|()| {
+                    _session.ok_or_else(|| "Start did not allocate a session".into())
+                }))
+                .is_err(),
+        }
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, serde::Serialize)]
@@ -157,10 +176,7 @@ impl Drop for RuntimeExit<'_> {
 fn reject_pending(requests: &crate::control::ControlRx<Request>) {
     for request in requests.close_requests() {
         let disconnected = match request {
-            Request::Start(request) => request
-                .reply
-                .send(Err("Controller is closed".into()))
-                .is_err(),
+            Request::Start(request) => request.reply.send(Err("Controller is closed".into()), None),
             Request::Clear { reply, .. } => reply.send(Err("Controller is closed".into())).is_err(),
             #[cfg(feature = "measurement")]
             Request::MeasuredStart(request) => request
@@ -260,7 +276,36 @@ impl Client {
             process,
             delivery,
             toggle,
-            reply,
+            reply: StartReply::Ordinary(reply),
+        }))?;
+        Ok(receiver)
+    }
+
+    /// Same actor start request with an exact session receipt for a local test owner.
+    #[cfg(feature = "test-control")]
+    pub fn start_controlled(
+        &self,
+        settings: SessionSettings,
+        process: ProcessIdentity,
+    ) -> Result<oneshot::Receiver<Result<u64, String>>, MailboxError> {
+        let admission = self
+            .shared
+            .lock()
+            .map_err(|_| MailboxError::Synchronization)?;
+        if admission.closing {
+            return Err(MailboxError::Closed);
+        }
+        if admission.suspended {
+            return Err(MailboxError::Suspended);
+        }
+        let (reply, receiver) = oneshot::channel();
+        self.control.request(Request::Start(StartRequest {
+            admission_epoch: admission.admission_epoch,
+            settings,
+            process: Some(process),
+            delivery: true,
+            toggle: false,
+            reply: StartReply::Controlled(reply),
         }))?;
         Ok(receiver)
     }
@@ -674,7 +719,7 @@ impl Runtime {
                             };
                             actor.publish()?;
                             // A closed UI listener does not revoke an accepted command.
-                            if request.reply.send(result).is_err() { /* caller no longer waiting */
+                            if request.reply.send(result, actor.controller.snapshot().session) { /* caller no longer waiting */
                             }
                         }
                         None => {}
@@ -1487,6 +1532,43 @@ mod tests {
                 _ => Err("delivery missing".into()),
             }
         }
+    }
+
+    #[cfg(feature = "test-control")]
+    #[test]
+    fn controlled_start_receipt_belongs_to_actor_and_duplicate_does_not_toggle()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        let client = fixture.runtime.client();
+        let process = ProcessIdentity::read(std::process::id() as i32)?;
+        fixture.pause()?;
+        let mut first = client.start_controlled(settings(), process)?;
+        let mut second = client.start_controlled(settings(), process)?;
+        fixture.proceed()?;
+        let deadline = Instant::now() + Duration::from_secs(2);
+        let receive = |reply: &mut oneshot::Receiver<Result<u64, String>>| -> Result<Result<u64, String>, Box<dyn std::error::Error>> {
+            loop {
+                match reply.try_recv() {
+                    Ok(value) => return Ok(value),
+                    Err(oneshot::error::TryRecvError::Empty) if Instant::now() < deadline => thread::sleep(Duration::from_millis(1)),
+                    _ => return Err("controlled receipt missing".into()),
+                }
+            }
+        };
+        let accepted = receive(&mut first)?;
+        let duplicate = receive(&mut second)?;
+        let state = client.snapshot()?;
+        let capture = fixture
+            .native
+            .requests
+            .recv_timeout(Duration::from_secs(1))?;
+        fixture.runtime.join()?;
+        assert_eq!(accepted, Ok(1));
+        assert!(duplicate.is_err());
+        assert_eq!(state.session.session, Some(1));
+        assert_eq!(state.session.phase, Phase::Starting);
+        assert!(matches!(capture, NativeCommand::Capture { session, .. } if session.get() == 1));
+        Ok(())
     }
 
     #[test]

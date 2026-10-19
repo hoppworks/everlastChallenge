@@ -120,6 +120,27 @@ pub fn frontmost_process(_main_thread: MainThreadMarker) -> Result<ProcessIdenti
     ProcessIdentity::read(application.processIdentifier())
 }
 
+/// Developer test boundary: accept only the project's disposable native recipient.
+/// Reads the frontmost identity without activating a window or querying its text.
+#[cfg(feature = "test-control")]
+pub fn frontmost_test_recipient(expected_pid: i32) -> Result<ProcessIdentity, TargetError> {
+    let _main = MainThreadMarker::new().ok_or(TargetError::Process)?;
+    let application = NSWorkspace::sharedWorkspace()
+        .frontmostApplication()
+        .ok_or(TargetError::Process)?;
+    let identifier = application.bundleIdentifier().ok_or(TargetError::Process)?;
+    if !matches!(
+        identifier.to_string().as_str(),
+        "de.hoppworks.everlast-native-recipient-hotkey-v1"
+            | "de.hoppworks.everlast-native-test-recipient"
+            | "de.hoppworks.everlast-native-autonomous-recipient"
+    ) || application.processIdentifier() != expected_pid
+    {
+        return Err(TargetError::Changed);
+    }
+    ProcessIdentity::read(expected_pid)
+}
+
 pub fn accessibility_trusted() -> bool {
     // SAFETY: query takes no pointers, prompts for nothing and changes no TCC state.
     unsafe { AXIsProcessTrusted() != 0 }

@@ -9,6 +9,7 @@ publish.workspace = true
 [features]
 default = []
 measurement = []
+test-control = ["macos-integration/test-control"]
 
 [build-dependencies]
 tauri-build = { version = "=2.7.3", features = [] }

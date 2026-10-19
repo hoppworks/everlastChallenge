@@ -5,6 +5,10 @@ edition.workspace = true
 license.workspace = true
 publish.workspace = true
 
+[features]
+default = []
+test-control = []
+
 [dependencies]
 thiserror.workspace = true
 objc2 = "=0.6.5"
@@ -45,6 +49,11 @@ harness = false
 [[test]]
 name = "native_field_evidence_contract"
 path = "tests/native_field_evidence_contract.rs"
+harness = false
+
+[[test]]
+name = "native_preferences_close_contract"
+path = "tests/native_preferences_close_contract.rs"
 harness = false
 
 [lints]

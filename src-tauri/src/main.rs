@@ -19,6 +19,8 @@ use tauri::{
 };
 #[cfg(feature = "measurement")]
 mod native_start_export;
+#[cfg(feature = "test-control")]
+mod test_control;
 
 #[derive(Clone)]
 struct NativeTray {
@@ -73,6 +75,25 @@ impl Drop for NativeWakeup {
     }
 }
 
+#[cfg(feature = "test-control")]
+impl test_control::Handler for Desktop {
+    fn status(&self) -> Result<serde_json::Value, String> {
+        self.test_control_status()
+    }
+    fn start(&self, recipient_pid: i32) -> Result<(), String> {
+        self.test_control_start(recipient_pid)
+    }
+    fn stop(&self, session: u64) -> Result<(), String> {
+        self.test_control_stop(session)
+    }
+    fn cancel(&self, session: u64) -> Result<(), String> {
+        self.test_control_cancel(session)
+    }
+    fn shutdown(&self) -> Result<(), String> {
+        self.test_control_shutdown()
+    }
+}
+
 struct NativeUi {
     header: GlassHeader<tauri::WebviewWindow>,
     header_revision: Option<u64>,
@@ -82,6 +103,8 @@ struct NativeUi {
     preferences_revision: Option<u64>,
     settings_request: u32,
     wakeup: Option<NativeWakeup>,
+    #[cfg(feature = "test-control")]
+    test_control: Option<test_control::Control>,
     desktop: Desktop,
     tray: NativeTray,
     feedback: Feedback,
@@ -141,6 +164,15 @@ impl NativeUi {
         // Subscribe before the initial read, closing the startup notification gap.
         refresh_hotkey_labels(&native_desktop, app)?;
         let wakeup = NativeWakeup::new(app);
+        #[cfg(feature = "test-control")]
+        let test_control = {
+            let wake = app.clone();
+            test_control::Control::from_env(std::sync::Arc::new(move || {
+                if let Err(error) = wake.run_on_main_thread(|| {}) {
+                    eprintln!("Test control wake failed: {error}");
+                }
+            }))?
+        };
         window.show()?;
         Ok(Self {
             header,
@@ -151,6 +183,8 @@ impl NativeUi {
             preferences_revision: None,
             settings_request: 0,
             wakeup: Some(wakeup),
+            #[cfg(feature = "test-control")]
+            test_control,
             desktop: native_desktop,
             tray: native_tray,
             feedback,
@@ -161,6 +195,10 @@ impl NativeUi {
         })
     }
     fn update(&mut self) -> Result<(), String> {
+        #[cfg(feature = "test-control")]
+        if let Some(control) = &mut self.test_control {
+            control.poll(&self.desktop);
+        }
         if let Some((revision, state)) = self
             .desktop
             .native_workspace_after(self.workspace_revision)?
@@ -209,6 +247,10 @@ impl NativeUi {
     }
     fn detach(&mut self) {
         // Tauri exits the process directly; clean up native owners on Exit.
+        #[cfg(feature = "test-control")]
+        if let Some(mut control) = self.test_control.take() {
+            control.close(&self.desktop);
+        }
         drop(self.wakeup.take());
         if let Err(error) = self.preferences.detach() {
             eprintln!("Native preferences cleanup failed: {error}");
