@@ -8,7 +8,8 @@ use macos_integration::native_preferences::{
 };
 use objc2::MainThreadMarker;
 use objc2_app_kit::{
-    NSApplication, NSBackingStoreType, NSWindow, NSWindowButton, NSWindowStyleMask,
+    NSApplication, NSBackingStoreType, NSTabView, NSTextView, NSWindow, NSWindowButton,
+    NSWindowStyleMask,
 };
 use objc2_foundation::{NSPoint, NSRect, NSSize, NSString};
 
@@ -61,11 +62,21 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         .iter()
         .find(|window| window.title().to_string() == "Einstellungen")
         .ok_or("preferences window missing")?;
+    let full_keyboard_access = app.isFullKeyboardAccessEnabled();
     main_window.makeKeyAndOrderFront(None);
     assert!(main_window.isVisible());
     for iteration in 1..=3 {
         prefs.show()?;
         assert!(pref_window.isVisible());
+        // The public show lifecycle supplies its promised keyboard entry point.
+        // No test-side responder assignment precedes this initial/reopen check.
+        assert!(
+            pref_window
+                .firstResponder()
+                .is_some_and(|r| r.downcast_ref::<NSTabView>().is_some()),
+            "show/reopen did not establish the configured initial tab responder"
+        );
+        assert_eq!(app.isFullKeyboardAccessEnabled(), full_keyboard_access);
         assert!(main_window.isVisible());
         let close = pref_window
             .standardWindowButton(NSWindowButton::CloseButton)
@@ -91,6 +102,34 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         assert!(app.windows().iter().any(|window| window == main_window));
     }
     prefs.show()?;
+    // Simulate an already focused owned editing control for the preservation case,
+    // separately from the initial/reopen assertions above.
+    let editor = NSTextView::initWithFrame(
+        main.alloc(),
+        NSRect::new(NSPoint::new(0., 0.), NSSize::new(80., 24.)),
+    );
+    pref_window
+        .contentView()
+        .ok_or("own content missing")?
+        .addSubview(&editor);
+    assert!(pref_window.makeFirstResponder(Some(&editor)));
+    let preserved = pref_window
+        .firstResponder()
+        .ok_or("owned control focus missing")?;
+    prefs.show()?;
+    assert_eq!(
+        pref_window.firstResponder().as_deref(),
+        Some(&*preserved),
+        "show replaced existing control focus"
+    );
+    prefs.close()?;
+    prefs.show()?;
+    assert_eq!(
+        pref_window.firstResponder().as_deref(),
+        Some(&*preserved),
+        "reopen replaced existing control focus"
+    );
+    assert_eq!(app.isFullKeyboardAccessEnabled(), full_keyboard_access);
     prefs.close()?;
     assert!(!pref_window.isVisible());
     assert!(main_window.isVisible(), "preferences API close hid main");

@@ -758,6 +758,17 @@ impl NativePreferences {
         let main = MainThreadMarker::new().ok_or(PreferencesError::MainThread)?;
         NSApplication::sharedApplication(main).activate();
         self.window.makeKeyAndOrderFront(None);
+        // Native key-view eligibility can exclude all form controls when full
+        // keyboard access is off. Supply the explicitly configured entry point
+        // only if AppKit has no current control responder; preserve active edits.
+        if self
+            .window
+            .firstResponder()
+            .is_none_or(|responder| responder.downcast_ref::<NSWindow>() == Some(&*self.window))
+            && let Some(initial) = self.window.initialFirstResponder()
+        {
+            self.window.makeFirstResponder(Some(&initial));
+        }
         Ok(())
     }
     /// Hide while retaining native draft and selected tab. Traffic-light Close and
