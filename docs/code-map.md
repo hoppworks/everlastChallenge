@@ -2,7 +2,8 @@
 
 ```mermaid
 flowchart LR
-  UI[React / native Aktionen] --> Desktop[Desktop und IPC]
+  UI[AppKit Workspace / Einstellungen] --> Bridge[Native Callbacks / Projektion]
+  Bridge --> Desktop[Desktop]
   Desktop --> Runtime[Runtime-Actor / Controller]
   Runtime --> Audio[Audioowner: Ring, DSP, Flush]
   Audio --> Inference[Serieller Inferenzowner]
@@ -34,7 +35,8 @@ sofortigen Abbruch eines bereits laufenden nativen Decoders.
 | Menüleisten-Rückmeldung | [Feedbackprojektion](../src-tauri/src/feedback.rs), [Desktop](../src-tauri/src/desktop.rs), [nativer Ton](../crates/macos-integration/src/feedback.rs) | begrenzte zuletzt zurückgehaltene Sitzungs-ID statt Textdeduplizierung, Status vor Ton, Aufnahmezulassung während Tonanforderung sperren, kein Fenster/Fokus; Aufruf ist keine Hör- oder Playback-Endquittung |
 | Entwickler-Messwerkzeug | [Replay-Runner](../src-tauri/examples/paced_runtime_probe/runner.rs), [Parameterbindung](../src-tauri/examples/paced_runtime_probe/parameters.rs), [TC-Publisher](../crates/macos-integration/src/realtime.rs), [historischer QoS-Pfad](../crates/macos-integration/src/qos.rs), [serieller Executor](../scripts/run-paced-remainder.py) | feste Zeitgrenzen und identische Samples, Policy nur im eigenen neuen Thread, Admission vor Aufnahme, diskrete Policy-/CPU-Beobachtungen, Publisher- und Runtimejoin; keine kontinuierliche Echtzeitgarantie |
 | Einstellungen und IPC | [settings.rs](../src-tauri/src/settings.rs), [preferences.rs](../src-tauri/src/preferences.rs), [startup_settings.rs](../src-tauri/src/startup_settings.rs), [ipc.rs](../src-tauri/src/ipc.rs) | validierte Eingaben, atomare private Speicherung/Rücknahme, Recovery, sitzungsgebundene Kommandos und gesperrte Änderungen während Arbeit |
-| Oberfläche und Zustandsvertrag | [App.tsx](../src/App.tsx), [IPC-Client](../src/ipc/index.ts), [AppView](../src/features/app/AppView.tsx), [SettingsView](../src/features/settings/SettingsView.tsx), [RecoveryView](../src/features/settings/RecoveryView.tsx), [Vertrag](../src-tauri/src/contracts.rs) | neuere Snapshots statt zweiter Sitzungszustandsmaschine, Abmeldung/verspätete Antworten, Fehler-/Busyzustände und Bedienbarkeit |
+| Native Oberfläche und Zustandsprojektion | [Workspace](../crates/macos-integration/src/native_workspace.rs), [Preferences](../crates/macos-integration/src/native_preferences.rs), [Callback-Bridge](../src-tauri/src/desktop/native_ui.rs), [Projektion](../src-tauri/src/native_presentation.rs), [Desktop](../src-tauri/src/desktop.rs) und [Start](../src-tauri/src/main.rs) | Main-Thread-Besitz, Snapshotrevisionen statt eigener Sitzungsmaschine, Listener/Wakeup ohne Renderer, Abmeldung, Fensterlebensdauer und geordnetes Beenden; native Aktionen verwenden bestehende Admission und Runtime |
+| Historische React-/IPC-Oberfläche | [App.tsx](../src/App.tsx), [IPC-Client](../src/ipc/index.ts), [AppView](../src/features/app/AppView.tsx), [SettingsView](../src/features/settings/SettingsView.tsx), [RecoveryView](../src/features/settings/RecoveryView.tsx), [Vertrag](../src-tauri/src/contracts.rs) | Kompatibilitätscode; die aktuelle sichtbare Oberfläche läuft nicht über diese React-Komponenten. DOM-Tests sind kein Nachweis für AppKit |
 | Übernommenes SDK | [whisper-rs-Patches](../vendor/whisper-rs/PATCHES.md), [sys-/C++-Patches](../vendor/whisper-rs-sys/PATCHES.md), [Hotkey-Patch](../vendor/global-hotkey/PATCHES.md) | echte Herkunft/Lizenzen, unveränderte gegenüber eigenen Teilen, C-/Rust-Grenze, Pointerlebensdauer und Grenze der lokalen Regressionen |
 
 ## Tests und tatsächliche Beobachtungen zuordnen
@@ -46,8 +48,15 @@ sofortigen Abbruch eines bereits laufenden nativen Decoders.
   Rust-Modulen; [Maximum](../src-tauri/src/runtime/tests/maximum_contract.rs)
   und [Neustart](../src-tauri/src/runtime/tests/restart_contract.rs) prüfen deren
   Verkabelung. Kontrollierte Worker sind keine nativen Mikrofone oder Empfänger.
-- React-/IPC-Tests stehen bei den Komponenten und beim Client. DOM-Tests
-  beweisen keine echte VoiceOver-, WebView-, Fokus- oder Glasdarstellung.
+- React-/IPC-Tests stehen bei den Komponenten und beim Client. `src/main.tsx`
+  lädt nur den Starttext und CSS; die sichtbaren Controls sind AppKit. DOM-Tests
+  beweisen keine native VoiceOver-, Fokus- oder Fensterdarstellung.
+- Der [selbst ausgeführte Funktionstest](verification/self-run-functional-2026-10-19.md)
+  belegt echte Aufnahme und manuelles Kopieren/Einfügen in ein eigenes Testziel,
+  keine automatische Zielerfassung oder automatische Übergabe. Der
+  [native Lifecycle-Test](verification/native-lifecycle-2026-10-19.md) belegt
+  Beenden während Aufnahme und 100 Start-/Cancel-Zyklen. Sleep/Wake,
+  Bluetooth-Wechsel und Notes bleiben eigenständige offene Abnahmen.
 - [Qualität](verification/acceptance-reference-v1.md),
   [Inferenz-Lifecycle](verification/inference-lifecycle.md),
   [Runtime-Ressourcen](verification/runtime-resource.md) und

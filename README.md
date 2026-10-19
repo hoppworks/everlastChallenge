@@ -2,11 +2,11 @@
 
 Native Diktier-App für Apple Silicon und macOS 27. Rust/Tauri 2 mit nativer AppKit-Oberfläche, lokale Whisper-Inferenz und systemnahe Audioaufnahme/Textübergabe.
 
-Aktuelles lokales Testpaket: **Everlast-Dictation-Testversion-0.1.0-native-634d6c9-r2.zip**,
+Aktuelles lokales Testpaket: **Everlast-Dictation-Testversion-0.1.0-native-634d6c9-r3.zip**,
 auf diesem Mac in `~/Downloads/`. Noch kein öffentlicher Download; die
 [Kurzanleitung](TESTVERSION.md) beschreibt Installation und erste Einrichtung.
 
-**Testversion (19.10.2026):** Die stabile Referenzfassung ist als lokale Testversion bereitgestellt. Der [Paketbeleg](docs/verification/native-ui-2026-10-19.md) nennt Quellstand, Prüfsummen und tatsächliche Laufzeitprüfung. Die experimentellen FullPrefix-/Kontext-1400-Optimierungen sind nicht aktiv. Die Referenz hat ihre dokumentierte Modellqualitätsprüfung bestanden, erreicht aber das geplante Stop-bis-Text-Ziel von einer Sekunde nicht durchgehend. Die vollständige Leistungs-, Geräte-, Installations- und Produktabnahme bleibt offen. Installation und kurzer Funktionstest stehen in [TESTVERSION.md](TESTVERSION.md); tatsächliche Belege im [Ausführungsprotokoll](docs/execution-log.md), der vollständige Zielumfang im [Implementierungsplan](IMPLEMENTATION_PLAN.md).
+**Testversion (19.10.2026):** Die stabile Referenzfassung ist als lokale Testversion bereitgestellt. Der [Paketbeleg](docs/verification/testversion-package-r3.md) nennt Quellstand, Prüfsummen und tatsächliche Laufzeitprüfung. Die experimentellen FullPrefix-/Kontext-1400-Optimierungen sind nicht aktiv. Die Referenz hat ihre dokumentierte Modellqualitätsprüfung bestanden, erreicht aber das geplante Stop-bis-Text-Ziel von einer Sekunde nicht durchgehend. Die vollständige Leistungs-, Geräte-, Installations- und Produktabnahme bleibt offen. Installation und kurzer Funktionstest stehen in [TESTVERSION.md](TESTVERSION.md); tatsächliche Belege im [Ausführungsprotokoll](docs/execution-log.md), der vollständige Zielumfang im [Implementierungsplan](IMPLEMENTATION_PLAN.md).
 
 ## Lokal entwickeln
 

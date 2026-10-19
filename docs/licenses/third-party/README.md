@@ -1,13 +1,18 @@
 # Drittbestandteile: vorbereitete Lizenztexte
 
-Stand **b34914c7aa88402208850fa589f5c2ee17f07705**, Ziel Apple Silicon/macOS.
+Historische Inventarbasis **b34914c7aa88402208850fa589f5c2ee17f07705**, Ziel Apple Silicon/macOS.
+Addendum: separat belegter Build-injizierter Laufzeithelfer, siehe `materialRevision` im Inventar.
 **Vorbereitet; finale Linkclosure und Release-Bundle noch nicht geprüft.**
 
-Die Sammlung enthält unveränderte Originaltexte für vier produktive npm-Pakete
-und eine konservative Vereinigung von 311 nativen Normaldependency-Kandidaten.
+Die Sammlung enthält unveränderte Originaltexte für vier produktive npm-Pakete,
+zwei separat eingeordnete npm-Bestandteile des Build-injizierten Laufzeithelfers
+(Vite 8.3.4 und dessen Rolldown-Provider 1.2.14)
+und eine konservative Vereinigung von 311 nativen Normaldependency-Kandidaten:
+insgesamt 317 Komponenten.
 Optionale Featurevereinigung und Proc-Macro-/Generierungsanteile sind nicht
 mit tatsächlich gelinktem Runtimecode gleichzusetzen. Reine Build-/Dev-Abschnitte
-und fremde Targetabschnitte wurden soweit statisch bestimmbar ausgeschlossen.
+und fremde Targetabschnitte wurden im historischen Abhängigkeitsinventar soweit
+statisch bestimmbar ausgeschlossen. Das schließt injizierten Laufzeitcode nicht aus.
 Unaufgelöste cfg-Ausdrücke bleiben im Inventar sichtbar und konservativ enthalten.
 
 Die vollständige Zuordnung von Komponente, Version, Herkunft, Paketchecksumme,
@@ -16,6 +21,30 @@ Originaldatei, Lizenzalternative und unverändertem Text steht in
 SHA-256-Dateinamen in texts/ gemeinsam verwendet; Copyright-/NOTICE-Inhalte
 werden nicht entfernt. Das Beifügen mehrerer angebotener Lizenztexte ändert
 weder deren ursprüngliche Bedingungen noch die Lizenz der Anwendung.
+
+## Build-injizierter Laufzeithelfer
+
+Das aktuelle 767-Byte-JavaScript `dist/assets/index-Cp78-0dB.js` enthält trotz
+Vites Einordnung als devDependency einen modulepreload-Polyfill mit
+`MutationObserver` und `fetch`. Der gepinnte Vite-Pluginpfad delegiert im
+gebündelten Clientbuild an `viteModulePreloadPolyfillPlugin` aus
+`rolldown/experimental`. Der Rolldown-Konstruktor wählt `builtin:vite-module-preload-polyfill` und
+delegiert an das native Binding. Deshalb werden Vite und der tatsächliche
+Provider Rolldown separat aufgenommen. Die veröffentlichte JS-Kette allein
+belegt nicht die genaue Autorenschaft sämtlicher nativer Implementierungsteile. Daraus folgt
+keine Behauptung, dass sämtliche Vite-Buildabhängigkeiten im Produkt liegen.
+Der vollständige unveränderte `node_modules/vite/LICENSE.md` einschließlich
+seiner weiteren Originalhinweise liegt als SHA-256-Text vor; keine Notices
+wurden gekürzt oder erfunden. Rolldowns vollständige `LICENSE` und
+`THIRD-PARTY-LICENSE` bleiben ebenfalls unverändert und vorsorglich vollständig
+enthalten; dies behauptet nicht die Runtimeweitergabe aller genannten Teile. Die vier produktiven npm-Einträge und 311
+nativen Kandidaten bleiben unverändert.
+
+Das Addendum ist Material für einen **zukünftigen Build**. Installierte App
+und historische ZIPs wurden nicht geändert; deren damaliges Inventar bleibt
+historisch. Source-, Asset-, Originaltext- und Paket-Lockbindungen stehen im
+Inventar; der konkrete Nachweis ist in
+[release-license-runtime-helper-v1.md](../../verification/release-license-runtime-helper-v1.md) beschrieben.
 
 ## Offene, konkrete Vollständigkeitsgrenze
 
@@ -359,3 +388,5 @@ PATCHES.md; Originalarchive und Patchherkunft bleiben getrennt.
 | react-dom | 19.3.1 | MIT | JS-Produktabhängigkeit; provided |
 | scheduler | 0.28.0 | MIT | JS-Produktabhängigkeit; provided |
 | @tauri-apps/api | 2.12.4 | Apache-2.0 OR MIT | JS-Produktabhängigkeit; provided |
+| vite | 8.3.4 | MIT (vollständige Originaldatei mit weiteren Hinweisen) | separat: Build-injizierter JS-Laufzeithelfer; provided |
+| rolldown | 1.2.14 | MIT (vollständige Originaltexte) | separat: Provider des injizierten Helpers; weitere Notices konservativ; provided |

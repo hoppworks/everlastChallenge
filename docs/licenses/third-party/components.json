@@ -11247,6 +11247,92 @@
           }
         }
       ]
+    },
+    {
+      "name": "vite",
+      "version": "8.3.4",
+      "ecosystem": "npm",
+      "classification": "build-injected JavaScript runtime helper",
+      "licenseExpression": "MIT",
+      "inclusion": "modulepreload polyfill observed in emitted dist/assets/index-Cp78-0dB.js; devDependency classification does not exclude injected runtime code; no assertion that all Vite build dependencies ship",
+      "packageIntegrity": "sha512-IftLE8phJhdNRIGNEV4JCCvfNScoZQVfcXaN8TQropWGJtOHcu+iAB9pHcuGvmEb/kddw0LBe/jS8ztdC6xdiQ==",
+      "packageSource": "https://registry.npmjs.org/vite/-/vite-8.3.4.tgz",
+      "manifestSha256": "260a0a7a96a35e1b657480014c0f3b592b70061e42099edefc8fe97972f05fd4",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a47172e44a86a7e2cd1c16282341f7726ec60caafe3a6166fe3e0602005b6fa6.txt",
+          "bytes": 108786,
+          "sha256": "a47172e44a86a7e2cd1c16282341f7726ec60caafe3a6166fe3e0602005b6fa6",
+          "source": {
+            "kind": "exact installed npm package original, complete file including bundled notices",
+            "originalPath": "LICENSE.md"
+          }
+        }
+      ],
+      "textStatus": "provided",
+      "runtimeEvidence": {
+        "asset": {
+          "path": "dist/assets/index-Cp78-0dB.js",
+          "bytes": 767,
+          "sha256": "e4f21590bafb7c90abb9cb68cd6b269eca4a87fabd6e4ed7b3c619166b89c30f"
+        },
+        "pluginSource": {
+          "path": "node_modules/vite/dist/node/chunks/node.js",
+          "bytes": 1390850,
+          "sha256": "dab5039168ce4526f98058d84e31bf79eeed8eba558a9a27db570df893326364"
+        },
+        "symbol": "modulePreloadPolyfillPlugin; bundled client path delegates to rolldown/experimental viteModulePreloadPolyfillPlugin",
+        "observedOperations": [
+          "modulepreload feature check",
+          "MutationObserver",
+          "fetch"
+        ]
+      }
+    },
+    {
+      "name": "rolldown",
+      "version": "1.2.14",
+      "ecosystem": "npm",
+      "classification": "build-injected runtime helper provider; conservative original notices",
+      "licenseExpression": "MIT",
+      "inclusion": "Vite bundled client polyfill delegates to rolldown/experimental builtin:vite-module-preload-polyfill. Full original license and third-party notices retained; not a claim all Rolldown native bundler or dependencies ship in app.",
+      "packageIntegrity": "sha512-eTBTTqMR6uHKLgcUqpJP8ntzDI6V4LYA8negAMBEI7gkgVvOdrx6VsvS2Ym+83KhOPdLCHWJu0w7UQFJZhHKNw==",
+      "packageSource": "https://registry.npmjs.org/rolldown/-/rolldown-1.2.14.tgz",
+      "manifestSha256": "f46fa23bccbb2a1ee76a763b02a55853cdfea4aaf8b0f3b82e8d16bad8778020",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/23ecfff35a5a2e80d92142f75228912c3b1abc4b5a8337a821ff4397e2f9f734.txt",
+          "bytes": 1302,
+          "sha256": "23ecfff35a5a2e80d92142f75228912c3b1abc4b5a8337a821ff4397e2f9f734",
+          "source": {
+            "kind": "exact installed npm package original; upstream notices retained conservatively",
+            "originalPath": "LICENSE"
+          }
+        },
+        {
+          "path": "docs/licenses/third-party/texts/a877291d800ed43692f3f9ae09d8e01cc6f7293ad39d43896059c188ffbb8b7c.txt",
+          "bytes": 2209,
+          "sha256": "a877291d800ed43692f3f9ae09d8e01cc6f7293ad39d43896059c188ffbb8b7c",
+          "source": {
+            "kind": "exact installed npm package original; upstream notices retained conservatively",
+            "originalPath": "THIRD-PARTY-LICENSE"
+          }
+        }
+      ],
+      "textStatus": "provided",
+      "runtimeEvidence": {
+        "constructor": {
+          "path": "node_modules/rolldown/dist/shared/constructors-BDv3zGhp.mjs",
+          "bytes": 2910,
+          "sha256": "754647cc9449927413bf1ef5e48420b9104bd0fd90363672541507548eb7d17e"
+        },
+        "nativeBindingAdapter": {
+          "path": "node_modules/rolldown/dist/shared/normalize-string-or-regex-COVDiCTB.mjs",
+          "bytes": 2131,
+          "sha256": "3c21f59d3ef2f7483f150fd2a9c5ed1eb2f9c10cad50bac95bcd4215cdff2e92"
+        },
+        "boundary": "constructor selects native builtin; exact native implementation authorship not reconstructed from published JS"
+      }
     }
   ],
   "modelProvisioning": [
@@ -11310,7 +11396,8 @@
     "Original license texts are copied unchanged and deduplicated by SHA256; retaining alternatives does not relicense this application.",
     "Local package versions and lock checksums identify sources; archive byte extraction equality was not newly rechecked for every registry package.",
     "Notice files are retained conservatively; per-file applicability to final linked code remains to be confirmed.",
-    "Model weights are downloaded from pinned publishers; current App resources do not embed weights."
+    "Model weights are downloaded from pinned publishers; current App resources do not embed weights.",
+    "The historical build/dev exclusion describes the original dependency-section inventory, not absence of build-injected JavaScript. This addendum records the observed Vite helper and its Rolldown provider separately; no whole Vite dependency runtime closure is claimed."
   ],
   "unresolvedUpstreamNoticeSources": [
     {
@@ -11386,5 +11473,87 @@
       "sha256": "e562a2ddfaf8280537795ac5ecd34e3012b6582a147ef69ba6a6a5c08c84757d",
       "unchanged": true
     }
-  ]
+  ],
+  "javascriptBuildInjectedRuntimeComponents": 2,
+  "totalComponents": 317,
+  "materialRevision": {
+    "kind": "build-injected-runtime-license-addendum-v1",
+    "preparedAgainstRevision": "2fc213c681fa7a8999332017d8dc2c478b26ea76",
+    "historicalInventoryRevision": "b34914c7aa88402208850fa589f5c2ee17f07705",
+    "nativeArtifactSourceRevision": "634d6c98ca7a320e48e8f0f89e0b636432f4f438",
+    "nativeArtifactBinarySha256": "45f4e463076c88e36adcc7ae95f810329686b32a69be374e0440d0ed7c0fd4ca",
+    "inputs": [
+      {
+        "path": "package-lock.json",
+        "bytes": 88640,
+        "sha256": "1cc2125826d14687090414fb077e034b0b6306677b7b114a5875d118689acb55"
+      },
+      {
+        "path": "node_modules/vite/package.json",
+        "bytes": 5081,
+        "sha256": "260a0a7a96a35e1b657480014c0f3b592b70061e42099edefc8fe97972f05fd4"
+      },
+      {
+        "path": "node_modules/vite/LICENSE.md",
+        "bytes": 108786,
+        "sha256": "a47172e44a86a7e2cd1c16282341f7726ec60caafe3a6166fe3e0602005b6fa6"
+      },
+      {
+        "path": "node_modules/vite/dist/node/chunks/node.js",
+        "bytes": 1390850,
+        "sha256": "dab5039168ce4526f98058d84e31bf79eeed8eba558a9a27db570df893326364"
+      },
+      {
+        "path": "src/main.tsx",
+        "bytes": 315,
+        "sha256": "9f3b48d96d73590b1c0fd4a0bdf87e81644b357d60c503eb790deb1749215701"
+      },
+      {
+        "path": "dist/assets/index-Cp78-0dB.js",
+        "bytes": 767,
+        "sha256": "e4f21590bafb7c90abb9cb68cd6b269eca4a87fabd6e4ed7b3c619166b89c30f"
+      },
+      {
+        "path": "artifacts/testversion-release-native-v1/bundle-evidence.json",
+        "bytes": 1182,
+        "sha256": "c7e4380c00f4d4662abc3edeec348145276f7ccab82f161f1377337e9537a432"
+      },
+      {
+        "path": "artifacts/testversion-release-native-v2/zip-evidence.json",
+        "bytes": 426,
+        "sha256": "49705b57aa0d937cbb5b6fe2746d410c7d98d1a47323ec0464a06369a9274f22"
+      },
+      {
+        "path": "node_modules/rolldown/package.json",
+        "bytes": 6101,
+        "sha256": "f46fa23bccbb2a1ee76a763b02a55853cdfea4aaf8b0f3b82e8d16bad8778020"
+      },
+      {
+        "path": "node_modules/rolldown/LICENSE",
+        "bytes": 1302,
+        "sha256": "23ecfff35a5a2e80d92142f75228912c3b1abc4b5a8337a821ff4397e2f9f734"
+      },
+      {
+        "path": "node_modules/rolldown/THIRD-PARTY-LICENSE",
+        "bytes": 2209,
+        "sha256": "a877291d800ed43692f3f9ae09d8e01cc6f7293ad39d43896059c188ffbb8b7c"
+      },
+      {
+        "path": "node_modules/rolldown/dist/shared/constructors-BDv3zGhp.mjs",
+        "bytes": 2910,
+        "sha256": "754647cc9449927413bf1ef5e48420b9104bd0fd90363672541507548eb7d17e"
+      },
+      {
+        "path": "node_modules/rolldown/dist/shared/normalize-string-or-regex-COVDiCTB.mjs",
+        "bytes": 2131,
+        "sha256": "3c21f59d3ef2f7483f150fd2a9c5ed1eb2f9c10cad50bac95bcd4215cdff2e92"
+      }
+    ],
+    "application": "future packaging only; no installed bundle or historical ZIP modified",
+    "preservedNativeArtifact": {
+      "path": "artifacts/testversion-release-native-v2/Everlast Dictation Testversion/Everlast Dictation.app/Contents/MacOS/everlast-dictation",
+      "bytes": 15892576,
+      "sha256": "45f4e463076c88e36adcc7ae95f810329686b32a69be374e0440d0ed7c0fd4ca"
+    }
+  }
 }
