@@ -131,11 +131,7 @@ export function AppView(props: AppViewProps) {
       {!props.nativeHeader && (
         <header className="app-header">
           <h1>Everlast Dictation</h1>
-          <button
-            type="button"
-            onClick={props.onSettings}
-            disabled={props.settingsBusy}
-          >
+          <button type="button" onClick={props.onSettings}>
             Einstellungen
           </button>
         </header>
@@ -194,29 +190,35 @@ export function AppView(props: AppViewProps) {
           <>
             {setup.phase !== "Ready" && (
               <>
-                <p>
-                  {setup.model.name} · {bytes(setup.model.downloadBytes)}
+                <p className="setup-summary">
+                  Einmal einrichten, danach lokal und offline diktieren.
                 </p>
-                <p>
-                  Das Sprachmodell wird einmalig von{" "}
-                  <a
-                    href={setup.model.sourceUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Hugging Face
-                  </a>{" "}
-                  geladen. Dazu kommt der{" "}
-                  <a
-                    href="https://huggingface.co/ggml-org/whisper-vad/tree/9ffd54a1e1ee413ddf265af9913beaf518d1639b"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Silero-Sprachdetektor
-                  </a>{" "}
-                  (0,9 MB). Bereits geprüfte Dateien werden wiederverwendet.
-                  Danach werden deine Diktate lokal verarbeitet.
-                </p>
+                <details className="model-disclosure">
+                  <summary>Modelldetails</summary>
+                  <p>
+                    {setup.model.name} · {bytes(setup.model.downloadBytes)}
+                  </p>
+                  <p>
+                    Das Sprachmodell wird von{" "}
+                    <a
+                      href={setup.model.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Hugging Face
+                    </a>{" "}
+                    geladen. Dazu kommt der{" "}
+                    <a
+                      href="https://huggingface.co/ggml-org/whisper-vad/tree/9ffd54a1e1ee413ddf265af9913beaf518d1639b"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Silero-Sprachdetektor
+                    </a>{" "}
+                    (0,9 MB). Vorhandene geprüfte Dateien werden
+                    wiederverwendet.
+                  </p>
+                </details>
               </>
             )}
             {downloading && (
@@ -319,23 +321,29 @@ export function AppView(props: AppViewProps) {
       {(permissions.microphone !== "granted" ||
         permissions.accessibility !== "granted") && (
         <section className="permissions" aria-label="Berechtigungen">
-          {permissions.microphone !== "granted" && (
-            <p>
-              <strong>Mikrofon:</strong>{" "}
-              {permissions.microphone === "restricted"
-                ? "Der Zugriff ist durch Systemeinstellungen eingeschränkt."
-                : "Für Aufnahmen ist der Zugriff noch nicht verfügbar."}{" "}
-              Öffne die Einstellungen, um den Status zu prüfen und den Zugriff
-              freizugeben.
-            </p>
-          )}
-          {permissions.accessibility !== "granted" && (
-            <p>
-              <strong>Bedienungshilfen:</strong> Automatisches Einfügen ist noch
-              nicht verfügbar. Du kannst fertige Texte hier kopieren. Den
-              Zugriff kannst du in den Einstellungen freigeben.
-            </p>
-          )}
+          <div>
+            {permissions.microphone !== "granted" ? (
+              <p>
+                <strong>Mikrofon freigeben.</strong>{" "}
+                {permissions.microphone === "restricted"
+                  ? "Der Zugriff ist durch Systemeinstellungen eingeschränkt."
+                  : "Für Aufnahmen ist der Zugriff noch nicht verfügbar."}
+              </p>
+            ) : (
+              <p>
+                <strong>Automatisches Einfügen aktivieren.</strong> Dein Text
+                bleibt hier kopierbar.
+              </p>
+            )}
+            {permissions.accessibility !== "granted" && (
+              <p className="permission-secondary">
+                Automatisches Einfügen ist noch nicht verfügbar.
+              </p>
+            )}
+          </div>
+          <button type="button" onClick={props.onSettings}>
+            Berechtigungen prüfen
+          </button>
         </section>
       )}
       <dl className="session-preferences">

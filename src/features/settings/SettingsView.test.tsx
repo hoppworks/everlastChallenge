@@ -53,6 +53,7 @@ test("saves the chosen microphone and physical hotkey only after explicit submit
   fireEvent.change(screen.getByLabelText("Mikrofon"), {
     target: { value: "USB Mikrofon" },
   });
+  fireEvent.click(screen.getByText("Tastenkürzel ändern"));
   fireEvent.change(screen.getByLabelText("Physische Taste (US-Position)"), {
     target: { value: "K" },
   });
@@ -77,6 +78,7 @@ test("saves the chosen microphone and physical hotkey only after explicit submit
 test("rejects missing or Shift-only modifiers without submitting", () => {
   const p = props();
   render(<SettingsView {...p} />);
+  fireEvent.click(screen.getByText("Tastenkürzel ändern"));
   fireEvent.click(screen.getByLabelText("Option"));
   fireEvent.click(screen.getByLabelText("Shift"));
   expect(screen.getByRole("alert").textContent).toContain(
@@ -192,6 +194,7 @@ test.each(["busy", "refreshing", "restart"] as const)(
     p.preferences.refreshing = reason === "refreshing";
     p.preferences.needsRestart = reason === "restart";
     render(<SettingsView {...p} />);
+    fireEvent.click(screen.getByRole("button", { name: "Aufnahme" }));
     expect(
       (
         screen.getByRole("button", {
@@ -202,6 +205,7 @@ test.each(["busy", "refreshing", "restart"] as const)(
     expect(screen.getByLabelText("Mikrofon").matches(":disabled")).toBe(
       reason !== "refreshing",
     );
+    fireEvent.click(screen.getByRole("button", { name: "Berechtigungen" }));
     expect(
       screen
         .getByRole("button", { name: "Mikrofonzugriff anfragen" })
@@ -222,15 +226,15 @@ test("refresh and permission controls call only their own actions", () => {
     accessibility: "notDetermined",
   };
   render(<SettingsView {...p} />);
+  fireEvent.click(screen.getByRole("button", { name: "Aufnahme" }));
   fireEvent.click(
     screen.getByRole("button", { name: "Mikrofone aktualisieren" }),
   );
+  fireEvent.click(screen.getByRole("button", { name: "Berechtigungen" }));
   fireEvent.click(
     screen.getByRole("button", { name: "Mikrofonzugriff anfragen" }),
   );
-  fireEvent.click(
-    screen.getByRole("button", { name: "Bedienungshilfen freigeben" }),
-  );
+  fireEvent.click(screen.getByRole("button", { name: "Freigabe anfragen" }));
   expect(p.onRefresh).toHaveBeenCalledOnce();
   expect(p.onMicrophone).toHaveBeenCalledOnce();
   expect(p.onAccessibility).toHaveBeenCalledOnce();
@@ -243,6 +247,7 @@ test("reports actual model setup failure and native settings errors without clai
   p.setup.error = "Modell fehlt";
   p.preferences.error = "Tastenkürzel bereits vergeben";
   render(<SettingsView {...p} />);
+  fireEvent.click(screen.getByRole("button", { name: "Modell" }));
   expect(screen.getByText("Einrichtung fehlgeschlagen")).toBeDefined();
   expect(screen.getAllByRole("alert").map((node) => node.textContent)).toEqual([
     "Tastenkürzel bereits vergeben",
@@ -302,27 +307,23 @@ test("layout labels change while option values and the unsaved physical selectio
   expect(p.onSave).not.toHaveBeenCalled();
 });
 
-test("denied permissions give concrete recovery steps without promising another prompt", () => {
+test("denied microphone explains recovery while accessibility retains its explicit request", () => {
   const p = props();
   p.permissions = { microphone: "denied", accessibility: "denied" };
   render(<SettingsView {...p} />);
   expect(
-    screen.getByText(
-      /Systemeinstellungen → Datenschutz & Sicherheit → Mikrofon/,
-    ),
+    screen.getByText(/System Settings → Privacy & Security → Microphone/),
   ).toBeDefined();
   expect(
-    screen.getByText(
-      /Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen/,
-    ),
+    screen.getByText(/System Settings → Privacy & Security → Accessibility/),
   ).toBeDefined();
   expect(screen.getAllByText(/aktiviere Everlast Dictation/)).toHaveLength(2);
   expect(
     screen.queryByRole("button", { name: "Mikrofonzugriff anfragen" }),
   ).toBeNull();
   expect(
-    screen.queryByRole("button", { name: "Bedienungshilfen freigeben" }),
-  ).toBeNull();
+    screen.getByRole("button", { name: "Freigabe anfragen" }),
+  ).toBeDefined();
   expect(
     screen.queryByRole("button", { name: "Mikrofonstatus prüfen" }),
   ).toBeNull();
@@ -343,4 +344,94 @@ test("restricted permissions explain system restrictions without a self-approval
   ).toBeNull();
   expect(p.onMicrophone).not.toHaveBeenCalled();
   expect(p.onAccessibility).not.toHaveBeenCalled();
+});
+
+test("shows one settings area and preserves the recording draft across navigation", () => {
+  const p = props();
+  render(<SettingsView {...p} />);
+  fireEvent.change(screen.getByLabelText("Mikrofon"), {
+    target: { value: "USB Mikrofon" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Modell" }));
+  expect(screen.queryByRole("combobox", { name: "Mikrofon" })).toBeNull();
+  expect(screen.getByText("large-v3-turbo-q5_0")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Aufnahme" }));
+  expect((screen.getByLabelText("Mikrofon") as HTMLSelectElement).value).toBe(
+    "USB Mikrofon",
+  );
+  fireEvent.click(
+    screen.getByRole("button", { name: "Einstellungen speichern" }),
+  );
+  expect(p.onSave).toHaveBeenCalledWith(
+    expect.objectContaining({ device: "USB Mikrofon" }),
+  );
+});
+
+test("opens missing permissions first and offers the existing explicit AX request when denied", () => {
+  const p = props();
+  p.permissions.accessibility = "denied";
+  render(<SettingsView {...p} />);
+  expect(screen.queryByRole("combobox", { name: "Mikrofon" })).toBeNull();
+  expect(
+    screen.getByText(/System Settings → Privacy & Security → Accessibility/),
+  ).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Freigabe anfragen" }));
+  expect(p.onAccessibility).toHaveBeenCalledOnce();
+  expect(p.onMicrophone).not.toHaveBeenCalled();
+});
+
+test("navigation and closing remain available while editing is unsafe", () => {
+  const p = props();
+  p.busy = true;
+  render(<SettingsView {...p} />);
+  expect(screen.getByLabelText("Mikrofon").matches(":disabled")).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "Modell" }));
+  expect(screen.getByText("large-v3-turbo-q5_0")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Berechtigungen" }));
+  expect(screen.getByText("Bedienungshilfen (Accessibility)")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+  expect(p.onClose).toHaveBeenCalledOnce();
+});
+
+test("advanced controls start collapsed and reveal physical-key and source details on demand", () => {
+  render(<SettingsView {...props()} />);
+  const hotkey = screen.getByText("Tastenkürzel ändern").closest("details")!;
+  expect(hotkey.open).toBe(false);
+  fireEvent.click(screen.getByText("Tastenkürzel ändern"));
+  expect(hotkey.open).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "Modell" }));
+  const model = screen.getByText("Modelldetails").closest("details")!;
+  expect(model.open).toBe(false);
+  fireEvent.click(screen.getByText("Modelldetails"));
+  expect(model.open).toBe(true);
+  expect(
+    screen
+      .getByRole("link", { name: "Modellquelle öffnen" })
+      .getAttribute("href"),
+  ).toBe("https://example.test/model");
+});
+
+test("command errors remain visible in every area and permission requests have their own busy gate", () => {
+  const p = props();
+  p.busy = true;
+  p.permissions.accessibility = "denied";
+  render(
+    <SettingsView
+      {...p}
+      error="Freigabe konnte nicht angefragt werden"
+      permissionsBusy={false}
+    />,
+  );
+  expect(screen.getByRole("alert").textContent).toContain(
+    "Freigabe konnte nicht angefragt werden",
+  );
+  const request = screen.getByRole("button", { name: "Freigabe anfragen" });
+  expect(request.matches(":disabled")).toBe(false);
+  fireEvent.click(request);
+  expect(p.onAccessibility).toHaveBeenCalledOnce();
+  fireEvent.click(screen.getByRole("button", { name: "Aufnahme" }));
+  expect(screen.getByLabelText("Mikrofon").matches(":disabled")).toBe(true);
+  expect(screen.getByRole("alert").textContent).toContain(
+    "Freigabe konnte nicht angefragt werden",
+  );
 });

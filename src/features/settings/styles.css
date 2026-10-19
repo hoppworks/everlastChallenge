@@ -79,3 +79,77 @@
 .settings-detail dd {
   color: var(--muted);
 }
+
+.settings-view {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100dvh;
+  max-width: 680px;
+  margin: 0 auto;
+  overflow: hidden;
+  padding: 24px;
+  gap: 20px;
+}
+.settings-header {
+  flex: 0 0 auto;
+}
+.settings-header h2 {
+  font-size: 1.25rem;
+}
+.settings-navigation {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.settings-navigation button {
+  flex: 1 1 auto;
+}
+.settings-navigation button[aria-current="page"] {
+  font-weight: 600;
+  background: var(--surface);
+  outline: 1px solid var(--line);
+  outline-offset: -1px;
+}
+.settings-content {
+  min-height: 0;
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+.settings-content > .settings-detail,
+.settings-content fieldset:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.settings-advanced {
+  margin: 20px 0;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.settings-advanced summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 30px;
+}
+.settings-advanced summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.settings-save {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+@media (max-width: 400px) {
+  .settings-view {
+    padding: 16px;
+    gap: 16px;
+  }
+}

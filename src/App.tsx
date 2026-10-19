@@ -73,46 +73,52 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
   };
   return (
     <>
-      <AppView
-        nativeHeader={nativeHeader}
-        setup={{
-          phase: snapshot.setup.phase,
-          model: snapshot.setup.model,
-          downloadedBytes: snapshot.setup.downloadedBytes,
-          totalBytes: snapshot.setup.totalBytes,
-          canCancel: snapshot.setup.canCancel,
-          ...(snapshot.setup.error ? { error: snapshot.setup.error } : {}),
-        }}
-        session={{
-          phase: snapshot.session.phase,
-          text: snapshot.session.text,
-          maximumWarning: snapshot.session.maximumWarning,
-          maximumReached: snapshot.session.maximumReached,
-          elapsedSeconds: snapshot.session.elapsedMillis / 1000,
-          level: snapshot.session.levelPermille / 1000,
-          ...(snapshot.session.outcome
-            ? { outcome: snapshot.session.outcome }
-            : {}),
-        }}
-        permissions={snapshot.permissions}
-        labels={snapshot.labels}
-        pending={pending > 0}
-        settingsBusy={snapshot.settingsBusy}
-        {...(error || snapshot.error
-          ? { error: error ?? snapshot.error ?? "" }
-          : {})}
-        onDownload={() => run(() => command("model_download"))}
-        onCancelSetup={() => run(() => command("model_cancel"))}
-        onStart={() => run(() => command("recording_start"))}
-        onStop={() => sessionAction("recording_stop")}
-        onCancel={() => sessionAction("recording_cancel")}
-        onCopy={() => run(() => command("transcript_copy"))}
-        onClear={() => run(() => command("transcript_clear"))}
-        onSettings={() => setSettingsOpen(!settingsOpen)}
-      />
+      {!settingsOpen && (
+        <AppView
+          nativeHeader={nativeHeader}
+          setup={{
+            phase: snapshot.setup.phase,
+            model: snapshot.setup.model,
+            downloadedBytes: snapshot.setup.downloadedBytes,
+            totalBytes: snapshot.setup.totalBytes,
+            canCancel: snapshot.setup.canCancel,
+            ...(snapshot.setup.error ? { error: snapshot.setup.error } : {}),
+          }}
+          session={{
+            phase: snapshot.session.phase,
+            text: snapshot.session.text,
+            maximumWarning: snapshot.session.maximumWarning,
+            maximumReached: snapshot.session.maximumReached,
+            elapsedSeconds: snapshot.session.elapsedMillis / 1000,
+            level: snapshot.session.levelPermille / 1000,
+            ...(snapshot.session.outcome
+              ? { outcome: snapshot.session.outcome }
+              : {}),
+          }}
+          permissions={snapshot.permissions}
+          labels={snapshot.labels}
+          pending={pending > 0}
+          settingsBusy={snapshot.settingsBusy}
+          {...(error || snapshot.error
+            ? { error: error ?? snapshot.error ?? "" }
+            : {})}
+          onDownload={() => run(() => command("model_download"))}
+          onCancelSetup={() => run(() => command("model_cancel"))}
+          onStart={() => run(() => command("recording_start"))}
+          onStop={() => sessionAction("recording_stop")}
+          onCancel={() => sessionAction("recording_cancel")}
+          onCopy={() => run(() => command("transcript_copy"))}
+          onClear={() => run(() => command("transcript_clear"))}
+          onSettings={() => setSettingsOpen(true)}
+        />
+      )}
       {settingsOpen && (
         <SettingsView
           preferences={snapshot.preferences}
+          {...(error || snapshot.error
+            ? { error: error ?? snapshot.error ?? "" }
+            : {})}
+          permissionsBusy={pending > 0 || snapshot.session.phase !== "Idle"}
           setup={{
             phase: snapshot.setup.phase,
             model: snapshot.setup.model,

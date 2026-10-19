@@ -8,6 +8,8 @@ export interface SettingsViewProps {
   setup: AppViewProps["setup"];
   permissions: AppViewProps["permissions"];
   busy: boolean;
+  permissionsBusy?: boolean;
+  error?: string;
   onSave: (draft: SettingsDraft) => void;
   onRefresh: () => void;
   onMicrophone: () => void;
@@ -38,7 +40,7 @@ const microphoneHelp: Partial<
   Record<AppViewProps["permissions"]["microphone"], string>
 > = {
   denied:
-    "Öffne Systemeinstellungen → Datenschutz & Sicherheit → Mikrofon und aktiviere Everlast Dictation.",
+    "Öffne System Settings → Privacy & Security → Microphone und aktiviere Everlast Dictation.",
   restricted:
     "Der Mikrofonzugriff ist durch System- oder Verwaltungsvorgaben eingeschränkt. Prüfe diese Vorgaben oder wende dich an die Geräteverwaltung.",
   unavailable:
@@ -48,7 +50,7 @@ const accessibilityHelp: Partial<
   Record<AppViewProps["permissions"]["accessibility"], string>
 > = {
   denied:
-    "Öffne Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen und aktiviere Everlast Dictation.",
+    "Öffne System Settings → Privacy & Security → Accessibility und aktiviere Everlast Dictation.",
   restricted:
     "Die Bedienungshilfen sind durch System- oder Verwaltungsvorgaben eingeschränkt. Prüfe diese Vorgaben oder wende dich an die Geräteverwaltung.",
   unavailable:
@@ -69,6 +71,12 @@ function identity(value: SettingsDraft): string {
 
 export function SettingsView(props: SettingsViewProps) {
   const { preferences, setup, permissions } = props;
+  const [area, setArea] = useState<"Aufnahme" | "Berechtigungen" | "Modell">(
+    permissions.microphone !== "granted" ||
+      permissions.accessibility !== "granted"
+      ? "Berechtigungen"
+      : "Aufnahme",
+  );
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     heading.current?.focus();
@@ -82,6 +90,8 @@ export function SettingsView(props: SettingsViewProps) {
     setDraft(preferences.current);
   }
   const disabled = props.busy || preferences.needsRestart;
+  const permissionsDisabled =
+    (props.permissionsBusy ?? props.busy) || preferences.needsRestart;
   const valid =
     draft.hotkey.option || draft.hotkey.command || draft.hotkey.control;
   const dirty = identity(draft) !== current;
@@ -93,10 +103,7 @@ export function SettingsView(props: SettingsViewProps) {
     draft.device !== null &&
     !devices.some((device) => device.name === draft.device);
   return (
-    <section
-      className="dictation-app settings-view"
-      aria-labelledby="settings-heading"
-    >
+    <section className="settings-view" aria-labelledby="settings-heading">
       <header className="settings-header">
         <h2 id="settings-heading" ref={heading} tabIndex={-1}>
           Einstellungen
@@ -105,225 +112,286 @@ export function SettingsView(props: SettingsViewProps) {
           Schließen
         </button>
       </header>
-      {preferences.needsRestart && (
-        <p role="alert">
-          Die Einstellungen konnten nicht vollständig angewendet werden. Bitte
-          starte die App neu, bevor du sie änderst.
-        </p>
-      )}
-      {preferences.error && <p role="alert">{preferences.error}</p>}
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (!disabled && valid && dirty) props.onSave(draft);
-        }}
-      >
-        <fieldset disabled={disabled}>
-          <legend>Aufnahme</legend>
-          <label className="settings-field">
-            Mikrofon
-            <select
-              value={draft.device ?? ""}
-              onChange={(event) =>
-                setDraft({ ...draft, device: event.target.value || null })
-              }
-            >
-              <option value="">Systemstandard</option>
-              {selectedMissing && (
-                <option value={draft.device ?? ""} disabled>
-                  {draft.device} (nicht verfügbar)
-                </option>
-              )}
-              {devices.map((device) => {
-                const ambiguous =
-                  preferences.devices.filter(
-                    (entry) => entry.name === device.name,
-                  ).length > 1;
-                const available = device.available && !ambiguous;
-                return (
-                  <option
-                    key={device.name}
-                    value={device.name}
-                    disabled={!available}
-                  >
-                    {device.name}
-                    {available ? "" : " (nicht eindeutig)"}
-                  </option>
-                );
-              })}
-            </select>
-          </label>
+      <nav className="settings-navigation" aria-label="Einstellungsbereiche">
+        {(["Aufnahme", "Berechtigungen", "Modell"] as const).map((name) => (
           <button
             type="button"
-            disabled={disabled || preferences.refreshing}
-            onClick={props.onRefresh}
+            key={name}
+            aria-current={area === name ? "page" : undefined}
+            onClick={() => setArea(name)}
           >
-            {preferences.refreshing
-              ? "Mikrofone werden gesucht …"
-              : "Mikrofone aktualisieren"}
+            {name}
           </button>
-          <label className="settings-field">
-            Sprache
-            <select
-              value={draft.language}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  language: event.target.value as SettingsDraft["language"],
-                })
-              }
-            >
-              {!preferences.languages.includes(draft.language) && (
-                <option value={draft.language} disabled>
-                  {draft.language === "german" ? "Deutsch" : "Englisch"} (nicht
-                  verfügbar)
-                </option>
-              )}
-              {preferences.languages.map((language) => (
-                <option key={language} value={language}>
-                  {language === "german" ? "Deutsch" : "Englisch"}
-                </option>
-              ))}
-            </select>
-          </label>
-        </fieldset>
-        <fieldset disabled={disabled} aria-describedby="physical-key-help">
-          <legend>Tastenkürzel</legend>
-          <label className="settings-field">
-            Physische Taste (US-Position)
-            <select
-              value={draft.hotkey.key}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  hotkey: {
-                    ...draft.hotkey,
-                    key: event.target.value as SettingsDraft["hotkey"]["key"],
-                  },
-                })
-              }
-            >
-              {keys.map((key) => {
-                const entry = preferences.keyLabels.find(
-                  (entry) => entry.key === key,
-                );
-                const label = entry
-                  ? draft.hotkey.command
-                    ? entry.command
-                    : entry.plain
-                  : "Layout unbekannt";
-                return (
-                  <option key={key} value={key}>
-                    {label} (US-Position {key})
-                  </option>
-                );
-              })}
-            </select>
-          </label>
-          <div className="settings-modifiers">
-            {modifiers.map(([key, label]) => (
-              <label key={key}>
-                <input
-                  type="checkbox"
-                  checked={draft.hotkey[key]}
+        ))}
+      </nav>
+      <div className="settings-content">
+        {props.error && <p role="alert">{props.error}</p>}
+        {preferences.needsRestart && (
+          <p role="alert">
+            Die Einstellungen konnten nicht vollständig angewendet werden. Bitte
+            starte die App neu, bevor du sie änderst.
+          </p>
+        )}
+        {preferences.error && <p role="alert">{preferences.error}</p>}
+        {area === "Aufnahme" && (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (!disabled && valid && dirty) props.onSave(draft);
+            }}
+          >
+            <fieldset disabled={disabled}>
+              <legend>Aufnahme</legend>
+              <label className="settings-field">
+                Mikrofon
+                <select
+                  value={draft.device ?? ""}
+                  onChange={(event) =>
+                    setDraft({ ...draft, device: event.target.value || null })
+                  }
+                >
+                  <option value="">Systemstandard</option>
+                  {selectedMissing && (
+                    <option value={draft.device ?? ""} disabled>
+                      {draft.device} (nicht verfügbar)
+                    </option>
+                  )}
+                  {devices.map((device) => {
+                    const ambiguous =
+                      preferences.devices.filter(
+                        (entry) => entry.name === device.name,
+                      ).length > 1;
+                    const available = device.available && !ambiguous;
+                    return (
+                      <option
+                        key={device.name}
+                        value={device.name}
+                        disabled={!available}
+                      >
+                        {device.name}
+                        {available ? "" : " (nicht eindeutig)"}
+                      </option>
+                    );
+                  })}
+                </select>
+              </label>
+              <button
+                type="button"
+                disabled={disabled || preferences.refreshing}
+                onClick={props.onRefresh}
+              >
+                {preferences.refreshing
+                  ? "Mikrofone werden gesucht …"
+                  : "Mikrofone aktualisieren"}
+              </button>
+              <label className="settings-field">
+                Sprache
+                <select
+                  value={draft.language}
                   onChange={(event) =>
                     setDraft({
                       ...draft,
-                      hotkey: { ...draft.hotkey, [key]: event.target.checked },
+                      language: event.target.value as SettingsDraft["language"],
                     })
                   }
-                />
-                {label}
+                >
+                  {!preferences.languages.includes(draft.language) && (
+                    <option value={draft.language} disabled>
+                      {draft.language === "german" ? "Deutsch" : "Englisch"}{" "}
+                      (nicht verfügbar)
+                    </option>
+                  )}
+                  {preferences.languages.map((language) => (
+                    <option key={language} value={language}>
+                      {language === "german" ? "Deutsch" : "Englisch"}
+                    </option>
+                  ))}
+                </select>
               </label>
-            ))}
-          </div>
-          <p id="physical-key-help" className="settings-help">
-            Die Beschriftung folgt dem aktiven Layout. Gespeichert bleibt die
-            physische US-Position; ein Layoutwechsel ändert das Kürzel nicht.
-          </p>
-          {!valid && (
-            <p role="alert">
-              Wähle mindestens Option, Command oder Control. Shift allein reicht
-              nicht aus.
+            </fieldset>
+            <details className="settings-advanced">
+              <summary>Tastenkürzel ändern</summary>
+              <fieldset
+                disabled={disabled}
+                aria-describedby="physical-key-help"
+              >
+                <legend>Tastenkürzel</legend>
+                <label className="settings-field">
+                  Physische Taste (US-Position)
+                  <select
+                    value={draft.hotkey.key}
+                    onChange={(event) =>
+                      setDraft({
+                        ...draft,
+                        hotkey: {
+                          ...draft.hotkey,
+                          key: event.target
+                            .value as SettingsDraft["hotkey"]["key"],
+                        },
+                      })
+                    }
+                  >
+                    {keys.map((key) => {
+                      const entry = preferences.keyLabels.find(
+                        (entry) => entry.key === key,
+                      );
+                      const label = entry
+                        ? draft.hotkey.command
+                          ? entry.command
+                          : entry.plain
+                        : "Layout unbekannt";
+                      return (
+                        <option key={key} value={key}>
+                          {label} (US-Position {key})
+                        </option>
+                      );
+                    })}
+                  </select>
+                </label>
+                <div className="settings-modifiers">
+                  {modifiers.map(([key, label]) => (
+                    <label key={key}>
+                      <input
+                        type="checkbox"
+                        checked={draft.hotkey[key]}
+                        onChange={(event) =>
+                          setDraft({
+                            ...draft,
+                            hotkey: {
+                              ...draft.hotkey,
+                              [key]: event.target.checked,
+                            },
+                          })
+                        }
+                      />
+                      {label}
+                    </label>
+                  ))}
+                </div>
+                <p id="physical-key-help" className="settings-help">
+                  Die Beschriftung folgt dem aktiven Layout. Gespeichert bleibt
+                  die physische US-Position; ein Layoutwechsel ändert das Kürzel
+                  nicht.
+                </p>
+                {!valid && (
+                  <p role="alert">
+                    Wähle mindestens Option, Command oder Control. Shift allein
+                    reicht nicht aus.
+                  </p>
+                )}
+              </fieldset>
+            </details>
+            <div className="settings-save">
+              <button
+                className="primary-action"
+                type="submit"
+                disabled={disabled || !valid || !dirty}
+              >
+                Einstellungen speichern
+              </button>
+              {dirty && (
+                <span className="settings-help" role="status">
+                  Ungespeicherte Änderungen
+                </span>
+              )}
+            </div>
+          </form>
+        )}
+        {area === "Modell" && (
+          <section className="settings-detail" aria-labelledby="settings-model">
+            <h3 id="settings-model">Sprachmodell</h3>
+            <p>{setup.model.name}</p>
+            <p>{phaseLabels[setup.phase]}</p>
+            {setup.error && <p role="alert">{setup.error}</p>}
+            <p className="settings-help">
+              Die Spracherkennung läuft lokal auf diesem Mac.
             </p>
-          )}
-        </fieldset>
-        <button
-          className="primary-action"
-          type="submit"
-          disabled={disabled || !valid || !dirty}
-        >
-          Einstellungen speichern
-        </button>
-      </form>
-      <section className="settings-detail" aria-labelledby="settings-model">
-        <h3 id="settings-model">Sprachmodell</h3>
-        <p>{setup.model.name}</p>
-        <p>{phaseLabels[setup.phase]}</p>
-        {setup.error && <p role="alert">{setup.error}</p>}
-      </section>
-      <section
-        className="settings-detail"
-        aria-labelledby="settings-permissions"
-      >
-        <h3 id="settings-permissions">Berechtigungen</h3>
-        <p>
-          Aufnahme und Spracherkennung erfolgen lokal. Zum automatischen
-          Einfügen werden zusätzlich die Bedienungshilfen benötigt.
-        </p>
-        <dl>
-          <div>
-            <dt>Mikrofon</dt>
-            <dd>{permissionLabels[permissions.microphone]}</dd>
-          </div>
-          <div>
-            <dt>Bedienungshilfen</dt>
-            <dd>{permissionLabels[permissions.accessibility]}</dd>
-          </div>
-        </dl>
-        {microphoneHelp[permissions.microphone] && (
-          <p className="settings-help" id="microphone-permission-help">
-            {microphoneHelp[permissions.microphone]}
-          </p>
+            <details className="settings-advanced">
+              <summary>Modelldetails</summary>
+              <dl>
+                <div>
+                  <dt>Downloadgröße</dt>
+                  <dd>
+                    {new Intl.NumberFormat("de-DE", {
+                      maximumFractionDigits: 1,
+                    }).format(setup.model.downloadBytes / 1_000_000)}{" "}
+                    MB
+                  </dd>
+                </div>
+              </dl>
+              <a href={setup.model.sourceUrl} target="_blank" rel="noreferrer">
+                Modellquelle öffnen
+              </a>
+            </details>
+          </section>
         )}
-        {accessibilityHelp[permissions.accessibility] && (
-          <p className="settings-help" id="accessibility-permission-help">
-            {accessibilityHelp[permissions.accessibility]}
-          </p>
-        )}
-        {(permissions.microphone === "denied" ||
-          permissions.microphone === "restricted" ||
-          permissions.accessibility === "denied" ||
-          permissions.accessibility === "restricted") && (
-          <p className="settings-help">
-            Kehre nach der Änderung zu Everlast Dictation zurück. Die App prüft
-            den Status dann erneut.
-          </p>
-        )}
-        {(permissions.microphone === "notDetermined" ||
-          permissions.accessibility === "notDetermined") && (
-          <div className="app-actions">
-            {permissions.microphone === "notDetermined" && (
-              <button
-                type="button"
-                disabled={disabled}
-                onClick={props.onMicrophone}
-              >
-                Mikrofonzugriff anfragen
-              </button>
+        {area === "Berechtigungen" && (
+          <section
+            className="settings-detail"
+            aria-labelledby="settings-permissions"
+          >
+            <h3 id="settings-permissions">Berechtigungen</h3>
+            <p>
+              Aufnahme und Spracherkennung erfolgen lokal. Zum automatischen
+              Einfügen werden zusätzlich die Bedienungshilfen benötigt.
+            </p>
+            <dl>
+              <div>
+                <dt>Mikrofon</dt>
+                <dd>{permissionLabels[permissions.microphone]}</dd>
+              </div>
+              <div>
+                <dt>Bedienungshilfen (Accessibility)</dt>
+                <dd>{permissionLabels[permissions.accessibility]}</dd>
+              </div>
+            </dl>
+            {microphoneHelp[permissions.microphone] && (
+              <p className="settings-help" id="microphone-permission-help">
+                {microphoneHelp[permissions.microphone]}
+              </p>
             )}
-            {permissions.accessibility === "notDetermined" && (
-              <button
-                type="button"
-                disabled={disabled}
-                onClick={props.onAccessibility}
-              >
-                Bedienungshilfen freigeben
-              </button>
+            {accessibilityHelp[permissions.accessibility] && (
+              <p className="settings-help" id="accessibility-permission-help">
+                {accessibilityHelp[permissions.accessibility]}
+              </p>
             )}
-          </div>
+            {(permissions.microphone === "denied" ||
+              permissions.microphone === "restricted" ||
+              permissions.accessibility === "denied" ||
+              permissions.accessibility === "restricted") && (
+              <p className="settings-help">
+                Kehre nach der Änderung zu Everlast Dictation zurück. Die App
+                prüft den Status dann erneut.
+              </p>
+            )}
+            {(permissions.microphone === "notDetermined" ||
+              permissions.accessibility === "notDetermined" ||
+              permissions.accessibility === "denied") && (
+              <div className="app-actions">
+                {permissions.microphone === "notDetermined" && (
+                  <button
+                    type="button"
+                    disabled={permissionsDisabled}
+                    onClick={props.onMicrophone}
+                  >
+                    Mikrofonzugriff anfragen
+                  </button>
+                )}
+                {(permissions.accessibility === "notDetermined" ||
+                  permissions.accessibility === "denied") && (
+                  <button
+                    type="button"
+                    disabled={permissionsDisabled}
+                    onClick={props.onAccessibility}
+                  >
+                    Freigabe anfragen
+                  </button>
+                )}
+              </div>
+            )}
+          </section>
         )}
-      </section>
+      </div>
     </section>
   );
 }

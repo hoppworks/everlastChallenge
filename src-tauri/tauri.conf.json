@@ -10,7 +10,7 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [{"label":"main","title":"Everlast Dictation","width":520,"height":640,"minWidth":360,"minHeight":460,"visible":false}],
+    "windows": [{"label":"main","title":"Everlast Dictation","width":760,"height":720,"minWidth":560,"minHeight":600,"visible":false}],
     "security": {
       "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; frame-src 'none'",
       "capabilities": ["main"]

@@ -330,32 +330,31 @@ test("permission panel forwards user requests, respects busy, and can be closed"
     expect(
       (
         screen.getByRole("button", {
-          name: "Bedienungshilfen freigeben",
+          name: "Freigabe anfragen",
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(false),
   );
-  fireEvent.click(
-    screen.getByRole("button", { name: "Bedienungshilfen freigeben" }),
-  );
+  fireEvent.click(screen.getByRole("button", { name: "Freigabe anfragen" }));
   await waitFor(() =>
     expect(ipc.command).toHaveBeenCalledWith("accessibility_request"),
   );
+  await waitFor(() => expect(ipc.command).toHaveBeenCalledTimes(2));
   view.publish({ ...initial, settingsBusy: true });
-  expect(
-    (
-      screen.getByRole("button", {
-        name: "Mikrofonzugriff anfragen",
-      }) as HTMLButtonElement
-    ).disabled,
-  ).toBe(true);
-  expect(
-    (
-      screen.getByRole("button", {
-        name: "Bedienungshilfen freigeben",
-      }) as HTMLButtonElement
-    ).disabled,
-  ).toBe(true);
+  for (const name of ["Mikrofonzugriff anfragen", "Freigabe anfragen"]) {
+    expect(
+      (screen.getByRole("button", { name }) as HTMLButtonElement).disabled,
+    ).toBe(false);
+  }
+  view.publish({
+    ...initial,
+    session: { ...initial.session, phase: "Recording" },
+  });
+  for (const name of ["Mikrofonzugriff anfragen", "Freigabe anfragen"]) {
+    expect(
+      (screen.getByRole("button", { name }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+  }
   fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
   expect(screen.queryByRole("region", { name: "Einstellungen" })).toBeNull();
 });
@@ -505,6 +504,7 @@ test("invalid startup settings expose only explicit recovery and wait for native
   );
   expect(screen.queryByRole("button", { name: "Aufnehmen" })).toBeNull();
   view.publish(snapshot());
+  fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
   expect(screen.getByRole("button", { name: "Aufnehmen" })).toBeDefined();
 });
 
@@ -580,12 +580,10 @@ test("permission denial replaces the request with recovery guidance and follows 
     screen.queryByRole("button", { name: "Mikrofonzugriff anfragen" }),
   ).toBeNull();
   expect(
-    screen.queryByRole("button", { name: "Bedienungshilfen freigeben" }),
-  ).toBeNull();
+    screen.getByRole("button", { name: "Freigabe anfragen" }),
+  ).toBeDefined();
   expect(
-    screen.getByText(
-      /Systemeinstellungen → Datenschutz & Sicherheit → Mikrofon/,
-    ),
+    screen.getByText(/System Settings → Privacy & Security → Microphone/),
   ).toBeDefined();
   expect(screen.getByText(/Kehre nach der Änderung/)).toBeDefined();
   expect(ipc.command).toHaveBeenCalledTimes(1);
@@ -594,8 +592,34 @@ test("permission denial replaces the request with recovery guidance and follows 
     revision: 3,
     permissions: { microphone: "granted", accessibility: "granted" },
   });
-  expect(
-    screen.queryByText(/Systemeinstellungen → Datenschutz & Sicherheit/),
-  ).toBeNull();
+  expect(screen.queryByText(/System Settings → Privacy & Security/)).toBeNull();
   expect(ipc.command).toHaveBeenCalledTimes(1);
+});
+
+test("settings replace the dictation screen and restore the retained transcript on close", async () => {
+  const value = snapshot();
+  value.session.text = "Mein vorhandener Text";
+  connected(value);
+  fireEvent.click(await screen.findByRole("button", { name: "Einstellungen" }));
+  expect(screen.queryByRole("textbox", { name: "Letzter Text" })).toBeNull();
+  expect(screen.getByRole("heading", { name: "Einstellungen" })).toBeDefined();
+  fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+  expect(
+    (
+      screen.getByRole("textbox", {
+        name: "Letzter Text",
+      }) as HTMLTextAreaElement
+    ).value,
+  ).toBe("Mein vorhandener Text");
+});
+
+test("settings navigation stays available while the model is loading", async () => {
+  const value = snapshot();
+  value.setup.phase = "Loading";
+  value.settingsBusy = true;
+  connected(value);
+  const button = await screen.findByRole("button", { name: "Einstellungen" });
+  expect((button as HTMLButtonElement).disabled).toBe(false);
+  fireEvent.click(button);
+  expect(screen.getByRole("region", { name: "Einstellungen" })).toBeDefined();
 });

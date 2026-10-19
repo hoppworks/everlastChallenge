@@ -340,10 +340,14 @@ test("copy, clear and settings delegate actions and respect pending requests", (
       error="Anfrage nicht angenommen"
     />,
   );
-  for (const name of ["Kopieren", "Löschen", "Einstellungen", "Aufnehmen"])
+  for (const name of ["Kopieren", "Löschen", "Aufnehmen"])
     expect(
       (screen.getByRole("button", { name }) as HTMLButtonElement).disabled,
     ).toBe(true);
+  expect(
+    (screen.getByRole("button", { name: "Einstellungen" }) as HTMLButtonElement)
+      .disabled,
+  ).toBe(false);
   expect(screen.getByRole("alert").textContent).toBe(
     "Anfrage nicht angenommen",
   );

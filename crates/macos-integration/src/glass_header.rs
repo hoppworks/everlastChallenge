@@ -19,7 +19,7 @@ use std::{
     rc::Rc,
 };
 
-const HEADER_HEIGHT: f64 = 104.0;
+const HEADER_HEIGHT: f64 = 64.0;
 const MAX_STATUS_BYTES: usize = 512;
 thread_local! { static OWNERS: RefCell<BTreeSet<usize>> = const { RefCell::new(BTreeSet::new()) }; }
 
@@ -170,7 +170,7 @@ define_class!(
         #[unsafe(method(resizeSubviewsWithOldSize:))]
         fn resized(&self, size: NSSize) {
             // SAFETY: Preserve NSView's normal autoresizing before our fixed,
-            // bounded two-row layout; dimensions come from AppKit itself.
+            // bounded single-row layout; dimensions come from AppKit itself.
             unsafe { let _: () = msg_send![super(self), resizeSubviewsWithOldSize: size]; }
             self.arrange();
         }
@@ -200,21 +200,27 @@ impl HeaderContent {
     }
     fn arrange(&self) {
         let width = self.bounds().size.width.max(0.0);
-        self.ivars().status.setFrame(NSRect::new(
-            NSPoint::new(14.0, 10.0),
-            NSSize::new((width - 154.0).max(0.0), 42.0),
-        ));
-        self.ivars().settings.setFrame(NSRect::new(
-            NSPoint::new((width - 130.0).max(14.0), 12.0),
-            NSSize::new(116.0, 32.0),
-        ));
-        self.ivars().primary.setFrame(NSRect::new(
-            NSPoint::new(14.0, 62.0),
-            NSSize::new(132.0, 32.0),
-        ));
-        self.ivars().cancel.setFrame(NSRect::new(
-            NSPoint::new(158.0, 62.0),
-            NSSize::new(110.0, 32.0),
+        let views = self.ivars();
+        let mut edge = width - 14.0;
+        // Settings is always reachable. Only present session actions reserve
+        // width, so the status recovers space as Start/Stop/Cancel disappear.
+        for (button, button_width) in [
+            (&views.settings, 116.0),
+            (&views.cancel, 100.0),
+            (&views.primary, 104.0),
+        ] {
+            if !button.isHidden() {
+                edge -= button_width;
+                button.setFrame(NSRect::new(
+                    NSPoint::new(edge.max(14.0), 16.0),
+                    NSSize::new(button_width, 32.0),
+                ));
+                edge -= 8.0;
+            }
+        }
+        views.status.setFrame(NSRect::new(
+            NSPoint::new(14.0, 12.0),
+            NSSize::new((edge - 18.0).max(0.0), 40.0),
         ));
     }
     fn disable(&self) {
@@ -385,6 +391,7 @@ impl<W: HasWindowHandle + 'static> GlassHeader<W> {
         views.cancel.setEnabled(state.cancel.is_some());
         views.cancel.setHidden(state.cancel.is_none());
         views.settings.setEnabled(state.settings_enabled);
+        self.content.arrange();
     }
     pub fn update(&mut self, state: HeaderState) -> Result<(), HeaderError> {
         state.validate()?;

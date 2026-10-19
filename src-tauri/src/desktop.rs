@@ -258,9 +258,8 @@ impl Desktop {
             return Err("Anwendung wird beendet".into());
         }
         let mut shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
-        if shared.view.settings_busy {
-            return Err("Einstellungen sind momentan nicht verfügbar".into());
-        }
+        // Navigation is safe during setup/recording. Individual settings
+        // mutations retain their existing admission checks.
         shared.settings_requests = shared
             .settings_requests
             .checked_add(1)
@@ -1571,19 +1570,30 @@ mod tests {
             Err(message) if message == "Anwendung wird beendet"));
     }
     #[test]
-    fn native_settings_requests_are_monotone_and_respect_busy_and_shutdown()
+    fn native_settings_requests_remain_available_while_setup_is_busy_and_respect_shutdown()
     -> Result<(), Box<dyn std::error::Error>> {
         let desktop = unstarted_desktop();
-        assert!(desktop.request_settings().is_err());
-        desktop
-            .0
-            .shared
-            .lock()
-            .map_err(|_| "lock")?
-            .view
-            .settings_busy = false;
-        assert_eq!(desktop.request_settings()?, 1);
-        assert_eq!(desktop.request_settings()?, 2);
+        for (index, phase) in [
+            view::SetupPhase::Checking,
+            view::SetupPhase::Loading,
+            view::SetupPhase::Downloading,
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            {
+                let mut shared = desktop.0.shared.lock().map_err(|_| "lock")?;
+                shared.view.setup.phase = phase;
+                assert!(shared.view.settings_busy);
+            }
+            assert_eq!(desktop.request_settings()?, u32::try_from(index + 1)?);
+            let (_, header) = desktop.native_header_after(None)?.ok_or("missing header")?;
+            assert!(header.settings_enabled, "navigation must remain available");
+            assert!(
+                header.primary.is_none(),
+                "busy setup must never enable capture"
+            );
+        }
         desktop.shutdown();
         assert!(desktop.request_settings().is_err());
         Ok(())
@@ -1605,7 +1615,7 @@ mod tests {
         let recording = crate::header::project(&view);
         assert_eq!(recording.primary, Some(HeaderPrimary::Stop(7.try_into()?)));
         assert_eq!(recording.cancel, 7.try_into().ok());
-        assert!(!recording.settings_enabled);
+        assert!(recording.settings_enabled);
         view.session.id = Some(8);
         assert_ne!(recording, crate::header::project(&view));
         assert_ne!(recording, HeaderState::default());

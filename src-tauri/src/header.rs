@@ -68,6 +68,6 @@ pub fn project(snapshot: &Snapshot) -> HeaderState {
         cancel: (!idle && snapshot.session.phase != SessionPhase::Cancelling)
             .then_some(session)
             .flatten(),
-        settings_enabled: !snapshot.settings_busy,
+        settings_enabled: true,
     }
 }

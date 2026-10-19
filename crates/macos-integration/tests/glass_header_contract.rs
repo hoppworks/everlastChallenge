@@ -9,8 +9,8 @@ use macos_integration::glass_header::{
 use objc2::{MainThreadMarker, rc::Retained};
 use objc2_app_kit::{
     NSApplication, NSBackingStoreType, NSButton, NSGlassEffectView, NSGlassEffectViewStyle,
-    NSLayoutAttribute, NSTextView, NSTitlebarAccessoryViewController, NSView, NSWindow,
-    NSWindowStyleMask,
+    NSLayoutAttribute, NSTextField, NSTextView, NSTitlebarAccessoryViewController, NSView,
+    NSWindow, NSWindowStyleMask,
 };
 use objc2_foundation::{NSPoint, NSRect, NSSize};
 use raw_window_handle::{
@@ -69,6 +69,42 @@ fn panic_callback(_: HeaderAction) {
     // shortcut or the global panic hook's expected test-only noise.
     std::panic::resume_unwind(Box::new("intentional callback test"));
 }
+fn toolbar_fits(content: &NSView, width: f64) -> Result<(), &'static str> {
+    let status = content
+        .subviews()
+        .iter()
+        .find_map(|view| view.downcast::<NSTextField>().ok())
+        .ok_or("status")?;
+    let mut edge = status.frame().origin.x + status.frame().size.width;
+    assert!(
+        status.frame().size.width >= 160.0,
+        "status needs useful space at minimum width"
+    );
+    for title in ["Aufnehmen", "Stoppen", "Abbrechen", "Einstellungen"] {
+        let Ok(control) = button(content, title) else {
+            continue;
+        };
+        if control.isHidden() {
+            continue;
+        }
+        let frame = control.frame();
+        assert!(
+            edge + 8.0 <= frame.origin.x,
+            "toolbar controls must not collide"
+        );
+        assert_eq!(
+            frame.origin.y + frame.size.height / 2.0,
+            32.0,
+            "one control row"
+        );
+        edge = frame.origin.x + frame.size.width;
+    }
+    assert!(
+        edge <= width - 14.0,
+        "controls must fit inside the trailing margin"
+    );
+    Ok(())
+}
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let main = MainThreadMarker::new().ok_or("not main")?;
     let app = NSApplication::sharedApplication(main);
@@ -76,7 +112,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let window = unsafe {
         NSWindow::initWithContentRect_styleMask_backing_defer(
             main.alloc(),
-            NSRect::new(NSPoint::new(0., 0.), NSSize::new(360., 400.)),
+            NSRect::new(NSPoint::new(0., 0.), NSSize::new(560., 600.)),
             NSWindowStyleMask::Titled | NSWindowStyleMask::Resizable,
             NSBackingStoreType::Buffered,
             false,
@@ -93,7 +129,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let foreign = NSTitlebarAccessoryViewController::new(main);
     foreign.setView(&NSView::initWithFrame(
         main.alloc(),
-        NSRect::new(NSPoint::new(0., 0.), NSSize::new(360., 20.)),
+        NSRect::new(NSPoint::new(0., 0.), NSSize::new(560., 20.)),
     ));
     window.addTitlebarAccessoryViewController(&foreign);
     let (send, recv) = mpsc::channel();
@@ -118,8 +154,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     assert_eq!(glass.style(), NSGlassEffectViewStyle::Regular);
     let content = glass.contentView().ok_or("content")?;
     glass.layoutSubtreeIfNeeded();
-    assert_eq!(glass.frame().size.width, 360.);
-    assert_eq!(glass.frame().size.height, 104.);
+    assert_eq!(glass.frame().size.width, 560.);
+    assert_eq!(glass.frame().size.height, 64.);
     assert_eq!(content.subviews().len(), 4);
     let primary = button(&content, "Aufnehmen")?;
     let cancel = button(&content, "Abbrechen")?;
@@ -134,6 +170,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         cancel: None,
         settings_enabled: true,
     })?;
+    toolbar_fits(&content, 560.)?;
     click(&primary);
     click(&settings);
     assert_eq!(recv.try_recv()?, HeaderAction::Start);
@@ -146,6 +183,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             cancel: Some(id),
             settings_enabled: false,
         })?;
+        toolbar_fits(&content, 560.)?;
         click(&primary);
         click(&cancel);
         click(&settings);
@@ -171,11 +209,23 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         }),
         Err(HeaderError::State)
     );
-    window.setContentSize(NSSize::new(640., 480.));
-    glass.layoutSubtreeIfNeeded();
-    assert_eq!(glass.frame().size.width, 640.);
-    assert_eq!(content.frame().size.width, 640.);
-    assert!(settings.frame().origin.x + settings.frame().size.width <= 640.);
+    for width in [760., 1000., 560.] {
+        window.setContentSize(NSSize::new(width, 720.));
+        glass.layoutSubtreeIfNeeded();
+        assert_eq!(glass.frame().size.width, width);
+        assert_eq!(content.frame().size.width, width);
+        toolbar_fits(&content, width)?;
+    }
+    header.update(HeaderState {
+        status: "Modell wird geprüft".into(),
+        primary: None,
+        cancel: None,
+        settings_enabled: true,
+    })?;
+    toolbar_fits(&content, 560.)?;
+    assert!(primary.isHidden() && cancel.isHidden());
+    click(&settings);
+    assert_eq!(recv.try_recv()?, HeaderAction::Settings);
     let second = NSTextView::new(main);
     root.addSubview(&second);
     assert!(window.makeFirstResponder(Some(&second)));
