@@ -21,5 +21,28 @@
   "normalBundleProof": "artifacts/single-press-normal-build-preparation.json",
   "preparedAudioManifest": "artifacts/single-press-audio-v1/manifest.json",
   "recipientPreparation": "artifacts/single-press-recipient-v1/preparation.json",
-  "scope": "Component contracts and benign owned process cleanup only; actual integration, installed bundle readiness, physical hotkey and microphone run unverified. No actual gesture consumed."
+  "scope": "Component contracts and benign owned process cleanup only; actual integration, installed bundle readiness, physical hotkey and microphone run unverified. No actual gesture consumed.",
+  "followUp": {
+    "scope": "Read-only public preflight, standalone tests and actual native watchdog adapter; no physical gesture or microphone",
+    "sourceHashes": {
+      "scripts/single-press-runner.mjs": "ccdd0d281ce9f993cc486526458541db5bd752f5a09d58b1b5d5ffa2cab2a091",
+      "scripts/single-press-runner.test.mjs": "e42d302042184e63ca81c0260f83c547765c12558b48edda237ca78436c67591",
+      "scripts/single-press-playback.mjs": "72e6083576be8b53c26695d71b6db7285cfee50b72be8c8d2ed3880cdcb056a3",
+      "scripts/single-press-playback.test.mjs": "21de6c198ecde45bf9954aa335b85c07c64368ee196d155d4f327b03c5635f41",
+      "scripts/single-press-watchdog-adapter.mjs": "f32b1affbc2c313df340220ec8ed65c87e8cfc816e6f6171322f3aa63b428e47",
+      "scripts/single-press-watchdog-adapter.test.mjs": "f3b1584d12f87807be9f17781987765534f51b5a46260cee080d53eff247c939"
+    },
+    "runnerTests": 16,
+    "playbackActualAssetTests": 12,
+    "isolatedPlaybackTests": {
+      "passed": 11,
+      "explicitPublicAssetSkipped": 1
+    },
+    "watchdogAdapterExplicitNativeTests": 9,
+    "isolatedPlaybackProof": "artifacts/playback-self-contained-v1/proof.json",
+    "isolatedPlaybackProofSha256": "0b095cef714de3e73833653b9983067dc860cd541b427f3e90f0d4c7b7502ae5",
+    "watchdogAdapterLog": "artifacts/single-press-watchdog-adapter-tests.log",
+    "watchdogAdapterLogSha256": "458a2676708704d7c2e6a5290fbed83cae518709711b00c7caafa7e4a82ad9fe",
+    "independentReview": "approved after atomic optional fixture publisher correction"
+  }
 }

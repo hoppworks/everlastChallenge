@@ -473,3 +473,24 @@ test("observers near their lifetime limit cannot consume the sole gesture", asyn
     assert.equal(f.events.includes("signal:ready"), false);
   }
 });
+
+test("read-only preflight shares readiness gates without consuming, signalling or arming", async () => {
+  const { preflightSinglePress } = await import("./single-press-runner.mjs");
+  const f = fixture();
+  const result = await preflightSinglePress(f.options);
+  assert.equal(result.ready, true);
+  assert.equal(result.observations.product.phase, "Idle");
+  assert.deepEqual(f.events, []);
+  const bad = fixture();
+  const original = bad.options.observe;
+  bad.options.observe = async () => {
+    const pair = await original();
+    pair.recipient.frontmostIsSelf = false;
+    return pair;
+  };
+  await assert.rejects(
+    preflightSinglePress(bad.options),
+    /recipient-focus-lost/,
+  );
+  assert.deepEqual(bad.events, []);
+});

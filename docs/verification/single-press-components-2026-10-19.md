@@ -41,3 +41,24 @@ Das Bundle und ein eigener Empfänger sind vorbereitet, noch nicht installiert
 beziehungsweise gestartet. Die tatsächliche Adapterintegration, vollständige
 Vollsuite am zusammengeführten Stand, echte Bereitschaft und der einzige
 physische Start bleiben offen. Der reale Gestenvermerk wurde nicht erzeugt.
+
+## Nachtrag: tatsächlicher Guardadapter und eigenständige Softwaretests
+
+Der JavaScript-Adapter startet nun den echten unabhängigen Helper, prüft seine
+frische Bereitschaft und wartet auf gebundene Abort-/Disarm-/Exitbestätigung.
+Neun explizit ausgeführte Adaptertests bestanden einschließlich eines echten
+Helpers um einen harmlosen eigenen Node-Prozess. Der parallel gelesene
+Fixture-Snapshot wird atomar ersetzt. Kein Produkt-PID wird vom JS-Adapter
+direkt signalisiert.
+
+Ein rein lesendes öffentliches Preflight-Seam verwendet dieselben zwei
+frischen fortgeschrittenen Bereitschaftsbeobachtungen wie der Runner, ohne
+Signal, Audio, Berichtsschreiben, Gestenverbrauch oder Watchdog-Armierung.
+16 Runnerverträge bestanden. Die Playback-Suite wurde von ignorierten lokalen
+Audiodateien unabhängig gemacht: isolierter Checkout zunächst9Fehler, nach
+Korrektur11bestanden und genau1ausdrücklich benannter Public-Fixture-Test
+übersprungen; mit tatsächlich vorhandener Datei12/12bestanden. Produktions-
+SHA,300s undSamplezahl bleiben fest. Kontrollierte Lifecycle-Tests erhalten
+keine reale Sprachqualifikationsbezeichnung. Änderungen unabhängig geprüft;
+aktualisierte Quellbindungen stehen im JSON-Nachtrag. Das gesamte tatsächliche
+Startkommando und der physische G-Lauf bleiben noch offen.

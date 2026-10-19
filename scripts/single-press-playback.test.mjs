@@ -2,6 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   mkdtempSync,
+  existsSync,
+  lstatSync,
   realpathSync,
   readFileSync,
   writeFileSync,
@@ -13,16 +15,59 @@ import {
   PUBLIC_AUDIO_PATH,
   PUBLIC_AUDIO_SHA256,
   validatePublicAudio,
+  inspectPcm16Audio,
 } from "./single-press-playback.mjs";
 
-function modified(change, action) {
+// Synthetic four-frame PCM: structural fixture, never a public speech acceptance proof.
+const SYNTHETIC_WAV_HEX =
+  "524946462c00000057415645666d74201000000001000100803e0000007d000002001000646174610800000000000100ffffff7f";
+const SYNTHETIC_SHA256 =
+  "fbf8615769d3c5bb7f1ac9b85e636ee6862f8b5409e511466cf3e12a168d9839";
+function syntheticWav() {
+  return Buffer.from(SYNTHETIC_WAV_HEX, "hex");
+}
+function controlledInspection(t) {
+  const directory = realpathSync(
+    mkdtempSync(path.join(os.tmpdir(), "one-press-player-")),
+  );
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const fixturePath = path.join(directory, "controlled.wav");
+  writeFileSync(fixturePath, syntheticWav(), { mode: 0o600 });
+  return {
+    fixturePath,
+    inspectFixture(filename) {
+      assert.equal(filename, fixturePath);
+      const info = lstatSync(filename);
+      // Controlled public-inspection result isolates child lifecycle from the real asset.
+      return {
+        path: filename,
+        sha256: PUBLIC_AUDIO_SHA256,
+        frames: 4800000,
+        durationMillis: 300000,
+        identity: {
+          dev: info.dev,
+          ino: info.ino,
+          size: info.size,
+          mtimeMs: info.mtimeMs,
+        },
+      };
+    },
+  };
+}
+function modified(change, action, fullDuration = false) {
   const directory = realpathSync(
     mkdtempSync(path.join(os.tmpdir(), "one-press-audio-")),
   );
   try {
-    const bytes = readFileSync(PUBLIC_AUDIO_PATH);
+    let bytes = syntheticWav();
+    if (fullDuration) {
+      bytes = Buffer.alloc(9600044);
+      syntheticWav().copy(bytes, 0, 0, 44);
+      bytes.writeUInt32LE(bytes.length - 8, 4);
+      bytes.writeUInt32LE(9600000, 40);
+    }
     change(bytes);
-    const filename = path.join(directory, "public.wav");
+    const filename = path.join(directory, "synthetic.wav");
     writeFileSync(filename, bytes, { mode: 0o600 });
     action(filename);
   } finally {
@@ -30,21 +75,33 @@ function modified(change, action) {
   }
 }
 
-test("actual fixture has exact pinned bytes, PCM format and 300-second sample count", () => {
-  const result = validatePublicAudio();
-  assert.equal(result.sha256, PUBLIC_AUDIO_SHA256);
-  assert.equal(result.frames, 4800000);
-  assert.equal(result.durationMillis, 300000);
+test("synthetic PCM parser checks known literal bytes without authenticating public speech", () => {
+  assert.deepEqual(inspectPcm16Audio(syntheticWav()), {
+    sha256: SYNTHETIC_SHA256,
+    frames: 4,
+    durationMillis: 0.25,
+  });
+  const changed = syntheticWav();
+  changed[changed.length - 1] ^= 1;
+  assert.notEqual(inspectPcm16Audio(changed).sha256, SYNTHETIC_SHA256);
 });
-
-test("wrong sample count is rejected as duration before hash checking", () => {
+test(
+  "actual public fixture has pinned bytes, PCM format and 300-second sample count",
+  {
+    skip: existsSync(PUBLIC_AUDIO_PATH)
+      ? false
+      : "ignored public speech fixture unavailable; structural and lifecycle regressions remain active",
+  },
+  () => {
+    const result = validatePublicAudio();
+    assert.equal(result.sha256, PUBLIC_AUDIO_SHA256);
+    assert.equal(result.frames, 4800000);
+    assert.equal(result.durationMillis, 300000);
+  },
+);
+test("wrong sample count is rejected as duration before public hash checking", () => {
   modified(
-    (bytes) => {
-      // Preserve RIFF size while turning two data bytes into a valid padded JUNK chunk.
-      bytes.writeUInt32LE(9599990, 40);
-      bytes.write("JUNK", bytes.length - 10, "ascii");
-      bytes.writeUInt32LE(2, bytes.length - 6);
-    },
+    () => {},
     (filename) =>
       assert.throws(
         () => validatePublicAudio(filename),
@@ -52,12 +109,19 @@ test("wrong sample count is rejected as duration before hash checking", () => {
       ),
   );
 });
+test("production validator rejects synthetic 300-second audio despite valid PCM shape", () => {
+  modified(
+    () => {},
+    (filename) =>
+      assert.throws(() => validatePublicAudio(filename), /audio-hash-mismatch/),
+    true,
+  );
+});
 
-async function playerFixture({
-  spawnError = false,
-  ignoresTerm = false,
-  ignoresKill = false,
-} = {}) {
+async function playerFixture(
+  t,
+  { spawnError = false, ignoresTerm = false, ignoresKill = false } = {},
+) {
   const { EventEmitter } = await import("node:events");
   let elapsed = 0;
   const calls = [];
@@ -91,6 +155,7 @@ async function playerFixture({
     return child;
   };
   return {
+    ...controlledInspection(t),
     child,
     calls,
     spawnPlayer,
@@ -110,16 +175,18 @@ const frozen = {
   fixtureDurationMillis: 300000,
 };
 
-test("start returns after owned spawn, and successful completion makes stop idempotent", async () => {
+test("start returns after owned spawn, and successful completion makes stop idempotent", async (t) => {
   const { createPlaybackAdapter } = await import("./single-press-playback.mjs");
-  const f = await playerFixture();
+  const f = await playerFixture(t);
   const audio = createPlaybackAdapter({
+    fixturePath: f.fixturePath,
+    inspectFixture: f.inspectFixture,
     spawnPlayer: f.spawnPlayer,
     clock: f.clock,
   });
   await audio.start(frozen);
   assert.equal(f.calls[0].program, "/usr/bin/afplay");
-  assert.deepEqual(f.calls[0].args, [PUBLIC_AUDIO_PATH]);
+  assert.deepEqual(f.calls[0].args, [f.fixturePath]);
   assert.equal(f.calls[0].options.shell, false);
   f.advance(300000);
   f.child.finish(0);
@@ -128,22 +195,16 @@ test("start returns after owned spawn, and successful completion makes stop idem
   assert.equal(f.calls.filter((value) => typeof value === "string").length, 0);
 });
 
-test("codec, channel, rate, RIFF/chunk bounds and payload changes are rejected", () => {
+test("codec, channel, rate and RIFF/chunk bounds are rejected independently of fixture availability", () => {
   for (const [change, reason] of [
     [(bytes) => bytes.writeUInt16LE(3, 20), /audio-format-invalid/],
     [(bytes) => bytes.writeUInt16LE(2, 22), /audio-format-invalid/],
     [(bytes) => bytes.writeUInt32LE(48000, 24), /audio-format-invalid/],
     [(bytes) => bytes.writeUInt32LE(0, 4), /audio-riff-invalid/],
     [(bytes) => bytes.writeUInt32LE(0xffffffff, 40), /audio-chunk-invalid/],
-    [
-      (bytes) => {
-        bytes[bytes.length - 1] ^= 1;
-      },
-      /audio-hash-mismatch/,
-    ],
   ])
     modified(change, (filename) =>
-      assert.throws(() => validatePublicAudio(filename), reason),
+      assert.throws(() => inspectPcm16Audio(readFileSync(filename)), reason),
     );
 });
 
@@ -155,7 +216,9 @@ test("symlink and oversized fixture are rejected before player admission", async
   );
   try {
     const link = path.join(directory, "link.wav");
-    symlinkSync(PUBLIC_AUDIO_PATH, link);
+    const target = path.join(directory, "synthetic.wav");
+    writeFileSync(target, syntheticWav(), { mode: 0o600 });
+    symlinkSync(target, link);
     assert.throws(() => validatePublicAudio(link));
     const big = path.join(directory, "big.wav");
     const fd = openSync(big, "wx", 0o600);
@@ -167,11 +230,13 @@ test("symlink and oversized fixture are rejected before player admission", async
   }
 });
 
-test("spawn failure, nonzero exit and early exit zero remain failures at stop", async () => {
+test("spawn failure, nonzero exit and early exit zero remain failures at stop", async (t) => {
   const { createPlaybackAdapter } = await import("./single-press-playback.mjs");
   for (const mode of ["spawn", "nonzero", "early-zero"]) {
-    const f = await playerFixture({ spawnError: mode === "spawn" });
+    const f = await playerFixture(t, { spawnError: mode === "spawn" });
     const audio = createPlaybackAdapter({
+      fixturePath: f.fixturePath,
+      inspectFixture: f.inspectFixture,
       spawnPlayer: f.spawnPlayer,
       clock: f.clock,
     });
@@ -188,10 +253,12 @@ test("spawn failure, nonzero exit and early exit zero remain failures at stop", 
   }
 });
 
-test("early stop terminates only owned child, escalates boundedly, and cannot pass", async () => {
+test("early stop terminates only owned child, escalates boundedly, and cannot pass", async (t) => {
   const { createPlaybackAdapter } = await import("./single-press-playback.mjs");
-  const f = await playerFixture({ ignoresTerm: true });
+  const f = await playerFixture(t, { ignoresTerm: true });
   const audio = createPlaybackAdapter({
+    fixturePath: f.fixturePath,
+    inspectFixture: f.inspectFixture,
     spawnPlayer: f.spawnPlayer,
     clock: f.clock,
   });
@@ -211,10 +278,12 @@ test("early stop terminates only owned child, escalates boundedly, and cannot pa
   assert.equal(f.calls.filter((value) => value === "SIGKILL").length, 1);
 });
 
-test("unconfirmed termination never reports successful cleanup", async () => {
+test("unconfirmed termination never reports successful cleanup", async (t) => {
   const { createPlaybackAdapter } = await import("./single-press-playback.mjs");
-  const f = await playerFixture({ ignoresTerm: true, ignoresKill: true });
+  const f = await playerFixture(t, { ignoresTerm: true, ignoresKill: true });
   const audio = createPlaybackAdapter({
+    fixturePath: f.fixturePath,
+    inspectFixture: f.inspectFixture,
     spawnPlayer: f.spawnPlayer,
     clock: f.clock,
   });
@@ -228,10 +297,12 @@ test("unconfirmed termination never reports successful cleanup", async () => {
   assert.equal(audio.status().closed, false);
 });
 
-test("frozen mismatch and repeated start never spawn a second child", async () => {
+test("frozen mismatch and repeated start never spawn a second child", async (t) => {
   const { createPlaybackAdapter } = await import("./single-press-playback.mjs");
-  const f = await playerFixture();
+  const f = await playerFixture(t);
   const audio = createPlaybackAdapter({
+    fixturePath: f.fixturePath,
+    inspectFixture: f.inspectFixture,
     spawnPlayer: f.spawnPlayer,
     clock: f.clock,
   });
@@ -249,15 +320,17 @@ test("frozen mismatch and repeated start never spawn a second child", async () =
 test(
   "benign owned Node child is actually terminated and reaped; afplay is never launched",
   { timeout: 8000 },
-  async () => {
+  async (t) => {
     const { spawn } = await import("node:child_process");
     const { createPlaybackAdapter } =
       await import("./single-press-playback.mjs");
     let owned;
+    const fixture = controlledInspection(t);
     const audio = createPlaybackAdapter({
+      ...fixture,
       spawnPlayer(program, args, options) {
         assert.equal(program, "/usr/bin/afplay");
-        assert.deepEqual(args, [PUBLIC_AUDIO_PATH]);
+        assert.deepEqual(args, [fixture.fixturePath]);
         owned = spawn(
           process.execPath,
           ["-e", "setInterval(() => {}, 1000)"],

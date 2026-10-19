@@ -241,6 +241,56 @@ const defaultClock = {
   sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 };
 
+/** Readiness-only seam: no gesture, signal, audio, report write or helper arm. */
+export async function preflightSinglePress({
+  frozen,
+  observe,
+  verifyFrozen,
+  watchdog,
+  clock = defaultClock,
+  pollMillis = 250,
+}) {
+  validateFrozen(frozen);
+  if (
+    ![
+      observe,
+      verifyFrozen,
+      watchdog?.preflight,
+      clock?.now,
+      clock?.sleep,
+    ].every((value) => typeof value === "function") ||
+    !integer(pollMillis) ||
+    pollMillis < 10 ||
+    pollMillis > 1000
+  )
+    reject("missing-adapter");
+  if (
+    (await verifyFrozen(frozen)) !== true ||
+    (await watchdog.preflight(frozen)) !== true
+  )
+    reject("preflight-unverified");
+  const first = validatePair(await observe(), frozen, clock.now());
+  requireObservationBudget(first);
+  if (
+    first.product.phase !== "Idle" ||
+    first.recipient.totalUtf8Bytes !== 0 ||
+    first.recipient.fieldUtf8Bytes !== 0
+  )
+    reject("preflight-not-idle-empty");
+  await clock.sleep(pollMillis);
+  const second = validatePair(await observe(), frozen, clock.now(), first);
+  if (
+    second.product.phase !== "Idle" ||
+    second.recipient.totalUtf8Bytes !== 0 ||
+    second.recipient.fieldUtf8Bytes !== 0 ||
+    second.product.sequence <= first.product.sequence ||
+    second.recipient.sequence <= first.recipient.sequence
+  )
+    reject("preflight-unstable");
+  requireObservationBudget(second);
+  return { ready: true, observations: second };
+}
+
 /** No default microphone, keyboard, prompt, playback or process-control action exists.
  * Integration must provide verified own-component adapters and an independent watchdog.
  * audio.start resolves after player spawn/admission, never after the full playback.
@@ -333,29 +383,15 @@ export async function runSinglePress(options) {
   const pause = async () => clock.sleep(pollMillis);
   try {
     await emit();
-    if (
-      (await verifyFrozen(frozen)) !== true ||
-      (await watchdog.preflight(frozen)) !== true
-    )
-      reject("preflight-unverified");
-    const first = await read();
-    requireObservationBudget(first);
-    if (
-      first.product.phase !== "Idle" ||
-      first.recipient.totalUtf8Bytes !== 0 ||
-      first.recipient.fieldUtf8Bytes !== 0
-    )
-      reject("preflight-not-idle-empty");
-    await pause();
-    const second = await read();
-    if (
-      second.product.phase !== "Idle" ||
-      second.recipient.totalUtf8Bytes !== 0 ||
-      second.recipient.fieldUtf8Bytes !== 0 ||
-      second.product.sequence <= first.product.sequence ||
-      second.recipient.sequence <= first.recipient.sequence
-    )
-      reject("preflight-unstable");
+    const preflight = await preflightSinglePress({
+      frozen,
+      observe,
+      verifyFrozen,
+      watchdog,
+      clock,
+      pollMillis,
+    });
+    previous = preflight.observations;
     report.state = "ready";
     report.observations.ready = { observedUnixMillis: clock.now() };
     await emit();

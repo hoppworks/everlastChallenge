@@ -44,6 +44,60 @@ function same(info, frozen) {
   );
 }
 
+/** Structural PCM contract only; this does not authenticate the public speech fixture. */
+export function inspectPcm16Audio(input) {
+  if (!Buffer.isBuffer(input) || input.length < 44 || input.length > MAX_BYTES)
+    reject("audio-file-invalid");
+  if (
+    input.toString("ascii", 0, 4) !== "RIFF" ||
+    input.toString("ascii", 8, 12) !== "WAVE" ||
+    input.readUInt32LE(4) !== input.length - 8
+  )
+    reject("audio-riff-invalid");
+  let format;
+  let dataBytes;
+  let chunks = 0;
+  for (let offset = 12; offset < input.length; ) {
+    if (++chunks > 1024) reject("audio-chunk-limit");
+    if (offset + 8 > input.length) reject("audio-chunk-invalid");
+    const tag = input.toString("ascii", offset, offset + 4);
+    const size = input.readUInt32LE(offset + 4);
+    const begin = offset + 8;
+    const end = begin + size;
+    if (end > input.length || end + (size % 2) > input.length)
+      reject("audio-chunk-invalid");
+    if (tag === "fmt ") {
+      if (format || size !== 16) reject("audio-format-invalid");
+      format = {
+        codec: input.readUInt16LE(begin),
+        channels: input.readUInt16LE(begin + 2),
+        rate: input.readUInt32LE(begin + 4),
+        byteRate: input.readUInt32LE(begin + 8),
+        align: input.readUInt16LE(begin + 12),
+        bits: input.readUInt16LE(begin + 14),
+      };
+    } else if (tag === "data") {
+      if (dataBytes !== undefined) reject("audio-data-invalid");
+      dataBytes = size;
+    }
+    offset = end + (size % 2);
+  }
+  if (
+    !format ||
+    format.codec !== 1 ||
+    format.channels !== 1 ||
+    format.rate !== 16000 ||
+    format.byteRate !== 32000 ||
+    format.align !== 2 ||
+    format.bits !== 16 ||
+    dataBytes === undefined ||
+    dataBytes % 2 !== 0
+  )
+    reject("audio-format-invalid");
+  const sha256 = createHash("sha256").update(input).digest("hex");
+  return { sha256, frames: dataBytes / 2, durationMillis: dataBytes / 32 };
+}
+
 export function validatePublicAudio(filename = PUBLIC_AUDIO_PATH) {
   if (
     !path.isAbsolute(filename) ||
@@ -74,60 +128,14 @@ export function validatePublicAudio(filename = PUBLIC_AUDIO_PATH) {
     if (used !== info.size || !same(fstatSync(fd), identity(info)))
       reject("audio-file-changed");
     const input = bytes.subarray(0, used);
-    if (
-      input.toString("ascii", 0, 4) !== "RIFF" ||
-      input.toString("ascii", 8, 12) !== "WAVE" ||
-      input.readUInt32LE(4) !== input.length - 8
-    )
-      reject("audio-riff-invalid");
-    let format;
-    let dataBytes;
-    let chunks = 0;
-    for (let offset = 12; offset < input.length; ) {
-      if (++chunks > 1024) reject("audio-chunk-limit");
-      if (offset + 8 > input.length) reject("audio-chunk-invalid");
-      const tag = input.toString("ascii", offset, offset + 4);
-      const size = input.readUInt32LE(offset + 4);
-      const begin = offset + 8;
-      const end = begin + size;
-      if (end > input.length || end + (size % 2) > input.length)
-        reject("audio-chunk-invalid");
-      if (tag === "fmt ") {
-        if (format || size !== 16) reject("audio-format-invalid");
-        format = {
-          codec: input.readUInt16LE(begin),
-          channels: input.readUInt16LE(begin + 2),
-          rate: input.readUInt32LE(begin + 4),
-          byteRate: input.readUInt32LE(begin + 8),
-          align: input.readUInt16LE(begin + 12),
-          bits: input.readUInt16LE(begin + 14),
-        };
-      } else if (tag === "data") {
-        if (dataBytes !== undefined) reject("audio-data-invalid");
-        dataBytes = size;
-      }
-      offset = end + (size % 2);
-    }
-    if (
-      !format ||
-      format.codec !== 1 ||
-      format.channels !== 1 ||
-      format.rate !== 16000 ||
-      format.byteRate !== 32000 ||
-      format.align !== 2 ||
-      format.bits !== 16 ||
-      dataBytes === undefined ||
-      dataBytes % 2 !== 0
-    )
-      reject("audio-format-invalid");
-    if (dataBytes !== 9600000) reject("audio-duration-invalid");
-    const sha256 = createHash("sha256").update(input).digest("hex");
+    const { sha256, frames, durationMillis } = inspectPcm16Audio(input);
+    if (frames !== 4800000) reject("audio-duration-invalid");
     if (sha256 !== PUBLIC_AUDIO_SHA256) reject("audio-hash-mismatch");
     return {
       path: filename,
       sha256,
-      frames: dataBytes / 2,
-      durationMillis: dataBytes / 32,
+      frames,
+      durationMillis,
       identity: identity(info),
     };
   } finally {
@@ -144,6 +152,7 @@ const MIN_COMPLETION_MILLIS = 299000;
 export function createPlaybackAdapter({
   fixturePath = PUBLIC_AUDIO_PATH,
   spawnPlayer = spawn,
+  inspectFixture = validatePublicAudio,
   clock = defaultClock,
 } = {}) {
   let state = null;
@@ -212,7 +221,13 @@ export function createPlaybackAdapter({
         frozen.fixtureDurationMillis !== 300000
       )
         reject("playback-frozen-mismatch");
-      const fixture = validatePublicAudio(fixturePath);
+      const fixture = inspectFixture(fixturePath);
+      if (
+        fixture.sha256 !== PUBLIC_AUDIO_SHA256 ||
+        fixture.frames !== 4800000 ||
+        fixture.durationMillis !== 300000
+      )
+        reject("audio-inspection-invalid");
       if (!same(lstatSync(fixture.path), fixture.identity))
         reject("audio-file-changed");
       state = {
