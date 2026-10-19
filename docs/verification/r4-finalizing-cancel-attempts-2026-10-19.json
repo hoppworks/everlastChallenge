@@ -1,0 +1,25 @@
+{
+  "installedProductSource": "ee1a6a4f78fca3b45026a8de835e997c914b43ec",
+  "fixture": "artifacts/native-recipient-test-v1/public-speech-with-lead-in.wav",
+  "fixtureSha256": "aa927da85bfa1fb301d648644216b1bc5bd7007519669c9dcca7f8b47d511718",
+  "attempt1": {
+    "recordingObserved": true,
+    "processingObserved": true,
+    "agentSentSyntheticEscape": true,
+    "immediatePostEscapeStillProcessing": true,
+    "laterStatus": "Diktat ist fertig",
+    "cancelProven": false
+  },
+  "attempt2": {
+    "recordingObserved": true,
+    "statusBeforeIntendedStop": "Diktat abgebrochen",
+    "stopClicked": false,
+    "processingReached": false,
+    "cancelButtonClicked": false,
+    "causeAssigned": false
+  },
+  "passedFinalizingCancellation": false,
+  "privateAudioSaved": false,
+  "privateTranscriptSaved": false,
+  "repeatStopped": true
+}
