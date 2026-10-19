@@ -3,13 +3,57 @@
     unsafe_code,
     reason = "Creates only an invisible owned AppKit window on its main thread"
 )]
+use core_foundation::base::{CFType, TCFType};
 use macos_integration::target::{FieldEvidence, FieldRole, HoldReason};
 use objc2::MainThreadMarker;
 use objc2_app_kit::{
-    NSAccessibility, NSApplication, NSBackingStoreType, NSSecureTextField, NSTextField, NSTextView,
-    NSView, NSWindow, NSWindowStyleMask,
+    NSAccessibility, NSApplication, NSBackingStoreType, NSObjectNSAccessibility, NSSecureTextField,
+    NSTextField, NSTextView, NSView, NSWindow, NSWindowStyleMask,
 };
-use objc2_foundation::{NSPoint, NSRect, NSSize};
+use objc2_foundation::{NSNumber, NSObject, NSPoint, NSRect, NSSize, NSString};
+
+#[derive(Debug, PartialEq, Eq)]
+struct BridgeMetadata {
+    modern_enabled: bool,
+    enabled: Option<bool>,
+    value_settable: bool,
+}
+
+#[allow(
+    deprecated,
+    reason = "Observe own-control compatibility metadata without an AX client"
+)]
+fn bridged_metadata<T: AsRef<NSObject> + NSAccessibility + objc2::Message>(
+    name: &str,
+    view: &T,
+) -> BridgeMetadata {
+    let enabled = view
+        .as_ref()
+        .accessibilityAttributeValue(&NSString::from_str("AXEnabled"));
+    let number = enabled
+        .as_ref()
+        .and_then(|value| value.downcast_ref::<NSNumber>());
+    let kind = number.map(|value| {
+        // SAFETY: NSNumber is toll-free bridged to a CoreFoundation number or
+        // boolean. Get-rule retain is scoped to this own-control observation.
+        let cf = unsafe { CFType::wrap_under_get_rule((value as *const NSNumber).cast()) };
+        cf.type_of()
+    });
+    let writable = view
+        .as_ref()
+        .accessibilityIsAttributeSettable(&NSString::from_str("AXValue"));
+    println!(
+        "ownedBridge={name}; modernEnabled={}; enabledPresent={}; enabledValue={:?}; enabledCFType={kind:?}; valueSettable={writable}",
+        view.isAccessibilityEnabled(),
+        enabled.is_some(),
+        number.map(|value| value.boolValue())
+    );
+    BridgeMetadata {
+        modern_enabled: view.isAccessibilityEnabled(),
+        enabled: number.map(|value| value.boolValue()),
+        value_settable: writable,
+    }
+}
 
 fn evidence(name: &str, view: &NSView, editable: bool) -> FieldEvidence {
     let role = view.accessibilityRole().map(|value| value.to_string());
@@ -72,6 +116,38 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     body.addSubview(&singleline);
     body.addSubview(&secure);
     let area = evidence("NSTextView", &multiline, multiline.isEditable());
+    let normal = bridged_metadata("NSTextView/editable", &*multiline);
+    multiline.setEditable(false);
+    let readonly = bridged_metadata("NSTextView/readonly", &*multiline);
+    multiline.setEditable(true);
+    let restored = bridged_metadata("NSTextView/editable-restored", &*multiline);
+    multiline.setAccessibilityEnabled(true);
+    let enabled = bridged_metadata("NSTextView/accessibility-enabled", &*multiline);
+    multiline.setAccessibilityEnabled(false);
+    let disabled = bridged_metadata("NSTextView/accessibility-disabled", &*multiline);
+    multiline.setAccessibilityEnabled(true);
+    let reenabled = bridged_metadata("NSTextView/accessibility-reenabled", &*multiline);
+    multiline.setEditable(false);
+    let enabled_readonly =
+        bridged_metadata("NSTextView/accessibility-enabled-readonly", &*multiline);
+    multiline.setEditable(true);
+    // Native editability changes are reflected by legacy AXValue writability.
+    // An explicit accessibility-disabled state is NOT reflected by legacy
+    // AXEnabled here: absent + writable is shared with the normal control.
+    assert_eq!(normal.enabled, None);
+    assert!(normal.value_settable);
+    assert_eq!(readonly.enabled, None);
+    assert!(!readonly.value_settable);
+    assert_eq!(restored, normal);
+    assert!(enabled.modern_enabled);
+    assert!(!disabled.modern_enabled);
+    assert_eq!(disabled, normal);
+    assert_eq!(reenabled, enabled);
+    assert_eq!(enabled.enabled, None);
+    assert!(enabled.value_settable);
+    assert!(enabled_readonly.modern_enabled);
+    assert_eq!(enabled_readonly.enabled, None);
+    assert!(!enabled_readonly.value_settable);
     let line = evidence("NSTextField", &singleline, singleline.isEditable());
     let password = evidence("NSSecureTextField", &secure, secure.isEditable());
     for (name, cell) in [
@@ -79,6 +155,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         ("NSSecureTextField.cell", secure.cell()),
     ] {
         if let Some(cell) = cell {
+            let bridge = bridged_metadata(name, &*cell);
+            assert_eq!(bridge.enabled, Some(true));
+            assert!(bridge.value_settable);
             println!(
                 "ownControl={name}; role={:?}; subrole={:?}; enabled={}",
                 cell.accessibilityRole().map(|v| v.to_string()),
@@ -124,7 +203,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     // not a blanket eligibility(None) success. No AX transport status is guessed.
     assert_eq!(area.eligibility(), Err(HoldReason::UnconfirmedField));
     println!(
-        "confirmed: normal native subroles may be nil; secure cell is marked; existing unknown guard still rejects; actual Notes/AXValue-settable not queried"
+        "confirmed: readonly toggles legacy writability; explicit accessibility-disabled NSTextView remains absent-Enabled and writable, indistinguishable from normal by those two legacy fields; secure cell is marked; no cross-process AX status or Notes field queried"
     );
     Ok(())
 }

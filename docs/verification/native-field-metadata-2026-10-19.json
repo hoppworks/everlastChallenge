@@ -1,0 +1,42 @@
+{
+  "scope": "own invisible AppKit controls; legacy in-process attribute bridge only",
+  "passed": true,
+  "windowShown": false,
+  "permissionsChanged": false,
+  "crossProcessAxProven": false,
+  "productionEligibilityChanged": false,
+  "observations": [
+    {
+      "state": "editable",
+      "legacyEnabled": null,
+      "valueSettable": true
+    },
+    {
+      "state": "readonly",
+      "legacyEnabled": null,
+      "valueSettable": false
+    },
+    {
+      "state": "editable-restored",
+      "legacyEnabled": null,
+      "valueSettable": true
+    },
+    {
+      "state": "accessibility-disabled",
+      "legacyEnabled": null,
+      "valueSettable": true
+    },
+    {
+      "state": "accessibility-enabled",
+      "legacyEnabled": null,
+      "valueSettable": true
+    }
+  ],
+  "conclusion": "Missing enabled metadata plus writable value is insufficient to distinguish explicit accessibility-disabled from ordinary field in this own-control probe.",
+  "independentReview": "no actionable findings",
+  "sourceSha256": "c0aab0e0781d39bcd9fc56a0e82f1449316d4da249c7243a7aab3a42c7dc8f83",
+  "log": {
+    "path": "artifacts/autonomous-suite-v2/native-field-metadata-negative.log",
+    "sha256": "d8f21cd9097428c729f06ba2eb48ad6559644dab1d28c9c430c38240ffea23a2"
+  }
+}
