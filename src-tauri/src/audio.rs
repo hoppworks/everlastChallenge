@@ -178,6 +178,14 @@ pub fn capture_buffer(format: AudioFormat) -> Result<(CapturePort, CaptureReader
 }
 
 impl CapturePort {
+    /// The same bounded error callback is used by native streams and connector tests.
+    pub(crate) fn stream_error_callback(&self) -> impl FnMut(cpal::StreamError) + Send + 'static {
+        let gate = Arc::clone(&self.gate);
+        move |_| {
+            gate.error.store(4, Ordering::Release);
+        }
+    }
+
     /// Called only by the native callback. No allocation, locks, logs or DSP.
     /// A complete callback is published atomically or the entire session fails.
     pub fn publish<T: Sample + Copy>(&mut self, samples: &[T])
@@ -699,14 +707,12 @@ fn stream_for<T: cpal::SizedSample + Copy>(
 where
     f32: FromSample<T>,
 {
-    let failure = Arc::clone(&port.gate);
+    let failure = port.stream_error_callback();
     device
         .build_input_stream(
             config,
             move |samples: &[T], _| port.publish(samples),
-            move |_| {
-                failure.error.store(4, Ordering::Release);
-            },
+            failure,
             None,
         )
         .map_err(|error| CaptureError::Native(error.to_string()))

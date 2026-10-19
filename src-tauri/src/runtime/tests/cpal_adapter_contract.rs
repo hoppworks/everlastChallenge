@@ -153,6 +153,27 @@ impl Drop for Fixture {
 
 #[test]
 fn actual_capture_error_crosses_cpal_poll_retains_text_and_releases_for_restart() -> TestResult {
+    assert_capture_failure(
+        |port| port.publish(&[f32::NAN]),
+        crate::audio::CaptureError::InvalidSamples,
+    )
+}
+
+#[test]
+fn device_unavailable_callback_crosses_cpal_poll_and_releases_for_restart() -> TestResult {
+    assert_capture_failure(
+        |port| {
+            let mut callback = port.stream_error_callback();
+            callback(cpal::StreamError::DeviceNotAvailable);
+        },
+        crate::audio::CaptureError::Stream,
+    )
+}
+
+fn assert_capture_failure(
+    fail: fn(&mut crate::audio::CapturePort),
+    error: crate::audio::CaptureError,
+) -> TestResult {
     let mut fixture = Fixture::new()?;
     let client = fixture.client()?;
 
@@ -195,12 +216,12 @@ fn actual_capture_error_crosses_cpal_poll_retains_text_and_releases_for_restart(
         result: Ok(()),
     })?;
     let mut failed = fixture.recording(2)?;
-    failed.publish(&[f32::NAN]);
+    fail(&mut failed);
     let failed_state = wait_for(&client, |state| {
         state.session.phase == Phase::Idle
             && matches!(state.session.outcome, Some(Outcome::Failed(_)))
     })?;
-    let expected_error = crate::audio::CaptureError::InvalidSamples.to_string();
+    let expected_error = error.to_string();
     assert_eq!(
         failed_state.session.outcome,
         Some(Outcome::Failed(expected_error))
