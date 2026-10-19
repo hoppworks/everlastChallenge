@@ -11,3 +11,10 @@ condition = "AND"
 targetRules = ["generic-api-key"]
 paths = ['''(^|/)vendor/global-hotkey/src/hotkey\.rs$''']
 regexes = ['''^shift\+alt\+KeyQ$''']
+
+[[allowlists]]
+description = "Verified public Cargo-generated checksum metadata in the isolated dependency archive; only SHA-256-shaped values."
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = ['''(^|/)artifacts/p06-exact-state-counter-diagnostic-v1/public-dependencies/[^/]+/\.cargo-checksum\.json$''']
+regexes = ['''^[a-f0-9]{64}$''']

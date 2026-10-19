@@ -9,7 +9,7 @@
   "exclusions": [
     {
       "path": "src/main.tsx",
-      "reason": "React root mounting only; component behavior must be covered separately."
+      "reason": "Inert startup text and CSS only; visible controls are native AppKit. Retained TypeScript modules are measured separately."
     }
   ]
 }
