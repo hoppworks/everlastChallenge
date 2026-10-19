@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "kind": "isolated-context1400-calibration-v2",
+  "qualified": false,
+  "L": null,
+  "productionActivated": false,
+  "sourceReproduction": {
+    "baseRevision": "684343309d6e0536215bcd448a604ae7ea676d4e",
+    "applyInOrder": [
+      "tools/measurement/exact-state-counter-v2.patch",
+      "tools/measurement/context-1400-calibration-v2.patch"
+    ],
+    "instructions": "Use a fresh separate source tree and fresh external target; verify both patch manifests and target source hashes. The second patch applies to the exact-state derivative, not the original base.",
+    "exactStatePrivateBaseCommit": "28d85762a71c2723e600889338c2bd7adfa24c6e",
+    "privateMacSourceCommit": "4ae73e2dd8a56442b038fda6f33372e5cb6ed435",
+    "patch": {
+      "path": "tools/measurement/context-1400-calibration-v2.patch",
+      "bytes": 32711,
+      "sha256": "4b24b3b2f3bdc8cd4fe9a0033d0fd4e61c6de30306700ba9e51279615304653d",
+      "mode": "0o644"
+    },
+    "changes": [
+      {
+        "path": "src-tauri/examples/engine_profile_probe.rs",
+        "base": {
+          "bytes": 36597,
+          "sha256": "6fbf4cb1cd6daabc4cda1ff806c75f41e0f1227b715b66f0d97e3003a8583964",
+          "mode": "0o664"
+        },
+        "target": {
+          "bytes": 41972,
+          "sha256": "6cf8bd3bb55fa72fa529f24b3ba38aea24426ccfd5f6867bff0040def0024c2f",
+          "mode": "0o664"
+        }
+      },
+      {
+        "path": "src-tauri/examples/engine_profile_probe/request.rs",
+        "base": {
+          "bytes": 7289,
+          "sha256": "696eaa74ffcf1e59cd3e19e9586444d1ca0da9623396a2d78614cb8f379ea855",
+          "mode": "0o664"
+        },
+        "target": {
+          "bytes": 8180,
+          "sha256": "30d9a4c0af2881036b969f0c8d614f16b01f9b6123f70b1396c5f88b7f9a41cc",
+          "mode": "0o664"
+        }
+      },
+      {
+        "path": "src-tauri/src/transcription.rs",
+        "base": {
+          "bytes": 33144,
+          "sha256": "0579d788f7b67d5b4f2936889a375109ea62b40944103f79fee61859970c5aee",
+          "mode": "0o664"
+        },
+        "target": {
+          "bytes": 35674,
+          "sha256": "062e94a54d048fecf210229ff78b347f6268e70e88034d2e7d33b2a8f525d211",
+          "mode": "0o664"
+        }
+      },
+      {
+        "path": "src-tauri/src/transcription/profile.rs",
+        "base": {
+          "bytes": 6438,
+          "sha256": "73001eb3431b4dd1a27e689e531c64ef41dcb26a252902bd77be0cf4084e5141",
+          "mode": "0o664"
+        },
+        "target": {
+          "bytes": 7000,
+          "sha256": "1f3361b318244bc14118b5b0e12c37de5335a20f3e89293c92e153d50e719a6a",
+          "mode": "0o664"
+        }
+      },
+      {
+        "path": "src-tauri/src/transcription/profile_context.rs",
+        "base": null,
+        "target": {
+          "bytes": 5945,
+          "sha256": "282410396059739e0c9d19ee78b009abcc1d8da42dda3ce21822a3cdb1957d6e",
+          "mode": "0o600"
+        }
+      }
+    ]
+  },
+  "sourceReview": {
+    "combinedReviewPassed": true,
+    "oneUndeclaredRuntimeFindingFixedInV2": true,
+    "deltaOnlyTwoLines122Bytes": true
+  },
+  "sourcePacket": {
+    "path": "artifacts/p06-audio-context-1400-calibration-v2/packet.json",
+    "bytes": 9710,
+    "sha256": "01aaae631054c5e86dd2ccfed21c2987c389d713389e89c7da3201f4b56e21bd",
+    "mode": "0o600"
+  },
+  "prospectiveFreeze": {
+    "path": "artifacts/p06-audio-context-1400-mac-v2/pilot-v1/prospective-freeze.json",
+    "bytes": 362436,
+    "sha256": "df1094488084c61569b2d7a846b41de6431c2b74be91d44ba7a8c12591849f7a",
+    "mode": "0o600"
+  },
+  "independentReadback": {
+    "path": "artifacts/p06-audio-context-1400-mac-v2/independent-eight-call-readback-v1.json",
+    "bytes": 11123,
+    "sha256": "f0d81ba85fd912e6ae8bb41a2241649ddbb054c99f08883813274a643a9adb41",
+    "mode": "0o600"
+  },
+  "macVerification": {
+    "exampleReleaseTestsPassed": 14,
+    "contextBoundaryReleaseTestsPassed": 4,
+    "diagnosticStrictClippyExitCode": 0,
+    "defaultMeasurementExampleCheckExitCode": 0,
+    "defaultMeasurementWarning": "One unused diagnostic-only ContextObservation::run helper; no clean default Strict Clippy claim."
+  },
+  "calibration": {
+    "fixtureId": "fleurs-de-dev-1510",
+    "inputFrames": 144000,
+    "order": [
+      "reference",
+      "candidate1400"
+    ],
+    "warmupCallsPerArm": 1,
+    "measuredCallsPerArm": 3,
+    "onlyRuntimeDelta": {
+      "field": "audio_ctx",
+      "reference": 0,
+      "verifiedModelContext": 1500,
+      "candidate": 1400
+    },
+    "candidateMaxPreparedFrames": 320000,
+    "metrics": {
+      "reference": {
+        "nativeFullMeasuredNanos": [
+          1015076209,
+          1055659041,
+          1078588333
+        ],
+        "nativeFullMedianNanos": 1055659041,
+        "nativeEncodeMeasuredMicros": [
+          915361,
+          951897,
+          975458
+        ],
+        "nativeEncodeMedianMicros": 951897,
+        "allFourTextHashesMatchPrior": true
+      },
+      "candidate1400": {
+        "nativeFullMeasuredNanos": [
+          931225083,
+          931469375,
+          931641000
+        ],
+        "nativeFullMedianNanos": 931469375,
+        "nativeEncodeMeasuredMicros": [
+          835014,
+          834216,
+          834687
+        ],
+        "nativeEncodeMedianMicros": 834687,
+        "allFourTextHashesMatchPrior": true
+      }
+    },
+    "nativeFullMedianReductionPercent": 11.764183432025376,
+    "allEightTextHashesMatchPrior": true
+  },
+  "mainProductSourcesChanged": false,
+  "limits": [
+    "One calibration fixture and three measured calls per arm cannot prove corpus quality or median/p95 acceptance.",
+    "Fixed reference-before-candidate order is not counterbalanced; speed change is descriptive.",
+    "NativeFull is not stop-to-text L; encode includes Conv/Encoder/Cross and is not GPU utilization.",
+    "Candidate is a diagnostic short-audio variant; no whole-product or long-audio policy has been qualified.",
+    "Historical 47-source quality approval is not transferred to this derivative."
+  ]
+}

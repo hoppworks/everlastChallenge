@@ -1,0 +1,786 @@
+--- a/src-tauri/examples/engine_profile_probe.rs
++++ b/src-tauri/examples/engine_profile_probe.rs
+@@ -20,6 +20,7 @@
+     transcription::{
+         Engine, InferenceError, Language,
+         profile::{EngineProfile, Phase},
++        profile_context::ProfileAudioContext,
+     },
+ };
+ use request::{Request, RequestGate};
+@@ -40,7 +41,7 @@
+ #[cfg(not(feature = "state-perf-diagnostic"))]
+ const ROUTINE: &str = "production-reference-transcribe-profiled-v1";
+ #[cfg(feature = "state-perf-diagnostic")]
+-const ROUTINE: &str = "reference-exact-state-perf-diagnostic-derivative-v1";
++const ROUTINE: &str = "audio-context-1400-exact-state-calibration-derivative-v1";
+ 
+ struct Receipt {
+     request: Request,
+@@ -53,6 +54,7 @@
+         &mut self,
+         audio: &[f32],
+         language: Language,
++        selection: ProfileAudioContext,
+     ) -> everlast_dictation::transcription::ProfiledTranscription;
+ }
+ impl ProfileEngine for Engine {
+@@ -60,11 +62,21 @@
+         &mut self,
+         audio: &[f32],
+         language: Language,
++        selection: ProfileAudioContext,
+     ) -> everlast_dictation::transcription::ProfiledTranscription {
+-        self.transcribe_profiled(audio, language)
++        #[cfg(feature = "state-perf-diagnostic")]
++        {
++            self.transcribe_profiled_context(audio, language, selection)
++        }
++        #[cfg(not(feature = "state-perf-diagnostic"))]
++        {
++            let _ = selection;
++            self.transcribe_profiled(audio, language)
++        }
+     }
+ }
+ struct ProfiledDecoder<E = Engine> {
++    selection: ProfileAudioContext,
+     engine: E,
+     sender: mpsc::SyncSender<Receipt>,
+     gate: Arc<RequestGate>,
+@@ -73,10 +85,15 @@
+     fn decode(&mut self, audio: &[f32], language: Language) -> Result<String, InferenceError> {
+         let request = self
+             .gate
+-            .consume(audio.len(), language.code(), &pcm_fingerprint(audio))
++            .consume(
++                audio.len(),
++                language.code(),
++                &pcm_fingerprint(audio),
++                self.selection.label(),
++            )
+             .map_err(|_| InferenceError::Observation)?;
+         let actual = thread::current();
+-        let result = self.engine.profile(audio, language);
++        let result = self.engine.profile(audio, language, self.selection);
+         let receipt = Receipt {
+             request,
+             thread_name: actual.name().map(str::to_owned),
+@@ -90,19 +107,23 @@
+     }
+ }
+ 
+-fn template() -> Result<Value, Error> {
++fn template(selection: ProfileAudioContext) -> Result<Value, Error> {
+     // The historical complete reference manifest supplies the unchanged exact
+     // decoder/VAD/state configuration, not its old source/measurement claims.
+     let baseline: Value = serde_json::from_slice(include_bytes!(
+         "../../tests/fixtures/corpus/p06-pretrans-screening-reference-parameters-v1.json"
+     ))?;
++    let mut runtime = baseline["runtime"].clone();
++    runtime["fullParams"]["audio_ctx"] = json!(selection.parameter());
+     let document = json!({
+         "schemaVersion":1, "kind":"engine-phase-diagnostic-parameters", "routineId":ROUTINE,
+         "model":{"id":REFERENCE.id(),"sha256":REFERENCE.sha256()},
+-        "runtime":baseline["runtime"],"state":baseline["state"],"preprocessing":baseline["preprocessing"],
++        "runtime":runtime,"state":baseline["state"],"preprocessing":baseline["preprocessing"],
+         "diagnostic":{"warmupRuns":1,"measuredRuns":3,"serialService":"InferenceService::with_decoder",
+             "engineInitialization":"CLI main, then owned Engine moved into actual local-inference worker",
+-            "noParameterOrSchedulingChange":true,
++            "noParameterOrSchedulingChange":selection==ProfileAudioContext::Reference,
++            "onlyChangedRuntimeParameter":if selection==ProfileAudioContext::Candidate1400 {json!({"name":"audio_ctx","reference":0,"candidate":1400})}else{Value::Null},
++            "contextCalibration":{"selection":selection.label(),"desiredParameter":selection.parameter(),"verifiedModelContextRequired":1500,"effectiveContextDerived":if selection==ProfileAudioContext::Reference {1500}else{1400},"candidateMaxPreparedFrames":320000,"fallbackToReference":false,"introspection":"effective context is derived from verified model and bound parameter builder; not native kernel introspection","order":"reference four calls, then candidate1400 four calls; one warmup per arm","quality":"hash-only checkpoint, no WER or acceptance claim"},
+             "inputProducer":"existing AudioProcessor 16k mono, push_interleaved320-frame chunks and exactly one finish/flush; frame and float32-LE SHA equality required",
+             "inputScope":"same prepared PCM primitive as Runtime, not a paced CaptureOwner/Stop or whole-Runtime cost",
+             "receiptIdentity":"one armed request before Submit; worker checks exact frames/language/float32-LE hash, receipt and Completed match SID/generation/job/storage/timeline/ordinal",
+@@ -149,6 +170,7 @@
+             "workspaceManifest": {"filename":"Cargo.toml","sha256":input::digest(include_bytes!("../../Cargo.toml"))}
+         },
+         "sourceHashes":{
++            "profileContext":{"filename":"src-tauri/src/transcription/profile_context.rs","sha256":input::digest(include_bytes!("../src/transcription/profile_context.rs"))},
+             "probe":{"filename":"src-tauri/examples/engine_profile_probe.rs","sha256":input::digest(include_bytes!("engine_profile_probe.rs"))},
+             "engine":{"filename":"src-tauri/src/transcription.rs","sha256":input::digest(include_bytes!("../src/transcription.rs"))},
+             "gate":{"filename":"src-tauri/src/transcription/speech_gate.rs","sha256":input::digest(include_bytes!("../src/transcription/speech_gate.rs"))},
+@@ -194,8 +216,8 @@
+         Ok(document)
+     }
+ }
+-fn parameter_bytes() -> Result<Vec<u8>, Error> {
+-    let mut bytes = serde_json::to_vec_pretty(&template()?)?;
++fn parameter_bytes(selection: ProfileAudioContext) -> Result<Vec<u8>, Error> {
++    let mut bytes = serde_json::to_vec_pretty(&template(selection)?)?;
+     bytes.push(10);
+     Ok(bytes)
+ }
+@@ -206,17 +228,34 @@
+     parameters: PathBuf,
+     output: PathBuf,
+ }
+-fn parse_args(args: Vec<OsString>) -> Result<Option<Options>, Error> {
+-    if args.len() == 1 && args[0] == "--print-parameters" {
++fn selection_from_args(args: &[OsString]) -> Result<ProfileAudioContext, Error> {
++    let value = if args.first().is_some_and(|v| v == "--print-parameters") {
++        args.get(1)
++    } else {
++        args.first()
++    };
++    let selection = value
++        .and_then(|v| v.to_str())
++        .and_then(ProfileAudioContext::parse)
++        .ok_or("explicit reference|candidate1400 required")?;
++    if selection == ProfileAudioContext::Candidate1400 && !cfg!(feature = "state-perf-diagnostic") {
++        return Err("candidate1400 requires state-perf-diagnostic".into());
++    }
++    Ok(selection)
++}
++fn parse_args(mut args: Vec<OsString>) -> Result<Option<Options>, Error> {
++    let _selection = selection_from_args(&args)?;
++    if args.len() == 2 && args[0] == "--print-parameters" {
+         return Ok(None);
+     }
++    args.remove(0);
+     if args.len() != 5
+         || args
+             .iter()
+             .any(|a| a.is_empty() || a.as_encoded_bytes().len() > 4096)
+     {
+         return Err(
+-            "usage: engine_profile_probe MODEL WAV de|en PARAMETERS_JSON NEW_OUTPUT_JSON".into(),
++            "usage: engine_profile_probe reference|candidate1400 MODEL WAV de|en PARAMETERS_JSON NEW_OUTPUT_JSON".into(),
+         );
+     }
+     let language = match args[2].to_str() {
+@@ -262,7 +301,7 @@
+     json!({"ordinal":request.ordinal,"session":request.session,"generation":request.generation,"jobId":request.job_id,
+         "storageStart":request.storage.start,"storageEnd":request.storage.end,
+         "timelineStart":request.timeline.start,"timelineEnd":request.timeline.end,
+-        "frames":request.frames,"language":request.language,"pcmFloat32LeSha256":request.pcm_sha256})
++        "selection":request.selection,"frames":request.frames,"language":request.language,"pcmFloat32LeSha256":request.pcm_sha256})
+ }
+ fn gate_json(gate: &RequestGate) -> Value {
+     match gate.evidence() {
+@@ -301,6 +340,7 @@
+     #[cfg(feature = "state-perf-diagnostic")]
+     {
+         let mut base = base;
++        base["audioContext"]=p.audio_context.as_ref().map(|c|json!({"selection":c.selection.label(),"desiredParameter":c.desired_parameter,"observedModelContext":c.observed_model_context,"modelVerified":c.model_verified,"effectiveContextDerived":c.effective_context_derived,"preparedFrames":c.prepared_frames,"fullAttempted":c.full_attempted,"provenance":"shared prepared closure + parameter builder + ObservationSink::full_started; no actual-kernel context getter"})).unwrap_or(Value::Null);
+         base["nativeStatePerf"] = match &p.native_perf {
+             None => native_perf::not_reached(),
+             Some(record) => match (&record.snapshot, record.read_elapsed) {
+@@ -356,6 +396,7 @@
+     }
+ }
+ struct WorkerIdentity<'a> {
++    selection: ProfileAudioContext,
+     main_thread: &'a str,
+     worker_thread: Option<String>,
+     gate: &'a RequestGate,
+@@ -385,6 +426,7 @@
+     }
+     let frames = audio.len();
+     let expected = Request {
++        selection: identity.selection.label(),
+         ordinal,
+         session: ordinal,
+         generation: 1,
+@@ -437,7 +479,16 @@
+         }
+         _ => false,
+     };
+-    let valid = cpu_valid
++    #[cfg(feature = "state-perf-diagnostic")]
++    let context_valid = receipt.profile.audio_context.as_ref().is_some_and(|c| {
++        c.selection.label() == expected.selection
++            && c.desired_parameter == identity.selection.parameter()
++            && c.full_attempted == receipt.profile.elapsed(Phase::NativeFull).is_some()
++    });
++    #[cfg(not(feature = "state-perf-diagnostic"))]
++    let context_valid = true;
++    let valid = context_valid
++        && cpu_valid
+         && receipt.request == expected
+         && receipt.request.matches_completed(
+             completed.session,
+@@ -478,19 +529,21 @@
+     )
+ }
+ fn main() -> Result<(), Error> {
++    let args: Vec<_> = std::env::args_os().skip(1).take(8).collect();
++    let selection = selection_from_args(&args)?;
+     let Some(Options {
+         model,
+         wav,
+         language,
+         parameters,
+         output,
+-    }) = parse_args(std::env::args_os().skip(1).take(7).collect())?
++    }) = parse_args(args)?
+     else {
+-        print!("{}", String::from_utf8(parameter_bytes()?)?);
++        print!("{}", String::from_utf8(parameter_bytes(selection)?)?);
+         return Ok(());
+     };
+     let frozen = input::bounded_read(&parameters, 1024 * 1024)?;
+-    if frozen != parameter_bytes()? {
++    if frozen != parameter_bytes(selection)? {
+         return Err("parameters do not match this compiled diagnostic".into());
+     }
+     if output.try_exists()? {
+@@ -520,6 +573,7 @@
+     let (sender, receipts) = mpsc::sync_channel(1);
+     let gate = Arc::new(RequestGate::default());
+     let service = InferenceService::with_decoder(ProfiledDecoder {
++        selection,
+         engine,
+         sender,
+         gate: Arc::clone(&gate),
+@@ -527,6 +581,7 @@
+     let mut rows = Vec::with_capacity(RUNS as usize);
+     let mut failure = wait_ready(&service).err().map(|e| e.to_string());
+     let mut identity = WorkerIdentity {
++        selection,
+         main_thread: &main_thread,
+         worker_thread: None,
+         gate: &gate,
+@@ -568,7 +623,7 @@
+     let report = json!({"schemaVersion":1,"kind":"engine-phase-diagnostic","qualified":false,"L":null,
+         "passed":passed,"error":failure,"sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
+         "processId":std::process::id(),"binarySha256":binary_sha,
+-        "build":{"architecture":std::env::consts::ARCH,"debugAssertions":cfg!(debug_assertions)},"parameters":template()?,
++        "build":{"architecture":std::env::consts::ARCH,"debugAssertions":cfg!(debug_assertions)},"parameters":template(selection)?,
+         "parameterDocumentSha256":input::digest(&frozen),"fixtureSha256":declaration.sha256,
+         "inputFrames":audio.len(),"pcmPreparation":pcm_preparation,"requestStateAfterJoin":gate_json(&gate),"language":language.code(),"model":REFERENCE.id(),"modelSha256":REFERENCE.sha256(),
+         "loadMillis":load_millis,"mainThreadId":main_thread,"actualWorkerThreadId":identity.worker_thread,
+@@ -594,7 +649,9 @@
+             &mut self,
+             audio: &[f32],
+             language: Language,
++            selection: ProfileAudioContext,
+         ) -> everlast_dictation::transcription::ProfiledTranscription {
++            assert_eq!(selection, ProfileAudioContext::Reference);
+             assert_eq!(audio, &[0.125; 3200]);
+             assert_eq!(language, Language::English);
+             let before = macos_integration::thread_observation::current();
+@@ -607,6 +664,12 @@
+                 },
+                 profile: EngineProfile {
+                     #[cfg(feature = "state-perf-diagnostic")]
++                    audio_context: Some(
++                        everlast_dictation::transcription::profile_context::ContextObservation::new(
++                            selection, 1500,
++                        ),
++                    ),
++                    #[cfg(feature = "state-perf-diagnostic")]
+                     native_perf: None,
+                     phases: [None; 7],
+                     total_elapsed: Duration::ZERO,
+@@ -623,6 +686,7 @@
+             let (sender, receipts) = mpsc::sync_channel(1);
+             let gate = Arc::new(RequestGate::default());
+             let service = InferenceService::with_decoder(ProfiledDecoder {
++                selection: ProfileAudioContext::Reference,
+                 engine: ControlledEngine { fail },
+                 sender,
+                 gate: Arc::clone(&gate),
+@@ -630,6 +694,7 @@
+             wait_ready(&service)?;
+             let main = format!("{:?}", thread::current().id());
+             let mut identity = WorkerIdentity {
++                selection: ProfileAudioContext::Reference,
+                 main_thread: &main,
+                 worker_thread: None,
+                 gate: &gate,
+@@ -683,7 +748,7 @@
+     #[test]
+     fn printed_source_bindings_have_flat_sha_strings_including_all_new_dependencies()
+     -> Result<(), Error> {
+-        let parameters = template()?;
++        let parameters = template(ProfileAudioContext::Reference)?;
+         let baseline = parameters["baselineSourceHashes"]
+             .as_object()
+             .ok_or("missing baseline source map")?;
+@@ -715,10 +780,14 @@
+     }
+     #[test]
+     fn strict_cli_does_not_treat_unknown_flags_as_a_profile_request() {
+-        assert!(parse_args(vec!["--print-parameters".into()]).is_ok_and(|v| v.is_none()));
++        assert!(
++            parse_args(vec!["--print-parameters".into(), "reference".into()])
++                .is_ok_and(|v| v.is_none())
++        );
+         assert!(parse_args(vec!["--unknown".into()]).is_err());
+         assert!(
+             parse_args(vec![
++                "reference".into(),
+                 "m".into(),
+                 "w".into(),
+                 "fr".into(),
+@@ -729,6 +798,7 @@
+         );
+         assert!(
+             parse_args(vec![
++                "reference".into(),
+                 "m".into(),
+                 "w".into(),
+                 "de".into(),
+@@ -739,4 +809,30 @@
+             .is_err()
+         );
+     }
+-}
++
++    #[test]
++    fn variant_manifests_change_only_the_requested_runtime_parameter() -> Result<(), Error> {
++        let reference = template(ProfileAudioContext::Reference)?;
++        let candidate = template(ProfileAudioContext::Candidate1400)?;
++        assert_eq!(reference["runtime"]["fullParams"]["audio_ctx"], 0);
++        assert_eq!(candidate["runtime"]["fullParams"]["audio_ctx"], 1400);
++        let mut candidate_runtime = candidate["runtime"].clone();
++        candidate_runtime["fullParams"]["audio_ctx"] = json!(0);
++        assert_eq!(reference["runtime"], candidate_runtime);
++        assert_eq!(reference["state"], candidate["state"]);
++        assert_eq!(reference["preprocessing"], candidate["preprocessing"]);
++        assert_eq!(
++            reference["diagnostic"]["noParameterOrSchedulingChange"],
++            true
++        );
++        assert_eq!(
++            candidate["diagnostic"]["noParameterOrSchedulingChange"],
++            false
++        );
++        assert_ne!(
++            parameter_bytes(ProfileAudioContext::Reference)?,
++            parameter_bytes(ProfileAudioContext::Candidate1400)?
++        );
++        Ok(())
++    }
++}
+--- a/src-tauri/examples/engine_profile_probe/request.rs
++++ b/src-tauri/examples/engine_profile_probe/request.rs
+@@ -3,6 +3,7 @@
+ 
+ #[derive(Clone, Debug, PartialEq, Eq)]
+ pub(super) struct Request {
++    pub selection: &'static str,
+     pub ordinal: u64,
+     pub session: u64,
+     pub generation: u64,
+@@ -53,7 +54,8 @@
+ pub(super) struct RequestGate(Mutex<State>);
+ impl RequestGate {
+     pub fn arm(&self, request: Request) -> Result<(), GateError> {
+-        if request.ordinal == 0
++        if !["reference", "candidate1400"].contains(&request.selection)
++            || request.ordinal == 0
+             || request.session == 0
+             || request.generation == 0
+             || request.job_id == 0
+@@ -87,6 +89,7 @@
+         frames: usize,
+         language: &str,
+         pcm_sha256: &str,
++        selection: &str,
+     ) -> Result<Request, GateError> {
+         let mut state = self
+             .0
+@@ -100,6 +103,7 @@
+             return Err(GateError("decoder called without armed request"));
+         };
+         if state.consumed
++            || expected.selection != selection
+             || expected.frames != frames
+             || expected.language != language
+             || expected.pcm_sha256 != pcm_sha256
+@@ -139,6 +143,7 @@
+     use super::*;
+     fn request() -> Request {
+         Request {
++            selection: "reference",
+             ordinal: 1,
+             session: 7,
+             generation: 8,
+@@ -155,7 +160,7 @@
+         let gate = RequestGate::default();
+         let expected = request();
+         gate.arm(expected.clone())?;
+-        let actual = gate.consume(2, "de", &"a".repeat(64))?;
++        let actual = gate.consume(2, "de", &"a".repeat(64), "reference")?;
+         assert_eq!(actual, expected);
+         assert!(actual.matches_completed(7, 8, 9, &(0..2), &(10..12)));
+         assert!(!actual.matches_completed(7, 8, 10, &(0..2), &(10..12)));
+@@ -174,14 +179,18 @@
+     fn unarmed_or_duplicate_decode_cannot_be_reassociated_with_a_later_job() -> Result<(), GateError>
+     {
+         let unarmed = RequestGate::default();
+-        assert!(unarmed.consume(2, "de", &"a".repeat(64)).is_err());
++        assert!(
++            unarmed
++                .consume(2, "de", &"a".repeat(64), "reference")
++                .is_err()
++        );
+         assert!(unarmed.arm(request()).is_err());
+         assert!(unarmed.evidence()?.expected.is_none());
+         let gate = RequestGate::default();
+         let expected = request();
+         gate.arm(expected.clone())?;
+-        gate.consume(2, "de", &"a".repeat(64))?;
+-        assert!(gate.consume(2, "de", &"a".repeat(64)).is_err());
++        gate.consume(2, "de", &"a".repeat(64), "reference")?;
++        assert!(gate.consume(2, "de", &"a".repeat(64), "reference").is_err());
+         assert!(gate.acknowledge(&expected).is_err());
+         assert_eq!(gate.evidence()?.expected, Some(expected));
+         Ok(())
+@@ -196,13 +205,28 @@
+             let gate = RequestGate::default();
+             let expected = request();
+             gate.arm(expected.clone())?;
+-            assert!(gate.consume(frames, language, &hash).is_err());
++            assert!(gate.consume(frames, language, &hash, "reference").is_err());
+             assert_eq!(gate.evidence()?.expected, Some(expected.clone()));
+             assert!(!gate.evidence()?.consumed);
+             assert!(gate.evidence()?.error.is_some());
+-            assert!(gate.consume(2, "de", &"a".repeat(64)).is_err());
++            assert!(gate.consume(2, "de", &"a".repeat(64), "reference").is_err());
+             assert!(gate.arm(expected).is_err());
+         }
+         Ok(())
+     }
+-}
++
++    #[test]
++    fn another_arm_cannot_consume_or_acknowledge_the_original_request() -> Result<(), GateError> {
++        let gate = RequestGate::default();
++        let expected = request();
++        gate.arm(expected.clone())?;
++        assert!(
++            gate.consume(2, "de", &"a".repeat(64), "candidate1400")
++                .is_err()
++        );
++        assert!(!gate.evidence()?.consumed);
++        assert_eq!(gate.evidence()?.expected, Some(expected.clone()));
++        assert!(gate.acknowledge(&expected).is_err());
++        Ok(())
++    }
++}
+--- a/src-tauri/src/transcription.rs
++++ b/src-tauri/src/transcription.rs
+@@ -27,6 +27,8 @@
+ #[cfg(feature = "measurement")]
+ pub mod observation;
+ 
++#[cfg(feature = "measurement")]
++pub mod profile_context;
+ #[cfg(feature = "measurement")]
+ pub mod reduced_context;
+ 
+@@ -166,19 +168,72 @@
+         samples: &[f32],
+         language: Language,
+     ) -> ProfiledTranscription {
++        #[cfg(feature = "state-perf-diagnostic")]
++        {
++            self.transcribe_profiled_context(
++                samples,
++                language,
++                profile_context::ProfileAudioContext::Reference,
++            )
++        }
++        #[cfg(not(feature = "state-perf-diagnostic"))]
++        {
++            let Self { context, gate } = self;
++            let mut collector = profile::Collector::new();
++            let result = transcribe_using(
++                samples,
++                language,
++                gate,
++                &mut collector,
++                |input, language, observer| decode::<false, _>(context, input, language, observer),
++            );
++            ProfiledTranscription {
++                result,
++                profile: collector.finish(),
++            }
++        }
++    }
++
++    /// Isolated calibration only. Shares preparation, Full, fresh state and getter.
++    #[cfg(feature = "state-perf-diagnostic")]
++    pub fn transcribe_profiled_context(
++        &mut self,
++        samples: &[f32],
++        language: Language,
++        selection: profile_context::ProfileAudioContext,
++    ) -> ProfiledTranscription {
+         let Self { context, gate } = self;
+         let mut collector = profile::Collector::new();
++        let mut observation =
++            profile_context::ContextObservation::new(selection, context.n_audio_ctx());
+         let result = transcribe_using(
+             samples,
+             language,
+             gate,
+             &mut collector,
+-            |input, language, observer| decode::<false, _>(context, input, language, observer),
+-        );
+-        ProfiledTranscription {
+-            result,
+-            profile: collector.finish(),
+-        }
++            |input, language, observer| {
++                observation
++                    .run(input, |pcm, ctx| {
++                        decode_with_audio_ctx::<false, _>(context, pcm, language, observer, ctx)
++                    })
++                    .map_err(|error| match error {
++                        profile_context::ContextError::ModelContext => {
++                            InferenceError::UnsupportedAudioContext {
++                                actual: context.n_audio_ctx(),
++                            }
++                        }
++                        profile_context::ContextError::PreparedFrames => {
++                            InferenceError::InvalidAudio
++                        }
++                        profile_context::ContextError::Decode(error) => error,
++                    })
++            },
++        );
++        observation.full_attempted = collector.full_attempted;
++        observation.prepared_frames = collector.prepared_frames;
++        let mut profile = collector.finish();
++        profile.audio_context = Some(observation);
++        ProfiledTranscription { result, profile }
+     }
+ 
+     /// Frozen P06 experiment only: 1024 context positions for prepared inputs
+@@ -287,6 +342,14 @@
+ }
+ #[cfg(feature = "measurement")]
+ impl ObservationSink for profile::Collector {
++    #[cfg(feature = "state-perf-diagnostic")]
++    fn prepared(&mut self, _: usize, _: Option<std::ops::Range<usize>>, frames: usize) {
++        self.prepared_frames = Some(frames);
++    }
++    #[cfg(feature = "state-perf-diagnostic")]
++    fn full_started(&mut self) {
++        self.full_attempted = true;
++    }
+     #[cfg(feature = "state-perf-diagnostic")]
+     fn wants_native_perf(&self) -> bool {
+         true
+--- a/src-tauri/src/transcription/profile.rs
++++ b/src-tauri/src/transcription/profile.rs
+@@ -39,6 +39,8 @@
+ #[derive(Debug)]
+ pub struct EngineProfile {
+     #[cfg(feature = "state-perf-diagnostic")]
++    pub audio_context: Option<super::profile_context::ContextObservation>,
++    #[cfg(feature = "state-perf-diagnostic")]
+     pub native_perf: Option<NativePerfRecord>,
+     /// None means that phase was never completed; Some(ZERO) is a measured zero.
+     pub phases: [Option<Duration>; 7],
+@@ -57,6 +59,10 @@
+ 
+ pub(super) struct Collector {
+     #[cfg(feature = "state-perf-diagnostic")]
++    pub(super) full_attempted: bool,
++    #[cfg(feature = "state-perf-diagnostic")]
++    pub(super) prepared_frames: Option<usize>,
++    #[cfg(feature = "state-perf-diagnostic")]
+     native_perf: Option<NativePerfRecord>,
+     started: Instant,
+     active: Option<(Phase, Instant)>,
+@@ -68,6 +74,10 @@
+     pub(super) fn new() -> Self {
+         let before = macos_integration::thread_observation::current();
+         Self {
++            #[cfg(feature = "state-perf-diagnostic")]
++            full_attempted: false,
++            #[cfg(feature = "state-perf-diagnostic")]
++            prepared_frames: None,
+             #[cfg(feature = "state-perf-diagnostic")]
+             native_perf: None,
+             started: Instant::now(),
+@@ -125,6 +135,8 @@
+         let after = macos_integration::thread_observation::current();
+         EngineProfile {
+             #[cfg(feature = "state-perf-diagnostic")]
++            audio_context: None,
++            #[cfg(feature = "state-perf-diagnostic")]
+             native_perf: self.native_perf,
+             phases: self.phases,
+             total_elapsed,
+--- /dev/null
++++ b/src-tauri/src/transcription/profile_context.rs
+@@ -0,0 +1,172 @@
++//! Isolated calibration selector. This is not a production context policy.
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub enum ProfileAudioContext {
++    Reference,
++    Candidate1400,
++}
++#[derive(Debug, PartialEq, Eq)]
++pub enum ContextError<E> {
++    ModelContext,
++    PreparedFrames,
++    Decode(E),
++}
++#[derive(Debug)]
++pub struct ContextObservation {
++    pub selection: ProfileAudioContext,
++    pub desired_parameter: i32,
++    pub observed_model_context: i32,
++    pub model_verified: bool,
++    pub effective_context_derived: Option<i32>,
++    pub prepared_frames: Option<usize>,
++    pub full_attempted: bool,
++}
++impl ProfileAudioContext {
++    pub fn parse(value: &str) -> Option<Self> {
++        match value {
++            "reference" => Some(Self::Reference),
++            "candidate1400" => Some(Self::Candidate1400),
++            _ => None,
++        }
++    }
++    pub fn label(self) -> &'static str {
++        match self {
++            Self::Reference => "reference",
++            Self::Candidate1400 => "candidate1400",
++        }
++    }
++    pub fn parameter(self) -> i32 {
++        match self {
++            Self::Reference => 0,
++            Self::Candidate1400 => 1400,
++        }
++    }
++}
++impl ContextObservation {
++    pub fn new(selection: ProfileAudioContext, model: i32) -> Self {
++        Self {
++            selection,
++            desired_parameter: selection.parameter(),
++            observed_model_context: model,
++            model_verified: model == 1500,
++            effective_context_derived: if model == 1500 {
++                Some(if selection == ProfileAudioContext::Reference {
++                    1500
++                } else {
++                    1400
++                })
++            } else {
++                None
++            },
++            prepared_frames: None,
++            full_attempted: false,
++        }
++    }
++    pub(super) fn run<T, E>(
++        &mut self,
++        input: &[f32],
++        decode: impl FnOnce(&[f32], i32) -> Result<T, E>,
++    ) -> Result<T, ContextError<E>> {
++        self.prepared_frames = Some(input.len());
++        if !self.model_verified {
++            return Err(ContextError::ModelContext);
++        }
++        if self.selection == ProfileAudioContext::Candidate1400
++            && (input.is_empty() || input.len() > 320000)
++        {
++            return Err(ContextError::PreparedFrames);
++        }
++        decode(input, self.selection.parameter()).map_err(ContextError::Decode)
++    }
++}
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn reference_and_candidate_dispatch_the_identical_pcm_once_with_only_the_selected_parameter()
++    -> Result<(), Box<dyn std::error::Error>> {
++        let input = [0.02, -0.03, 0.04];
++        for (selection, parameter, effective) in [
++            (ProfileAudioContext::Reference, 0, 1500),
++            (ProfileAudioContext::Candidate1400, 1400, 1400),
++        ] {
++            let mut record = ContextObservation::new(selection, 1500);
++            let mut calls = 0;
++            let output = record.run(&input, |pcm, p| {
++                calls += 1;
++                assert_eq!(pcm.as_ptr(), input.as_ptr());
++                assert_eq!(pcm, input);
++                assert_eq!(p, parameter);
++                Ok::<_, ()>("unchanged result")
++            });
++            assert_eq!(output, Ok("unchanged result"));
++            assert_eq!(calls, 1);
++            assert_eq!(record.effective_context_derived, Some(effective));
++            assert_eq!(record.prepared_frames, Some(3));
++            assert!(!record.full_attempted);
++        }
++        Ok(())
++    }
++
++    #[test]
++    fn candidate_rejects_wrong_model_and_overbound_prepared_pcm_before_decode() {
++        for model in [-1, 0, 1024, 1400, 1499, 1501] {
++            let mut record = ContextObservation::new(ProfileAudioContext::Candidate1400, model);
++            let mut called = false;
++            let result = record.run(&[0.02], |_, _| {
++                called = true;
++                Ok::<_, ()>(())
++            });
++            assert_eq!(result, Err(ContextError::ModelContext));
++            assert!(!called);
++            assert!(!record.model_verified);
++            assert_eq!(record.effective_context_derived, None);
++            assert!(!record.full_attempted);
++        }
++        for frames in [0, 320001] {
++            let mut record = ContextObservation::new(ProfileAudioContext::Candidate1400, 1500);
++            let mut called = false;
++            let result = record.run(&vec![0.02; frames], |_, _| {
++                called = true;
++                Ok::<_, ()>(())
++            });
++            assert_eq!(result, Err(ContextError::PreparedFrames));
++            assert!(!called);
++            assert_eq!(record.prepared_frames, Some(frames));
++            assert!(!record.full_attempted);
++        }
++        let mut edge = ContextObservation::new(ProfileAudioContext::Candidate1400, 1500);
++        assert_eq!(
++            edge.run(&vec![0.02; 320000], |_, p| Ok::<_, ()>(p)),
++            Ok(1400)
++        );
++    }
++    #[test]
++    fn decode_error_is_preserved_without_claiming_a_full_or_getter_read() {
++        let mut record = ContextObservation::new(ProfileAudioContext::Candidate1400, 1500);
++        let result = record.run(&[0.02], |_, _| Err::<(), _>("native failure"));
++        assert_eq!(result, Err(ContextError::Decode("native failure")));
++        assert!(!record.full_attempted);
++    }
++    #[test]
++    fn selectors_are_closed_and_case_sensitive() {
++        assert_eq!(
++            ProfileAudioContext::parse("reference"),
++            Some(ProfileAudioContext::Reference)
++        );
++        assert_eq!(
++            ProfileAudioContext::parse("candidate1400"),
++            Some(ProfileAudioContext::Candidate1400)
++        );
++        for other in [
++            "1400",
++            "1500",
++            "candidate1024",
++            "REFERENCE",
++            "",
++            "candidate1400 ",
++            "--candidate1400",
++        ] {
++            assert_eq!(ProfileAudioContext::parse(other), None);
++        }
++    }
++}
