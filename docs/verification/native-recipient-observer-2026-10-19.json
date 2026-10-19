@@ -1,0 +1,43 @@
+{
+  "observedAtUtc": "2026-10-19T13:00:25.627941+00:00",
+  "codeSourceCommit": "40e7eaf",
+  "observerSignedLocally": true,
+  "observerPid": 95363,
+  "publicInput": "fleurs-de-dev-1517",
+  "singleExactMatch": true,
+  "singleOccurrences": 1,
+  "duplicateExactMatch": false,
+  "duplicateOccurrences": 2,
+  "clearedOccurrences": 0,
+  "initialAppActive": false,
+  "initialWindowKey": false,
+  "initialOwnFocusedField": "multiline",
+  "readinessGateRejectedInactiveWindow": true,
+  "noAudioStarted": true,
+  "normalQuitObserved": true,
+  "finalRunning": false,
+  "finalStatus": "stopped",
+  "periodicObservations": 210,
+  "directoryMode": "0o700",
+  "reportMode": "0o600",
+  "rawInputTextStoredInReport": false,
+  "realEverlastDeliveryProven": false,
+  "sourceReports": [
+    {
+      "path": "artifacts/recipient-observer-v1/public-single-observed.json",
+      "sha256": "2e3cacd3c894cddbcc77538bdc70d84e2331764fff7dfd30640843f00c5d7cf2"
+    },
+    {
+      "path": "artifacts/recipient-observer-v1/public-duplicate-observed.json",
+      "sha256": "7bc6ffbb06f225d6c633378fe977e6ab16a9999904c33f4bc7b4f4c6608d0e52"
+    },
+    {
+      "path": "artifacts/recipient-observer-v1/public-cleared-observed.json",
+      "sha256": "441ffea7659bfbe5435852530fdefb75f6134f62dd4d4ed8d26556da5d3f621f"
+    },
+    {
+      "path": "artifacts/recipient-observer-v1/finished.json",
+      "sha256": "dd7f6c1e4a75152ff2c56c15b92ec90227a8e759bc51a043bf3f09051c154a01"
+    }
+  ]
+}

@@ -36,8 +36,7 @@ Latenz-, Mikrofon-, OS-Ziel- oder tatsächlicher Einfügenachweis daraus.
 ## Automatischer Zustandsbericht des eigenen Testfensters
 
 Das Entwickler-Example `native_text_recipient` kann optional alle 250 ms
-seinen eigenen AppKit-Zustand melden. Die aktivierte Version ist noch nicht
-als App installiert; die vorhandene Testziel-App enthält diese Ergänzung nicht.
+seinen eigenen AppKit-Zustand melden. Die aktivierte Version wurde als separate lokale Test-App tatsächlich geprüft; [der Laufbeleg](verification/native-recipient-observer-2026-10-19.md) bindet Texteingabe, Fokusabweichung, Datei-Rechte und regulären Abschluss. Die ältere Testziel-App enthält diese Ergänzung nicht.
 Ohne `EVERLAST_RECIPIENT_REPORT_DIR` gibt es keinen Berichtsordner und keinen
 Berichtstimer. Bei Aktivierung muss der absolute Ordner neu sein und sein
 kanonischer Elternordner existieren. Die Implementierung legt ihn privat an,
