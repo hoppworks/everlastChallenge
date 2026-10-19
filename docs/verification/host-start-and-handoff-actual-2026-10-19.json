@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 1,
+  "kind": "independent-actual-controlled-host-start-and-handoff-evidence-review",
+  "date": "2026-10-19",
+  "status": "actual controlled start campaign passed; completed same-session native handoff evidence verified; physical G remains separate",
+  "reviewMethod": "Read existing JSON/files and independently recompute counts, median and SHA bindings. No tests, UI, microphone or replay executed for this review.",
+  "evidenceSha256": {
+    "artifacts/host-start-actual-v2/campaign.json": "b3fd142b601b463b3db85c102293bfd0081881a4b47fe6d459c8231ba8d4485c",
+    "artifacts/host-start-actual-v2/handoff.json": "eafecaa929b6697442894cfaf5dfa71e146a9add70a36d5da68c7f4709fd0fb1",
+    "artifacts/host-start-actual-v2/handoff-completed.json": "56f3200da0508e36a44e58f156d898b818ead441f8b4fa4f93bbe473c7542754",
+    "artifacts/developer-measurement-build-v1/testversion-build-v1/target/aarch64-apple-darwin/release/bundle/macos/Everlast Dictation.app/Contents/MacOS/everlast-dictation": "44ef3bf187a8bfc05f16ad18f70e7276389a5f355d7441eb98be678783007a9c",
+    "crates/macos-integration/examples/native_text_recipient.rs": "6948ea7a2737a74eba720c87297db1ceee1d6e13b6b107c9b8aa16c29351fc00",
+    "tests/fixtures/corpus/central-reference-v1.json": "244b2cd766874855174699f8568dbb09ae664380a98b272bf6588293f44a36b5",
+    "artifacts/corpus/audio/fleurs-de-dev-1517.wav": "b892cf9dc80c437f0a78c6f261d83dda196252e31a1e415032981472d3ea9137",
+    "scripts/host-start-campaign.mjs": "dca9a163d7da7eda780d4a8f42e000d85ae93d4f6457aa3cf4e5d3e13646b652",
+    "scripts/test-control.mjs": "e167544e9571c210bad76439c2728a290b270886d915d0ee9b7c75a01ea0cb17",
+    "artifacts/host-start-actual-v2/environment-readback.json": "856b47fb7e710e9e78d6d9e0ce9163824e894b614fa92c7882b449233c503acf",
+    "artifacts/host-start-actual-v2/native-start-shutdown.json": "8d7c73c2111a6e093b0b8422978c68536cfe10261f14a5a8afc93ef64b442256",
+    "artifacts/single-press-developer-measurement-build.log": "2c4b402ed071b5600f989c6eaa94e6372386701f338714defd27de814ce97bd4",
+    "config/release-transcription.json": "443ba75e420fc44eff870e31fc0a9333fc4e5fbb8b65d96a40ac7e4608a0eb52"
+  },
+  "originalCampaignBindings": {
+    "recipientPid": 3176,
+    "recipientSourceSha256": "6948ea7a2737a74eba720c87297db1ceee1d6e13b6b107c9b8aa16c29351fc00",
+    "productBinarySha256": "44ef3bf187a8bfc05f16ad18f70e7276389a5f355d7441eb98be678783007a9c",
+    "referenceManifestSha256": "244b2cd766874855174699f8568dbb09ae664380a98b272bf6588293f44a36b5",
+    "startedUnixMillis": 1792429210756
+  },
+  "bindingReview": {
+    "preservedProductExecutable": "artifacts/developer-measurement-build-v1/testversion-build-v1/target/aarch64-apple-darwin/release/bundle/macos/Everlast Dictation.app/Contents/MacOS/everlast-dictation",
+    "currentRecipientSourceMatches": true,
+    "note": "The recipient URI source was uncommitted but stable at measurement; hash exactly matches the original campaign binding. An unrelated target/debug executable is not used as this evidence binding."
+  },
+  "independentChecks": {
+    "campaignPassedAndCleanupConfirmed": true,
+    "exact181Ordinals": true,
+    "unique181SessionIds": true,
+    "oneWarmup180Measured": true,
+    "noTrialErrorsOrMissingTimes": true,
+    "allSixMediansAndAudioBindingsMatch": true,
+    "recipientSourceMatchesOriginalBinding": true,
+    "preservedProductBinaryMatchesOriginalBinding": true,
+    "manifestMatchesOriginalBinding": true,
+    "publicHandoffAudioMatchesFixtureBinding": true,
+    "initialFailureRetained": true,
+    "initialMissingRecordCountAndPendingCleanup": true,
+    "sameSession182AndSendIntervals": true,
+    "completedCleanObservation": true,
+    "completedSendAndRestore": true,
+    "originalRecipientEvidenceRetainedUnchanged": true,
+    "exactPublicOwnReceipt": true,
+    "receiptOwnFocusAndIdentity": true,
+    "productSentAndIdle": true,
+    "nativeShutdownExportMatchesAll181Trials": true,
+    "nativeShutdownJoinedAndObserverClean": true,
+    "environmentRecordedFileBindingsStillMatchAtReview": true
+  },
+  "hostStarts": {
+    "actualStartsIncludingWarmup": 181,
+    "warmupStarts": 1,
+    "measuredStarts": 180,
+    "cleanupConfirmed": true,
+    "allTrialsWithoutError": true,
+    "thresholdMillis": 250,
+    "allSixMedianUpperBoundsWithinThreshold": true,
+    "minMedianUpperMillis": 116.775792,
+    "maxMedianUpperMillis": 129.943771,
+    "cases": [
+      {
+        "id": "fleurs-de-test-1736",
+        "language": "de",
+        "seconds": 5,
+        "audioSha256": "67718418a15f877ec263f7c864e6b72fd41365afebeb78e915a4c97066bb6670",
+        "medianUpperMillis": 122.7513535,
+        "measuredStarts": 30,
+        "recomputedMedianUpperMillis": 122.7513535,
+        "matchesRecordedMedian": true,
+        "within250Millis": true,
+        "matchesPreboundAudioHash": true
+      },
+      {
+        "id": "fleurs-de-test-1663",
+        "language": "de",
+        "seconds": 10,
+        "audioSha256": "e86ac3cc846d6fb8655fbbdaa6906d8812810bcc03fedeb4c385b7d039d0b79d",
+        "medianUpperMillis": 117.403125,
+        "measuredStarts": 30,
+        "recomputedMedianUpperMillis": 117.403125,
+        "matchesRecordedMedian": true,
+        "within250Millis": true,
+        "matchesPreboundAudioHash": true
+      },
+      {
+        "id": "fleurs-de-test-1668",
+        "language": "de",
+        "seconds": 15,
+        "audioSha256": "27e005fc4ffab77389bda81861250b6a3616fb2e686e65ef366314bad791abf6",
+        "medianUpperMillis": 118.5428755,
+        "measuredStarts": 30,
+        "recomputedMedianUpperMillis": 118.5428755,
+        "matchesRecordedMedian": true,
+        "within250Millis": true,
+        "matchesPreboundAudioHash": true
+      },
+      {
+        "id": "fleurs-en-test-1679",
+        "language": "en",
+        "seconds": 5,
+        "audioSha256": "a244c933384e8c3b15371039d1cfba04a02b97bb22c40381dcec557679666241",
+        "medianUpperMillis": 117.3557705,
+        "measuredStarts": 30,
+        "recomputedMedianUpperMillis": 117.3557705,
+        "matchesRecordedMedian": true,
+        "within250Millis": true,
+        "matchesPreboundAudioHash": true
+      },
+      {
+        "id": "fleurs-en-test-1676",
+        "language": "en",
+        "seconds": 10,
+        "audioSha256": "afd053eebcc3c55cc883a0f4e18904609c75cc6c4b76890d674b9dbf9e1834cb",
+        "medianUpperMillis": 116.775792,
+        "measuredStarts": 30,
+        "recomputedMedianUpperMillis": 116.775792,
+        "matchesRecordedMedian": true,
+        "within250Millis": true,
+        "matchesPreboundAudioHash": true
+      },
+      {
+        "id": "fleurs-en-test-1667",
+        "language": "en",
+        "seconds": 15,
+        "audioSha256": "7ccf8be690e39e04c1481bf1162e0b6efe8abfccbfa8e0bd5b103f502c2c4390",
+        "medianUpperMillis": 129.943771,
+        "measuredStarts": 30,
+        "recomputedMedianUpperMillis": 129.943771,
+        "matchesRecordedMedian": true,
+        "within250Millis": true,
+        "matchesPreboundAudioHash": true
+      }
+    ],
+    "timingScope": "Controlled productive host ingress through actual observed native Recording; conservative upper bound, no physical keyboard/OS delivery latency and no exact CPAL callback instant.",
+    "futureInputOnly": true,
+    "referenceAudioPlayedForStartCampaign": false,
+    "caseLanguageOrDurationReconfigured": false
+  },
+  "handoff": {
+    "sessionId": 182,
+    "initialRunReport": "artifacts/host-start-actual-v2/handoff.json",
+    "initialRunnerPassed": false,
+    "initialErrorField": null,
+    "initialCleanupField": true,
+    "initialObservationCleanupPending": true,
+    "initialHarnessIssue": "Initial summary tested nonexistent recordCount; it also sampled before asynchronous cleanup. Original report retained; fresh read-only completed observation validated. No audio or session rerun.",
+    "originalReportRetained": true,
+    "completedObservationReport": "artifacts/host-start-actual-v2/handoff-completed.json",
+    "completedObservationUnixMillis": 1792429400122,
+    "completedObservationPassed": true,
+    "record": {
+      "cleanupSucceeded": true,
+      "clipboardCompletionLowerNanos": 627160167,
+      "clipboardCompletionUpperNanos": 628307125,
+      "deliveryTokenMatched": true,
+      "restoreOutcome": "restored",
+      "sendCommitted": true,
+      "sendLowerNanos": 109340708,
+      "sendSucceeded": true,
+      "sendUpperNanos": 120210542,
+      "session": 182,
+      "textReadyObserved": true
+    },
+    "sendBracketMillis": {
+      "lower": 109.340708,
+      "upper": 120.210542
+    },
+    "clipboardCompletionBracketMillis": {
+      "lower": 627.160167,
+      "upper": 628.307125
+    },
+    "sameSessionAndAudioNotRepeated": true,
+    "followupWasReadOnly": true,
+    "recipientReceiptReusedFromInitialReport": true,
+    "receipt": {
+      "recipientPid": 3176,
+      "processStartedUnixMillis": 1792429164801,
+      "sequence": 827,
+      "observedUnixMillis": 1792429371874,
+      "fieldUtf8Bytes": 134,
+      "totalUtf8Bytes": 134,
+      "fieldSha256": "161df165fab1271854e8ff49cb989e6f2f9d9192b3c02a06e7384de01534f214",
+      "expectedSentenceId": "fleurs-de-dev-1517",
+      "expectedSentenceOccurrences": 1,
+      "shortcutCharacterPresent": false,
+      "publicExpectedHashIndependentlyMatches": true
+    },
+    "productOutcome": "sent",
+    "productPhase": "Idle",
+    "clipboardRestoreOutcome": "restored",
+    "timeReference": "Both send and clipboard completion brackets measured from productive text-ready adoption, not from audio stop.",
+    "sampleCount": 1
+  },
+  "scopeLimits": {
+    "physicalGlobalHotkeyAcceptance": false,
+    "normalInstalledCandidateGAcceptance": false,
+    "newAsrCorpusQualification": false,
+    "exactCpalOrEventPostInstant": false,
+    "asrQualityGeneralizationFromSingleSpeechReceipt": false,
+    "thirdPartyApplicationCompatibilityGeneralization": false,
+    "newGestureConsumedByThisReview": false
+  },
+  "uriStartupConstraint": {
+    "separateFromTimingResult": true,
+    "fixedAction": "everlast-autonomous-testziel://activate",
+    "singleConsumedActivation": true,
+    "actualUriConsumedBeforeCampaign": true,
+    "sourceGuardLimit": "Preparing guard uses last observed local reporter signal state; absent reporter is allowed and stopped reporter not separately excluded. This is not a promise of atomic freshness against signal-file updates. Already-consumed URI blocks further URI activation for this process.",
+    "ordinaryLaunchServicesContext": "Self activation reached via ordinary browser-link Open route; no CLI UI bypass claimed."
+  },
+  "postRunEnvironment": {
+    "path": "artifacts/host-start-actual-v2/environment-readback.json",
+    "observedUtc": "2026-10-19T17:04:35.306078+00:00",
+    "scope": "Read immediately after actual181 campaign and actualshortdelivery, not claimed as sampled before every trial. AC Power was also directly observed during campaign at62trials. OS/hardware/toolchain readbacks supplement source/build/model bindings; no performance/ASRclaim added.",
+    "values": {
+      "os": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434",
+      "hardware": "Apple M5\n34359738368",
+      "energy": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23461987)\t82%; AC attached; not charging present: true",
+      "rustc": "rustc 1.93.0 (254b59607 2026-01-19)\nbinary: rustc\ncommit-hash: 254b59607d4417e9dffbc307138ae5c86280fe4c\ncommit-date: 2026-01-19\nhost: aarch64-apple-darwin\nrelease: 1.93.0\nLLVM version: 21.1.8",
+      "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
+      "xcode": "Xcode 27.1\nBuild version 27A9275",
+      "clang": "Apple clang version 21.0.0 (clang-2100.3.34.2)\nTarget: arm64-apple-darwin27.0.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin"
+    },
+    "recordedModel": {
+      "file": "ggml-large-v3-turbo-q5_0.bin",
+      "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+    },
+    "recordedModelBytesRehashedByThisReview": false,
+    "referencedFileHashesCheckedAtReview": {
+      "config/release-transcription.json": true,
+      "artifacts/developer-measurement-build-v1/testversion-build-v1/target/aarch64-apple-darwin/release/bundle/macos/Everlast Dictation.app/Contents/MacOS/everlast-dictation": true,
+      "artifacts/single-press-developer-measurement-build.log": true,
+      "artifacts/host-start-actual-v2/native-start-shutdown.json": true
+    },
+    "note": "Post-run environment observation, not invented as per-trial preflight. AC during case62 is additionally reported by the original operator; no continuous per-trial energy history is claimed."
+  },
+  "nativeShutdownExport": {
+    "path": "artifacts/host-start-actual-v2/native-start-shutdown.json",
+    "controlledShutdownJoined": true,
+    "productProcessId": 3350,
+    "records": 181,
+    "all181RawRecordsMatchCampaign": true,
+    "pendingOrdinal": null,
+    "overflowAttempts": 0,
+    "counterError": false,
+    "observerContentionOrPoison": false,
+    "qualificationFlagRemainsFalse": true
+  }
+}

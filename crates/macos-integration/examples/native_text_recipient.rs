@@ -12,8 +12,8 @@ use objc2_app_kit::{
     NSTextView, NSView, NSWindow, NSWindowStyleMask, NSWorkspace,
 };
 use objc2_foundation::{
-    NSBundle, NSNotification, NSObject, NSObjectProtocol, NSPoint, NSRect, NSRunLoop,
-    NSRunLoopCommonModes, NSSize, NSString, NSTimer,
+    NSArray, NSBundle, NSNotification, NSObject, NSObjectProtocol, NSPoint, NSRect, NSRunLoop,
+    NSRunLoopCommonModes, NSSize, NSString, NSTimer, NSURL,
 };
 
 use sha2::{Digest, Sha256};
@@ -537,7 +537,12 @@ impl Reporter {
     }
 }
 
+fn own_launch_url(value: &str) -> bool {
+    value == "everlast-autonomous-testziel://activate"
+}
+
 struct DelegateState {
+    url_activation_consumed: bool,
     reporter: Option<Retained<Reporter>>,
     activation: Option<Retained<ActivateOwnField>>,
 }
@@ -548,6 +553,21 @@ define_class!(
     struct Delegate;
     unsafe impl NSObjectProtocol for Delegate {}
     unsafe impl NSApplicationDelegate for Delegate {
+        #[unsafe(method(application:openURLs:))]
+        fn open_urls(&self, _: &NSApplication, urls: &NSArray<NSURL>) {
+            if urls.count() != 1 { return; }
+            let Some(url) = urls.firstObject() else { return; };
+            let Some(value) = url.absoluteString() else { return; };
+            if value.length() > 64 || !own_launch_url(&value.to_string()) { return; }
+            let activation = {
+                let mut state = self.ivars().borrow_mut();
+                if state.url_activation_consumed || state.reporter.as_ref().is_some_and(|r| r.ivars().borrow().signal_state != "preparing") { return; }
+                state.url_activation_consumed = true;
+                state.activation.clone()
+            };
+            if let Some(activation) = activation { activation.prepare_own_field(); }
+        }
+
         #[unsafe(method(applicationDidFinishLaunching:))]
         fn did_finish_launching(&self, _: &NSNotification) {
             if let Some(activation) = self.ivars().borrow().activation.as_ref() {
@@ -642,6 +662,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     app.setActivationPolicy(NSApplicationActivationPolicy::Regular);
     // SAFETY: NSObject's designated initializer on an allocated main-thread subclass.
     let allocated = Delegate::alloc(main).set_ivars(RefCell::new(DelegateState {
+        url_activation_consumed: false,
         reporter: None,
         activation: None,
     }));
@@ -837,6 +858,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn launch_url_is_a_single_fixed_action_without_payload() {
+        assert!(own_launch_url("everlast-autonomous-testziel://activate"));
+        for value in [
+            "",
+            "https://example.com",
+            "everlast-autonomous-testziel://activate?text=x",
+            "everlast-autonomous-testziel://activate/",
+            "everlast-autonomous-testziel://record",
+            "EVERLAST-AUTONOMOUS-TESTZIEL://activate",
+        ] {
+            assert!(!own_launch_url(value));
+        }
+    }
     #[test]
     fn reporter_ivars_fit_objective_c_runtime_alignment() {
         assert!(

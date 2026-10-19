@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "kind": "native-private-background-clipboard-writer",
+  "observedUtc": "2026-10-19T17:11:28.750810+00:00",
+  "sourceRevision": "9e1ba8a3092422edbcad368d20b9c9d33dfb9f8f",
+  "source": {
+    "path": "crates/macos-integration/tests/native_clipboard_contract.rs",
+    "sha256": "d83794ca0b17b599352202940f516d3fe6a18024c9a9f4814100f91cee9ee65e",
+    "bytes": 12875
+  },
+  "executable": {
+    "path": "target/debug/deps/native_clipboard_contract-9bd141902951ccaa",
+    "sha256": "8fabf32c96e48e29d4fd45aa9ba3138f59779ecdb4c519e913e035c7e455f2a1",
+    "bytes": 1735224
+  },
+  "evidence": [
+    {
+      "path": "artifacts/native-background-clipboard-writer-2026-10-19/red.log",
+      "sha256": "b36728a6c9cc00a55493eb80d8a47619d1eac8c83de2e6b0063e5a422a9d59a1",
+      "bytes": 1248
+    },
+    {
+      "path": "artifacts/native-background-clipboard-writer-2026-10-19/green.log",
+      "sha256": "d2769574014dc00c0054b434e87748d6f430a0e9d200264f28a309537156468d",
+      "bytes": 927
+    },
+    {
+      "path": "artifacts/native-background-clipboard-writer-2026-10-19/clippy.log",
+      "sha256": "88e7a64d01e3adc1487eb8655f4f6720d8f9475b485582f8823ba4c9a5d4cb73",
+      "bytes": 181
+    }
+  ],
+  "red": {
+    "expectedFailure": "Restored != OwnershipChanged before separate writer was inserted",
+    "cargoExit": 101
+  },
+  "green": {
+    "cargoExit": 0,
+    "clippyExit": 0,
+    "separateWriterProcess": true,
+    "samePrivatePasteboard": true,
+    "writerStartedAfterLeaseInstall": true,
+    "writerDeadlineMillis": 2000,
+    "restoreOutcome": "OwnershipChanged",
+    "foreignSentinelExact": true,
+    "changeCountUnchangedByRestore": true,
+    "existingUnicodeAndLimitsPreserved": true,
+    "timeoutCleanupImplemented": true,
+    "timeoutCleanupExercised": false
+  },
+  "scope": {
+    "generalClipboardUsed": false,
+    "physicalCommandV": false,
+    "globalHotkey": false,
+    "microphone": false,
+    "accessibility": false,
+    "visibleWindowsAdded": 0,
+    "activationChanged": false,
+    "normalProductChanged": false
+  },
+  "limits": [
+    "Own subprocess simulates another writer on one explicitly private pasteboard; not a third-party app or the general pasteboard.",
+    "Does not prove physical Cmd+V, foreign app delivery, focus, or G.",
+    "Two-second child completion deadline; timeout/error path kills and synchronously reaps only the owned child. Timeout path was not induced in this run.",
+    "Native pasteboard input and backup bounds retain the earlier contract; this new artifact does not replace historical proof."
+  ]
+}

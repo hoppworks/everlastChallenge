@@ -18,3 +18,10 @@ condition = "AND"
 targetRules = ["generic-api-key"]
 paths = ['''(^|/)artifacts/p06-exact-state-counter-diagnostic-v1/public-dependencies/[^/]+/\.cargo-checksum\.json$''']
 regexes = ['''^[a-f0-9]{64}$''']
+
+[[allowlists]]
+description = "Independently verified file SHA-256 maps in these two exact measurement/audit manifests; never application source or arbitrary metadata."
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = ['''(^|/)artifacts/p06-metal-command-buffers-v1/source-freeze\.json$''', '''(^|/)docs/verification/pre-global-completion-audit-2026-10-19\.json$''']
+regexes = ['''^[a-f0-9]{64}$''']

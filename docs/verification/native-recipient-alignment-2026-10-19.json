@@ -5,7 +5,7 @@
   "fix": "RefCell<Box<Reporting>> keeps Objective-C instance ivars pointer-aligned and Rust heap payload correctly aligned",
   "redCapableRegression": "cargo test -p macos-integration --example native_text_recipient reporter_ivars_fit_objective_c_runtime_alignment",
   "redExitCode": 101,
-  "greenTests": 14,
+  "greenTests": 9,
   "strictClippyPassed": true,
   "actualCuaLaunchAfterFix": "window Everlast Testziel and native editable multiline field appeared; no panic",
   "actualProcessId": 99303,

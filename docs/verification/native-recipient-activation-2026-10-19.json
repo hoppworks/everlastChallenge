@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-recipient-normal-url-activation",
+  "sourceSha256": "6948ea7a2737a74eba720c87297db1ceee1d6e13b6b107c9b8aa16c29351fc00",
+  "exampleTestsPassed": 10,
+  "clippyPassed": true,
+  "fixedUri": "everlast-autonomous-testziel://activate",
+  "acceptedUrlCount": 1,
+  "maximumNativeUrlCharacters": 64,
+  "helperActivationLimit": 1,
+  "actualActivationMethod": "CUA own localhost link -> ordinary browser Open Everlast Testziel dialog, unchecked persistent allowance -> LaunchServices own app",
+  "actualFocusEvidence": "artifacts/host-start-actual-v2/handoff-completed.json",
+  "frontmostOwnAppAndKeyFieldObserved": true,
+  "extraHumanClicksRequired": false,
+  "physicalHotkeyPerformed": false,
+  "microphoneStartedByUrl": false,
+  "textPayloadAccepted": false,
+  "review": "suite_architecture independent source read; no blocking findings",
+  "limits": [
+    "Helper gate checks cached preparing phase and allows no-reporter mode; actual bound reporter process consumed URI action before campaign.",
+    "The OS can activate an app on ordinary URL opening independently of the helper latch. Runner never opens this URL during recording or after ready.",
+    "Only own local fixture app/window/field are activated; no external app automation, event synthesis, permission or OS preference changes."
+  ]
+}

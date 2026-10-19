@@ -7,12 +7,13 @@ Stopp nach fünf Minuten. Fenster und Einstellungen verwenden echte
 AppKit-Steuerelemente. Modelle werden einmal ausdrücklich eingerichtet;
 danach arbeitet die Erkennung lokal.
 
-Aktueller Kandidat: **Everlast-Dictation-Testversion-0.1.0-native-d6b6222-r10.zip**
+Aktueller Kandidat: **Everlast-Dictation-Testversion-0.1.0-native-9e1ba8a-r11.zip**
 in `~/Downloads/`. [Installation und Nutzung](TESTVERSION.md),
-[Paket und Prüfsummen](docs/verification/testversion-package-r10.md).
-Kein öffentlicher Download. R10 ist gebaut, lokal signiert und nach ZIP-
-Rundlauf geprüft, aber noch nicht installiert. Aktuell läuft weiterhin der
-normale Build `212d5e7`. Die vorhandene lokale Signieridentität bleibt erhalten;
+[Paket und Prüfsummen](docs/verification/testversion-package-r11.md).
+Kein öffentlicher Download. R11 ist gebaut, lokal signiert und nach ZIP-
+Rundlauf geprüft und unter `/Applications/Everlast Dictation.app` installiert.
+Die vorhandenen Mikrofon- und Accessibility-Freigaben sind erhalten geblieben.
+Die vorhandene lokale Signieridentität bleibt erhalten;
 kein Developer-Account oder neuer Zertifikatsassistent ist nötig. Die App ist
 nicht notarisiert; Installation auf anderen Macs kann Bestätigung erfordern.
 
@@ -79,7 +80,7 @@ numerische Oracle-Abweichung.
 ## Fehler beheben
 
 Die folgenden Schritte beschreiben den aktuellen Quellstand. Installiert ist
-der normale Build `212d5e7`; R6 bleibt separat als historisches Testpaket
+der normale R11-Kandidat mit Binärhash `3310f2a3…55579081`; R6 bleibt separat als historisches Testpaket
 verfügbar. Die vollständige Produkt- und Installationsabnahme steht noch aus.
 
 | Beobachtung | Nächster Schritt |

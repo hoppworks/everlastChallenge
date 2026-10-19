@@ -13,7 +13,85 @@ use objc2_app_kit::{
 };
 use objc2_foundation::{NSArray, NSData, NSPoint, NSRange, NSRect, NSSize, NSString};
 use sha2::{Digest, Sha256};
-use std::num::NonZeroU64;
+use std::{
+    num::NonZeroU64,
+    process::{Command, Stdio},
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
+};
+
+const PRIVATE_PREFIX: &str = "org.everlast.clipboard-contract.";
+const FOREIGN_SENTINEL: &[u8] = b"separate-own-writer: foreign sentinel 2026-10-19";
+fn valid_writer_board(name: &str) -> bool {
+    let Some(rest) = name.strip_prefix(PRIVATE_PREFIX) else {
+        return false;
+    };
+    let Some((pid, nonce)) = rest.split_once('.') else {
+        return false;
+    };
+    !pid.is_empty()
+        && pid.len() <= 10
+        && pid.bytes().all(|b| b.is_ascii_digit())
+        && pid.parse::<u32>().is_ok_and(|p| p > 0)
+        && nonce.len() == 32
+        && nonce
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+}
+fn background_writer_contract(main: MainThreadMarker) -> Result<(), Box<dyn std::error::Error>> {
+    for invalid in [
+        "NSGeneralPboard",
+        "org.everlast.clipboard-contract.1.bad",
+        "org.everlast.clipboard-contract.0.00000000000000000000000000000000",
+    ] {
+        assert!(!valid_writer_board(invalid));
+    }
+    let nonce = SystemTime::now().duration_since(UNIX_EPOCH)?.as_nanos();
+    let name = format!("{PRIVATE_PREFIX}{}.{nonce:032x}", std::process::id());
+    assert!(valid_writer_board(&name));
+    let board = PrivateBoard(NSPasteboard::pasteboardWithName(&NSString::from_str(&name)));
+    publish(&board.0, &[item(UTF8_TYPE, b"original before lease")?])?;
+    let backup = Snapshot::capture(&name, main)?;
+    let token = DeliveryToken::new(NonZeroU64::new(2).ok_or("session missing")?);
+    let lease = PreparedClipboard::new(&name, backup, UNICODE, &token, main)?.install(main)?;
+    let mut child = Command::new(std::env::current_exe()?)
+        .args(["--private-writer", &name])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()?;
+    let started = Instant::now();
+    let status = loop {
+        match child.try_wait() {
+            Ok(Some(status)) => break status,
+            Ok(None) => {}
+            Err(error) => {
+                drop(child.kill());
+                drop(child.wait());
+                return Err(error.into());
+            }
+        }
+        if started.elapsed() >= Duration::from_secs(2) {
+            drop(child.kill());
+            drop(child.wait());
+            return Err("private writer timed out and was reaped".into());
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    };
+    assert!(status.success(), "separate private writer failed");
+    assert!(!lease.is_current());
+    let count = board.0.changeCount();
+    assert_eq!(lease.restore(main)?, RestoreOutcome::OwnershipChanged);
+    assert_eq!(
+        board.0.changeCount(),
+        count,
+        "restore overwrote newer writer"
+    );
+    assert_eq!(
+        Snapshot::capture(&name, main)?.data(0, UTF8_TYPE),
+        Some(FOREIGN_SENTINEL)
+    );
+    Ok(())
+}
 
 const UNICODE: &str = "Grüße aus Köln: Äpfel, Öl, süß — 0123456789.\nZweite Zeile: 42 € 😀.";
 const UTF8_TYPE: &str = "public.utf8-plain-text";
@@ -211,6 +289,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             .count(),
         visible_windows
     );
+    background_writer_contract(main)?;
     native_limits(main)?;
     assert_eq!(app.isActive(), active);
     assert_eq!(
@@ -227,12 +306,33 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             "unicodeSha256":"55dcecf192298167c397764f94f84551b7bd6980287a3cf310b8eb1346a0fcfb",
             "exactOccurrences":1,"restoreVerified":true,"maxTypes":MAX_TYPES,"maxTypeBytes":MAX_TYPE_BYTES,
             "maxDataBytes":MAX_DATA_BYTES,"maxItems":MAX_ITEMS,"atLimitCases":4,"oneOverLimitCases":4,
+            "separateWriterProcess":true,"writerWaitBoundMillis":2000,
+            "ownershipChanged":true,"foreignSentinelPreserved":true,
             "overflowError":"Limit","nativeBackupReadOnly":true,"generalClipboardUsed":false,
             "physicalCommandV":false,"globalHotkey":false,"visibleWindowsAdded":0,"activationChanged":false
         })
     );
     Ok(())
 }
+fn private_writer(name: &str) -> Result<(), Box<dyn std::error::Error>> {
+    if !valid_writer_board(name) {
+        return Err("private writer namespace rejected".into());
+    }
+    let main = MainThreadMarker::new().ok_or("main thread required")?;
+    let board = NSPasteboard::pasteboardWithName(&NSString::from_str(name));
+    // Read-only precondition binds this helper to an already installed test lease.
+    let before = Snapshot::capture(name, main)?;
+    if before.data(0, UTF8_TYPE) != Some(UNICODE.as_bytes()) {
+        return Err("private writer lease precondition rejected".into());
+    }
+    publish(&board, &[item(UTF8_TYPE, FOREIGN_SENTINEL)?])?;
+    Ok(())
+}
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    objc2::rc::autoreleasepool(|_| run())
+    let args = std::env::args().skip(1).collect::<Vec<_>>();
+    objc2::rc::autoreleasepool(|_| match args.as_slice() {
+        [] => run(),
+        [mode, name] if mode == "--private-writer" => private_writer(name),
+        _ => Err("private contract arguments rejected".into()),
+    })
 }

@@ -12,6 +12,6 @@
   "nativeClipboardIncluded": true,
   "hostCampaignTestsOnly": true,
   "actualMicrophoneOrPhysicalGesture": false,
-  "scope": "Full software regression after host/handoff/keyboard/clipboard changes. Later recipient ABI-only change separately has14example tests+Clippy+actualCUA launch; this original report is retained unchanged.",
+  "scope": "Full software regression after host/handoff/keyboard/clipboard changes. Later recipient ABI-only change separately has9recipient tests+Clippy+actualCUA launch; this original report is retained unchanged.",
   "supplement": "docs/verification/native-recipient-alignment-2026-10-19.json"
 }
