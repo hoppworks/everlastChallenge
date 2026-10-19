@@ -2,22 +2,9 @@
 
 Native Diktier-App für Apple Silicon und macOS 27. Rust/Tauri 2 mit nativer AppKit-Oberfläche, lokale Whisper-Inferenz und systemnahe Audioaufnahme/Textübergabe.
 
-Aktuelles lokales Testpaket: **Everlast-Dictation-Testversion-0.1.0-native-2abf495-r6.zip**,
-auf diesem Mac in `~/Downloads/`. Der [R6-Paketbeleg](docs/verification/testversion-package-r6.md)
-nennt Build, Prüfsummen und die noch offene Installation/Vollabnahme. Ein
-[begrenzter R6-Starttest](docs/verification/r6-startup-2026-10-19.md) bestätigt
-Modellbereitschaft und korrekt angezeigte fehlende Rechte, ohne Freigabe oder Aufnahme. R6 enthält
-den gemeinsam getesteten Streamfehlercallback und den Recovery-Anzeigefix aus R5.
-Die installierte R4-App bleibt erhalten; frische Modelleinrichtung, Freigaben,
-Aufnahme/Kopieren, Abbrechen und Neustart sind [tatsächlich geprüft](docs/verification/r4-installed-smoke-2026-10-19.md).
-Der R4-Akustiktest ergänzt unerwünscht „Vielen Dank.“; automatische Übergabe und
-die automatisierte Fensterzuordnung nach dem Schließen der Einstellungen bleiben
-offen. Noch kein öffentlicher Download; die [Kurzanleitung](TESTVERSION.md)
-beschreibt Installation und erste Einrichtung.
-
 **Testversion (19.10.2026):** Die stabile Referenzfassung ist als lokale Testversion bereitgestellt. Die experimentellen FullPrefix-/Kontext-1400-Optimierungen sind nicht aktiv. Die Referenz hat ihre dokumentierte Modellqualitätsprüfung bestanden, erreicht aber das geplante Stop-bis-Text-Ziel von einer Sekunde nicht durchgehend. Die vollständige Leistungs-, Installations- und integrierte Produktabnahme bleibt offen. [P04 ist im bestätigten Standardmikrofonumfang technisch belegt](docs/verification/p04-standard-microphone-technical-v1.md); zusätzliche Geräte-/Bluetooth-Tests sind nicht erforderlich. Tatsächliche Belege stehen im [Ausführungsprotokoll](docs/execution-log.md), der vollständige Zielumfang im [Implementierungsplan](IMPLEMENTATION_PLAN.md).
 
-Die [Einstellungswiederherstellung](docs/verification/r4-settings-recovery-2026-10-19.md) ist im installierten R4 geprüft. Der dabei gefundene falsche Status ist in R5 korrigiert und gezielt sichtbar geprüft; die installierte R4-App enthält diesen Anzeige-Fix noch nicht.
+Die [Einstellungswiederherstellung](docs/verification/r4-settings-recovery-2026-10-19.md) ist im installierten R4 geprüft. Der dabei gefundene falsche Status ist in R5 korrigiert und gezielt sichtbar geprüft; die jetzt installierte R6 enthält diesen Anzeige-Fix.
 
 Der [reale Fünf-Minuten-Hotkeylauf](docs/verification/r4-hotkey-maximum-2026-10-19.md) bestätigt den automatischen Aufnahmestopp. Das Startfeld wurde dabei nicht bestätigt, daher keine Einfügung; zusätzliche Texte bei langem Nachlauf und die vollständige Vorwarnungs-/Fokusabnahme bleiben offen.
 
@@ -66,7 +53,7 @@ numerische Oracle-Abweichung.
 
 ## Fehler beheben
 
-Die folgenden Schritte beschreiben den aktuellen Quellstand. R4 ist lokal
+Die folgenden Schritte beschreiben den aktuellen Quellstand. R6 ist lokal
 installiert; die vollständige Produkt- und Installationsabnahme steht noch aus.
 
 | Beobachtung | Nächster Schritt |
