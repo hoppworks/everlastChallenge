@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-preferences-keyboard-acceptance",
+  "status": "passed",
+  "observedAtUtc": "2026-10-19T19:01:33.086446+00:00",
+  "sourceRevision": "b799936c0a399d07a0785ba7c736e3c3ca2c82a1",
+  "normalCandidateBinarySha256": "709da0a462109526edbffbaa190f41718add6b8a657dd4b17a5a7f957d282e63",
+  "installedProcessId": 30267,
+  "normalBuild": true,
+  "ownProbe": {
+    "qualifiedSamples": 50,
+    "qualifiedResponderClasses": [
+      "NSTabView"
+    ],
+    "localKeyDown": {
+      "codesAndModifiers": [
+        {
+          "count": 1,
+          "keyCode": 13,
+          "modifierFlags": 1048576
+        },
+        {
+          "count": 1,
+          "keyCode": 43,
+          "modifierFlags": 1048576
+        },
+        {
+          "count": 1,
+          "keyCode": 48,
+          "modifierFlags": 262144
+        },
+        {
+          "count": 1,
+          "keyCode": 48,
+          "modifierFlags": 393216
+        },
+        {
+          "count": 2,
+          "keyCode": 49,
+          "modifierFlags": 0
+        },
+        {
+          "count": 1,
+          "keyCode": 123,
+          "modifierFlags": 8388608
+        },
+        {
+          "count": 2,
+          "keyCode": 124,
+          "modifierFlags": 8388608
+        }
+      ],
+      "maximumDistinct": 32,
+      "overflow": 0,
+      "total": 9
+    },
+    "selectedTabsObserved": [
+      "Aufnahme",
+      "Berechtigungen",
+      "Modell"
+    ],
+    "closeNotificationCount": 1,
+    "cmdCommaActionCount": 1,
+    "fullKeyboardAccessValues": [
+      false
+    ]
+  },
+  "actualInstalledReadback": {
+    "initialFocusedTab": "Berechtigungen",
+    "rightArrowFocus": "Modell",
+    "spaceSelectsFocusedTab": true,
+    "leftArrowOrder": [
+      "Modell",
+      "Berechtigungen",
+      "Aufnahme"
+    ],
+    "reopenRetainsFocusedTab": true,
+    "visualFocusRingConfirmed": true,
+    "permissionMicrophone": "granted",
+    "permissionAccessibility": "granted",
+    "restoredState": "Bereit zum Diktieren",
+    "microphone": "Systemstandard",
+    "language": "Deutsch",
+    "hotkey": "Option D",
+    "transcriptEmpty": true
+  },
+  "physicalHotkeyOrAudioUsed": false,
+  "osSettingsChanged": false,
+  "productSettingsSaved": false,
+  "limits": [
+    "Arrow keys move native tab focus; Space selects. Ctrl-Tab did not switch in the own probe and is not claimed.",
+    "FullKeyboardAccess remained false. Normal Tab traversal does not include all buttons/popups under this existing OS policy; no OS setting was changed.",
+    "Start/Stop/Cancel/Copy keyboard action contracts reuse existing native key-equivalent tests; this UI run did not start a microphone.",
+    "Actual G executed on original R11; separate source-transfer report covers the UI-only delta."
+  ],
+  "independentSourceReview": "r8_artifact_review: product/contract/probe review and independent hash/screenshot/JSONL review passed; actual installed native tab focus and selection confirmed. P02G/P09 closure supported with prior A23/layout/material/key contracts.",
+  "evidenceFiles": [
+    {
+      "path": "crates/macos-integration/src/native_preferences.rs",
+      "sha256": "b0f23d1a025a2ea4bad47071ed75bd8cf515ecf94e89c8b7a9a80c8fa875878b"
+    },
+    {
+      "path": "crates/macos-integration/tests/native_preferences_close_contract.rs",
+      "sha256": "341e5e96a7d0ee88d702c3418724083b5ba5ff5a074a6babe62021ab17785d4b"
+    },
+    {
+      "path": "crates/macos-integration/examples/native_preferences_keyboard_probe.rs",
+      "sha256": "66f6a2fd939172c62fc078a191bf632a795c8a5c816544a4e48651fc9d3750e6"
+    },
+    {
+      "path": "artifacts/native-preferences-show-focus-fix-v1/verification.json",
+      "sha256": "aec16cbe090c603ed416f499fe83e571e28b09e2669d6c86f91a445e31c32167"
+    },
+    {
+      "path": "artifacts/native-preferences-keyboard-probe-v3/preparation.json",
+      "sha256": "f81b0c99729acf13141fdbcdeb0500d06bf27ca42d16311c0385c58fdb6692ef"
+    },
+    {
+      "path": "artifacts/native-preferences-keyboard-probe-v3/after-close-reopen.png",
+      "sha256": "8c9dca15ac31389c977e1fa79044485eb69bb6834705381d558481d055a7a331"
+    },
+    {
+      "path": "artifacts/native-preferences-keyboard-probe-v3/reopened-model.png",
+      "sha256": "d55a8f6e38e1bd777fba6794feb721996fdd18bfab1f1cc2950db41fa9cd5810"
+    },
+    {
+      "path": "artifacts/native-preferences-keyboard-probe-v3/focus-model.png",
+      "sha256": "92e17ba3bcf86133d97224356c66f95e1f2e0cfc0f25f1e1a2333ba10c67d2f0"
+    },
+    {
+      "path": "artifacts/native-preferences-keyboard-probe-v3/focus-permissions.png",
+      "sha256": "8ef1f9117e6d3514281c1cd17755fde89bb235ce2cceab5363de1d61e2df4540"
+    },
+    {
+      "path": "artifacts/native-preferences-keyboard-probe-v3/observations-v1/observations.jsonl",
+      "sha256": "e11fd14292b9cc61945b48fba6a613d8b9dd7f48f1bbc019e034032dde34440c"
+    },
+    {
+      "path": "artifacts/native-preferences-final-normal-v1/preparation.json",
+      "sha256": "01d4e0c6c55f7d1eebf1dcaa1589754581fa4ca6cb2c01651594eae1f318c8b0"
+    },
+    {
+      "path": "artifacts/native-preferences-final-normal-v1/cargo-fingerprint.json",
+      "sha256": "93533ca86ebbfbeaccd0ca5bb62fcba9ac95ebe89d77eff8276c60ec84990432"
+    },
+    {
+      "path": "artifacts/native-preferences-final-normal-v1/ready.png",
+      "sha256": "51d748908a017a0c7fc9472d4c2c4b9ae4ad8631d220e2d81793becf56f7b83d"
+    },
+    {
+      "path": "artifacts/native-preferences-final-normal-v1/reopened.png",
+      "sha256": "89e3ab9f7ee24f04e6992c5512c09e89d7c478454618a15a2e83963512ef9829"
+    },
+    {
+      "path": "artifacts/native-preferences-final-normal-v1/focus-recording.png",
+      "sha256": "7ad95af4777a66418007de3807b14ead6c54c416b313aeac4c338651a896d9cb"
+    },
+    {
+      "path": "artifacts/native-preferences-final-normal-v1/focus-model.png",
+      "sha256": "68a12878653ea3b0bc645a669aef7bd39a8b224fa72620f5b8f9e4aed4e4ef53"
+    },
+    {
+      "path": "artifacts/native-preferences-final-normal-v1/ready.ax.txt",
+      "sha256": "9f4915838443ec44fbbf8f32e2654738a726d4d8d274430fdd583f90a33a9bda"
+    }
+  ]
+}

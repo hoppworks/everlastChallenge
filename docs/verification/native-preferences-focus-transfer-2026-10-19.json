@@ -1,0 +1,421 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-preferences-focus-source-transfer",
+  "checkedAtUtc": "2026-10-19T19:01:14.558454+00:00",
+  "method": "Read-only immutable Git trees/blobs, actual artifact hashes and existing contract logs; no build/test/UI/ASR execution by this audit.",
+  "r11PackagingRevision": "9e1ba8a3092422edbcad368d20b9c9d33dfb9f8f",
+  "actualR11BuildInvocationHead": "68b07a91b7b17a2b3d2a41605b05998d9522f782",
+  "actualR11BuildScope": "reviewed pending measurement preparation + release manifest pin; no decoder/audio changes",
+  "targetSourceRevision": "b799936c0a399d07a0785ba7c736e3c3ca2c82a1",
+  "originalGlobalRun": {
+    "binarySha256": "3310f2a3ec37d44a767a10e93958f491e7aeb92aacc728a0c428a20955579081",
+    "sourceEvidence": {
+      "path": "docs/verification/single-press-global-2026-10-19.json",
+      "bytes": 4208,
+      "sha256": "0394312d4411bb80ff269ca847ceca5aa57b73dcf3003cd83b14a11c1bdeb8e5"
+    },
+    "rerun": false,
+    "retaggedToNewBinary": false,
+    "result": "passed-with-documented-recognition-errors",
+    "werEdits": 28,
+    "werReferenceWords": 425,
+    "exactRecipientUtf8Bytes": 3300
+  },
+  "sourceClosure": {
+    "r11PackagingPinsChecked": [
+      {
+        "path": "src-tauri/src/main.rs",
+        "r11PackagingSha256": "e8640cc74572c2ddcedbee5582e35d0b2f214631ef9362ed447f349d808f9a65",
+        "targetSha256": "e8640cc74572c2ddcedbee5582e35d0b2f214631ef9362ed447f349d808f9a65",
+        "targetBytes": 20738,
+        "byteEqual": true
+      },
+      {
+        "path": "src-tauri/src/run_observer.rs",
+        "r11PackagingSha256": "e52d953255dc12d5e6bcdf99fc88407321e1956aec4dacdf7c63b2b2bc24c195",
+        "targetSha256": "e52d953255dc12d5e6bcdf99fc88407321e1956aec4dacdf7c63b2b2bc24c195",
+        "targetBytes": 25061,
+        "byteEqual": true
+      },
+      {
+        "path": "src-tauri/src/desktop.rs",
+        "r11PackagingSha256": "941254c2f59bf7a89e9e1ce4676e4f50123e3d18356bf02c8b36668211406202",
+        "targetSha256": "941254c2f59bf7a89e9e1ce4676e4f50123e3d18356bf02c8b36668211406202",
+        "targetBytes": 96048,
+        "byteEqual": true
+      },
+      {
+        "path": "src-tauri/src/setup.rs",
+        "r11PackagingSha256": "d5e99eafa613a949a259872a227d5ca9b68bd6e3ec3bce12f31a47bbefaa1636",
+        "targetSha256": "d5e99eafa613a949a259872a227d5ca9b68bd6e3ec3bce12f31a47bbefaa1636",
+        "targetBytes": 50003,
+        "byteEqual": true
+      },
+      {
+        "path": "src-tauri/src/runtime.rs",
+        "r11PackagingSha256": "f295dbe31992e922dc9d924a20656acd2efb16e5cd548867cdbad868afc0b2d3",
+        "targetSha256": "f295dbe31992e922dc9d924a20656acd2efb16e5cd548867cdbad868afc0b2d3",
+        "targetBytes": 105979,
+        "byteEqual": true
+      },
+      {
+        "path": "src-tauri/src/pipeline.rs",
+        "r11PackagingSha256": "4b7286ae91fc923c495e574d1a7986b80bec56ac082f9900974f1fcb0f40210c",
+        "targetSha256": "4b7286ae91fc923c495e574d1a7986b80bec56ac082f9900974f1fcb0f40210c",
+        "targetBytes": 340,
+        "byteEqual": true
+      },
+      {
+        "path": "src-tauri/src/transcription.rs",
+        "r11PackagingSha256": "066433cff9911eb0a187f0949330988b2ae8379e7347e6bd4b5065e664518a86",
+        "targetSha256": "066433cff9911eb0a187f0949330988b2ae8379e7347e6bd4b5065e664518a86",
+        "targetBytes": 32251,
+        "byteEqual": true
+      },
+      {
+        "path": "src-tauri/src/model.rs",
+        "r11PackagingSha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2",
+        "targetSha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2",
+        "targetBytes": 17435,
+        "byteEqual": true
+      },
+      {
+        "path": "src-tauri/src/audio.rs",
+        "r11PackagingSha256": "231c0a517cc2b09296fc913a263c495e8b40ceeed51e211a9f22e2286bcecfb4",
+        "targetSha256": "231c0a517cc2b09296fc913a263c495e8b40ceeed51e211a9f22e2286bcecfb4",
+        "targetBytes": 43392,
+        "byteEqual": true
+      },
+      {
+        "path": "crates/macos-integration/src/native_preferences.rs",
+        "r11PackagingSha256": "f48dc3f5a49c012ded9915905d82923d37cb2d2c29665fbc79ce9fbfc21fb09a",
+        "targetSha256": "b0f23d1a025a2ea4bad47071ed75bd8cf515ecf94e89c8b7a9a80c8fa875878b",
+        "targetBytes": 29609,
+        "byteEqual": false
+      },
+      {
+        "path": "crates/macos-integration/src/native_workspace.rs",
+        "r11PackagingSha256": "decb6068164147924cfb3dd44a39fddebf3c420ab8fb4d160b5fb050811fa131",
+        "targetSha256": "decb6068164147924cfb3dd44a39fddebf3c420ab8fb4d160b5fb050811fa131",
+        "targetBytes": 34191,
+        "byteEqual": true
+      },
+      {
+        "path": "crates/macos-integration/src/target.rs",
+        "r11PackagingSha256": "121e98a191a2e8a70d9819c876efd8a95fb8b03ec69924809d352547770b4f06",
+        "targetSha256": "121e98a191a2e8a70d9819c876efd8a95fb8b03ec69924809d352547770b4f06",
+        "targetBytes": 49303,
+        "byteEqual": true
+      },
+      {
+        "path": "Cargo.lock",
+        "r11PackagingSha256": "19e2971bb7408845bdbd7b0130ef7b2db2f1b21338f2cf716dffa17bcb19a066",
+        "targetSha256": "19e2971bb7408845bdbd7b0130ef7b2db2f1b21338f2cf716dffa17bcb19a066",
+        "targetBytes": 129704,
+        "byteEqual": true
+      },
+      {
+        "path": "src-tauri/Cargo.toml",
+        "r11PackagingSha256": "7eaac8a83e39d8b111fdc49b29f1ad9d853766e0bf1728301f7617ed8d7d44e0",
+        "targetSha256": "7eaac8a83e39d8b111fdc49b29f1ad9d853766e0bf1728301f7617ed8d7d44e0",
+        "targetBytes": 1904,
+        "byteEqual": true
+      },
+      {
+        "path": "crates/macos-integration/Cargo.toml",
+        "r11PackagingSha256": "a2b71ee6f7de76712ff54ebaf370612c71a6d721c4f0a3d550aace952c70d8d2",
+        "targetSha256": "a2b71ee6f7de76712ff54ebaf370612c71a6d721c4f0a3d550aace952c70d8d2",
+        "targetBytes": 1835,
+        "byteEqual": true
+      },
+      {
+        "path": "src-tauri/src/native_service.rs",
+        "r11PackagingSha256": "0f1170cc247195d0304b223ffb972ce482602939f9339cf01e62889e88ab8ab3",
+        "targetSha256": "0f1170cc247195d0304b223ffb972ce482602939f9339cf01e62889e88ab8ab3",
+        "targetBytes": 63776,
+        "byteEqual": true
+      },
+      {
+        "path": "src-tauri/src/native_service/measurement.rs",
+        "r11PackagingSha256": "8de2d506608eeae2f8ae6867d2cd19080f52666c41a5cadf85dbb3b72cad217c",
+        "targetSha256": "8de2d506608eeae2f8ae6867d2cd19080f52666c41a5cadf85dbb3b72cad217c",
+        "targetBytes": 13838,
+        "byteEqual": true
+      },
+      {
+        "path": "crates/macos-integration/src/glass_header.rs",
+        "r11PackagingSha256": "6c5cd07b60be2191e82b80aaabf677de61e3a4a1e7abfc5b6449c0fecc7cf542",
+        "targetSha256": "6c5cd07b60be2191e82b80aaabf677de61e3a4a1e7abfc5b6449c0fecc7cf542",
+        "targetBytes": 17607,
+        "byteEqual": true
+      },
+      {
+        "path": "src-tauri/src/desktop/test_control.rs",
+        "r11PackagingSha256": "7b55f1c4dda07d45129b955c91e3f6df3042f0a5ce328e65b6160ea5bab607cc",
+        "targetSha256": "7b55f1c4dda07d45129b955c91e3f6df3042f0a5ce328e65b6160ea5bab607cc",
+        "targetBytes": 17681,
+        "byteEqual": true
+      }
+    ],
+    "r11ActualPreparationPinsChecked": 5,
+    "finalReferenceAsrPins": [
+      {
+        "path": "src-tauri/src/model.rs",
+        "sha256": "432d06a9fdad4c204f39ea11c28a155be04da062f068acdc4442a78a6ff8c2e2",
+        "bytes": 17435,
+        "equalR11AndTarget": true
+      },
+      {
+        "path": "src-tauri/src/pipeline.rs",
+        "sha256": "4b7286ae91fc923c495e574d1a7986b80bec56ac082f9900974f1fcb0f40210c",
+        "bytes": 340,
+        "equalR11AndTarget": true
+      },
+      {
+        "path": "src-tauri/src/transcription.rs",
+        "sha256": "066433cff9911eb0a187f0949330988b2ae8379e7347e6bd4b5065e664518a86",
+        "bytes": 32251,
+        "equalR11AndTarget": true
+      },
+      {
+        "path": "src-tauri/src/transcription/speech_gate.rs",
+        "sha256": "63448fa2d9afc7ae68031b9f7d505b693548cb975a2dc25c0b01c30908803d89",
+        "bytes": 10177,
+        "equalR11AndTarget": true
+      },
+      {
+        "path": "src-tauri/src/transcription/phase.rs",
+        "sha256": "9dcf72b29cf058466714e04b18ee27697dbb7080b0e8f384f5d85b71196e4a6b",
+        "bytes": 396,
+        "equalR11AndTarget": true
+      },
+      {
+        "path": "src-tauri/src/audio.rs",
+        "sha256": "231c0a517cc2b09296fc913a263c495e8b40ceeed51e211a9f22e2286bcecfb4",
+        "bytes": 43392,
+        "equalR11AndTarget": true
+      },
+      {
+        "path": "crates/dictation-core/src/audio.rs",
+        "sha256": "4b45e24678529d3e12914173b3d99395e8a2b7e2dcfffe077aec48d2b2ed9aeb",
+        "bytes": 8511,
+        "equalR11AndTarget": true
+      },
+      {
+        "path": "src-tauri/src/runtime.rs",
+        "sha256": "f295dbe31992e922dc9d924a20656acd2efb16e5cd548867cdbad868afc0b2d3",
+        "bytes": 105979,
+        "equalR11AndTarget": true
+      },
+      {
+        "path": "src-tauri/src/inference_service.rs",
+        "sha256": "f51915382161d372d04d3e8280434d1a5bb14b818f44063bad6c4a60fb958c97",
+        "bytes": 44677,
+        "equalR11AndTarget": true
+      },
+      {
+        "path": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+        "sha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e",
+        "bytes": 330873,
+        "equalR11AndTarget": true
+      },
+      {
+        "path": "vendor/whisper-rs/src/whisper_params.rs",
+        "sha256": "8e6e9dfcfe5212b9d3b96c3401502d1bd17e24ce4b55034c68bbbdf2cfdbfbb8",
+        "bytes": 34127,
+        "equalR11AndTarget": true
+      },
+      {
+        "path": "vendor/whisper-rs/src/whisper_vad.rs",
+        "sha256": "a4e481fac0b423ab532e3f4b8e3348a23e3134a10e4581ea3f383d6a81e6438d",
+        "bytes": 10152,
+        "equalR11AndTarget": true
+      },
+      {
+        "path": "Cargo.lock",
+        "sha256": "19e2971bb7408845bdbd7b0130ef7b2db2f1b21338f2cf716dffa17bcb19a066",
+        "bytes": 129704,
+        "equalR11AndTarget": true
+      }
+    ],
+    "treeComparisons": [
+      {
+        "path": "src-tauri",
+        "r11TreeObject": "51f8b011d116013468aafa1939e9e1b4566c0fbf",
+        "targetTreeObject": "51f8b011d116013468aafa1939e9e1b4566c0fbf",
+        "equal": true
+      },
+      {
+        "path": "crates/dictation-core",
+        "r11TreeObject": "5461ab703e0cc6488d2722a3d683aa641e73c32c",
+        "targetTreeObject": "5461ab703e0cc6488d2722a3d683aa641e73c32c",
+        "equal": true
+      },
+      {
+        "path": "crates/macos-integration/src",
+        "r11TreeObject": "4f1159e8a6c78183731c0721ac2a560e4c05e91e",
+        "targetTreeObject": "afb84ff7edc6a754d84d6f9ddc82b492fde04bb5",
+        "equal": false
+      },
+      {
+        "path": "vendor",
+        "r11TreeObject": "1ada2a636b5f12398cb05bc4f7dcb8e6970fca8a",
+        "targetTreeObject": "1ada2a636b5f12398cb05bc4f7dcb8e6970fca8a",
+        "equal": true
+      },
+      {
+        "path": ".cargo",
+        "r11TreeObject": "0c9ececf863c3762bf9c9d2b63a15bded64c6cb8",
+        "targetTreeObject": "0c9ececf863c3762bf9c9d2b63a15bded64c6cb8",
+        "equal": true
+      },
+      {
+        "path": "src",
+        "r11TreeObject": "607e029886b73bd030f3b15015606a9140e2fe67",
+        "targetTreeObject": "607e029886b73bd030f3b15015606a9140e2fe67",
+        "equal": true
+      },
+      {
+        "path": "config",
+        "r11TreeObject": "e25e20bbd3f058fbd8f11d351db3cc004501ffc1",
+        "targetTreeObject": "e25e20bbd3f058fbd8f11d351db3cc004501ffc1",
+        "equal": true
+      }
+    ],
+    "allDiffsWithinCheckedCodeBuildPrefixes": [
+      "A\tcrates/macos-integration/examples/native_preferences_keyboard_probe.rs",
+      "M\tcrates/macos-integration/examples/native_text_recipient.rs",
+      "M\tcrates/macos-integration/examples/single_press_watchdog.rs",
+      "M\tcrates/macos-integration/src/native_preferences.rs",
+      "M\tcrates/macos-integration/tests/native_clipboard_contract.rs",
+      "M\tcrates/macos-integration/tests/native_preferences_close_contract.rs"
+    ],
+    "onlyChangedNormalCompiledProductSource": "crates/macos-integration/src/native_preferences.rs",
+    "otherChangedCodeScope": "Three developer examples and two native test files; not normal app entrypoints. Repository documentation/scripts/security-scanner changes are not runtime source changes.",
+    "checkedRanges": [
+      "All tracked src-tauri tree (host source/build/config/resources/examples) byte-identical by immutable Git tree identity.",
+      "All tracked dictation-core tree, vendor, .cargo, src and config trees byte-identical.",
+      "macos-integration/src complete tree differs only native_preferences.rs; its exact diff is bound below.",
+      "Root Cargo/npm lockfiles/manifests and macos-integration Cargo.toml byte-identical."
+    ]
+  },
+  "productDelta": {
+    "path": "crates/macos-integration/src/native_preferences.rs",
+    "previousSha256": "f48dc3f5a49c012ded9915905d82923d37cb2d2c29665fbc79ce9fbfc21fb09a",
+    "targetSha256": "b0f23d1a025a2ea4bad47071ed75bd8cf515ecf94e89c8b7a9a80c8fa875878b",
+    "diffSha256": "3794e3929961ed70c72c2dbb000e6121b8ed0ae84a61f0aecacaec0920d4ca6a",
+    "addedLines": 11,
+    "removedLines": 0,
+    "targetShowRange": {
+      "start": 753,
+      "end": 773
+    },
+    "predicate": "After existing activate and makeKeyAndOrderFront, set already-configured initialFirstResponder only if no responder or responder is own NSWindow.",
+    "preserved": "Existing control/text responder is retained; no FullKeyboardAccess/system setting change, no pipeline/permission/hotkey/target/delivery change.",
+    "caller": "src-tauri/src/main.rs NativeUi::update calls show only when Desktop settings-request counter advances."
+  },
+  "existingFeedback": {
+    "verification": {
+      "path": "artifacts/native-preferences-show-focus-fix-v1/verification.json",
+      "bytes": 1946,
+      "sha256": "aec16cbe090c603ed416f499fe83e571e28b09e2669d6c86f91a445e31c32167"
+    },
+    "red": {
+      "path": "artifacts/native-preferences-show-focus-fix-v1/red.log",
+      "bytes": 664,
+      "sha256": "d37a7856f56dbbafafaf8c7aa963b440bd628d3d5639fc02b0d9fd6894076b43"
+    },
+    "redAssertion": "show/reopen did not establish the configured initial tab responder",
+    "green": {
+      "path": "artifacts/native-preferences-show-focus-fix-v1/green.log",
+      "bytes": 714,
+      "sha256": "6a2a481b7159f21052208b789f584cab4425a852065b61ab9239d9b74f4dea7e"
+    },
+    "greenScope": "Own-window initial/reopen three cycles, main visible, existing owned editor responder preserved; standard NativePreferences contract also ran.",
+    "clippy": {
+      "path": "artifacts/native-preferences-show-focus-fix-v1/clippy.log",
+      "bytes": 181,
+      "sha256": "3c4877de81dfe92d56d8407d7e763d1db2f1e73907291b25d6c28bd113e39987"
+    },
+    "review": "Independent targeted source review reported closed by Root; this transfer does not replace that review or a new installed UI readback.",
+    "standaloneProbePreparation": {
+      "path": "artifacts/native-preferences-keyboard-probe-v3/preparation.json",
+      "bytes": 526,
+      "sha256": "f81b0c99729acf13141fdbcdeb0500d06bf27ca42d16311c0385c58fdb6692ef"
+    },
+    "standaloneProbeLimit": "Root-observed arrows/space tab change and blue focus ring concern own probe; no new product G-run or ASR claim."
+  },
+  "newArtifact": {
+    "preparation": {
+      "path": "artifacts/native-preferences-final-normal-v1/preparation.json",
+      "bytes": 1479,
+      "sha256": "01d4e0c6c55f7d1eebf1dcaa1589754581fa4ca6cb2c01651594eae1f318c8b0"
+    },
+    "binary": {
+      "path": "artifacts/native-preferences-final-normal-v1/Everlast Dictation.app/Contents/MacOS/everlast-dictation",
+      "bytes": 16019104,
+      "sha256": "709da0a462109526edbffbaa190f41718add6b8a657dd4b17a5a7f957d282e63"
+    },
+    "sourceRevision": "b799936c0a399d07a0785ba7c736e3c3ca2c82a1",
+    "fingerprint": {
+      "path": "artifacts/native-preferences-final-normal-v1/cargo-fingerprint.json",
+      "bytes": 1645,
+      "sha256": "93533ca86ebbfbeaccd0ca5bb62fcba9ac95ebe89d77eff8276c60ec84990432"
+    },
+    "features": [
+      "default"
+    ],
+    "measurementFeature": false,
+    "testControlFeature": false,
+    "LSEnvironment": false,
+    "normalBuildLog": {
+      "path": "artifacts/native-preferences-show-focus-fix-v1/normal-build.log",
+      "bytes": 2869,
+      "sha256": "15a8a00e1089accaf2bb6335120e34ea83fb0dba8ea0a2d7beb17e0711c9eed1"
+    },
+    "signatureScope": "Existing Root build/sign verification; no signing executed by this audit.",
+    "installedVisibleUiReadback": {
+      "path": "docs/verification/native-preferences-keyboard-2026-10-19.json",
+      "bytes": 6035,
+      "sha256": "d112bea0cfdd19d301f7974170288704c47548f94865eda113791eda79ffc397",
+      "statusReportedByRoot": "passed",
+      "installedProcessId": 30267,
+      "scope": "Actual native focus ring, arrow/Space tab navigation, reopen, retained permissions and ready/empty state; no microphone/global run.",
+      "independentDeltaReview": "r8_artifact_review: product/contract/probe review and independent hash/screenshot/JSONL review passed; actual installed native tab focus and selection confirmed. P02G/P09 closure supported with prior A23/layout/material/key contracts."
+    },
+    "physicalGlobalRunExecuted": false,
+    "installedUiSummary": {
+      "initialFocusedTab": "Berechtigungen",
+      "rightArrowFocus": "Modell",
+      "spaceSelectsFocusedTab": true,
+      "leftArrowOrder": [
+        "Modell",
+        "Berechtigungen",
+        "Aufnahme"
+      ],
+      "reopenRetainsFocusedTab": true,
+      "visualFocusRingConfirmed": true,
+      "permissionMicrophone": "granted",
+      "permissionAccessibility": "granted",
+      "restoredState": "Bereit zum Diktieren",
+      "microphone": "Systemstandard",
+      "language": "Deutsch",
+      "hotkey": "Option D",
+      "transcriptEmpty": true
+    }
+  },
+  "decision": {
+    "unchangedReferenceAsrAudioHotkeyTargetDeliverySourceTransferSupported": true,
+    "repeatPhysicalGlobalOrQualityRunRequiredByThisDelta": false,
+    "newBinaryGlobalPassClaimed": false,
+    "uiAcceptanceComplete": true,
+    "P10Complete": false,
+    "P11Complete": false,
+    "personalReviewComplete": false
+  },
+  "limits": [
+    "New executable differs from original R11. Source transfer is not byte-identical binary behavior/performance or a re-executed global test.",
+    "NativePreferences.show affects explicit settings-window opening, not microphone/decode/target/delivery. Actual installed focus/reopen readback and independent source/hash/screenshot/JSONL review are passed; final P10/P11 document/archive closure remains separate.",
+    "Historical original G/failed attempts/quality and R11 package JSON/ZIP remain untouched; no result is retagged."
+  ]
+}

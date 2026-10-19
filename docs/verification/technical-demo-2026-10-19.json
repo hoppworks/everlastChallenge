@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "kind": "bound-technical-demo-index",
+  "normalCandidateBinarySha256": "709da0a462109526edbffbaa190f41718add6b8a657dd4b17a5a7f957d282e63",
+  "sourceRevision": "b799936c0a399d07a0785ba7c736e3c3ca2c82a1",
+  "newLiveDemoExecutedByThisIndex": false,
+  "scenarios": [
+    {
+      "scenario": "Globaler Start, Vorwarnung, Maximalstopp und Empfang",
+      "evidenceKind": "G – tatsächlich normaler R11-Build",
+      "observedScope": "Ein physischer Start, Warnung270274ms, Stoppbeobachtung300194.963ms,3300UTF8Bytes genau einmal identisch empfangen. WER28/425=6.59%; keine Fehlerfreiheit.",
+      "path": "docs/verification/single-press-global-2026-10-19.json",
+      "sha256": "0394312d4411bb80ff269ca847ceca5aa57b73dcf3003cd83b14a11c1bdeb8e5"
+    },
+    {
+      "scenario": "Stop/Cancel und Neustart",
+      "evidenceKind": "S/N – produktive Actor-/Audio-/Inferenzgrenzen",
+      "observedScope": "Kontrollierter maximaler Abschluss und wiederholte Abbruch-/Neustartkette; veraltete Facts/Transkripte ohne zweite Lieferung.",
+      "path": "docs/verification/runtime-host-contracts.md",
+      "sha256": "cb2487733c9d55f64e68aad02877db606530b9d4c17896b708f64e2a0d95eb34"
+    },
+    {
+      "scenario": "Fokuswechsel und fehlendes Startziel",
+      "evidenceKind": "S/N – echte Target-/Deliveryentscheidungen",
+      "observedScope": "Negative/unklare Felder, fremde Prozessidentität und geändertes Ziel zurückhalten; kein späteres Ersatzziel. Keine pauschale Fremd-App-Kompatibilität.",
+      "path": "docs/verification/target-compatibility-2026-10-19.md",
+      "sha256": "1b7bb1b9e09e715eb1c9786ed36f204798a555ca5a2c23ae19dd86a84423d0e5"
+    },
+    {
+      "scenario": "Kurzsprache und Stille",
+      "evidenceKind": "F – festes Referenzkorpus",
+      "observedScope": "Qualifizierte Referenz einschließlich festgelegter kurzer Sprache und Empty/Room-Fälle; keine erneute Messung für unveränderten Decoderinput.",
+      "path": "docs/verification/p05-reference-qualification-v1.md",
+      "sha256": "49d357f84af42c4de107c86137e43081f8aa0e66a7498ac6bdec14cbc9507cb6"
+    },
+    {
+      "scenario": "Kopieren und native Befehle",
+      "evidenceKind": "N – eigene AppKit-Objekte",
+      "observedScope": "⌘R Start/Stop, Esc Cancel, ⌘, Einstellungen, ⌘⇧C bewusste Kopieraktion; gewöhnliches⌘C verbleibt beim Textauswahlresponder.",
+      "path": "docs/verification/native-keyboard-2026-10-19.json",
+      "sha256": "bdde16fc46c8f91794b1a7dc020727b8f91cfd713b1600fa4015c3adf19d5ec8"
+    },
+    {
+      "scenario": "Clipboard-Erhaltung und konkurrierender Schreiber",
+      "evidenceKind": "N – eigenes privates Pasteboard/zweiter Prozess",
+      "observedScope": "OwnershipChanged erhält fremden Sentinel; kontrolliertes privates Pasteboard ist keine Behauptung, die Benutzerzwischenablage sei im Demoindex verändert worden.",
+      "path": "docs/verification/native-background-clipboard-writer-2026-10-19.json",
+      "sha256": "0147e5cfc706f83d99fd220147af88f05a9b33fd0f3f2d642cdcf46038f76d5a"
+    },
+    {
+      "scenario": "Setup-/Transport-/Speicherfehler und lokaler Betrieb",
+      "evidenceKind": "S/N – reale Setup-/Datei-/Inference-Adapter",
+      "observedScope": "Vorhandener Cache und reale lokale Inferenz bei verweigertem Downloadtransport; Fehler-/Retryfälle im ergänzten Offline-Vertragsbeleg.",
+      "path": "docs/verification/offline-setup-inference-2026-10-19.md",
+      "sha256": "c75e6c0604025ca6d5885aa9774a4bc878057d0233348536bc3146d8647484f7"
+    },
+    {
+      "scenario": "Native Tabs, Fokus und Wiederöffnen",
+      "evidenceKind": "N + tatsächliche Sichtprüfung des neuen normalen Builds",
+      "observedScope": "Pfeile verschieben sichtbaren Tab-Fokus, Leertaste wählt aus, ⌘W/⌘, schließen/öffnen; Freigaben erhalten, keine OS-Einstellungen geändert.",
+      "path": "docs/verification/native-preferences-keyboard-2026-10-19.json",
+      "sha256": "d112bea0cfdd19d301f7974170288704c47548f94865eda113791eda79ffc397"
+    }
+  ],
+  "limits": [
+    "This index consolidates actually executed evidence; it is not a newly performed live demo or a video.",
+    "Original G remains bound to R11 SHA3310…; use explicit UI-only source transfer for current709da… candidate.",
+    "Long noise-tail hallucination and slower inference remain disclosed."
+  ],
+  "supplementalEvidence": [
+    {
+      "path": "docs/verification/offline-contracts-2026-10-19.md",
+      "sha256": "6d14079b3ab56b0ede1b0813ca5b262f093a5f7b576b55294cfa142ffc218025"
+    },
+    {
+      "path": "docs/verification/native-preferences-focus-transfer-2026-10-19.json",
+      "sha256": "fc2c9a4988acabf3e2b98cf7221a68bd1d3336a6cfa4cff4b399c92edc79a34d"
+    },
+    {
+      "path": "docs/verification/native-private-clipboard-2026-10-19.md",
+      "sha256": "d9b5358e61cd53f09bd9fd8584918a52fafec276aa6872776bcaf28f4b06024f"
+    },
+    {
+      "path": "docs/verification/long-noise-isolation-2026-10-19.md",
+      "sha256": "b3f003a1721cf8a1e8e3e961ea245d7a56f541891a9af1476e4dd3cfb04ce6a5"
+    }
+  ]
+}

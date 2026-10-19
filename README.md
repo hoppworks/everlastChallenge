@@ -2,16 +2,22 @@
 
 Native Diktier-App für Apple Silicon und macOS 27. Rust/Tauri 2 mit nativer AppKit-Oberfläche, lokale Whisper-Inferenz und systemnahe Audioaufnahme/Textübergabe.
 
+Abweichung vom Originalauftrag: Dort ist eine Oberfläche in TypeScript verlangt.
+Die auf Nutzerwunsch umgestellte ausgelieferte Oberfläche verwendet Rust/AppKit;
+TypeScript-Verträge und die frühere Webansicht bleiben im Repository. Die native
+Version erfüllt diese ursprüngliche Technologieformulierung daher nicht wörtlich.
+
 Lokale Testversion mit Deutsch, globalem ⌥D, Escape-Abbruch und automatischem
 Stopp nach fünf Minuten. Fenster und Einstellungen verwenden echte
 AppKit-Steuerelemente. Modelle werden einmal ausdrücklich eingerichtet;
 danach arbeitet die Erkennung lokal.
 
-Aktueller Kandidat: **Everlast-Dictation-Testversion-0.1.0-native-9e1ba8a-r11.zip**
+Aktueller Kandidat: **Everlast-Dictation-Testversion-0.1.0-native-b799936-r12.zip**
 in `~/Downloads/`. [Installation und Nutzung](TESTVERSION.md),
-[Paket und Prüfsummen](docs/verification/testversion-package-r11.md).
-Kein öffentlicher Download. R11 ist gebaut, lokal signiert und nach ZIP-
-Rundlauf geprüft und unter `/Applications/Everlast Dictation.app` installiert.
+[Paket und Prüfsummen](docs/verification/testversion-package-r12.md).
+Kein öffentlicher Download. Der normale R12-Build ist lokal signiert und unter
+`/Applications/Everlast Dictation.app` installiert; die neue Paketprüfung wird im
+verlinkten Paketnachweis gebunden. R11 bleibt als getesteter Vorgänger erhalten.
 Die vorhandenen Mikrofon- und Accessibility-Freigaben sind erhalten geblieben.
 Die vorhandene lokale Signieridentität bleibt erhalten;
 kein Developer-Account oder neuer Zertifikatsassistent ist nötig. Die App ist
@@ -78,10 +84,6 @@ Qualitäts- und Echtzeitabnahme getrennt; Small-Metal zeigt noch eine dokumentie
 numerische Oracle-Abweichung.
 
 ## Fehler beheben
-
-Die folgenden Schritte beschreiben den aktuellen Quellstand. Installiert ist
-der normale R11-Kandidat mit Binärhash `3310f2a3…55579081`; R6 bleibt separat als historisches Testpaket
-verfügbar. Die vollständige Produkt- und Installationsabnahme steht noch aus.
 
 | Beobachtung | Nächster Schritt |
 | --- | --- |
