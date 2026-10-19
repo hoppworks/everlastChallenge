@@ -8,12 +8,12 @@ use objc2::{
 };
 use objc2_app_kit::{
     NSApplication, NSApplicationActivationPolicy, NSApplicationDelegate, NSBackingStoreType,
-    NSBorderType, NSMenu, NSMenuItem, NSResponder, NSScrollView, NSTextField, NSTextView, NSView,
-    NSWindow, NSWindowStyleMask,
+    NSBorderType, NSButton, NSMenu, NSMenuItem, NSResponder, NSScrollView, NSTextField, NSTextView,
+    NSView, NSWindow, NSWindowStyleMask, NSWorkspace,
 };
 use objc2_foundation::{
-    NSNotification, NSObject, NSObjectProtocol, NSPoint, NSRect, NSRunLoop, NSRunLoopCommonModes,
-    NSSize, NSString, NSTimer,
+    NSBundle, NSNotification, NSObject, NSObjectProtocol, NSPoint, NSRect, NSRunLoop,
+    NSRunLoopCommonModes, NSSize, NSString, NSTimer,
 };
 
 use std::{
@@ -36,6 +36,8 @@ struct Snapshot {
     monotonic_since_launch_nanos: u128,
     process_id: u32,
     application_active: bool,
+    frontmost_is_self: bool,
+    own_bundle_identifier: Option<String>,
     window_key: bool,
     focused_field: &'static str,
     expected_sentence_matches: bool,
@@ -140,11 +142,24 @@ impl ReportDirectory {
             return Err(io::Error::other("invalid bounded report"));
         }
         self.verify()?;
+        let bundle = match snapshot.own_bundle_identifier.as_deref() {
+            Some(id)
+                if !id.is_empty()
+                    && id.len() <= 255
+                    && id
+                        .bytes()
+                        .all(|b| b.is_ascii_alphanumeric() || b"._-".contains(&b)) =>
+            {
+                format!("\"{id}\"")
+            }
+            Some(_) => return Err(io::Error::other("invalid bounded own bundle identifier")),
+            None => "null".to_owned(),
+        };
         let bytes = format!(
             concat!(
                 "{{\"schemaVersion\":1,\"kind\":\"everlast-own-native-recipient-status\",",
                 "\"sequence\":{},\"observedUnixMillis\":{},\"monotonicSinceLaunchNanos\":{},\"processId\":{},",
-                "\"applicationActive\":{},\"windowKey\":{},\"focusedField\":\"{}\",",
+                "\"applicationActive\":{},\"frontmostIsSelf\":{},\"ownBundleIdentifier\":{},\"windowKey\":{},\"focusedField\":\"{}\",",
                 "\"expectedSentenceMatches\":{},\"expectedSentenceOccurrences\":{},\"shortcutCharacterPresent\":{},",
                 "\"running\":{},\"status\":\"{}\",\"publicExpectedSentenceId\":\"fleurs-de-dev-1517\",",
                 "\"scope\":\"own-window-only; not foreign target capture or delivery proof\"}}\n"
@@ -154,6 +169,8 @@ impl ReportDirectory {
             snapshot.monotonic_since_launch_nanos,
             snapshot.process_id,
             snapshot.application_active,
+            snapshot.frontmost_is_self,
+            bundle,
             snapshot.window_key,
             snapshot.focused_field,
             snapshot.expected_sentence_matches,
@@ -259,6 +276,14 @@ impl Reporting {
             monotonic_since_launch_nanos: self.started.elapsed().as_nanos(),
             process_id: std::process::id(),
             application_active: self.app.isActive(),
+            frontmost_is_self: NSWorkspace::sharedWorkspace()
+                .frontmostApplication()
+                .is_some_and(|frontmost| {
+                    i64::from(frontmost.processIdentifier()) == i64::from(std::process::id())
+                }),
+            own_bundle_identifier: NSBundle::mainBundle()
+                .bundleIdentifier()
+                .map(|id| id.to_string()),
             window_key: self.window.isKeyWindow(),
             focused_field: focused,
             expected_sentence_matches: matches,
@@ -334,6 +359,32 @@ define_class!(
                 if let Some(reporter) = self.ivars().borrow().as_ref() { reporter.stop(); }
             }));
             if result.is_err() { eprintln!("Own-recipient final observation failed"); }
+        }
+    }
+);
+struct OwnField {
+    app: Retained<NSApplication>,
+    window: Retained<NSWindow>,
+    text: Retained<NSTextView>,
+}
+define_class!(
+    #[unsafe(super(NSObject))]
+    #[thread_kind = MainThreadOnly]
+    #[ivars = OwnField]
+    struct ActivateOwnField;
+    unsafe impl NSObjectProtocol for ActivateOwnField {}
+    impl ActivateOwnField {
+        #[unsafe(method(activateTestField:))]
+        fn activate_test_field(&self, _: &NSObject) {
+            // Only an explicit action activates our own application and controls.
+            // The observation timer never invokes this selector.
+            let result = catch_unwind(AssertUnwindSafe(|| {
+                let own = self.ivars();
+                own.app.activate();
+                own.window.makeKeyAndOrderFront(None);
+                own.window.makeFirstResponder(Some(&own.text));
+            }));
+            if result.is_err() { eprintln!("Own test field activation failed"); }
         }
     }
 );
@@ -434,8 +485,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     ));
     body.addSubview(&label(
         main,
-        "Feld anklicken, dann Everlasts Kürzel zum Starten und Stoppen verwenden.",
-        NSRect::new(NSPoint::new(20.0, 338.0), NSSize::new(600.0, 22.0)),
+        "Eigenes Testfeld aktivieren, dann Test auslösen.",
+        NSRect::new(NSPoint::new(20.0, 338.0), NSSize::new(400.0, 22.0)),
     ));
     body.addSubview(&label(
         main,
@@ -471,6 +522,25 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     line.setSelectable(true);
     line.setBezeled(true);
     body.addSubview(&line);
+    let allocated = ActivateOwnField::alloc(main).set_ivars(OwnField {
+        app: app.clone(),
+        window: window.clone(),
+        text: text.clone(),
+    });
+    // SAFETY: initialize the declared own main-thread NSObject target.
+    let activation: Retained<ActivateOwnField> = unsafe { msg_send![super(allocated), init] };
+    let activate_button = NSButton::initWithFrame(
+        main.alloc(),
+        NSRect::new(NSPoint::new(435.0, 334.0), NSSize::new(185.0, 28.0)),
+    );
+    activate_button.setTitle(&NSString::from_str("Testfeld aktivieren"));
+    // SAFETY: retained target outlives the run loop, and its selector has the
+    // standard single-object action signature. It only touches owned AppKit objects.
+    unsafe {
+        activate_button.setTarget(Some(&activation));
+        activate_button.setAction(Some(sel!(activateTestField:)));
+    }
+    body.addSubview(&activate_button);
     window.setContentView(Some(&body));
     window.center();
     window.makeFirstResponder(Some(&text));
@@ -555,6 +625,8 @@ mod tests {
             monotonic_since_launch_nanos: 31,
             process_id: 123,
             application_active: true,
+            frontmost_is_self: false,
+            own_bundle_identifier: Some("org.example.own-test-recipient".into()),
             window_key: true,
             focused_field: "multiline",
             expected_sentence_matches: true,
@@ -578,6 +650,11 @@ mod tests {
             first.contains("\"sequence\":1"),
             "explicit report did not publish its first snapshot"
         );
+        assert!(
+            first.contains("\"frontmostIsSelf\":false"),
+            "active/key state alone must not imply actual frontmost identity"
+        );
+        assert!(first.contains("\"ownBundleIdentifier\":\"org.example.own-test-recipient\""));
         assert_eq!(fs::metadata(&path)?.mode() & 0o777, 0o700);
         assert_eq!(
             fs::metadata(path.join("snapshot.json"))?.mode() & 0o777,

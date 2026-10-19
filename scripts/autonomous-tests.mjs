@@ -137,6 +137,7 @@ export function validateRecipient(
     value.running === true &&
     value.status === "observed" &&
     value.applicationActive === true &&
+    value.frontmostIsSelf === true &&
     value.windowKey === true &&
     ["multiline", "singleline"].includes(value.focusedField) &&
     value.publicExpectedSentenceId === "fleurs-de-dev-1517";

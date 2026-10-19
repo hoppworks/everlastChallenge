@@ -77,6 +77,8 @@ test("fresh own-window evidence permits readiness but never proves delivery", ()
     running: true,
     status: "observed",
     applicationActive: true,
+    frontmostIsSelf: true,
+    ownBundleIdentifier: "org.example.own-test-recipient",
     windowKey: true,
     focusedField: "multiline",
     publicExpectedSentenceId: "fleurs-de-dev-1517",
@@ -122,6 +124,31 @@ test("fresh own-window evidence permits readiness but never proves delivery", ()
   assert.equal(
     validateRecipient(evidence, now, () => true).automaticDeliveryProven,
     false,
+  );
+});
+
+test("active key window without own frontmost identity is not ready", () => {
+  const evidence = {
+    schemaVersion: 1,
+    kind: "everlast-own-native-recipient-status",
+    observedUnixMillis: 10000,
+    processId: 123,
+    running: true,
+    status: "observed",
+    applicationActive: true,
+    windowKey: true,
+    focusedField: "multiline",
+    publicExpectedSentenceId: "fleurs-de-dev-1517",
+    frontmostIsSelf: false,
+    ownBundleIdentifier: "org.example.own-test-recipient",
+  };
+  assert.equal(validateRecipient(evidence, 10000, () => true).ready, false);
+  const { frontmostIsSelf: _missing, ...historical } = evidence;
+  assert.equal(validateRecipient(historical, 10000, () => true).ready, false);
+  assert.equal(
+    validateRecipient({ ...evidence, frontmostIsSelf: true }, 10000, () => true)
+      .ready,
+    true,
   );
 });
 

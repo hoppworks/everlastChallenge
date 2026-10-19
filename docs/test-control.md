@@ -4,7 +4,7 @@ This is an explicit developer test interface, not a production command surface o
 
 ## Enable deliberately
 
-Use a separately built/signed developer app with `test-control` enabled. Set `EVERLAST_TEST_CONTROL_DIR` in that app process's startup environment to an **existing canonical absolute directory** owned by the same user, mode `0700`. Do not replace the ordinary installed app merely to enable this interface.
+Use an explicitly selected, separately built/signed developer app with `test-control` enabled; preserve the ordinary build before an authorized installation change. Set `EVERLAST_TEST_CONTROL_DIR` in that app process's startup environment to an **existing canonical absolute directory** owned by the same user, mode `0700`.
 
 Before launch, create `config.json` as an owned regular file, mode `0600`, at most 256 bytes:
 
