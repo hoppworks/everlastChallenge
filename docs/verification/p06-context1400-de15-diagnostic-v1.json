@@ -165,7 +165,7 @@
   ],
   "textHashesStableWithinEachArm": true,
   "referenceAndCandidateTextHashesDiffer": true,
-  "textQualityVerdict": null,
+  "textQualityVerdict": "Per-case regression established via exact hash bridge to existing public hypotheses: 2/24 to6/24 word edits, four added normalized words.",
   "powerAfter": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23461987)\t82%; AC attached; not charging present: true\n",
   "limits": [
     "Already exposed single DE15 fixture; not fresh corpus acceptance.",
@@ -188,5 +188,12 @@
       "stable within-arm hashes differing between arms"
     ],
     "qualityVerdict": null
+  },
+  "contentFollowup": {
+    "evidence": "p06-context1400-existing-content-bridge-v1.json",
+    "ASRExecuted": false,
+    "previouslyExistingReadbackWasOverlooked": true,
+    "newDiagnosticWasAvoidableDuplicate": true,
+    "newOutputHashesExactlyMatchExistingScoredText": true
   }
 }

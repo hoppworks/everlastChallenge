@@ -42,25 +42,30 @@ Daraus folgt weder bessere noch schlechtere Erkennung; insbesondere ist
 Qualitätsneutralität nicht belegt. Der DE10-Fall mit gleichen Hashes ist
 kein Ersatz für diesen Unterschied und keine allgemeine Qualitätsfreigabe.
 
-## Nächster technischer Schritt
+## Korrektur: vorhandene Inhalts- und Kombinationsbelege wiedergefunden
 
-Ein unabhängig durchgeführter enger Source-Readback hält einen kurzen
-measurement-only Kombinationspilot mit Full-Prefix technisch für möglich.
-Der vorhandene Kontextpatch allein erreicht aber nur `transcribe_profiled_context`,
-nicht die PrefixCache-Misses. Er darf nicht als fertige Kombination ausgegeben
-werden. Notwendig wären feste Kontextpolicy am Engine-/Cache-Konstruktor,
-normaler Energie-/VAD-/Vorbereitungspfad vor Auswahl, Modellkontext 1500,
-explizite Grenze von 1 bis 320000 vorbereiteten Frames und Kontextbindung in
-Cachekey/Receipt. Kein stiller Referenzfallback und keine Änderung der
-Produktionsloader oder `APP_POLICY`.
+Die oben beschriebene Ungewissheit war zum Zeitpunkt dieses Readbacks eine
+Wissenslücke der Session. Der [frühere Futilitybericht](p06-context1400-futility-2026-10-19.md)
+enthält bereits einen tatsächlichen Single-/FullPrefix-Kombinationspilot und
+seine Offline-Inhaltsprüfung. Diese Belege wurden bei der Planung übersehen.
+Der neue Dateipilot war deshalb eine vermeidbare Wiederholung; seine Rohwerte
+bleiben unverändert erhalten und werden nicht als notwendige neue Abnahme ausgegeben.
 
-Wegen des neuen DE15-Textunterschieds zuerst ein kleiner inhaltlicher Vergleich
-beider festen Modi gegen dasselbe Gold mit bestehender Normalisierung;
-erst danach gegebenenfalls ein kurzer echter paced Kombinationspilot.
-Kein neuer langer Qualitätslauf aus diesem Befund. Die isolierten 6–8 %
-Zeitgewinn garantieren keinen Durchbruch: Im historischen Full-Prefix-Lauf
-fehlen DE10 rund 8,34 % und DE15 rund 9,40 % bis zur absoluten Grenze.
-Zeitanteile unterschiedlicher Aufbauten dürfen nicht einfach verrechnet werden.
+Der [Offline-Hashtransfer](p06-context1400-existing-content-bridge-v1.json)
+prüft alle zwölf damaligen Eingabepins erneut und bindet jede der 16 neuen
+DE15-Ausgaben bytegenau über ihren Texthash an die vorhandenen Hypothesen.
+Unverändertes eingefrorenes quality.py mit Unicode 13 bestätigt gegen dasselbe
+Gold: Referenz 2/24 Fehler = 8,3333 %, Kandidat 6/24 = 25 %. Vier zusätzliche
+normalisierte Wörter, keine bloße Interpunktion. **Die DE15-Qualität ist in
+diesem konkreten Fall schlechter.** Keine Aussage über gesamte Korpus-WER.
+
+Die zuvor vorgeschlagene erneute Inhaltsausgabe und der anschließende
+Kombinationspilot sind damit überholt. Vorbereitete separate Ausgabeerweiterung
+vor Build/ASR verworfen, generierte Sourcekopie entfernt. Keine weitere Messung
+der unveränderten Variante aus diesem Befund. Der vorhandene Kombinationspilot
+verfehlte bereits die beobachtete Stop-bis-Text-Grenze. Keine Aktivierung;
+Leistungsproblem bleibt technisch offen und verlangt einen anderen begründeten
+Ansatz oder eine ausdrückliche Produktentscheidung.
 
 Produktquelle, installierte R4-App und Reference-Konfiguration unverändert.
 P06 sowie Gesamtabschluss bleiben offen.

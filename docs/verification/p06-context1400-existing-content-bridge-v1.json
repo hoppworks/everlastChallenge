@@ -1,0 +1,85 @@
+{
+  "kind": "existing-content-to-new-diagnostic-hash-bridge",
+  "checkedAtUtc": "2026-10-19T10:53:41.251942+00:00",
+  "ASRExecuted": false,
+  "buildExecuted": false,
+  "qualified": false,
+  "L": null,
+  "existingReadback": {
+    "path": "artifacts/p06-context1400-futility-v1/revision-v2/execution-v1/de15-quality-readback-v1.json",
+    "sha256": "cd0981d96d601e8c55ef5891d83c4970531747bba435559d6f36702eb8ba4b8c",
+    "all12InputBindingsReverified": true
+  },
+  "unicodeVersion": "13.0.0",
+  "scoring": "unchanged frozen quality.py; old public hypothesis text linked by exact UTF8 SHA256 to every new diagnostic row",
+  "cases": [
+    {
+      "fixtureId": "fleurs-de-test-1663",
+      "newDiagnosticRowsMatchedToExistingText": 16,
+      "scores": {
+        "reference": {
+          "textSha256": "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+          "edits": 4,
+          "refWords": 21,
+          "wer": 0.19047619047619047,
+          "insertions": 1,
+          "deletions": 0,
+          "substitutions": 3
+        },
+        "candidate1400": {
+          "textSha256": "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+          "edits": 4,
+          "refWords": 21,
+          "wer": 0.19047619047619047,
+          "insertions": 1,
+          "deletions": 0,
+          "substitutions": 3
+        }
+      },
+      "normalizedCandidateEqualsReference": true
+    },
+    {
+      "fixtureId": "fleurs-de-test-1668",
+      "newDiagnosticRowsMatchedToExistingText": 16,
+      "scores": {
+        "reference": {
+          "textSha256": "767a99e37ff3d574fb3c12d7bb90b120d499d5355bcbab7fa94f208e0fea3340",
+          "edits": 2,
+          "refWords": 24,
+          "wer": 0.08333333333333333,
+          "insertions": 0,
+          "deletions": 1,
+          "substitutions": 1
+        },
+        "candidate1400": {
+          "textSha256": "ceaf7baac48dbdffe8a67c6254720f9606600cb6ff3dc456291bac844d0a2439",
+          "edits": 6,
+          "refWords": 24,
+          "wer": 0.25,
+          "insertions": 4,
+          "deletions": 1,
+          "substitutions": 1
+        }
+      },
+      "normalizedCandidateEqualsReference": false
+    }
+  ],
+  "conclusion": "DE15 outputs exactly match previously scored regression:2/24 to6/24 word errors; DE10 unchanged4/21. No further combination or quality rerun justified for this unchanged variant.",
+  "limits": [
+    "Per-case result, not corpus-WER",
+    "No new performance acceptance",
+    "Earlier duplicate pilots preserved, not relabeled as necessary new evidence"
+  ],
+  "independentReadback": {
+    "result": "no findings",
+    "verified": [
+      "old readback SHA256",
+      "all12historical input bindings",
+      "Unicode13",
+      "all32new output hash rows",
+      "DE10 4/21 unchanged",
+      "DE15 2/24 to6/24 regression"
+    ],
+    "newASRRequired": false
+  }
+}

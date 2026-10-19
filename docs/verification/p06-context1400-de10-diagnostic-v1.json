@@ -176,5 +176,12 @@
       "ascending output mtimes"
     ],
     "limitation": "Separate process start/end timestamps were not retained; strict non-overlap is not independently proven from these artifacts alone."
+  },
+  "contentFollowup": {
+    "evidence": "p06-context1400-existing-content-bridge-v1.json",
+    "ASRExecuted": false,
+    "previouslyExistingReadbackWasOverlooked": true,
+    "newDiagnosticWasAvoidableDuplicate": true,
+    "newOutputHashesExactlyMatchExistingScoredText": true
   }
 }
