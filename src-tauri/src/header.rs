@@ -10,6 +10,12 @@ pub fn project(snapshot: &Snapshot) -> HeaderState {
             ..HeaderState::default()
         };
     }
+    if snapshot.preferences.recovery_required {
+        return HeaderState {
+            status: "Einstellungen können nicht geladen werden".into(),
+            ..HeaderState::default()
+        };
+    }
     let idle = snapshot.session.phase == SessionPhase::Idle;
     let session = snapshot
         .session

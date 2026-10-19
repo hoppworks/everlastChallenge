@@ -7,41 +7,89 @@ pub fn workspace(snapshot: &Snapshot) -> WorkspaceState {
     let idle = snapshot.session.phase == SessionPhase::Idle;
     let recovery = snapshot.preferences.recovery_required;
     let has_text = !snapshot.session.text.is_empty();
+    let recovery_message = recovery.then(|| snapshot.preferences.error.as_deref().map(native_message).unwrap_or_else(|| "Die Einstellungen konnten nicht gelesen werden. Erst nach deiner Bestätigung werden Standardwerte gespeichert.".into()));
+    let error = snapshot
+        .error
+        .as_deref()
+        .or(snapshot.setup.error.as_deref())
+        .map(native_message)
+        .filter(|message| recovery_message.as_ref() != Some(message));
+
     WorkspaceState {
         status: crate::header::project(snapshot).status,
         detail: match &snapshot.session.outcome {
-            Some(crate::contracts::SessionOutcome::Held { message } | crate::contracts::SessionOutcome::Failed { message }) => native_message(message),
+            Some(
+                crate::contracts::SessionOutcome::Held { message }
+                | crate::contracts::SessionOutcome::Failed { message },
+            ) => native_message(message),
             _ => format!("{} · {}", snapshot.labels.device, snapshot.labels.language),
         },
-        error: snapshot.error.as_deref().or(snapshot.setup.error.as_deref()).map(native_message),
-        setup_info: (!recovery && matches!(snapshot.setup.phase, SetupPhase::Missing | SetupPhase::Cancelled | SetupPhase::Failed)).then(|| {
-            let host = reqwest::Url::parse(&snapshot.setup.model.source_url).ok().and_then(|url| url.host_str().map(str::to_owned));
-            let source = match host.as_deref() { Some("huggingface.co") => "Hugging Face", Some(host) => host, None => "unbekannter Quelle" };
-            let megabytes = format!("{:.1}", f64::from(snapshot.setup.model.download_bytes) / 1_000_000.0).replace('.', ",");
-            native_message(&format!("{} · {megabytes} MB\nEinmaliger Download von {source}; danach lokal und offline.", snapshot.setup.model.name))
+        error,
+        setup_info: (!recovery
+            && matches!(
+                snapshot.setup.phase,
+                SetupPhase::Missing | SetupPhase::Cancelled | SetupPhase::Failed
+            ))
+        .then(|| {
+            let host = reqwest::Url::parse(&snapshot.setup.model.source_url)
+                .ok()
+                .and_then(|url| url.host_str().map(str::to_owned));
+            let source = match host.as_deref() {
+                Some("huggingface.co") => "Hugging Face",
+                Some(host) => host,
+                None => "unbekannter Quelle",
+            };
+            let megabytes = format!(
+                "{:.1}",
+                f64::from(snapshot.setup.model.download_bytes) / 1_000_000.0
+            )
+            .replace('.', ",");
+            native_message(&format!(
+                "{} · {megabytes} MB\nEinmaliger Download von {source}; danach lokal und offline.",
+                snapshot.setup.model.name
+            ))
         }),
-        permission_info: match (snapshot.permissions.microphone == crate::contracts::PermissionStatus::Granted, snapshot.permissions.accessibility == crate::contracts::PermissionStatus::Granted) {
+        permission_info: if recovery {
+            None
+        } else {
+            match (snapshot.permissions.microphone == crate::contracts::PermissionStatus::Granted, snapshot.permissions.accessibility == crate::contracts::PermissionStatus::Granted) {
             (true, true) => None,
             (true, false) => Some("Lokales Diktieren und Kopieren sind möglich. Bedienungshilfen werden nur zum automatischen Einfügen benötigt.".into()),
             (false, true) => Some("Aufnehmen erfordert Mikrofonzugriff.".into()),
             (false, false) => Some("Aufnehmen erfordert Mikrofonzugriff. Bedienungshilfen werden nur zum automatischen Einfügen benötigt.".into()),
+        }
         },
         transcript: snapshot.session.text.clone(),
         hotkey: snapshot.labels.hotkey.clone(),
         recording: (snapshot.session.phase == SessionPhase::Recording).then(|| RecordingReadout {
-            elapsed_seconds: (snapshot.session.elapsed_millis / 1_000).min(u64::from(u32::MAX)) as u32,
+            elapsed_seconds: (snapshot.session.elapsed_millis / 1_000).min(u64::from(u32::MAX))
+                as u32,
             level_permille: snapshot.session.level_permille.min(1_000),
         }),
         download: (snapshot.setup.phase == SetupPhase::Downloading).then(|| DownloadReadout {
             received: u64::from(snapshot.setup.downloaded_bytes),
-            total: (snapshot.setup.total_bytes != 0).then_some(u64::from(snapshot.setup.total_bytes)),
+            total: (snapshot.setup.total_bytes != 0)
+                .then_some(u64::from(snapshot.setup.total_bytes)),
         }),
-        recovery: recovery.then(|| snapshot.preferences.error.as_deref().map(native_message).unwrap_or_else(|| "Die Einstellungen konnten nicht gelesen werden. Erst nach deiner Bestätigung werden Standardwerte gespeichert.".into())),
+        recovery: recovery_message,
         can_copy: snapshot.running && has_text && snapshot.session.text.len() <= 256 * 1_024,
-        can_clear: snapshot.running && idle && snapshot.setup.phase == SetupPhase::Ready && has_text,
-        can_download: snapshot.running && idle && !recovery && matches!(snapshot.setup.phase, SetupPhase::Missing | SetupPhase::Cancelled | SetupPhase::Failed),
+        can_clear: snapshot.running
+            && idle
+            && snapshot.setup.phase == SetupPhase::Ready
+            && has_text,
+        can_download: snapshot.running
+            && idle
+            && !recovery
+            && matches!(
+                snapshot.setup.phase,
+                SetupPhase::Missing | SetupPhase::Cancelled | SetupPhase::Failed
+            ),
         can_cancel_setup: snapshot.running && idle && !recovery && snapshot.setup.can_cancel,
-        can_settings: snapshot.running && !recovery && (snapshot.permissions.microphone != crate::contracts::PermissionStatus::Granted || snapshot.permissions.accessibility != crate::contracts::PermissionStatus::Granted),
+        can_settings: snapshot.running
+            && !recovery
+            && (snapshot.permissions.microphone != crate::contracts::PermissionStatus::Granted
+                || snapshot.permissions.accessibility
+                    != crate::contracts::PermissionStatus::Granted),
     }
 }
 
@@ -307,6 +355,44 @@ mod tests {
         assert_eq!(
             view.accessibility,
             macos_integration::native_preferences::PreferencesPermission::Denied
+        );
+    }
+    #[test]
+    fn recovery_message_is_consistent_across_native_surfaces_and_preserves_distinct_errors() {
+        let mut snapshot = snapshot();
+        snapshot.setup.phase = SetupPhase::Failed;
+        snapshot.preferences.recovery_required = true;
+        snapshot.preferences.error = Some("Die Einstellungsdatei ist ungültig.".into());
+        snapshot.setup.error = snapshot.preferences.error.clone();
+        snapshot.permissions.microphone = view::PermissionStatus::NotDetermined;
+        snapshot.permissions.accessibility = view::PermissionStatus::NotDetermined;
+        let header = crate::header::project(&snapshot);
+        assert_eq!(header.status, "Einstellungen können nicht geladen werden");
+        assert!(header.primary.is_none() && header.cancel.is_none());
+        assert!(!header.settings_enabled);
+        let workspace = workspace(&snapshot);
+        assert_eq!(workspace.status, header.status);
+        assert_eq!(
+            workspace.recovery.as_deref(),
+            Some("Die Einstellungsdatei ist ungültig.")
+        );
+        assert!(
+            workspace.error.is_none(),
+            "do not repeat the recovery cause"
+        );
+        assert!(
+            workspace.permission_info.is_none(),
+            "permissions have not been queried during recovery"
+        );
+        snapshot.error = Some("Standardwerte konnten nicht gespeichert werden.".into());
+        assert_eq!(
+            super::workspace(&snapshot).error.as_deref(),
+            Some("Standardwerte konnten nicht gespeichert werden.")
+        );
+        snapshot.running = false;
+        assert_eq!(
+            crate::header::project(&snapshot).status,
+            "Anwendung wurde beendet"
         );
     }
     #[test]

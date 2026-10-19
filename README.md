@@ -12,6 +12,8 @@ offen. Abbrechen und normaler Neustart sind geprüft. Noch kein öffentlicher Do
 
 **Testversion (19.10.2026):** Die stabile Referenzfassung ist als lokale Testversion bereitgestellt. Der [Paketbeleg](docs/verification/testversion-package-r4.md) nennt Quellstand, Prüfsummen, Build-/Paketprüfung und die offene Laufzeitabnahme. Die experimentellen FullPrefix-/Kontext-1400-Optimierungen sind nicht aktiv. Die Referenz hat ihre dokumentierte Modellqualitätsprüfung bestanden, erreicht aber das geplante Stop-bis-Text-Ziel von einer Sekunde nicht durchgehend. Die vollständige Leistungs-, Geräte-, Installations- und Produktabnahme bleibt offen. Installation und kurzer Funktionstest stehen in [TESTVERSION.md](TESTVERSION.md); tatsächliche Belege im [Ausführungsprotokoll](docs/execution-log.md), der vollständige Zielumfang im [Implementierungsplan](IMPLEMENTATION_PLAN.md).
 
+Die [Einstellungswiederherstellung](docs/verification/r4-settings-recovery-2026-10-19.md) ist im installierten R4 geprüft. Eine dabei gefundene falsche Statusmeldung ist im Quellstand korrigiert; dieser Anzeige-Fix ist noch nicht in R4 enthalten.
+
 ## Lokal entwickeln
 
 Geprüfte Ausgangsumgebung: macOS 27.0.1, arm64, Rust/Cargo 1.93.0, Node 22.23.1, npm 10.9.8 und Xcode 27.1. Kein anderer Rechner wurde geprüft.

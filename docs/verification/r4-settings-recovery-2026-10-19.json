@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-19",
+  "installedProductSource": "ee1a6a4f78fca3b45026a8de835e997c914b43ec",
+  "installedBinaryChanged": false,
+  "rightsChanged": false,
+  "recoveryTest": {
+    "invalidSyntheticSettingsLoaded": true,
+    "recordingAndSetupActionsAbsent": true,
+    "cancelPreservesInvalidFixtureByteIdentical": true,
+    "confirmRestoresValidSettings": true,
+    "settingsMode": "0o600",
+    "twoModelFilesMetadataUnchanged": true,
+    "originalSettingsRestoredByteIdentical": true,
+    "readyAfterRestore": true
+  },
+  "observedUiDefect": {
+    "header": "Modell konnte nicht eingerichtet werden",
+    "actualCause": "Die Einstellungsdatei ist ungültig.",
+    "sameCauseRepeatedInBody": true,
+    "prematurePermissionHint": true
+  },
+  "sourceFix": {
+    "base": "28bded3",
+    "fileSha256": {
+      "src-tauri/src/header.rs": "de1a4306cb50fbacd4c72ebb921ce1499d84f4849ae53813520f87cc73c040fe",
+      "src-tauri/src/native_presentation.rs": "80e9207967e523db185e529f84da3b926f1d5a7c16c5f1e12810ae1e36d95aa1"
+    },
+    "red": {
+      "test": "native_presentation::tests::recovery_message_is_consistent_across_native_surfaces_and_preserves_distinct_errors",
+      "exitCode": 101,
+      "assertionLeft": "Modell konnte nicht eingerichtet werden",
+      "assertionRight": "Einstellungen können nicht geladen werden"
+    },
+    "green": true,
+    "npmRunCheckExitCode": 0,
+    "hostLibraryTests": {
+      "passed": 224,
+      "failed": 0,
+      "ignored": 2
+    },
+    "independentReview": "no findings",
+    "installedAcceptanceOfSourceFix": false
+  },
+  "limits": [
+    "No new product bundle or re-signing",
+    "No new quality/performance qualification",
+    "No package completion",
+    "No personal review performed"
+  ]
+}
