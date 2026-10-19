@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-owned-window-key-equivalent-proof",
+  "passed": true,
+  "physicalKeyboard": false,
+  "globalHotkey": false,
+  "visibleWindow": false,
+  "microphone": false,
+  "clipboardMutation": false,
+  "sourceHashes": {
+    "crates/macos-integration/src/glass_header.rs": "6c5cd07b60be2191e82b80aaabf677de61e3a4a1e7abfc5b6449c0fecc7cf542",
+    "crates/macos-integration/src/native_workspace.rs": "decb6068164147924cfb3dd44a39fddebf3c420ab8fb4d160b5fb050811fa131",
+    "crates/macos-integration/tests/glass_header_contract.rs": "a1f0663b39beb7b9e03df8259b0b48145021bc695a6b28fb9cac336adaae3621",
+    "crates/macos-integration/tests/native_workspace_contract.rs": "1650078aebd98a5f581a92734918bf4123dcb00a52f5f51686565825b778159b"
+  },
+  "logs": {
+    "artifacts/native-keyboard-clipboard-final.log": "b67bdc4e91e3a1400e0c95330a205c76b8ed2ce22360250299e953b283586f28",
+    "artifacts/native-keyboard-header-expanded.log": "0186bab9a3f53be199ea2d7806e53928187257bc61afb62ed5cf28f83663ec41"
+  },
+  "verified": [
+    "CmdR Start",
+    "CmdR Stop bound to SID17/18",
+    "Escape Cancel bound to SID17/18",
+    "CmdComma Settings",
+    "plain r does not dispatch Start",
+    "disabled Settings does not dispatch",
+    "hidden Start/Cancel do not dispatch",
+    "CmdShiftC emits Copy with exact displayed text"
+  ],
+  "notVerified": [
+    "physical OS event delivery",
+    "global OptionD",
+    "tab traversal or visible focus appearance"
+  ],
+  "independentReview": "r8_artifact_review: no actionable findings in native mappings and first positive tests; Root added and executed CmdComma/disabled/plain-key assertions afterwards."
+}

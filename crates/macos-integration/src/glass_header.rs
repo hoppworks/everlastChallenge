@@ -4,7 +4,7 @@ use objc2::{
     runtime::AnyObject, sel,
 };
 use objc2_app_kit::{
-    NSAccessibility, NSAutoresizingMaskOptions, NSButton, NSGlassEffectView,
+    NSAccessibility, NSAutoresizingMaskOptions, NSButton, NSEventModifierFlags, NSGlassEffectView,
     NSGlassEffectViewStyle, NSLayoutAttribute, NSTextField, NSTitlebarAccessoryViewController,
     NSView, NSWindow,
 };
@@ -315,13 +315,23 @@ impl<W: HasWindowHandle + 'static> GlassHeader<W> {
         status.setSelectable(false);
         status.setMaximumNumberOfLines(2);
         status.setAccessibilityLabel(Some(&NSString::from_str("Diktierstatus")));
+        let primary = button("Aufnehmen", sel!(primary:));
+        primary.setKeyEquivalent(&NSString::from_str("r"));
+        primary.setKeyEquivalentModifierMask(NSEventModifierFlags::Command);
+        let cancel = button("Abbrechen", sel!(cancel:));
+        cancel.setKeyEquivalent(&NSString::from_str("\u{1b}"));
+        cancel.setKeyEquivalentModifierMask(NSEventModifierFlags::empty());
+        cancel.setToolTip(Some(&NSString::from_str("Aufnahme abbrechen (Esc)")));
+        let settings = button("Einstellungen", sel!(settings:));
+        settings.setKeyEquivalent(&NSString::from_str(","));
+        settings.setKeyEquivalentModifierMask(NSEventModifierFlags::Command);
         let content = HeaderContent::new(
             main,
             Views {
                 status,
-                settings: button("Einstellungen", sel!(settings:)),
-                primary: button("Aufnehmen", sel!(primary:)),
-                cancel: button("Abbrechen", sel!(cancel:)),
+                settings,
+                primary,
+                cancel,
             },
             original.bounds().size.width,
         );
@@ -386,6 +396,13 @@ impl<W: HasWindowHandle + 'static> GlassHeader<W> {
                 "Aufnehmen"
             },
         ));
+        views.primary.setToolTip(Some(&NSString::from_str(
+            if matches!(state.primary, Some(HeaderPrimary::Stop(_))) {
+                "Aufnahme stoppen (⌘R)"
+            } else {
+                "Aufnahme starten (⌘R)"
+            },
+        )));
         views.primary.setEnabled(state.primary.is_some());
         views.primary.setHidden(state.primary.is_none());
         views.cancel.setEnabled(state.cancel.is_some());

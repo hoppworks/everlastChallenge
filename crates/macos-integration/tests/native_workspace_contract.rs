@@ -11,10 +11,11 @@ use macos_integration::native_workspace::{
 use objc2::{AnyThread, MainThreadMarker, rc::Retained};
 use objc2_app_kit::{
     NSAffineTransformNSAppKitAdditions, NSApplication, NSBackingStoreType, NSBitmapImageRep,
-    NSBorderType, NSButton, NSColor, NSDeviceRGBColorSpace, NSGraphicsContext, NSRectFill,
-    NSScrollView, NSTextField, NSTextView, NSView, NSWindow, NSWindowButton, NSWindowStyleMask,
+    NSBorderType, NSButton, NSColor, NSDeviceRGBColorSpace, NSEvent, NSEventModifierFlags,
+    NSEventType, NSGraphicsContext, NSRectFill, NSScrollView, NSTextField, NSTextView, NSView,
+    NSWindow, NSWindowButton, NSWindowStyleMask,
 };
-use objc2_foundation::{NSAffineTransform, NSPoint, NSRange, NSRect, NSSize};
+use objc2_foundation::{NSAffineTransform, NSPoint, NSRange, NSRect, NSSize, NSString};
 use raw_window_handle::{
     AppKitWindowHandle, HandleError, HasWindowHandle, RawWindowHandle, WindowHandle,
 };
@@ -281,6 +282,20 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         text.selectedRange(),
         NSRange::new(2, 3),
         "telemetry must preserve native selection"
+    );
+    let copy_key = NSEvent::keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCode(
+        NSEventType::KeyDown, NSPoint::new(0., 0.), NSEventModifierFlags::Command | NSEventModifierFlags::Shift,
+        0., window.windowNumber(), None, &NSString::from_str("C"), &NSString::from_str("C"), false, 0,
+    ).ok_or("owned copy key event")?;
+    assert!(
+        window.performKeyEquivalent(&copy_key),
+        "copy must be reachable through its native key equivalent"
+    );
+    assert_eq!(
+        receive.try_recv()?,
+        WorkspaceAction::Copy {
+            text: "Erster Text".into()
+        }
     );
     click(&copy);
     click(&*button(&body, "Löschen")?);

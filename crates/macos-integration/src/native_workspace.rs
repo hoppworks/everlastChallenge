@@ -5,9 +5,9 @@ use objc2::{
 };
 use objc2_app_kit::{
     NSAccessibility, NSAlert, NSAlertSecondButtonReturn, NSAlertStyle, NSAutoresizingMaskOptions,
-    NSBorderType, NSButton, NSColor, NSFont, NSLayoutConstraint, NSLayoutXAxisAnchor,
-    NSLayoutYAxisAnchor, NSLevelIndicator, NSProgressIndicator, NSRectFill, NSResponder,
-    NSScrollView, NSTextField, NSTextView, NSView, NSWindow,
+    NSBorderType, NSButton, NSColor, NSEventModifierFlags, NSFont, NSLayoutConstraint,
+    NSLayoutXAxisAnchor, NSLayoutYAxisAnchor, NSLevelIndicator, NSProgressIndicator, NSRectFill,
+    NSResponder, NSScrollView, NSTextField, NSTextView, NSView, NSWindow,
 };
 use objc2_foundation::{NSObject, NSPoint, NSRect, NSSize, NSString};
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
@@ -520,6 +520,13 @@ impl<O: HasWindowHandle + 'static> NativeWorkspace<O> {
         let setup_info = label("");
         setup_info.setMaximumNumberOfLines(3);
         let permission_info = label("");
+        let copy = button("Kopieren", sel!(copyText:));
+        // Keep ordinary Cmd+C available to the native selection responder.
+        copy.setKeyEquivalent(&NSString::from_str("C"));
+        copy.setKeyEquivalentModifierMask(
+            NSEventModifierFlags::Command | NSEventModifierFlags::Shift,
+        );
+        copy.setToolTip(Some(&NSString::from_str("Letzten Text kopieren (⌘⇧C)")));
         let body = WorkspaceBody::new(
             main,
             Views {
@@ -538,7 +545,7 @@ impl<O: HasWindowHandle + 'static> NativeWorkspace<O> {
                 settings: button("Berechtigungen prüfen", sel!(settings:)),
                 reset: button("Einstellungen zurücksetzen …", sel!(resetSettings:)),
                 title: label("Letzter Text"),
-                copy: button("Kopieren", sel!(copyText:)),
+                copy,
                 clear: button("Löschen", sel!(clearText:)),
                 scroll,
                 text,

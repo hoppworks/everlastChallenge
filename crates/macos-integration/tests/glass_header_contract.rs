@@ -8,11 +8,11 @@ use macos_integration::glass_header::{
 };
 use objc2::{MainThreadMarker, rc::Retained};
 use objc2_app_kit::{
-    NSApplication, NSBackingStoreType, NSButton, NSGlassEffectView, NSGlassEffectViewStyle,
-    NSLayoutAttribute, NSTextField, NSTextView, NSTitlebarAccessoryViewController, NSView,
-    NSWindow, NSWindowStyleMask,
+    NSApplication, NSBackingStoreType, NSButton, NSEvent, NSEventModifierFlags, NSEventType,
+    NSGlassEffectView, NSGlassEffectViewStyle, NSLayoutAttribute, NSTextField, NSTextView,
+    NSTitlebarAccessoryViewController, NSView, NSWindow, NSWindowStyleMask,
 };
-use objc2_foundation::{NSPoint, NSRect, NSSize};
+use objc2_foundation::{NSPoint, NSRect, NSSize, NSString};
 use raw_window_handle::{
     AppKitWindowHandle, HandleError, HasWindowHandle, RawWindowHandle, WindowHandle,
 };
@@ -63,6 +63,16 @@ fn button(view: &NSView, title: &str) -> Result<Retained<NSButton>, &'static str
         .filter_map(|view| view.downcast::<NSButton>().ok())
         .find(|button| button.title().to_string() == title)
         .ok_or("native button missing")
+}
+fn key(
+    window: &NSWindow,
+    characters: &str,
+    modifiers: NSEventModifierFlags,
+) -> Result<Retained<NSEvent>, &'static str> {
+    NSEvent::keyEventWithType_location_modifierFlags_timestamp_windowNumber_context_characters_charactersIgnoringModifiers_isARepeat_keyCode(
+        NSEventType::KeyDown, NSPoint::new(0., 0.), modifiers, 0., window.windowNumber(), None,
+        &NSString::from_str(characters), &NSString::from_str(characters), false, 0,
+    ).ok_or("owned native key event")
 }
 fn panic_callback(_: HeaderAction) {
     // Exercise unwinding at the callback boundary without a production panic
@@ -171,6 +181,18 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         settings_enabled: true,
     })?;
     toolbar_fits(&content, 560.)?;
+    let record_key = key(&window, "r", NSEventModifierFlags::Command)?;
+    assert!(
+        window.performKeyEquivalent(&record_key),
+        "owned window must dispatch its recording shortcut"
+    );
+    assert_eq!(recv.try_recv()?, HeaderAction::Start);
+    let settings_key = key(&window, ",", NSEventModifierFlags::Command)?;
+    assert!(window.performKeyEquivalent(&settings_key));
+    assert_eq!(recv.try_recv()?, HeaderAction::Settings);
+    let plain_r = key(&window, "r", NSEventModifierFlags::empty())?;
+    window.performKeyEquivalent(&plain_r);
+    assert!(recv.try_recv().is_err());
     click(&primary);
     click(&settings);
     assert_eq!(recv.try_recv()?, HeaderAction::Start);
@@ -184,6 +206,16 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             settings_enabled: false,
         })?;
         toolbar_fits(&content, 560.)?;
+        window.performKeyEquivalent(&settings_key);
+        assert!(
+            recv.try_recv().is_err(),
+            "disabled Settings must not dispatch"
+        );
+        assert!(window.performKeyEquivalent(&record_key));
+        assert_eq!(recv.try_recv()?, HeaderAction::Stop(id));
+        let cancel_key = key(&window, "\u{1b}", NSEventModifierFlags::empty())?;
+        assert!(window.performKeyEquivalent(&cancel_key));
+        assert_eq!(recv.try_recv()?, HeaderAction::Cancel(id));
         click(&primary);
         click(&cancel);
         click(&settings);
@@ -224,6 +256,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     })?;
     toolbar_fits(&content, 560.)?;
     assert!(primary.isHidden() && cancel.isHidden());
+    window.performKeyEquivalent(&record_key);
+    let hidden_cancel_key = key(&window, "\u{1b}", NSEventModifierFlags::empty())?;
+    window.performKeyEquivalent(&hidden_cancel_key);
+    assert!(
+        recv.try_recv().is_err(),
+        "hidden recording actions must not dispatch"
+    );
     click(&settings);
     assert_eq!(recv.try_recv()?, HeaderAction::Settings);
     let second = NSTextView::new(main);
