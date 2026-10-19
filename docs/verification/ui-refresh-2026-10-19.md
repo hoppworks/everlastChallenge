@@ -66,3 +66,14 @@ Unabhängige native Quellenprüfung durch settings: API/ABI korrekt, unmittelbar
 Abfrage im Appprozess, Aktualisierung bei Start/Fokus/Anfrage korrekt vorhanden.
 Nutzer um gezieltes Entfernen des alten Eintrags und Hinzufügen des exakten
 aktuellen Pfads gebeten. Abschluss dieser Vergabe noch nicht nachgewiesen.
+
+Der Nutzer hat anschließend den alten Eintrag entfernt und die aktuelle App
+über ihren exakten Pfad hinzugefügt. CUA-Lesebeleg in der laufenden App:
+Einstellungen → Berechtigungen zeigt Mikrofon **Freigegeben** und
+Bedienungshilfen (Accessibility) **Freigegeben**. Damit ist die gezielte
+Neuzuordnung für diesen c28c2ac-Build erfolgreich verifiziert.
+
+Spätere Nutzerkritik fordert über diesen Weblayout-Zwischenstand hinaus echte
+native AppKit-Steuerung für Hauptansicht und Einstellungen, native Tabs,
+Standard-Appmenü „Einstellungen …“ mit ⌘, und keinen Inhalt-Schließenbutton.
+Dieser neue Umbau wird separat geprüft; dieser Nachweis behauptet ihn nicht.
