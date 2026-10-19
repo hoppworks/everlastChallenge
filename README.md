@@ -4,7 +4,9 @@ Native Diktier-App für Apple Silicon und macOS 27. Rust/Tauri 2 mit nativer App
 
 Aktuelles lokales Testpaket: **Everlast-Dictation-Testversion-0.1.0-native-2abf495-r6.zip**,
 auf diesem Mac in `~/Downloads/`. Der [R6-Paketbeleg](docs/verification/testversion-package-r6.md)
-nennt Build, Prüfsummen und die noch offene Installation/Laufzeitabnahme. R6 enthält
+nennt Build, Prüfsummen und die noch offene Installation/Vollabnahme. Ein
+[begrenzter R6-Starttest](docs/verification/r6-startup-2026-10-19.md) bestätigt
+Modellbereitschaft und korrekt angezeigte fehlende Rechte, ohne Freigabe oder Aufnahme. R6 enthält
 den gemeinsam getesteten Streamfehlercallback und den Recovery-Anzeigefix aus R5.
 Die installierte R4-App bleibt erhalten; frische Modelleinrichtung, Freigaben,
 Aufnahme/Kopieren, Abbrechen und Neustart sind [tatsächlich geprüft](docs/verification/r4-installed-smoke-2026-10-19.md).
