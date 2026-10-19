@@ -1,0 +1,180 @@
+{
+  "kind": "exposed-de10-file-diagnostic-not-qualification",
+  "qualified": false,
+  "productionActivated": false,
+  "L": null,
+  "fixtureId": "fleurs-de-test-1663",
+  "fixtureSha256": "e86ac3cc846d6fb8655fbbdaa6906d8812810bcc03fedeb4c385b7d039d0b79d",
+  "prospectiveFreeze": {
+    "path": "artifacts/p06-context1400-de10-diagnostic-v1/prospective-freeze.json",
+    "sha256": "dcbe646aaec7114c8b59a56c0ac86624f8919258d19dd607bbb0b7f567d12a40"
+  },
+  "blocks": [
+    {
+      "block": 1,
+      "arm": "reference",
+      "rawPath": "artifacts/p06-context1400-de10-diagnostic-v1/1-reference.json",
+      "rawSha256": "cf2f446fd4ec352278a7140b32bac19bee48c8f97e4f5cba584ad5e525c74133",
+      "allFourTextHashes": [
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9"
+      ],
+      "inputFrames": 160000,
+      "preparedFrames": [
+        159680,
+        159680,
+        159680,
+        159680
+      ],
+      "nativeFullNanos": [
+        1001823750,
+        1004061041,
+        1004777042
+      ],
+      "engineTotalNanos": [
+        1030262208,
+        1032786125,
+        1033456333
+      ],
+      "nativeFullMedianNanos": 1004061041,
+      "engineTotalMedianNanos": 1032786125,
+      "passed": true,
+      "workerJoined": true
+    },
+    {
+      "block": 2,
+      "arm": "candidate1400",
+      "rawPath": "artifacts/p06-context1400-de10-diagnostic-v1/2-candidate1400.json",
+      "rawSha256": "14423b90a6ec19091cb1aa2d8bf03ce35aedf1d32fff2380032631d0613e49be",
+      "allFourTextHashes": [
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9"
+      ],
+      "inputFrames": 160000,
+      "preparedFrames": [
+        159680,
+        159680,
+        159680,
+        159680
+      ],
+      "nativeFullNanos": [
+        925419083,
+        926111417,
+        922997709
+      ],
+      "engineTotalNanos": [
+        953009750,
+        953011875,
+        949303292
+      ],
+      "nativeFullMedianNanos": 925419083,
+      "engineTotalMedianNanos": 953009750,
+      "passed": true,
+      "workerJoined": true
+    },
+    {
+      "block": 3,
+      "arm": "candidate1400",
+      "rawPath": "artifacts/p06-context1400-de10-diagnostic-v1/3-candidate1400.json",
+      "rawSha256": "1802dae7656fa7f90a4f7a44bc0711c714b1899d97eda2e91e4ae9e153d78b10",
+      "allFourTextHashes": [
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9"
+      ],
+      "inputFrames": 160000,
+      "preparedFrames": [
+        159680,
+        159680,
+        159680,
+        159680
+      ],
+      "nativeFullNanos": [
+        926329583,
+        923622083,
+        922869000
+      ],
+      "engineTotalNanos": [
+        953591500,
+        950952292,
+        950089625
+      ],
+      "nativeFullMedianNanos": 923622083,
+      "engineTotalMedianNanos": 950952292,
+      "passed": true,
+      "workerJoined": true
+    },
+    {
+      "block": 4,
+      "arm": "reference",
+      "rawPath": "artifacts/p06-context1400-de10-diagnostic-v1/4-reference.json",
+      "rawSha256": "d6f9eeffcc9cbb2d468aa859194980ccca8b37db198e7bde4ae35ce453c7638d",
+      "allFourTextHashes": [
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9",
+        "fbce691fa1d0272174b1b7f27751d5004a5d44814d7671f9ae8dd936dff7b9d9"
+      ],
+      "inputFrames": 160000,
+      "preparedFrames": [
+        159680,
+        159680,
+        159680,
+        159680
+      ],
+      "nativeFullNanos": [
+        1000678292,
+        1003055458,
+        1004273625
+      ],
+      "engineTotalNanos": [
+        1028137375,
+        1029678125,
+        1031201542
+      ],
+      "nativeFullMedianNanos": 1003055458,
+      "engineTotalMedianNanos": 1029678125,
+      "passed": true,
+      "workerJoined": true
+    }
+  ],
+  "pairs": [
+    {
+      "referenceBlock": 1,
+      "candidateBlock": 2,
+      "nativeFullReductionFraction": 0.07832388150592529,
+      "engineTotalReductionFraction": 0.07724384852672184
+    },
+    {
+      "referenceBlock": 4,
+      "candidateBlock": 3,
+      "nativeFullReductionFraction": 0.07919140897591326,
+      "engineTotalReductionFraction": 0.07645674030416061
+    }
+  ],
+  "all16TextHashesEqual": true,
+  "powerAfter": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23461987)\t82%; AC attached; not charging present: true\n",
+  "limits": [
+    "One previously exposed fixture, not fresh quality acceptance.",
+    "Three measured file calls per block, no real-time feed or stop clock.",
+    "EngineTotal is not stop-to-text latency or global L.",
+    "No WER, long-audio, combined full-prefix or resource qualification.",
+    "Context1400 below reproducible10percent is not alone eligible for activation.",
+    "Product source and installed R4 unchanged."
+  ],
+  "independentReadback": {
+    "result": "no binding, calculation, identity or context-delta findings",
+    "orderEvidence": [
+      "prospective freeze",
+      "completion list",
+      "distinct process IDs",
+      "ascending output mtimes"
+    ],
+    "limitation": "Separate process start/end timestamps were not retained; strict non-overlap is not independently proven from these artifacts alone."
+  }
+}
