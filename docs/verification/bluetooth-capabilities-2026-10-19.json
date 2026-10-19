@@ -1,0 +1,50 @@
+{
+  "kind": "read-only-coreaudio-device-capabilities",
+  "checkedAtUtc": "2026-10-19T10:57:21.138444+00:00",
+  "devices": [
+    {
+      "family": "AirPods",
+      "deviceId": 105,
+      "nominalSampleRate": 24000.0,
+      "availableNominalSampleRates": [
+        [
+          24000.0,
+          24000.0
+        ]
+      ],
+      "transport": "blue",
+      "inputBufferChannels": [
+        1
+      ],
+      "inputChannels": 1
+    },
+    {
+      "family": "AirPods",
+      "deviceId": 99,
+      "nominalSampleRate": 48000.0,
+      "availableNominalSampleRates": [
+        [
+          24000.0,
+          24000.0
+        ],
+        [
+          48000.0,
+          48000.0
+        ]
+      ],
+      "transport": "blue",
+      "inputBufferChannels": [],
+      "inputChannels": 0
+    }
+  ],
+  "personalDeviceNamesRetained": false,
+  "AudioObjectSetPropertyDataCalled": false,
+  "streamOpened": false,
+  "recordingStarted": false,
+  "defaultDeviceChanged": false,
+  "limitations": [
+    "Declared current capabilities, not captured PCM or DSP correctness",
+    "No narrowband/wideband profile transition tested",
+    "Device names alone do not establish exact hardware generation"
+  ]
+}
