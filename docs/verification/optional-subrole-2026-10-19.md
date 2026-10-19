@@ -27,3 +27,8 @@ der Änderung: keine verbleibenden Befunde.
 Diese Korrektur beweist noch nicht die Ursache des zuvor zurückgehaltenen
 Hotkeyergebnisses. Ein echter positiver Übergabenachweis bleibt erforderlich.
 Keine neue ASR-Qualifikation, Mikrofonaufnahme oder formale Paketfreigabe.
+
+Der lokal signierte Build aus `aa8617a` wurde unter
+`/Applications/Everlast Dictation.app` installiert, der vorherige A gesichert.
+Beide Rechte werden nach dem Start weiterhin als „Freigegeben“ angezeigt;
+es gab keine erneute Rechteanfrage. [Installations- und Testbeleg](optional-subrole-2026-10-19.json).

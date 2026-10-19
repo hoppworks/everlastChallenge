@@ -1,0 +1,30 @@
+{
+  "sourceCommit": "aa8617a",
+  "installed": {
+    "installedAtUtc": "2026-10-19T13:14:51.261710+00:00",
+    "sourceCommit": "aa8617a",
+    "previousBinarySha256": "fb086952d08e4dbcca49ce0ab70afbb0f434607fb0dd79ca7d92734b3f0060d4",
+    "installedBinarySha256": "76ac3c130181581303dd7feba1220fa3eab0c8f1a6fd7d9301b0d1e28137e084",
+    "oldAppConfirmedExited": true,
+    "priorBundleBackup": "/Users/hoppworks/projects/everlastChallenge/artifacts/local-signing-v1/Everlast-A-before-subrole.app",
+    "secondBackup": "/Users/hoppworks/projects/everlastChallenge/artifacts/local-signing-v1/Everlast-A-installed-before-subrole.app",
+    "newPermissionRequestsIssued": false,
+    "actualPermissionContinuity": {
+      "microphoneUI": "Freigegeben",
+      "accessibilityUI": "Freigegeben",
+      "newPermissionRequestsIssued": false,
+      "observedAtUtc": "2026-10-19T13:15:23.039148+00:00",
+      "scope": "Permissions displayed by installed app; no new microphone recording or positive real delivery proof."
+    }
+  },
+  "autonomousReport": {
+    "path": "artifacts/autonomous-tests/1792415606087-71288c2c-b9ba-4e04-80d7-d03e2ce25719/report.json",
+    "sha256": "c657de16b0385b8d7078213e3840c31a07f72f3c4f2d4c383b1e5bc1b839b785",
+    "rustTests": 85,
+    "nodeTests": 15,
+    "passed": true
+  },
+  "review": "Independent targeted review: no remaining findings.",
+  "realTargetDeliveryProven": false,
+  "personalReviewComplete": false
+}
