@@ -51,6 +51,11 @@ test("development plan has no recipient or installed-app precondition", () => {
   assert.ok(
     full
       .find((step) => step.id === "native-offscreen-contracts")
+      .args.includes("native_clipboard_contract"),
+  );
+  assert.ok(
+    full
+      .find((step) => step.id === "native-offscreen-contracts")
       .args.includes("single_press_watchdog"),
   );
   assert.ok(

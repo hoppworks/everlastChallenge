@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "native-private-clipboard-contract-proof",
+  "revisionAtRun": "7f46a1a29e047aae1169d79bbcc7604535a09e21",
+  "sourceSha256": "91aa0c5d6362f9a14acb5e874fe92e43bb07b9bdc610a0f6509eab9a711c865a",
+  "manifestSha256": "a2b71ee6f7de76712ff54ebaf370612c71a6d721c4f0a3d550aace952c70d8d2",
+  "binarySha256": "8b63734818a872166972c8737e3fb6903a9e6e80955eee7abc3f6cc5b3651809",
+  "exitCode": 0,
+  "elapsedSeconds": 1.595759541,
+  "observation": {
+    "activationChanged": false,
+    "atLimitCases": 4,
+    "exactOccurrences": 1,
+    "generalClipboardUsed": false,
+    "globalHotkey": false,
+    "kind": "private-native-paste-input-and-backup-limits",
+    "maxDataBytes": 8388608,
+    "maxItems": 16,
+    "maxTypeBytes": 1024,
+    "maxTypes": 128,
+    "nativeBackupReadOnly": true,
+    "oneOverLimitCases": 4,
+    "overflowError": "Limit",
+    "physicalCommandV": false,
+    "restoreVerified": true,
+    "unicodeSha256": "55dcecf192298167c397764f94f84551b7bd6980287a3cf310b8eb1346a0fcfb",
+    "unicodeUtf8Bytes": 80,
+    "visibleWindowsAdded": 0
+  },
+  "redBeforeInputTransfer": {
+    "exitCode": 101,
+    "assertion": "owned native Unicode input differs"
+  },
+  "limitations": [
+    "Owned private pasteboard and offscreen NSTextView paste-input boundary; no physical Command+V, global hotkey, AX targeting, visible UI, microphone or general clipboard.",
+    "Native backup bounds use actual Snapshot::capture in the disposable contract process, not a synthetic wire format.",
+    "Type-name boundary uses AppKit-accepted ASCII UTI strings; AppKit rejects the attempted non-ASCII UTI before capture.",
+    "Optional out-of-process backup experiment returned helper EOF and is not claimed as passing evidence. Existing helper proofs remain separate.",
+    "Payload cases run sequentially and each 8MiB case has an autorelease pool; this is not a measured RSS qualification."
+  ],
+  "independentReview": "Root source readback and r8_artifact_review: no actionable findings; bounded native private-pasteboard scope only.",
+  "rootRepeat": {
+    "command": "cargo test -p macos-integration --test glass_header_contract --test native_workspace_contract --test native_clipboard_contract",
+    "exitCode": 0,
+    "log": "artifacts/native-keyboard-clipboard-final.log",
+    "logSha256": "b67bdc4e91e3a1400e0c95330a205c76b8ed2ce22360250299e953b283586f28"
+  }
+}

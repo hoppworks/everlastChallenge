@@ -73,6 +73,8 @@ export function buildPlan(profile = "regression") {
           "--test",
           "native_field_evidence_contract",
           "--test",
+          "native_clipboard_contract",
+          "--test",
           "power_notification_contract",
           "--example",
           "native_text_recipient",

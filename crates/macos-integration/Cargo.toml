@@ -66,5 +66,10 @@ name = "power_notification_contract"
 path = "tests/power_notification_contract.rs"
 harness = false
 
+[[test]]
+name = "native_clipboard_contract"
+path = "tests/native_clipboard_contract.rs"
+harness = false
+
 [lints]
 workspace = true
