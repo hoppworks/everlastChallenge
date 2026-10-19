@@ -94,3 +94,9 @@ auch die verfehlte absolute Latenzgrenze. Ein gültiger Einspeisetakt ersetzt
 weder Textqualität noch reale Mikrofon-, Hotkey- oder Empfängerabnahmen.
 
 ## Ergänzung 19.10.2026: installierter Prüfstand nach Rechtevergleich
+
+Aktualisierung: Installiert ist inzwischen Entwicklerbuild `f592fcd` mit
+lokalem Testzugang; der eigene Empfänger entspricht `6e3b009`. Der
+[Test-Control-Nachtrag](personal-review-sample-v3-test-control-addendum.md)
+bindet diese Quellen und bewahrt alle bisherigen menschlichen Prüffragen.
+Der erste vollständige autonome Einfügedurchlauf ist weiterhin offen.

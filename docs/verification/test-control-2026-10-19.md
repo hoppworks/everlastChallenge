@@ -54,3 +54,6 @@ Rohbelege: `artifacts/test-control-v1/installation.json`,
 Empfängerbericht unter `artifacts/recipient-automation-v1/live/snapshot.json`.
 Der Bericht enthält nur eigene Metadaten und Kennzahlen zum festgelegten
 öffentlichen Testsatz; keinen gesprochenen Rohtext.
+
+[Strukturierter aktueller Nachweis](test-control-2026-10-19.json) bindet
+installierten Binaryhash, Testprotokolle und tatsächliche Statusantwort.

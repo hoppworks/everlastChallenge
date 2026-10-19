@@ -2,7 +2,7 @@
 
 Native Diktier-App für Apple Silicon und macOS 27. Rust/Tauri 2 mit nativer AppKit-Oberfläche, lokale Whisper-Inferenz und systemnahe Audioaufnahme/Textübergabe.
 
-Aktueller installierter Prüfstand: [lokal signierte Version 0.1.0 aus `aa8617a`](docs/verification/optional-subrole-2026-10-19.md), mit korrigierter Auswertung optionaler macOS-Unterrollen. Mikrofon- und Accessibility-Freigaben blieben beim Wechsel B → A und zum korrigierten Build ohne erneute Anfrage erhalten. Das belegt diese Builds auf diesem Mac. R6 bleibt als Rückfallkopie erhalten. `npm run release:local` verwendet die lokal eingerichtete Signieridentität ohne Developer-Account.
+Aktueller installierter Prüfstand: [lokal signierter Entwickler-Testbuild aus `f592fcd`](docs/verification/test-control-2026-10-19.md), mit korrigierter Auswertung optionaler macOS-Unterrollen und begrenztem lokalem Testzugang. Mikrofon- und Accessibility-Freigaben blieben ohne erneute Anfrage erhalten. Das belegt diese Builds auf diesem Mac. Vorheriger Build und R6 bleiben als Rückfallkopien erhalten. `npm run release:local` verwendet die lokal eingerichtete Signieridentität ohne Developer-Account.
 
 **Testversion (19.10.2026):** Die stabile Referenzfassung ist als lokale Testversion bereitgestellt. Die experimentellen FullPrefix-/Kontext-1400-Optimierungen sind nicht aktiv. Die Referenz hat ihre dokumentierte Modellqualitätsprüfung bestanden, erreicht aber das geplante Stop-bis-Text-Ziel von einer Sekunde nicht durchgehend. Die vollständige Leistungs-, Installations- und integrierte Produktabnahme bleibt offen. [P04 ist im bestätigten Standardmikrofonumfang technisch belegt](docs/verification/p04-standard-microphone-technical-v1.md); zusätzliche Geräte-/Bluetooth-Tests sind nicht erforderlich. Tatsächliche Belege stehen im [Ausführungsprotokoll](docs/execution-log.md), der vollständige Zielumfang im [Implementierungsplan](IMPLEMENTATION_PLAN.md).
 
@@ -13,6 +13,8 @@ Der [reale Fünf-Minuten-Hotkeylauf](docs/verification/r4-hotkey-maximum-2026-10
 ## Autonom prüfen
 
 `npm run test:autonomous` führt die schnellen Prüfungen ohne Mikrofon-/UI-Freigaben aus und schreibt einen gebundenen JSON-Bericht. Fehler stoppen den Lauf; es startet keine neue ASR-Qualifikation. Der [Testleitfaden](docs/autonomous-testing.md) beschreibt den öffentlichen Runtime-Verbund, den optionalen eigenen Fokusbericht und die verbleibenden echten OS-Abnahmen.
+
+Der optionale [lokale Testzugang](docs/test-control.md) steuert Aufnahme, Stopp und Abbruch im Entwicklerbuild ohne physischen Hotkey. Er benötigt ein tatsächlich fokussiertes eigenes Testfeld; sein Einsatz beweist keine Zustellung des globalen OS-Tastenkürzels.
 
 ## Lokal entwickeln
 

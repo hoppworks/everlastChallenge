@@ -1,0 +1,69 @@
+{
+  "observedAtUtc": "2026-10-19T13:31:15.876384+00:00",
+  "productSourceCommit": "f592fcd",
+  "recipientSourceCommit": "6e3b009",
+  "installedBinarySha256": "a42f1f96ffe06d9b5e56d09608b4fbf0932a3febe13a9c8470080c7ee9321ad7",
+  "actualEndpointStatus": {
+    "schemaVersion": 1,
+    "ok": true,
+    "op": "status",
+    "snapshot": {
+      "accessibilityGranted": true,
+      "actionError": false,
+      "controlledSessionId": null,
+      "controlledStartPending": false,
+      "microphoneGranted": true,
+      "outcome": null,
+      "phase": "Idle",
+      "publicSentenceMatches": false,
+      "sessionId": null,
+      "setupReady": true,
+      "transcriptCharacters": 0
+    },
+    "error": null
+  },
+  "ownRecipient": {
+    "schemaVersion": 1,
+    "kind": "everlast-own-native-recipient-status",
+    "sequence": 683,
+    "observedUnixMillis": 1792416675743,
+    "monotonicSinceLaunchNanos": 170899132417,
+    "processId": 4768,
+    "applicationActive": true,
+    "frontmostIsSelf": false,
+    "ownBundleIdentifier": "de.hoppworks.everlast-native-autonomous-recipient",
+    "windowKey": true,
+    "focusedField": "multiline",
+    "expectedSentenceMatches": false,
+    "expectedSentenceOccurrences": 0,
+    "shortcutCharacterPresent": false,
+    "running": true,
+    "status": "observed",
+    "publicExpectedSentenceId": "fleurs-de-dev-1517",
+    "scope": "own-window-only; not foreign target capture or delivery proof"
+  },
+  "physicalHotkeyUsed": false,
+  "microphoneRecordingStarted": false,
+  "successfulDeliveryProven": false,
+  "limitation": "Actual NSWorkspace foreground does not match own recipient; initial real field click pending.",
+  "independentReview": "Three lifecycle/concurrency findings corrected; final focused review has no remaining findings.",
+  "testLogs": [
+    {
+      "path": "artifacts/offline-continuation-v1/test-control-integrated.log",
+      "sha256": "61c9570f521a7ba9159cf827ec9797477731496fbd8fc64f5e1532ba1e67d15e"
+    },
+    {
+      "path": "artifacts/offline-continuation-v1/test-control-check.log",
+      "sha256": "6334b46b706a23fea50c99b07f10ece1c639d657b7cf378dcca837c1f4cab922"
+    },
+    {
+      "path": "artifacts/offline-continuation-v1/test-control-feature-check.log",
+      "sha256": "caaa0d96fc5f3b7078ab3d6c9cc0b69ee1c29fa19f6a98d5d1c434e5a78574cb"
+    },
+    {
+      "path": "artifacts/offline-continuation-v1/test-control-clients-final.log",
+      "sha256": "e5926ee4f78526994b615a66d38dcb96cad25df396e73ad8ed12f1537e8066fe"
+    }
+  ],
+  "personalReviewComplete": false
+}
