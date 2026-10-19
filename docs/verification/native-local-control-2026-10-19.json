@@ -1,0 +1,24 @@
+{
+  "observedAtUtc": "2026-10-19T13:37:22.110205+00:00",
+  "installedSourceCommit": "f592fcd",
+  "installedBinarySha256": "a42f1f96ffe06d9b5e56d09608b4fbf0932a3febe13a9c8470080c7ee9321ad7",
+  "agentStartedAndStoppedNativeLocalRecording": true,
+  "emptyUIResultObserved": true,
+  "emptyTranscriptLength": 0,
+  "physicalHotkeyUsed": false,
+  "userInteractionRequiredDuringLocalTests": false,
+  "testControlRefusedUnownedActualRecording": true,
+  "nativeCancelReturnedIdle": true,
+  "globalTargetDeliveryProven": false,
+  "sourceArtifacts": [
+    {
+      "path": "artifacts/test-control-v1/local-empty-run.json",
+      "sha256": "492dd050a6e8e606655f8ce6349f7afa1ec697df4ae7acb0cc6f3ae7d94ff4d6"
+    },
+    {
+      "path": "artifacts/test-control-v1/real-unowned-cancel.json",
+      "sha256": "37a2f4c71aff8c71ee28989830cddec82fd1648844b17c68f4287e5477f9dc1e"
+    }
+  ],
+  "scope": "Native local controls and owned-session protection only; no independent acoustic silence measurement or confirmed external target."
+}

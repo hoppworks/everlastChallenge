@@ -57,3 +57,12 @@ Der Bericht enthält nur eigene Metadaten und Kennzahlen zum festgelegten
 
 [Strukturierter aktueller Nachweis](test-control-2026-10-19.json) bindet
 installierten Binaryhash, Testprotokolle und tatsächliche Statusantwort.
+
+## Spätere lokale Tests ohne physischen Tastendruck
+
+Danach wurde der [native lokale Aufnahmeablauf](native-local-control-2026-10-19.md)
+ohne Nutzeraktion ausgeführt: Start, Stopp mit leerem Ergebnis, erneuter Start
+und Abbruch. Zusätzlich wies der Testzugang den Abbruch einer nicht von ihm
+gestarteten echten Aufnahme zurück. Die vorherigen Aussagen „keine Aufnahme“
+beziehen sich auf die beschriebenen abgelehnten externen Startversuche.
+Die automatische externe Übergabe ist weiterhin nicht belegt.

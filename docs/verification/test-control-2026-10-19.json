@@ -65,5 +65,7 @@
       "sha256": "e5926ee4f78526994b615a66d38dcb96cad25df396e73ad8ed12f1537e8066fe"
     }
   ],
-  "personalReviewComplete": false
+  "personalReviewComplete": false,
+  "laterLocalControlEvidence": "docs/verification/native-local-control-2026-10-19.json",
+  "historicalStatusNote": "Initial endpoint observations above preceded subsequent local native recording tests; external target remains unproven."
 }
