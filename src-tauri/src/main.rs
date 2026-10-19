@@ -44,6 +44,104 @@ fn refresh_hotkey_labels(desktop: &Desktop, app: &tauri::AppHandle) -> Result<()
     }
     Ok(())
 }
+struct NativeUi {
+    header: GlassHeader<tauri::WebviewWindow>,
+    header_revision: Option<u64>,
+    desktop: Desktop,
+    tray: NativeTray,
+    feedback: Feedback,
+    feedback_revision: Option<u64>,
+    feedback_state: Option<FeedbackState>,
+    power: PowerObserver,
+    layout: LayoutObserver,
+}
+impl NativeUi {
+    fn attach(app: &tauri::AppHandle) -> Result<Self, Box<dyn std::error::Error>> {
+        let window = app
+            .get_webview_window("main")
+            .ok_or("The main dictation window is unavailable")?;
+        // Install native controls above Wry's unchanged, readable content root.
+        // The header owns this window handle until its explicit exit cleanup.
+        let native_desktop = app.state::<Desktop>().inner().clone();
+        let actions = native_desktop.clone();
+        let mut header = GlassHeader::attach(window.clone(), move |action| {
+            actions.native_action(action);
+        })?;
+        let mut header_revision = None;
+        let native_tray = app.state::<NativeTray>().inner().clone();
+        let feedback = Feedback::default();
+        let feedback_revision = None;
+        let feedback_state: Option<FeedbackState> = None;
+        if let Some((revision, state)) = native_desktop.native_header_after(None)? {
+            header.update(state)?;
+            header_revision = Some(revision);
+        }
+        // Tauri run exits the process directly. Remove native observers explicitly
+        // on Exit, before its cleanup, rather than relying on a stack destructor.
+        let power_desktop = app.state::<Desktop>().inner().clone();
+        let power_app = app.clone();
+        let power = PowerObserver::new(move |event| {
+            if event == PowerEvent::WillPowerOff {
+                // ExitRequested alone owns shutdown and the eventual join/retry.
+                power_app.exit(0);
+            } else if let Err(error) = power_desktop.set_suspended(event == PowerEvent::WillSleep) {
+                eprintln!("Power transition failed: {error}");
+            }
+        })?;
+        let label_desktop = native_desktop.clone();
+        let label_app = app.clone();
+        let layout = LayoutObserver::new(move || {
+            if let Err(error) = refresh_hotkey_labels(&label_desktop, &label_app) {
+                eprintln!("Keyboard label refresh failed: {error}");
+            }
+        })?;
+        // Subscribe before the initial read, closing the startup notification gap.
+        refresh_hotkey_labels(&native_desktop, app)?;
+        window.show()?;
+        Ok(Self {
+            header,
+            header_revision,
+            desktop: native_desktop,
+            tray: native_tray,
+            feedback,
+            feedback_revision,
+            feedback_state,
+            power,
+            layout,
+        })
+    }
+    fn update(&mut self) -> Result<(), String> {
+        if let Some((revision, state)) = self.desktop.native_header_after(self.header_revision)? {
+            self.header
+                .update(state)
+                .map_err(|error| error.to_string())?;
+            self.header_revision = Some(revision);
+        }
+        if let Some((revision, state)) =
+            self.desktop.native_feedback_after(self.feedback_revision)?
+        {
+            self.feedback_revision = Some(revision);
+            self.feedback_state = Some(state);
+        }
+        if let Some(state) = &self.feedback_state {
+            self.feedback.update(
+                state,
+                |presentation| self.tray.update(presentation),
+                |session| self.desktop.held_feedback_tone(session),
+            )?;
+        }
+        Ok(())
+    }
+    fn detach(&mut self) {
+        // Tauri exits the process directly; clean up native owners on Exit.
+        self.layout.remove();
+        self.power.remove();
+        if let Err(error) = self.header.detach() {
+            eprintln!("Native window cleanup failed: {error}");
+        }
+    }
+}
+
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "measurement")]
     let native_start_target = match native_start_export::Target::from_option(std::env::var_os(
@@ -131,116 +229,48 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             _ => {}
         })
         .build(tauri::generate_context!())?;
-    let window = app
-        .get_webview_window("main")
-        .ok_or("The main dictation window is unavailable")?;
-    // Install native controls above Wry's unchanged, readable content root.
-    // The header owns this window handle until its explicit exit cleanup.
-    let native_desktop = app.state::<Desktop>().inner().clone();
-    let actions = native_desktop.clone();
-    let mut header = Some(GlassHeader::attach(window.clone(), move |action| {
-        actions.native_action(action);
-    })?);
-    let mut header_revision = None;
-    let native_tray = app.state::<NativeTray>().inner().clone();
-    let mut feedback = Feedback::default();
-    let mut feedback_revision = None;
-    let mut feedback_state: Option<FeedbackState> = None;
-    if let Some((revision, state)) = native_desktop.native_header_after(None)? {
-        if let Some(header) = &mut header {
-            header.update(state)?;
-        }
-        header_revision = Some(revision);
-    }
-    // Tauri run exits the process directly. Remove native observers explicitly
-    // on Exit, before its cleanup, rather than relying on a stack destructor.
-    let power_desktop = app.state::<Desktop>().inner().clone();
-    let power_app = app.handle().clone();
-    let mut power = PowerObserver::new(move |event| {
-        if event == PowerEvent::WillPowerOff {
-            // ExitRequested alone owns shutdown and the eventual join/retry.
-            power_app.exit(0);
-        } else if let Err(error) = power_desktop.set_suspended(event == PowerEvent::WillSleep) {
-            eprintln!("Power transition failed: {error}");
-        }
-    })?;
-    let label_desktop = native_desktop.clone();
-    let label_app = app.handle().clone();
-    let mut layout = LayoutObserver::new(move || {
-        if let Err(error) = refresh_hotkey_labels(&label_desktop, &label_app) {
-            eprintln!("Keyboard label refresh failed: {error}");
-        }
-    })?;
-    // Subscribe before the initial read, closing the startup notification gap.
-    refresh_hotkey_labels(&native_desktop, app.handle())?;
-    window.show()?;
+    let mut native_ui: Option<NativeUi> = None;
     app.run(move |app, event| {
-        if let tauri::RunEvent::Exit = event {
-            layout.remove();
-            power.remove();
-            if let Some(mut attachment) = header.take()
-                && let Err(error) = attachment.detach()
-            {
-                eprintln!("Native window cleanup failed: {error}");
+        if matches!(event, tauri::RunEvent::Ready) {
+            // Tauri creates configured windows and runs setup before Ready.
+            // A built App alone does not yet own its main window or Desktop.
+            match NativeUi::attach(app) {
+                Ok(ui) => native_ui = Some(ui),
+                Err(error) => {
+                    eprintln!("Native UI startup failed: {error}");
+                    app.exit(1);
+                }
             }
         }
         if matches!(
             event,
-            tauri::RunEvent::Ready | tauri::RunEvent::MainEventsCleared
-        ) && let Some(header) = &mut header
+            tauri::RunEvent::MainEventsCleared | tauri::RunEvent::Ready
+        ) && let Some(ui) = &mut native_ui
+            && let Err(error) = ui.update()
         {
-            let updated = native_desktop
-                .native_header_after(header_revision)
-                .and_then(|next| {
-                    if let Some((revision, state)) = next {
-                        header.update(state).map_err(|error| error.to_string())?;
-                        header_revision = Some(revision);
-                    }
-                    Ok(())
-                });
-            if let Err(error) = updated {
-                eprintln!("Native window update failed: {error}");
-                app.exit(1);
-            }
+            eprintln!("Native UI update failed: {error}");
+            app.exit(1);
         }
-        if matches!(
-            event,
-            tauri::RunEvent::Ready | tauri::RunEvent::MainEventsCleared
-        ) {
-            let updated = (|| {
-                if let Some((revision, state)) =
-                    native_desktop.native_feedback_after(feedback_revision)?
-                {
-                    feedback_revision = Some(revision);
-                    feedback_state = Some(state);
-                }
-                if let Some(state) = &feedback_state {
-                    feedback.update(
-                        state,
-                        |presentation| native_tray.update(presentation),
-                        |session| native_desktop.held_feedback_tone(session),
-                    )?;
-                }
-                Ok::<(), String>(())
-            })();
-            if let Err(error) = updated {
-                eprintln!("Native feedback failed: {error}");
-                app.exit(1);
-            }
+        if matches!(event, tauri::RunEvent::Exit)
+            && let Some(mut ui) = native_ui.take()
+        {
+            ui.detach();
         }
-        if let tauri::RunEvent::ExitRequested { api, .. } = event
+        if let tauri::RunEvent::ExitRequested { api, code, .. } = event
             && let Some(desktop) = app.try_state::<Desktop>()
             && !desktop.is_finished()
         {
             api.prevent_exit();
             if desktop.begin_shutdown() {
+                let requested_code = code.unwrap_or(0);
                 let desktop = desktop.inner().clone();
                 let app = app.clone();
                 #[cfg(feature = "measurement")]
                 let export_target = native_start_target.clone();
                 std::thread::spawn(move || {
-                    let code = match desktop.join() {
-                        Ok(()) => 0,
+                    let joined = desktop.join();
+                    let code = match &joined {
+                        Ok(()) => requested_code,
                         Err(error) => {
                             eprintln!("Application cleanup failed: {error}");
                             1
@@ -250,7 +280,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                     if native_start_export::export_if_selected(export_target.as_ref(), || {
                         serde_json::to_vec(&serde_json::json!({
                             "schemaVersion":1,"kind":"native-start-upper-bound-export-v1",
-                            "processId":std::process::id(),"controlledShutdownJoined":code==0,
+                            "processId":std::process::id(),"controlledShutdownJoined":joined.is_ok(),
                             "qualification":false,"exactCpalLatency":false,"L":null,
                             "observations":desktop.native_start_observations(),
                         }))
