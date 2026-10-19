@@ -1,0 +1,192 @@
+{
+  "kind": "exposed-de15-file-diagnostic-not-qualification",
+  "qualified": false,
+  "productionActivated": false,
+  "L": null,
+  "fixtureId": "fleurs-de-test-1668",
+  "fixtureSha256": "27e005fc4ffab77389bda81861250b6a3616fb2e686e65ef366314bad791abf6",
+  "prospectiveFreeze": {
+    "path": "artifacts/p06-context1400-de15-diagnostic-v1/prospective-freeze.json",
+    "sha256": "288688c5038d9d02e376850bc809529c9f5cfc1a0487e1e21942af2d84bb98b3"
+  },
+  "completion": {
+    "path": "artifacts/p06-context1400-de15-diagnostic-v1/completion.json",
+    "sha256": "670abf1dc29552edaf17702f669d85df8f145b13642d46868570c9cb17b00485",
+    "nonOverlappingRootProcessIntervals": true,
+    "pidsMatchProbeReports": true
+  },
+  "blocks": [
+    {
+      "block": 1,
+      "arm": "reference",
+      "rawPath": "artifacts/p06-context1400-de15-diagnostic-v1/1-reference.json",
+      "rawSha256": "94912e8e8ce024a1d3a8db4887e4d9e42169c66078d5b144e27fd6ee4a43a6cc",
+      "allFourTextHashes": [
+        "767a99e37ff3d574fb3c12d7bb90b120d499d5355bcbab7fa94f208e0fea3340",
+        "767a99e37ff3d574fb3c12d7bb90b120d499d5355bcbab7fa94f208e0fea3340",
+        "767a99e37ff3d574fb3c12d7bb90b120d499d5355bcbab7fa94f208e0fea3340",
+        "767a99e37ff3d574fb3c12d7bb90b120d499d5355bcbab7fa94f208e0fea3340"
+      ],
+      "inputFrames": 240000,
+      "preparedFrames": [
+        238400,
+        238400,
+        238400,
+        238400
+      ],
+      "nativeFullNanos": [
+        1006117833,
+        1008284083,
+        1008621458
+      ],
+      "engineTotalNanos": [
+        1041664709,
+        1043278917,
+        1044054375
+      ],
+      "nativeFullMedianNanos": 1008284083,
+      "engineTotalMedianNanos": 1043278917,
+      "passed": true,
+      "workerJoined": true
+    },
+    {
+      "block": 2,
+      "arm": "candidate1400",
+      "rawPath": "artifacts/p06-context1400-de15-diagnostic-v1/2-candidate1400.json",
+      "rawSha256": "2895f3825cbde5b3c326491659c1686c4b08ec0380cd6872bcff7c18d691107f",
+      "allFourTextHashes": [
+        "ceaf7baac48dbdffe8a67c6254720f9606600cb6ff3dc456291bac844d0a2439",
+        "ceaf7baac48dbdffe8a67c6254720f9606600cb6ff3dc456291bac844d0a2439",
+        "ceaf7baac48dbdffe8a67c6254720f9606600cb6ff3dc456291bac844d0a2439",
+        "ceaf7baac48dbdffe8a67c6254720f9606600cb6ff3dc456291bac844d0a2439"
+      ],
+      "inputFrames": 240000,
+      "preparedFrames": [
+        238400,
+        238400,
+        238400,
+        238400
+      ],
+      "nativeFullNanos": [
+        949697375,
+        946664833,
+        947411667
+      ],
+      "engineTotalNanos": [
+        981289500,
+        978909792,
+        979280250
+      ],
+      "nativeFullMedianNanos": 947411667,
+      "engineTotalMedianNanos": 979280250,
+      "passed": true,
+      "workerJoined": true
+    },
+    {
+      "block": 3,
+      "arm": "candidate1400",
+      "rawPath": "artifacts/p06-context1400-de15-diagnostic-v1/3-candidate1400.json",
+      "rawSha256": "79b2627ccdc902b4e9d63a9f296fe1afb04ad16f031426bc2b40b76e5065b94b",
+      "allFourTextHashes": [
+        "ceaf7baac48dbdffe8a67c6254720f9606600cb6ff3dc456291bac844d0a2439",
+        "ceaf7baac48dbdffe8a67c6254720f9606600cb6ff3dc456291bac844d0a2439",
+        "ceaf7baac48dbdffe8a67c6254720f9606600cb6ff3dc456291bac844d0a2439",
+        "ceaf7baac48dbdffe8a67c6254720f9606600cb6ff3dc456291bac844d0a2439"
+      ],
+      "inputFrames": 240000,
+      "preparedFrames": [
+        238400,
+        238400,
+        238400,
+        238400
+      ],
+      "nativeFullNanos": [
+        948448500,
+        957927917,
+        952284708
+      ],
+      "engineTotalNanos": [
+        980124209,
+        991867291,
+        985296917
+      ],
+      "nativeFullMedianNanos": 952284708,
+      "engineTotalMedianNanos": 985296917,
+      "passed": true,
+      "workerJoined": true
+    },
+    {
+      "block": 4,
+      "arm": "reference",
+      "rawPath": "artifacts/p06-context1400-de15-diagnostic-v1/4-reference.json",
+      "rawSha256": "96cbf2baaeae69dedcd0362c8bb5450f2c2e072e121e6982bc6b536150ed9300",
+      "allFourTextHashes": [
+        "767a99e37ff3d574fb3c12d7bb90b120d499d5355bcbab7fa94f208e0fea3340",
+        "767a99e37ff3d574fb3c12d7bb90b120d499d5355bcbab7fa94f208e0fea3340",
+        "767a99e37ff3d574fb3c12d7bb90b120d499d5355bcbab7fa94f208e0fea3340",
+        "767a99e37ff3d574fb3c12d7bb90b120d499d5355bcbab7fa94f208e0fea3340"
+      ],
+      "inputFrames": 240000,
+      "preparedFrames": [
+        238400,
+        238400,
+        238400,
+        238400
+      ],
+      "nativeFullNanos": [
+        1014423958,
+        1010185833,
+        1007910584
+      ],
+      "engineTotalNanos": [
+        1045968250,
+        1043868875,
+        1040587000
+      ],
+      "nativeFullMedianNanos": 1010185833,
+      "engineTotalMedianNanos": 1043868875,
+      "passed": true,
+      "workerJoined": true
+    }
+  ],
+  "pairs": [
+    {
+      "referenceBlock": 1,
+      "candidateBlock": 2,
+      "nativeFullReductionFraction": 0.0603722869638913,
+      "engineTotalReductionFraction": 0.061343774859393574
+    },
+    {
+      "referenceBlock": 4,
+      "candidateBlock": 3,
+      "nativeFullReductionFraction": 0.05731730054860118,
+      "engineTotalReductionFraction": 0.05611045544393689
+    }
+  ],
+  "textHashesStableWithinEachArm": true,
+  "referenceAndCandidateTextHashesDiffer": true,
+  "textQualityVerdict": null,
+  "powerAfter": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23461987)\t82%; AC attached; not charging present: true\n",
+  "limits": [
+    "Already exposed single DE15 fixture; not fresh corpus acceptance.",
+    "Different hashes establish changed output, not better or worse content.",
+    "Three measured file calls per block; no real-time feed or stop clock.",
+    "EngineTotal is not stop-to-text latency or global L.",
+    "No combined full-prefix, long-audio, resource or quality qualification.",
+    "Installed R4 and product source unchanged."
+  ],
+  "independentReadback": {
+    "result": "no findings",
+    "verified": [
+      "freeze and file hashes",
+      "audio_ctx only runtime delta",
+      "16 calls including4warmups",
+      "request/profile identity and worker join",
+      "matching probe PIDs",
+      "nonoverlapping UTC and monotonic process intervals",
+      "medians and reductions",
+      "stable within-arm hashes differing between arms"
+    ],
+    "qualityVerdict": null
+  }
+}
