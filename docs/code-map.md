@@ -39,6 +39,13 @@ sofortigen Abbruch eines bereits laufenden nativen Decoders.
 | Historische React-/IPC-Oberfläche | [App.tsx](../src/App.tsx), [IPC-Client](../src/ipc/index.ts), [AppView](../src/features/app/AppView.tsx), [SettingsView](../src/features/settings/SettingsView.tsx), [RecoveryView](../src/features/settings/RecoveryView.tsx), [Vertrag](../src-tauri/src/contracts.rs) | Kompatibilitätscode; die aktuelle sichtbare Oberfläche läuft nicht über diese React-Komponenten. DOM-Tests sind kein Nachweis für AppKit |
 | Übernommenes SDK | [whisper-rs-Patches](../vendor/whisper-rs/PATCHES.md), [sys-/C++-Patches](../vendor/whisper-rs-sys/PATCHES.md), [Hotkey-Patch](../vendor/global-hotkey/PATCHES.md) | echte Herkunft/Lizenzen, unveränderte gegenüber eigenen Teilen, C-/Rust-Grenze, Pointerlebensdauer und Grenze der lokalen Regressionen |
 
+Native Copy-/Clear-Aktionen besitzen den tatsächlich angezeigten Text. Copy
+verwendet dieses Payload; Conditional Clear vergleicht unmittelbar am seriellen
+Runtime-Dequeue und hält inzwischen anderen Text zurück. Der ältere unbedingte
+Clear-Pfad bleibt für seine bisherigen Aufrufer bestehen. Die
+[Offline-Verträge](verification/offline-contracts-2026-10-19.md) dokumentieren
+Assertion-REDs, Fix und Grenzen der neuen Capture-/Settings-Verbundtests.
+
 ## Tests und tatsächliche Beobachtungen zuordnen
 
 - Der Kern hat [Sitzungsinvarianten](../crates/dictation-core/tests/session_invariants.rs),

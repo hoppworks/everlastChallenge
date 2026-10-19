@@ -24,6 +24,9 @@ Der Fingerprint des tatsächlichen Release-Verzeichnisses
 weist `features=["default"]` aus; `measurement` ist nicht aktiviert.
 Fingerprint-SHA256:
 `f6b2551b4ab1928cc4773c8b42c6f138ccdcb0394088a1c6ecc7e576e81b3c26`.
+Vor dem späteren Kandidatenbuild wurde der damalige Fingerprint bytegleich
+als `artifacts/release-static-target-v1/release-default-fingerprint-634d6c9.json`
+gesichert; der damalige rohe Executable ebenfalls separat erhalten.
 Ein älterer Fingerprint im Workspace-`target/` wurde ausdrücklich nicht als
 Beleg für dieses Bundle verwendet.
 

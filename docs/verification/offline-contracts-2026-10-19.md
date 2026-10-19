@@ -1,7 +1,8 @@
 # Native Textaktionen und zusätzliche Offline-Verträge
 
 Am 19.10.2026 nach ausdrücklicher Wiederaufnahme ohne Nutzeranwesenheit
-bearbeitet. Basis `9a2a903`; Quellen und Logs sind im privaten
+bearbeitet. Produktfix-Commit `ee1a6a4`, Tooling-Commit `6842c3e`, Basis `9a2a903`;
+Quellen und Logs sind im privaten
 `artifacts/offline-continuation-v1/integrated-source-audit.json` gebunden.
 Keine Rechteänderung, Installation oder Mikrofonaufnahme. Die installierte App
 und R3 bleiben auf Produktquelle `634d6c9`; diese Quellenkorrektur ist dort
@@ -79,6 +80,10 @@ bestehen alle vier. Der anschließende vollständige kanonische Scan von rund
   Branches 95,85 %, Functions 98,87 %. Dies misst den erhaltenen TypeScript-
   Code, keine AppKit-Darstellung. Der Bootstrap-Ausschlussgrund ist auf den
   tatsächlichen inerten Starttext/CSS nachgeführt.
+- Abschließendes striktes Clippy mit Messfeature bestanden. Die echten
+  positiven/negativen Guardrail-Fixtures einschließlich instrumentierter
+  Rust-/Frontend-Coveragegrenzen bestanden ebenfalls. Abschließender
+  kanonischer Secret-Scan: rund 1,83 GB, Exit 0 ohne Treffer.
 - `cargo deny check`: Advisories, Bans, Lizenzen und Quellen bestanden;
   bestehende Warnungen über mehrfache transitive Versionen bleiben sichtbar.
   `npm audit --audit-level=high`: null gemeldete Schwachstellen.
