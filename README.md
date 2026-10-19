@@ -2,17 +2,19 @@
 
 Native Diktier-App für Apple Silicon und macOS 27. Rust/Tauri 2 mit nativer AppKit-Oberfläche, lokale Whisper-Inferenz und systemnahe Audioaufnahme/Textübergabe.
 
-Aktuelles lokales Testpaket: **Everlast-Dictation-Testversion-0.1.0-native-ee1a6a4-r4.zip**,
-auf diesem Mac in `~/Downloads/`. R4 ist lokal installiert; frische Modelleinrichtung,
-beide Freigaben und Aufnahme/Kopieren sind [tatsächlich geprüft](docs/verification/r4-installed-smoke-2026-10-19.md).
-Der Akustiktest ergänzt unerwünscht „Vielen Dank.“; automatische Übergabe und
+Aktuelles lokales Testpaket: **Everlast-Dictation-Testversion-0.1.0-native-d05ae10-r5.zip**,
+auf diesem Mac in `~/Downloads/`. [R5 ist paketgeprüft und seine korrigierte
+Recoveryanzeige sichtbar getestet](docs/verification/testversion-package-r5.md), aber noch nicht installiert.
+Die installierte R4-App bleibt erhalten; frische Modelleinrichtung, Freigaben,
+Aufnahme/Kopieren, Abbrechen und Neustart sind [tatsächlich geprüft](docs/verification/r4-installed-smoke-2026-10-19.md).
+Der R4-Akustiktest ergänzt unerwünscht „Vielen Dank.“; automatische Übergabe und
 die automatisierte Fensterzuordnung nach dem Schließen der Einstellungen bleiben
-offen. Abbrechen und normaler Neustart sind geprüft. Noch kein öffentlicher Download; die
-[Kurzanleitung](TESTVERSION.md) beschreibt Installation und erste Einrichtung.
+offen. Noch kein öffentlicher Download; die [Kurzanleitung](TESTVERSION.md)
+beschreibt Installation und erste Einrichtung.
 
-**Testversion (19.10.2026):** Die stabile Referenzfassung ist als lokale Testversion bereitgestellt. Der [Paketbeleg](docs/verification/testversion-package-r4.md) nennt Quellstand, Prüfsummen, Build-/Paketprüfung und die offene Laufzeitabnahme. Die experimentellen FullPrefix-/Kontext-1400-Optimierungen sind nicht aktiv. Die Referenz hat ihre dokumentierte Modellqualitätsprüfung bestanden, erreicht aber das geplante Stop-bis-Text-Ziel von einer Sekunde nicht durchgehend. Die vollständige Leistungs-, Geräte-, Installations- und Produktabnahme bleibt offen. Installation und kurzer Funktionstest stehen in [TESTVERSION.md](TESTVERSION.md); tatsächliche Belege im [Ausführungsprotokoll](docs/execution-log.md), der vollständige Zielumfang im [Implementierungsplan](IMPLEMENTATION_PLAN.md).
+**Testversion (19.10.2026):** Die stabile Referenzfassung ist als lokale Testversion bereitgestellt. Der [Paketbeleg](docs/verification/testversion-package-r5.md) nennt Quellstand, Prüfsummen, Build-/Paketprüfung und die offene Laufzeitabnahme. Die experimentellen FullPrefix-/Kontext-1400-Optimierungen sind nicht aktiv. Die Referenz hat ihre dokumentierte Modellqualitätsprüfung bestanden, erreicht aber das geplante Stop-bis-Text-Ziel von einer Sekunde nicht durchgehend. Die vollständige Leistungs-, Geräte-, Installations- und Produktabnahme bleibt offen. Tatsächliche Belege stehen im [Ausführungsprotokoll](docs/execution-log.md), der vollständige Zielumfang im [Implementierungsplan](IMPLEMENTATION_PLAN.md).
 
-Die [Einstellungswiederherstellung](docs/verification/r4-settings-recovery-2026-10-19.md) ist im installierten R4 geprüft. Eine dabei gefundene falsche Statusmeldung ist im Quellstand korrigiert; dieser Anzeige-Fix ist noch nicht in R4 enthalten.
+Die [Einstellungswiederherstellung](docs/verification/r4-settings-recovery-2026-10-19.md) ist im installierten R4 geprüft. Der dabei gefundene falsche Status ist in R5 korrigiert und gezielt sichtbar geprüft; die installierte R4-App enthält diesen Anzeige-Fix noch nicht.
 
 ## Lokal entwickeln
 
