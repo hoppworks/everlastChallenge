@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "package": "P06",
+  "status": "complete",
+  "decisionDate": "2026-10-19",
+  "completionBasis": "Explicit user speed-requirement deferral plus existing reference quality/resources/cancel evidence and final configuration selection",
+  "speedTargetsDeferred": true,
+  "qualityRequirementsUnchanged": true,
+  "resourceRequirementsUnchanged": true,
+  "safetyDeadlinesUnchanged": true,
+  "productionBinaryChanged": false,
+  "additionalQualityRuns": 0,
+  "finalManifest": {
+    "path": "config/release-transcription.json",
+    "sha256": "4ae37117cb89f44b3cc408a239adfc722655838777b8c03f6dce6498db5f23d2"
+  },
+  "sourcePinsVerified": 13,
+  "evidencePinsVerified": 10,
+  "independentReviewPassed": true,
+  "fullProjectComplete": false,
+  "completedPackages": [
+    "P00",
+    "P01",
+    "P05",
+    "P06"
+  ]
+}
