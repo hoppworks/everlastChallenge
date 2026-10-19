@@ -3,9 +3,11 @@
 Native Diktier-App für Apple Silicon und macOS 27. Rust/Tauri 2 mit nativer AppKit-Oberfläche, lokale Whisper-Inferenz und systemnahe Audioaufnahme/Textübergabe.
 
 Aktuelles lokales Testpaket: **Everlast-Dictation-Testversion-0.1.0-native-ee1a6a4-r4.zip**,
-auf diesem Mac in `~/Downloads/`. Dieser neue Kandidat ist noch nicht installiert
-oder per GUI abgenommen; die bisherige App bleibt unverändert. Noch kein
-öffentlicher Download; die
+auf diesem Mac in `~/Downloads/`. R4 ist lokal installiert; frische Modelleinrichtung,
+beide Freigaben und Aufnahme/Kopieren sind [tatsächlich geprüft](docs/verification/r4-installed-smoke-2026-10-19.md).
+Der Akustiktest ergänzt unerwünscht „Vielen Dank.“; automatische Übergabe und
+die automatisierte Fensterzuordnung nach dem Schließen der Einstellungen bleiben
+offen. Abbrechen und normaler Neustart sind geprüft. Noch kein öffentlicher Download; die
 [Kurzanleitung](TESTVERSION.md) beschreibt Installation und erste Einrichtung.
 
 **Testversion (19.10.2026):** Die stabile Referenzfassung ist als lokale Testversion bereitgestellt. Der [Paketbeleg](docs/verification/testversion-package-r4.md) nennt Quellstand, Prüfsummen, Build-/Paketprüfung und die offene Laufzeitabnahme. Die experimentellen FullPrefix-/Kontext-1400-Optimierungen sind nicht aktiv. Die Referenz hat ihre dokumentierte Modellqualitätsprüfung bestanden, erreicht aber das geplante Stop-bis-Text-Ziel von einer Sekunde nicht durchgehend. Die vollständige Leistungs-, Geräte-, Installations- und Produktabnahme bleibt offen. Installation und kurzer Funktionstest stehen in [TESTVERSION.md](TESTVERSION.md); tatsächliche Belege im [Ausführungsprotokoll](docs/execution-log.md), der vollständige Zielumfang im [Implementierungsplan](IMPLEMENTATION_PLAN.md).
@@ -43,7 +45,7 @@ bleibt eine inerte Startfläche und steuert keine versteckten Formulare.
 
 **Einstellungen** bietet im aktuellen Quellstand Mikrofonwahl, ein physisches Tastenkürzel mit mindestens Option, Command oder Control sowie den Modellstatus. Änderungen werden ausdrücklich gespeichert und sind während eines Diktats gesperrt. Nicht eindeutige Mikrofonnamen bleiben gesperrt; bei Registrierungs- oder Speicherfehlern wird der vorherige Zustand wiederhergestellt. Deutsch ist wählbar; Englisch ist in dieser Testversion noch nicht freigeschaltet. Außerdem enthält die Ansicht die ausdrücklichen Aktionen für Mikrofon und Bedienungshilfen. macOS verwaltet diese Freigaben. Mikrofonzugriff ist für Aufnahmen nötig; Bedienungshilfen werden für die automatische Übergabe an eine andere App benötigt. Die App bestätigt keine Freigabe stellvertretend. Nach Änderungen in den Systemeinstellungen die App wieder in den Vordergrund holen, damit sie den aktuellen Status liest.
 
-Der implementierte Bedienweg ist **Aufnehmen → Stoppen** im Fenster oder die physische Tastenkombination **⌥D** im Zielprogramm. **Escape** bricht eine aktive Sitzung ab. Ein im Fenster gestartetes Diktat bleibt lokal; ein Hotkey-Diktat versucht die Übergabe ausschließlich an das zuvor geprüfte Ziel. Bei unsicherem Ziel bleibt der Text in der App zum bewussten Kopieren erhalten. „Einfügebefehl gesendet“ bestätigt nur den Versand des Tastaturereignisses, nicht den Inhalt im Zielprogramm. Diese Aufnahme- und Übergabewege benötigen noch ihre reale installierte Abnahme.
+Der implementierte Bedienweg ist **Aufnehmen → Stoppen** im Fenster oder die physische Tastenkombination **⌥D** im Zielprogramm. **Escape** bricht eine aktive Sitzung ab. Ein im Fenster gestartetes Diktat bleibt lokal; ein Hotkey-Diktat versucht die Übergabe ausschließlich an das zuvor geprüfte Ziel. Bei unsicherem Ziel bleibt der Text in der App zum bewussten Kopieren erhalten. „Einfügebefehl gesendet“ bestätigt nur den Versand des Tastaturereignisses, nicht den Inhalt im Zielprogramm. Aufnahme per Fensterbutton und manuelles Kopieren/Einfügen sind im installierten R4 geprüft; die automatische Übergabe bleibt offen.
 
 Die lokale Whisper-SDK-Korrektur und ihr numerischer Regressionsnachweis sind
 in [Kalibrierung v3](docs/verification/calibration-v3.md) dokumentiert.
@@ -55,8 +57,8 @@ numerische Oracle-Abweichung.
 
 ## Fehler beheben
 
-Die folgenden Schritte beschreiben den aktuellen Quellstand. Der ältere lokale
-Testbuild kann davon abweichen; die finale installierte Abnahme steht noch aus.
+Die folgenden Schritte beschreiben den aktuellen Quellstand. R4 ist lokal
+installiert; die vollständige Produkt- und Installationsabnahme steht noch aus.
 
 | Beobachtung | Nächster Schritt |
 | --- | --- |
