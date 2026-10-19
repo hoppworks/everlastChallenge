@@ -288,6 +288,24 @@ impl Client {
         settings: SessionSettings,
         process: ProcessIdentity,
     ) -> Result<oneshot::Receiver<Result<u64, String>>, MailboxError> {
+        self.start_with_receipt(settings, process, false)
+    }
+    /// Developer host dispatch: identical productive toggle request, actor-owned receipt.
+    #[cfg(all(feature = "measurement", feature = "test-control"))]
+    pub fn start_host_controlled(
+        &self,
+        settings: SessionSettings,
+        process: ProcessIdentity,
+    ) -> Result<oneshot::Receiver<Result<u64, String>>, MailboxError> {
+        self.start_with_receipt(settings, process, true)
+    }
+    #[cfg(feature = "test-control")]
+    fn start_with_receipt(
+        &self,
+        settings: SessionSettings,
+        process: ProcessIdentity,
+        toggle: bool,
+    ) -> Result<oneshot::Receiver<Result<u64, String>>, MailboxError> {
         let admission = self
             .shared
             .lock()
@@ -304,7 +322,7 @@ impl Client {
             settings,
             process: Some(process),
             delivery: true,
-            toggle: false,
+            toggle,
             reply: StartReply::Controlled(reply),
         }))?;
         Ok(receiver)
@@ -924,6 +942,11 @@ impl<A: AudioDriver> Actor<A> {
             // Capture at the actual adoption boundary, before snapshot cloning,
             // action dispatch, publication, or any observer's polling interval.
             let adopted = Instant::now();
+            for action in &actions {
+                if let Action::Deliver { session, token, .. } = action {
+                    crate::native_service::measurement::text_ready(*session, token, adopted);
+                }
+            }
             if let Some(trace) = &_admission.timing {
                 if let Some(event) = &observed {
                     let next = self.controller.snapshot();
@@ -1568,6 +1591,33 @@ mod tests {
         assert_eq!(state.session.session, Some(1));
         assert_eq!(state.session.phase, Phase::Starting);
         assert!(matches!(capture, NativeCommand::Capture { session, .. } if session.get() == 1));
+        Ok(())
+    }
+
+    #[cfg(all(feature = "measurement", feature = "test-control"))]
+    #[test]
+    fn host_controlled_start_receipt_is_actor_bound_and_cancellable()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let fixture = LifecycleFixture::new()?;
+        let client = fixture.runtime.client();
+        let process = ProcessIdentity::read(std::process::id() as i32)?;
+        let mut reply = client.start_host_controlled(settings(), process)?;
+        let deadline = Instant::now() + Duration::from_secs(2);
+        let sid = loop {
+            match reply.try_recv() {
+                Ok(value) => break value?,
+                Err(oneshot::error::TryRecvError::Empty) if Instant::now() < deadline => {
+                    thread::sleep(Duration::from_millis(1))
+                }
+                _ => return Err("host receipt missing".into()),
+            }
+        };
+        assert_eq!(sid, 1);
+        assert!(
+            matches!(fixture.native.requests.recv_timeout(Duration::from_secs(1))?, NativeCommand::Capture { session, .. } if session.get() == sid)
+        );
+        client.cancel(sid)?;
+        fixture.runtime.join()?;
         Ok(())
     }
 

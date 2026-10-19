@@ -312,3 +312,117 @@ test("untrusted socket mode is rejected before sending a command", async () => {
     },
   );
 });
+
+const hostObservation = {
+  schemaVersion: 1,
+  kind: "controlled-host-start-observation-v1",
+  qualification: false,
+  physicalHotkey: false,
+  exactCpalLatency: false,
+  recordCount: 1,
+  pendingOrdinal: null,
+  overflowAttempts: 0,
+  counterError: false,
+  observerContentionOrPoison: false,
+  lastRecord: {
+    ordinal: 1,
+    session: 7,
+    observedUpperNanos: 180000000,
+    ackOffsetNanos: 1000000,
+    reason: null,
+  },
+};
+test("host start keeps exact status and passive observation excludes arbitrary payloads", async () => {
+  await withServer(reply(response("start-host")), async (controlDir) => {
+    assert.equal(
+      (await requestControl({ controlDir, op: "start-host" })).ok,
+      true,
+    );
+  });
+  await withServer(
+    reply(response("host-observation", { snapshot: hostObservation })),
+    async (controlDir) => {
+      assert.deepEqual(
+        (await requestControl({ controlDir, op: "host-observation" })).snapshot,
+        hostObservation,
+      );
+      await assert.rejects(
+        requestControl({ controlDir, op: "host-observation", session: 7 }),
+      );
+    },
+  );
+  for (const extra of [
+    { privateText: "sentinel" },
+    { physicalHotkey: true },
+    { recordCount: 182 },
+    { lastRecord: { ...hostObservation.lastRecord, session: 0 } },
+  ]) {
+    await withServer(
+      reply(
+        response("host-observation", {
+          snapshot: { ...hostObservation, ...extra },
+        }),
+      ),
+      async (controlDir) => {
+        await assert.rejects(
+          requestControl({ controlDir, op: "host-observation" }),
+        );
+      },
+    );
+  }
+});
+
+test("handoff observation remains bounded passive metadata with no text or target authority", async () => {
+  const handoff = {
+    schemaVersion: 1,
+    kind: "native-handoff-timing-v1",
+    maximumRecords: 32,
+    qualification: false,
+    exactEventPostInstant: false,
+    invalid: false,
+    overflow: false,
+    observerContentionOrPoison: false,
+    records: [
+      {
+        session: 7,
+        textReadyObserved: true,
+        deliveryTokenMatched: true,
+        sendLowerNanos: 1000000,
+        sendUpperNanos: 2000000,
+        sendSucceeded: true,
+        sendCommitted: true,
+        clipboardCompletionLowerNanos: 500000000,
+        clipboardCompletionUpperNanos: 501000000,
+        cleanupSucceeded: true,
+        restoreOutcome: "restored",
+      },
+    ],
+  };
+  await withServer(
+    reply(response("handoff-observation", { snapshot: handoff })),
+    async (controlDir) => {
+      assert.deepEqual(
+        (await requestControl({ controlDir, op: "handoff-observation" }))
+          .snapshot,
+        handoff,
+      );
+    },
+  );
+  for (const extra of [
+    { privateText: "sentinel" },
+    { records: [{ ...handoff.records[0], text: "sentinel" }] },
+    { maximumRecords: 33 },
+    { exactEventPostInstant: true },
+  ]) {
+    await withServer(
+      reply(
+        response("handoff-observation", { snapshot: { ...handoff, ...extra } }),
+      ),
+      async (controlDir) => {
+        await assert.rejects(
+          requestControl({ controlDir, op: "handoff-observation" }),
+        );
+      },
+    );
+  }
+});

@@ -87,6 +87,18 @@ impl test_control::Handler for Desktop {
     fn start(&self, recipient_pid: i32) -> Result<(), String> {
         self.test_control_start(recipient_pid)
     }
+    #[cfg(feature = "measurement")]
+    fn start_host(&self, recipient_pid: i32) -> Result<(), String> {
+        self.test_control_start_host(recipient_pid)
+    }
+    #[cfg(feature = "measurement")]
+    fn host_observation(&self) -> Result<serde_json::Value, String> {
+        self.test_control_host_observation()
+    }
+    #[cfg(feature = "measurement")]
+    fn handoff_observation(&self) -> Result<serde_json::Value, String> {
+        self.test_control_handoff_observation()
+    }
     fn stop(&self, session: u64) -> Result<(), String> {
         self.test_control_stop(session)
     }

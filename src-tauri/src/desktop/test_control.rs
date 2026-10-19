@@ -183,6 +183,109 @@ impl Desktop {
         result
     }
 
+    /// Controlled dispatch through the same host path as an accepted physical hotkey.
+    /// No OS keyboard event is generated, and the result is not a hardware timing claim.
+    #[cfg(feature = "measurement")]
+    pub fn test_control_start_host(&self, expected_pid: i32) -> Result<(), String> {
+        let origin = hotkeys::NativeOrigin {
+            received_at: Some(std::time::Instant::now()),
+        };
+        if !self.0.native_starts_enabled || self.0.test_control.lock().closed {
+            return Err("Native start observation is not active".into());
+        }
+        let process = macos_integration::target::frontmost_test_recipient(expected_pid)
+            .map_err(|_| "Own test recipient is not frontmost")?;
+        let metadata = macos_integration::target::inspection::inspect(expected_pid)
+            .map_err(|_| "Own recipient field cannot be inspected")?;
+        metadata
+            .evidence
+            .eligibility()
+            .map_err(|_| "Own recipient field is not positively editable")?;
+        let runtime = self.runtime()?;
+        let state = runtime.snapshot().map_err(|_| "Runtime unavailable")?;
+        if state.session.phase != Phase::Idle
+            || state.session.session.is_some()
+            || !native_start_state(&state).ready
+            || ui_services::microphone_authorization() != MicAuthorization::Granted
+            || !macos_integration::target::accessibility_trusted()
+            || macos_integration::target::secure_input_active()
+        {
+            return Err("Host measurement requires ready, authorized Idle".into());
+        }
+        {
+            let admission = self
+                .0
+                .admission
+                .lock()
+                .map_err(|_| "Admission lock failed")?;
+            let shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+            if admission.suspended
+                || admission.changing_settings
+                || admission.pending_starts != 0
+                || shared.preferences.needs_restart
+                || shared.settings.device.is_some()
+            {
+                return Err("Host measurement requires stable system-default settings".into());
+            }
+        }
+        self.0.test_control.reserve()?;
+        let result = self.dispatch_toggle(Some(process), origin, StartOwner::TestControl);
+        if result.is_err() {
+            self.0.test_control.complete(None);
+        }
+        result
+    }
+    #[cfg(feature = "measurement")]
+    pub(super) fn forward_test_host_receipt(
+        &self,
+        runtime: crate::runtime::Client,
+        reply: oneshot::Receiver<Result<u64, String>>,
+    ) -> oneshot::Receiver<Result<(), String>> {
+        let (send, receive) = oneshot::channel();
+        let desktop = self.clone();
+        tauri::async_runtime::spawn(async move {
+            let result = match reply.await {
+                Ok(Ok(session)) => {
+                    if desktop.0.test_control.complete(Some(session)) {
+                        let _result = runtime.cancel(session);
+                        Err("Test control closed before host acknowledgement".into())
+                    } else {
+                        Ok(())
+                    }
+                }
+                _ => {
+                    desktop.0.test_control.complete(None);
+                    Err("Host start acknowledgement failed".into())
+                }
+            };
+            let _result = send.send(result);
+        });
+        receive
+    }
+    #[cfg(feature = "measurement")]
+    pub fn test_control_host_observation(&self) -> Result<serde_json::Value, String> {
+        if self.0.test_control.lock().closed || !self.0.native_starts_enabled {
+            return Err("Native start observation is not active".into());
+        }
+        let all = self.native_start_observations();
+        let records = all["records"].as_array().ok_or("Observer unavailable")?;
+        Ok(serde_json::json!({
+            "schemaVersion":1, "kind":"controlled-host-start-observation-v1",
+            "qualification":false, "physicalHotkey":false, "exactCpalLatency":false,
+            "recordCount":records.len(), "pendingOrdinal":all["pendingOrdinal"],
+            "overflowAttempts":all["overflowAttempts"], "counterError":all["counterError"],
+            "observerContentionOrPoison":all["observerContentionOrPoison"],
+            "lastRecord":records.last(),
+        }))
+    }
+    #[cfg(feature = "measurement")]
+    pub fn test_control_handoff_observation(&self) -> Result<serde_json::Value, String> {
+        if self.0.test_control.lock().closed {
+            return Err("Test control expired".into());
+        }
+        Ok(crate::native_service::measurement::snapshot())
+    }
+
     pub fn test_control_stop(&self, session: u64) -> Result<(), String> {
         self.test_control_owned(session)?;
         self.stop_recording(session)
@@ -294,6 +397,17 @@ mod tests {
         assert_eq!(value["actionError"], true);
         assert_eq!(value["publicSentenceMatches"], false);
         assert_eq!(value["controlledSessionId"], serde_json::Value::Null);
+    }
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn host_start_without_explicit_observer_never_reserves_or_creates_ownership() {
+        let desktop = super::super::tests::unstarted_desktop();
+        assert!(desktop.test_control_start_host(1).is_err());
+        let state = desktop.0.test_control.lock();
+        assert!(!state.pending);
+        assert_eq!(state.session, None);
+        drop(state);
+        assert!(desktop.test_control_host_observation().is_err());
     }
     #[test]
     fn unrelated_session_is_never_controllable() {

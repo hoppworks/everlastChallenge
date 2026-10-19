@@ -117,6 +117,12 @@ struct Inner {
     admission: Mutex<Admission>,
     requests: Sender<SettingsCommand>,
 }
+#[derive(Clone, Copy)]
+enum StartOwner {
+    Native,
+    #[cfg(all(feature = "measurement", feature = "test-control"))]
+    TestControl,
+}
 #[derive(Clone)]
 pub struct Desktop(Arc<Inner>);
 impl Desktop {
@@ -471,7 +477,7 @@ impl Desktop {
         delivery: bool,
         toggle: bool,
     ) -> Result<oneshot::Receiver<Result<(), String>>, String> {
-        self.start_request_tagged(process, delivery, toggle, None)
+        self.start_request_tagged(process, delivery, toggle, None, StartOwner::Native)
     }
     fn start_request_tagged(
         &self,
@@ -479,6 +485,7 @@ impl Desktop {
         delivery: bool,
         toggle: bool,
         _measurement_ticket: Option<u64>,
+        _owner: StartOwner,
     ) -> Result<oneshot::Receiver<Result<(), String>>, String> {
         let mut admission = self
             .0
@@ -508,6 +515,20 @@ impl Desktop {
             shared.settings.clone()
         };
         let runtime = self.runtime()?;
+        #[cfg(all(feature = "measurement", feature = "test-control"))]
+        if matches!(_owner, StartOwner::TestControl) {
+            // Keep the clean-idle check atomic with request handoff. A start
+            // queued after the outer preflight must never turn this into a toggle-stop.
+            let state = runtime.snapshot().map_err(|_| "Runtime unavailable")?;
+            if admission.pending_starts != 0
+                || settings.device.is_some()
+                || state.session.phase != Phase::Idle
+                || state.session.session.is_some()
+                || !native_start_state(&state).ready
+            {
+                return Err("Host measurement admission is no longer clean Idle".into());
+            }
+        }
         #[cfg(feature = "measurement")]
         if let Some(ticket) = _measurement_ticket {
             let state = runtime.snapshot().ok().map(|s| native_start_state(&s));
@@ -531,18 +552,26 @@ impl Desktop {
         if !stopping && ui_services::microphone_authorization() != MicAuthorization::Granted {
             return Err("Bitte zuerst den Mikrofonzugriff freigeben".into());
         }
-        let reply = runtime
-            .start(
-                SessionSettings {
-                    device: settings.device,
-                    language: settings.language.into(),
-                    generation: 1,
-                },
-                process,
-                delivery,
-                toggle,
-            )
-            .map_err(|error| error.to_string())?;
+        let session_settings = SessionSettings {
+            device: settings.device,
+            language: settings.language.into(),
+            generation: 1,
+        };
+        let reply = match _owner {
+            StartOwner::Native => runtime
+                .start(session_settings, process, delivery, toggle)
+                .map_err(|error| error.to_string())?,
+            #[cfg(all(feature = "measurement", feature = "test-control"))]
+            StartOwner::TestControl => {
+                let reply = runtime
+                    .start_host_controlled(
+                        session_settings,
+                        process.ok_or("Own recipient identity required")?,
+                    )
+                    .map_err(|error| error.to_string())?;
+                self.forward_test_host_receipt(runtime.clone(), reply)
+            }
+        };
         admission.pending_starts += 1;
         let reservation = Reservation {
             owner: Arc::clone(&self.0),
@@ -628,39 +657,43 @@ impl Desktop {
                     }
                     return;
                 }
-                let measured_ticket = self.start_measurement_begin(_origin);
-                let Ok(permit) = self.0.admissions.clone().try_acquire_owned() else {
-                    self.start_measurement_ack(measured_ticket, false);
-                    self.action_error("Zu viele laufende Anfragen".into());
-                    return;
-                };
-                match self.start_request_tagged(process, true, true, measured_ticket) {
-                    Ok(reply) => {
-                        let desktop = self.clone();
-                        tauri::async_runtime::spawn(async move {
-                            let _permit = permit;
-                            match reply.await {
-                                Ok(Ok(())) => {
-                                    desktop.start_measurement_ack(measured_ticket, true);
-                                }
-                                Ok(Err(error)) => {
-                                    desktop.start_measurement_ack(measured_ticket, false);
-                                    desktop.action_error(error);
-                                }
-                                Err(_) => {
-                                    desktop.start_measurement_ack(measured_ticket, false);
-                                    desktop.action_error("Aufnahmeanfrage beendet".into());
-                                }
-                            }
-                        });
-                    }
-                    Err(error) => {
-                        self.start_measurement_ack(measured_ticket, false);
-                        self.action_error(error);
-                    }
+                if let Err(error) = self.dispatch_toggle(process, _origin, StartOwner::Native) {
+                    self.action_error(error);
                 }
             }
         }
+    }
+    /// Shared productive host admission. Controlled callers may change only receipt ownership.
+    fn dispatch_toggle(
+        &self,
+        process: Option<ProcessIdentity>,
+        origin: hotkeys::NativeOrigin,
+        owner: StartOwner,
+    ) -> Result<(), String> {
+        let measured_ticket = self.start_measurement_begin(origin);
+        let permit = self.0.admissions.clone().try_acquire_owned().map_err(|_| {
+            self.start_measurement_ack(measured_ticket, false);
+            "Zu viele laufende Anfragen".to_owned()
+        })?;
+        let reply = self
+            .start_request_tagged(process, true, true, measured_ticket, owner)
+            .inspect_err(|_| self.start_measurement_ack(measured_ticket, false))?;
+        let desktop = self.clone();
+        tauri::async_runtime::spawn(async move {
+            let _permit = permit;
+            match reply.await {
+                Ok(Ok(())) => desktop.start_measurement_ack(measured_ticket, true),
+                Ok(Err(error)) => {
+                    desktop.start_measurement_ack(measured_ticket, false);
+                    desktop.action_error(error);
+                }
+                Err(_) => {
+                    desktop.start_measurement_ack(measured_ticket, false);
+                    desktop.action_error("Aufnahmeanfrage beendet".into());
+                }
+            }
+        });
+        Ok(())
     }
     pub async fn save_settings(&self, draft: SettingsDraft) -> Result<(), String> {
         let _permit = self.ui_permit()?;

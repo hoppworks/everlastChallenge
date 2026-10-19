@@ -3,7 +3,16 @@ import { lstatSync, realpathSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const OPS = ["status", "inspect", "start", "stop", "cancel"];
+const OPS = [
+  "status",
+  "inspect",
+  "start",
+  "start-host",
+  "host-observation",
+  "handoff-observation",
+  "stop",
+  "cancel",
+];
 const PHASES = [
   "Idle",
   "Starting",
@@ -91,6 +100,109 @@ function validMetadata(state) {
         ].includes(state.holdReason))
   );
 }
+const nonnegative = (value) => Number.isSafeInteger(value) && value >= 0;
+const nullableCount = (value) => value === null || nonnegative(value);
+function validHostObservation(value) {
+  const record = value?.lastRecord;
+  return (
+    exact(value, [
+      "schemaVersion",
+      "kind",
+      "qualification",
+      "physicalHotkey",
+      "exactCpalLatency",
+      "recordCount",
+      "pendingOrdinal",
+      "overflowAttempts",
+      "counterError",
+      "observerContentionOrPoison",
+      "lastRecord",
+    ]) &&
+    value.schemaVersion === 1 &&
+    value.kind === "controlled-host-start-observation-v1" &&
+    value.qualification === false &&
+    value.physicalHotkey === false &&
+    value.exactCpalLatency === false &&
+    nonnegative(value.recordCount) &&
+    value.recordCount <= 181 &&
+    (value.pendingOrdinal === null || positive(value.pendingOrdinal)) &&
+    nonnegative(value.overflowAttempts) &&
+    typeof value.counterError === "boolean" &&
+    typeof value.observerContentionOrPoison === "boolean" &&
+    (record === null ||
+      (exact(record, [
+        "ordinal",
+        "session",
+        "observedUpperNanos",
+        "ackOffsetNanos",
+        "reason",
+      ]) &&
+        positive(record.ordinal) &&
+        (record.session === null || positive(record.session)) &&
+        nullableCount(record.observedUpperNanos) &&
+        nullableCount(record.ackOffsetNanos) &&
+        (record.reason === null ||
+          (typeof record.reason === "string" && record.reason.length <= 100))))
+  );
+}
+function validHandoffObservation(value) {
+  return (
+    exact(value, [
+      "schemaVersion",
+      "kind",
+      "maximumRecords",
+      "qualification",
+      "exactEventPostInstant",
+      "invalid",
+      "overflow",
+      "observerContentionOrPoison",
+      "records",
+    ]) &&
+    value.schemaVersion === 1 &&
+    value.kind === "native-handoff-timing-v1" &&
+    value.maximumRecords === 32 &&
+    value.qualification === false &&
+    value.exactEventPostInstant === false &&
+    typeof value.invalid === "boolean" &&
+    typeof value.overflow === "boolean" &&
+    typeof value.observerContentionOrPoison === "boolean" &&
+    Array.isArray(value.records) &&
+    value.records.length <= 32 &&
+    value.records.every(
+      (record) =>
+        exact(record, [
+          "session",
+          "textReadyObserved",
+          "deliveryTokenMatched",
+          "sendLowerNanos",
+          "sendUpperNanos",
+          "sendSucceeded",
+          "sendCommitted",
+          "clipboardCompletionLowerNanos",
+          "clipboardCompletionUpperNanos",
+          "cleanupSucceeded",
+          "restoreOutcome",
+        ]) &&
+        positive(record.session) &&
+        typeof record.textReadyObserved === "boolean" &&
+        typeof record.deliveryTokenMatched === "boolean" &&
+        [
+          record.sendLowerNanos,
+          record.sendUpperNanos,
+          record.clipboardCompletionLowerNanos,
+          record.clipboardCompletionUpperNanos,
+        ].every(nullableCount) &&
+        [
+          record.sendSucceeded,
+          record.sendCommitted,
+          record.cleanupSucceeded,
+        ].every((v) => v === null || typeof v === "boolean") &&
+        [null, "restored", "ownership-changed", "no-lease"].includes(
+          record.restoreOutcome,
+        ),
+    )
+  );
+}
 function parseReply(bytes, op) {
   let value;
   try {
@@ -116,7 +228,11 @@ function parseReply(bytes, op) {
   )
     throw protocol();
   const state = value.snapshot;
-  if (state !== null && op === "inspect") {
+  if (state !== null && op === "host-observation") {
+    if (!validHostObservation(state)) throw protocol();
+  } else if (state !== null && op === "handoff-observation") {
+    if (!validHandoffObservation(state)) throw protocol();
+  } else if (state !== null && op === "inspect") {
     if (!validMetadata(state)) throw protocol();
   } else if (state !== null) {
     if (

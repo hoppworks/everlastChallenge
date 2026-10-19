@@ -28,6 +28,12 @@ pub trait Handler {
     fn inspect(&self, recipient_pid: i32) -> Result<Value, String>;
     fn status(&self) -> Result<Value, String>;
     fn start(&self, recipient_pid: i32) -> Result<(), String>;
+    #[cfg(feature = "measurement")]
+    fn start_host(&self, recipient_pid: i32) -> Result<(), String>;
+    #[cfg(feature = "measurement")]
+    fn host_observation(&self) -> Result<Value, String>;
+    #[cfg(feature = "measurement")]
+    fn handoff_observation(&self) -> Result<Value, String>;
     fn stop(&self, session: u64) -> Result<(), String>;
     fn cancel(&self, session: u64) -> Result<(), String>;
     fn shutdown(&self) -> Result<(), String>;
@@ -233,11 +239,22 @@ impl Control {
         match request.op.as_str() {
             "inspect" => public_inspection(handler, self.recipient_pid),
             "status" => public_status(handler),
-            "start" => {
+            #[cfg(feature = "measurement")]
+            "host-observation" => handler.host_observation(),
+            #[cfg(feature = "measurement")]
+            "handoff-observation" => handler.handoff_observation(),
+            "start" | "start-host" => {
                 if self.start_pending || self.owned.is_some() || self.ending {
                     return Err("test-control start already admitted or expired".into());
                 }
-                handler.start(self.recipient_pid)?;
+                if request.op == "start-host" {
+                    #[cfg(feature = "measurement")]
+                    handler.start_host(self.recipient_pid)?;
+                    #[cfg(not(feature = "measurement"))]
+                    return Err("Host measurement is not compiled".into());
+                } else {
+                    handler.start(self.recipient_pid)?;
+                }
                 self.start_pending = true;
                 self.start_deadline = Some(now + RECORDING_LIMIT);
                 public_status(handler)
@@ -458,6 +475,10 @@ fn validate_request(request: &Request) -> Result<(), String> {
     }
     match request.op.as_str() {
         "status" | "start" | "inspect" if request.session.is_none() => Ok(()),
+        #[cfg(feature = "measurement")]
+        "start-host" | "host-observation" | "handoff-observation" if request.session.is_none() => {
+            Ok(())
+        }
         "stop" | "cancel" if request.session.is_some_and(|id| id > 0) => Ok(()),
         _ => Err("invalid operation or session".into()),
     }
@@ -619,6 +640,18 @@ mod protocol_tests {
             state.pending = true;
             Ok(())
         }
+        #[cfg(feature = "measurement")]
+        fn start_host(&self, recipient_pid: i32) -> Result<(), String> {
+            self.start(recipient_pid)
+        }
+        #[cfg(feature = "measurement")]
+        fn host_observation(&self) -> Result<Value, String> {
+            Ok(json!({"test":true}))
+        }
+        #[cfg(feature = "measurement")]
+        fn handoff_observation(&self) -> Result<Value, String> {
+            Ok(json!({"test":true}))
+        }
         fn stop(&self, session: u64) -> Result<(), String> {
             self.state
                 .lock()
@@ -634,6 +667,39 @@ mod protocol_tests {
             self.state.lock().map_err(|_| "test lock")?.shutdowns += 1;
             Ok(())
         }
+    }
+    #[cfg(feature = "measurement")]
+    #[test]
+    fn host_start_uses_bound_owner_and_blocks_duplicate_until_receipt()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (_directory, mut control) = fixture()?;
+        let handler = Fake::default();
+        control.execute(&handler, request("start-host", None), Instant::now())?;
+        assert!(
+            control
+                .execute(&handler, request("start-host", None), Instant::now())
+                .is_err()
+        );
+        assert_eq!(handler.state.lock().map_err(|_| "test lock")?.starts, 1);
+        assert!(
+            control
+                .execute(&handler, request("cancel", Some(99)), Instant::now())
+                .is_err()
+        );
+        {
+            let mut state = handler.state.lock().map_err(|_| "test lock")?;
+            state.controlled = Some(7);
+            state.session = Some(7);
+            state.pending = false;
+        }
+        control.observe_owner(&handler);
+        control.execute(&handler, request("cancel", Some(7)), Instant::now())?;
+        assert_eq!(
+            handler.state.lock().map_err(|_| "test lock")?.stopped,
+            vec![7]
+        );
+        assert!(validate_request(&request("host-observation", Some(7))).is_err());
+        Ok(())
     }
     fn fixture() -> Result<(tempfile::TempDir, Control), Box<dyn std::error::Error>> {
         let temp = tempfile::tempdir()?;

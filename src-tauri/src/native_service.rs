@@ -1,4 +1,6 @@
 //! Serial native orchestration. AX has its own owner; AppKit stays on the main thread.
+#[cfg(feature = "measurement")]
+pub mod measurement;
 use crate::runtime::{NativeCommand, NativeEndpoint, NativeResult};
 use crossbeam_channel::{Sender, bounded};
 use dictation_core::session::DeliveryResult;
@@ -42,6 +44,17 @@ fn wait_for_restore_deadline(
 }
 
 type NativeError = String;
+
+fn dispatch_main(command: Command, _token: Option<&DeliveryToken>) -> Result<Reply, NativeError> {
+    #[cfg(feature = "measurement")]
+    {
+        measurement::dispatch(command, _token, |command| {
+            main_delivery::dispatch(command).map_err(main_error_message)
+        })
+    }
+    #[cfg(not(feature = "measurement"))]
+    main_delivery::dispatch(command).map_err(main_error_message)
+}
 
 fn clipboard_error_message(error: ClipboardError) -> String {
     match error {
@@ -114,6 +127,8 @@ pub struct MainRequest {
     completion: Arc<Mutex<()>>,
     slot: MainSlot,
     cleanup: Option<NonZeroU64>,
+    #[cfg(feature = "measurement")]
+    observation_token: Option<DeliveryToken>,
 }
 impl MainRequest {
     pub fn execute(self) {
@@ -124,9 +139,20 @@ impl MainRequest {
             completion,
             mut slot,
             cleanup,
+            #[cfg(feature = "measurement")]
+            observation_token,
         } = self;
         let result = if permit.load(Ordering::Acquire) {
-            main_delivery::dispatch(command).map_err(main_error_message)
+            dispatch_main(command, {
+                #[cfg(feature = "measurement")]
+                {
+                    observation_token.as_ref()
+                }
+                #[cfg(not(feature = "measurement"))]
+                {
+                    None
+                }
+            })
         } else {
             Err("Die Hauptthread-Anfrage ist nicht mehr gültig.".into())
         };
@@ -137,7 +163,7 @@ impl MainRequest {
             || !permit.load(Ordering::Acquire)
             || reply.try_send(result).is_err())
             && let Some(session) = cleanup
-            && let Err(error) = main_delivery::dispatch(Command::Cleanup { session })
+            && let Err(error) = dispatch_main(Command::Cleanup { session }, None)
         {
             eprintln!("Native cleanup after abandoned request failed: {error}");
         }
@@ -184,6 +210,8 @@ impl MainBridge {
                 released: false,
             },
             cleanup,
+            #[cfg(feature = "measurement")]
+            observation_token: token.cloned(),
         };
         if let Err(error) = (self.schedule)(request) {
             if let Some(token) = token {
@@ -767,6 +795,8 @@ impl<B: Backend> Owner<B> {
         }) {
             return Err("Das ursprüngliche Textfeld konnte dieser Übergabe nicht eindeutig zugeordnet werden.".into());
         }
+        #[cfg(feature = "measurement")]
+        measurement::validate_delivery(session, token);
         self.cleanup()?;
         self.track(token)?;
         if token.session() != session || text.is_empty() || text.len() > 256 * 1024 {
