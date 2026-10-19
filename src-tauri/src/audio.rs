@@ -670,8 +670,18 @@ fn selected_device(name: Option<&str>) -> Result<cpal::Device, CaptureError> {
             .default_input_device()
             .ok_or(CaptureError::DeviceUnavailable);
     };
+    // CPAL input_devices probes supported formats by constructing AudioUnits.
+    // Verify input presence through read-only properties, then select from the
+    // unfiltered device-ID iterator. Ambiguous names remain fail-closed.
+    if !crate::devices::input_devices()
+        .map_err(CaptureError::Native)?
+        .iter()
+        .any(|device| device.name == name && device.available)
+    {
+        return Err(CaptureError::DeviceUnavailable);
+    }
     let mut matching = host
-        .input_devices()
+        .devices()
         .map_err(|error| CaptureError::Native(error.to_string()))?
         .filter(|device| device.name().is_ok_and(|actual| actual == name));
     let device = matching.next().ok_or(CaptureError::DeviceUnavailable)?;

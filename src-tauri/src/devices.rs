@@ -1,6 +1,5 @@
 //! Bounded device-name discovery. Enumerating devices never opens an input stream.
 
-use cpal::traits::{DeviceTrait, HostTrait};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use ts_rs::TS;
@@ -16,15 +15,9 @@ pub struct InputDevice {
 
 /// Read-only enumeration; device presence is a snapshot, not a stream-open test.
 pub fn input_devices() -> Result<Vec<InputDevice>, String> {
-    let host = cpal::default_host();
-    let devices = host
-        .input_devices()
-        .map_err(|_| "Input devices could not be enumerated".to_owned())?;
-    normalize_input_devices(devices.map(|device| {
-        device
-            .name()
-            .map_err(|_| "Input device name could not be read".to_owned())
-    }))
+    let names =
+        macos_integration::devices::input_device_names().map_err(|error| error.to_string())?;
+    normalize_input_devices(names.into_iter().map(Ok))
 }
 
 /// Validate and aggregate a complete refresh, preserving exact hardware names.
