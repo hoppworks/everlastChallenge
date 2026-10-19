@@ -1,0 +1,211 @@
+{
+  "schema": 1,
+  "purpose": "bounded synthetic long-tail mismatch diagnostic; not acceptance or a fix",
+  "sourceCommit": "79a92738d517add7be0ce2b744aafb6a2e185e6b",
+  "binarySha256": "7bc16cf8e3294240cd220f4f84a7b739da242c19a9f81314cd29af8923ea14d8",
+  "modelSha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+  "vadSha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+  "inputGeneration": {
+    "seed": "0x45564C31",
+    "algorithm": "xorshift32-v1, corpus._noise",
+    "speechSha256": "b892cf9dc80c437f0a78c6f261d83dda196252e31a1e415032981472d3ea9137",
+    "purpose": "bounded diagnostic; synthesized tail, no microphone audio",
+    "inputs": [
+      {
+        "name": "silence",
+        "path": "artifacts/long-noise-isolation-v1/silence.wav",
+        "sha256": "fa7e3ecfff95d290c044824c4d873c021ba7d8a46b3625b444b4e462d54000ca",
+        "peakTailPcm16": 0,
+        "frames": 4800000,
+        "speechFrames": 168960
+      },
+      {
+        "name": "noise-low",
+        "path": "artifacts/long-noise-isolation-v1/noise-low.wav",
+        "sha256": "f61cecaaaa8a18c16e4fea01e592a7a023e6f3c417ff60ed1a218175e943bfa9",
+        "peakTailPcm16": 33,
+        "frames": 4800000,
+        "speechFrames": 168960
+      },
+      {
+        "name": "noise-medium",
+        "path": "artifacts/long-noise-isolation-v1/noise-medium.wav",
+        "sha256": "1a9c3fa5b0bc5816a9ad97d5e0ad992582466b72da0a975d37cd920f54cdc3ba",
+        "peakTailPcm16": 328,
+        "frames": 4800000,
+        "speechFrames": 168960
+      }
+    ]
+  },
+  "runs": [
+    {
+      "name": "silence",
+      "command": [
+        "/Users/hoppworks/projects/everlastChallenge/target/release/examples/transcribe_probe",
+        "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "artifacts/long-noise-isolation-v1/silence.wav",
+        "--language",
+        "de",
+        "--repeat",
+        "1",
+        "--reference",
+        "artifacts/long-noise-isolation-v1/expected.txt"
+      ],
+      "exitCode": 0,
+      "wallSeconds": 4.931561166,
+      "referenceMatch": true,
+      "logSha256": "3743d8ca6c5b37ff5defdaa9d6e71a8958d4c506629256b9ed733a51b55c0ef8"
+    },
+    {
+      "name": "noise-low",
+      "command": [
+        "/Users/hoppworks/projects/everlastChallenge/target/release/examples/transcribe_probe",
+        "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "artifacts/long-noise-isolation-v1/noise-low.wav",
+        "--language",
+        "de",
+        "--repeat",
+        "1",
+        "--reference",
+        "artifacts/long-noise-isolation-v1/expected.txt"
+      ],
+      "exitCode": 1,
+      "wallSeconds": 12.824374959,
+      "referenceMatch": false,
+      "logSha256": "6037d5c71e4624c05d4791215c8268bdf58ea39b6f61a4096b8be62b2a089e85"
+    },
+    {
+      "name": "noise-medium",
+      "command": [
+        "/Users/hoppworks/projects/everlastChallenge/target/release/examples/transcribe_probe",
+        "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "artifacts/long-noise-isolation-v1/noise-medium.wav",
+        "--language",
+        "de",
+        "--repeat",
+        "1",
+        "--reference",
+        "artifacts/long-noise-isolation-v1/expected.txt"
+      ],
+      "exitCode": 1,
+      "wallSeconds": 13.53532625,
+      "referenceMatch": false,
+      "logSha256": "b4b60fc37d2b6a06a3120aeccc4a38c56e05515848b6b44197a494acf4e4000d"
+    }
+  ],
+  "shorterInputs": [
+    {
+      "seconds": 30,
+      "command": [
+        "/Users/hoppworks/projects/everlastChallenge/target/release/examples/transcribe_probe",
+        "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "artifacts/long-noise-isolation-v1/noise-low-30s.wav",
+        "--language",
+        "de",
+        "--repeat",
+        "1",
+        "--reference",
+        "artifacts/long-noise-isolation-v1/expected.txt"
+      ],
+      "sha256": "2ce6a911b877e8bfd0af32ae90659fbbb4cbb4c13e8572b32aab3c2417d839dc",
+      "exitCode": 0,
+      "referenceMatch": true,
+      "wallSeconds": 2.9816514580000004,
+      "logSha256": "9707cb7feb8680fe21d072591bb1f45784d6ecc485a61b51ad052ae3abb43983"
+    },
+    {
+      "seconds": 60,
+      "command": [
+        "/Users/hoppworks/projects/everlastChallenge/target/release/examples/transcribe_probe",
+        "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "artifacts/long-noise-isolation-v1/noise-low-60s.wav",
+        "--language",
+        "de",
+        "--repeat",
+        "1",
+        "--reference",
+        "artifacts/long-noise-isolation-v1/expected.txt"
+      ],
+      "sha256": "f9c7f9f0fb374299b62649feececddc0d0cead8a23483d0b5aaf003774843e75",
+      "exitCode": 1,
+      "referenceMatch": false,
+      "wallSeconds": 4.089876084,
+      "logSha256": "bbbdbd6a6f8a0149c2362a9583e8d77ee918514cca1190bf868c28558f154e1a"
+    },
+    {
+      "seconds": 120,
+      "command": [
+        "/Users/hoppworks/projects/everlastChallenge/target/release/examples/transcribe_probe",
+        "artifacts/models/ggml-large-v3-turbo-q5_0.bin",
+        "artifacts/long-noise-isolation-v1/noise-low-120s.wav",
+        "--language",
+        "de",
+        "--repeat",
+        "1",
+        "--reference",
+        "artifacts/long-noise-isolation-v1/expected.txt"
+      ],
+      "sha256": "90149cd55d28c966e32326d2dd4c6116c7c9209fe24e71076f1a23135bde6e21",
+      "exitCode": 1,
+      "referenceMatch": false,
+      "wallSeconds": 6.359593583,
+      "logSha256": "4377880f9f7fb112dfa6b3fb2cb8ecd48054832459b710fcfe4b563d664a80be"
+    }
+  ],
+  "confirmations": [
+    {
+      "run": 1,
+      "exitCode": 1,
+      "wallSeconds": 4.154257459,
+      "logSha256": "af0bfdbd89808a17923b0f3964552a696bca934b9924511174ff8b80de5c25d9",
+      "summary": [
+        "model worker ready in 1.430232459s",
+        "replay run 1: 147 bytes, 2.036718209s, reference_match=false",
+        "Error: \"replay transcript did not match the supplied reference\""
+      ]
+    },
+    {
+      "run": 2,
+      "exitCode": 1,
+      "wallSeconds": 4.244509958,
+      "logSha256": "96bcb03a49a84a4925386918a3637f54778a5054e200a5f066a66d45f35ff296",
+      "summary": [
+        "model worker ready in 1.502427667s",
+        "replay run 1: 147 bytes, 2.047437917s, reference_match=false",
+        "Error: \"replay transcript did not match the supplied reference\""
+      ]
+    }
+  ],
+  "energyAnalysis": {
+    "last20msRms": 0.0005708729826374401,
+    "energyEndRms": 2.5e-05,
+    "lastFrameAboveEndThreshold": true,
+    "interpretation": "By current speech_range end-energy rule, the final frame keeps the non-speech tail within the selected range. This explains exposure to noise, not proof of exact acoustic-root-cause or a safe replacement threshold."
+  },
+  "artifactHashes": {
+    "artifacts/long-noise-isolation-v1/inputs.json": "3ea3fdecbb9275b9b8f59786639da32439abe581dad237656a4623e896c93a70",
+    "artifacts/long-noise-isolation-v1/results.json": "a7f1dfc57dc92d235ade20e5c74e874eda48aea11b5dd444ffba814919df2c28",
+    "artifacts/long-noise-isolation-v1/minimization.json": "7bbca150ccc30c99d98be436bc3bfb8f07b5481a36d1dda8f7563ef9e1c0cf9a",
+    "artifacts/long-noise-isolation-v1/confirmation.json": "a98ca3050f508e90383b21013509015b83e9c8bdfe404b655be9378e1145eb26",
+    "artifacts/long-noise-isolation-v1/energy-analysis.json": "22f44dea23a686af258dcbd566f9a1d3e54d21eb68a37a6d7ac520cdee9b7a44",
+    "artifacts/long-noise-isolation-v1/expected.txt": "35ee1c63100e845a087a91e3e2c99b9ae4d4d2828b69828ff3063f049f7ae71e",
+    "artifacts/long-noise-isolation-v1/build.log": "472294ae937c65a2ad64dd720ffeb889a8371ee152a0c80617743eac06df42fe",
+    "artifacts/long-noise-isolation-v1/silence.log": "3743d8ca6c5b37ff5defdaa9d6e71a8958d4c506629256b9ed733a51b55c0ef8",
+    "artifacts/long-noise-isolation-v1/noise-low.log": "6037d5c71e4624c05d4791215c8268bdf58ea39b6f61a4096b8be62b2a089e85",
+    "artifacts/long-noise-isolation-v1/noise-medium.log": "b4b60fc37d2b6a06a3120aeccc4a38c56e05515848b6b44197a494acf4e4000d",
+    "artifacts/long-noise-isolation-v1/noise-low-30s.log": "9707cb7feb8680fe21d072591bb1f45784d6ecc485a61b51ad052ae3abb43983",
+    "artifacts/long-noise-isolation-v1/noise-low-60s.log": "bbbdbd6a6f8a0149c2362a9583e8d77ee918514cca1190bf868c28558f154e1a",
+    "artifacts/long-noise-isolation-v1/noise-low-120s.log": "4377880f9f7fb112dfa6b3fb2cb8ecd48054832459b710fcfe4b563d664a80be",
+    "artifacts/long-noise-isolation-v1/confirm-60s-1.log": "af0bfdbd89808a17923b0f3964552a696bca934b9924511174ff8b80de5c25d9",
+    "artifacts/long-noise-isolation-v1/confirm-60s-2.log": "96bcb03a49a84a4925386918a3637f54778a5054e200a5f066a66d45f35ff296"
+  },
+  "limits": [
+    "Exact transcript omitted: 147 vs 134 UTF-8 bytes does not prove which words differ or that the same acoustic cause is reproduced",
+    "60 seconds is the shortest failing duration tried, not an exact minimal boundary",
+    "Synthetic uniform noise is not recorded room tone",
+    "No microphone, permission, settings, app installation or production source change",
+    "No full corpus or latency qualification",
+    "No threshold raised: current quiet-speech margin must be preserved"
+  ],
+  "result": "Unattended red-capable public input: 60s with low deterministic noise fails expected-reference check in three fresh process runs; 30s noise and 300s digital-silence controls match"
+}
