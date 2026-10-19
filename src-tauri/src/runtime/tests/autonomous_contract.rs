@@ -154,6 +154,35 @@ impl Fixture {
             .ok_or("runtime already joined")?
             .client())
     }
+    fn attach_native_owner(
+        &mut self,
+    ) -> TestResult<(
+        crate::native_service::NativeService,
+        crate::native_service::contract_support::Sink,
+    )> {
+        // Transfer the real endpoint into the production owner. From here no
+        // test can manufacture Capture/Delivered replies on that endpoint.
+        let unused = native_mailbox().1;
+        let endpoint = std::mem::replace(&mut self.native, unused);
+        let sink = crate::native_service::contract_support::Sink::new();
+        let service = crate::native_service::contract_support::spawn(endpoint, sink.clone())?;
+        Ok((service, sink))
+    }
+    fn start_with_native_owner(
+        &self,
+        has_start_process: bool,
+    ) -> TestResult<crate::audio::CapturePort> {
+        let client = self.client()?;
+        let mut config = settings();
+        config.language = Language::English;
+        let process = has_start_process
+            .then(|| ProcessIdentity::read(std::process::id() as i32))
+            .transpose()?;
+        accepted(client.start(config, process, true, false)?)?;
+        let input = self.ready.recv_timeout(Duration::from_secs(2))?;
+        wait_for(&client, |state| state.session.phase == Phase::Recording)?;
+        Ok(input)
+    }
     fn start(
         &self,
         target: Result<(), String>,
@@ -330,4 +359,110 @@ fn public_fixture_failed_target_retains_text_but_cannot_commit_delivery() -> Tes
         Some("controlled target unavailable")
     );
     fixture.finish(1)
+}
+
+#[test]
+fn joined_native_owner_delivers_public_pcm_once_and_restores_its_preparation() -> TestResult {
+    let mut fixture = Fixture::new()?;
+    let (service, sink) = fixture.attach_native_owner()?;
+    let mut input = fixture.start_with_native_owner(true)?;
+    fixture.feed_and_stop(&mut input)?;
+    fixture.client()?.stop(1)?;
+    fixture.release.send(())?;
+    let state = wait_for(&fixture.client()?, |state| {
+        state.session.phase == Phase::Idle && state.session.outcome == Some(Outcome::Sent)
+    })?;
+    assert_eq!(state.session.text.as_deref(), Some(TEXT));
+    fixture.finish(1)?;
+    service.join()?;
+    let (effects, delivered) = sink.observed()?;
+    assert_eq!(delivered, [TEXT]);
+    assert_eq!(
+        effects,
+        [
+            "capture",
+            "environment",
+            "approve",
+            "backup",
+            "prepare",
+            "environment",
+            "approve",
+            "install",
+            "environment",
+            "approve",
+            "send",
+            "cleanup",
+            "shutdown",
+        ]
+    );
+    Ok(())
+}
+
+#[test]
+fn joined_native_owner_missing_start_process_preserves_text_without_platform_effects() -> TestResult
+{
+    let mut fixture = Fixture::new()?;
+    let (service, sink) = fixture.attach_native_owner()?;
+    let mut input = fixture.start_with_native_owner(false)?;
+    fixture.feed_and_stop(&mut input)?;
+    fixture.release.send(())?;
+    let state = wait_for(&fixture.client()?, |state| {
+        state.session.phase == Phase::Idle
+    })?;
+    assert!(matches!(state.session.outcome, Some(Outcome::Held(_))));
+    assert_eq!(state.session.text.as_deref(), Some(TEXT));
+    fixture.finish(1)?;
+    service.join()?;
+    let (effects, delivered) = sink.observed()?;
+    assert!(delivered.is_empty());
+    assert_eq!(effects, ["shutdown"]);
+    Ok(())
+}
+
+#[test]
+fn joined_native_owner_changed_target_retains_text_before_any_clipboard_effect() -> TestResult {
+    let mut fixture = Fixture::new()?;
+    let (service, sink) = fixture.attach_native_owner()?;
+    let mut input = fixture.start_with_native_owner(true)?;
+    fixture.feed_and_stop(&mut input)?;
+    // The original capture succeeded; the target disappears during decode.
+    sink.set_target_available(false);
+    fixture.release.send(())?;
+    let state = wait_for(&fixture.client()?, |state| {
+        state.session.phase == Phase::Idle
+    })?;
+    assert_eq!(
+        state.session.outcome,
+        Some(Outcome::Held("controlled target unavailable".into()))
+    );
+    assert_eq!(state.session.text.as_deref(), Some(TEXT));
+    fixture.finish(1)?;
+    service.join()?;
+    let (effects, delivered) = sink.observed()?;
+    assert!(delivered.is_empty());
+    assert_eq!(effects, ["capture", "environment", "approve", "shutdown"]);
+    Ok(())
+}
+
+#[test]
+fn joined_native_owner_cancelled_decode_never_reaches_platform_delivery() -> TestResult {
+    let mut fixture = Fixture::new()?;
+    let (service, sink) = fixture.attach_native_owner()?;
+    let mut input = fixture.start_with_native_owner(true)?;
+    fixture.feed_and_stop(&mut input)?;
+    let client = fixture.client()?;
+    client.cancel(1)?;
+    let state = wait_for(&client, |state| state.session.phase == Phase::Idle)?;
+    assert_eq!(state.session.outcome, Some(Outcome::Cancelled));
+    assert_eq!(state.session.text, None);
+    fixture.release.send(())?;
+    // Joining waits for the held decoder to return, not just an early empty
+    // mailbox observation. Its stale result must still have no native effect.
+    fixture.finish(1)?;
+    service.join()?;
+    assert_eq!(client.snapshot()?.session.text, None);
+    let (effects, delivered) = sink.observed()?;
+    assert!(delivered.is_empty());
+    assert_eq!(effects, ["capture", "shutdown"]);
+    Ok(())
 }

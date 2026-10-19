@@ -4,7 +4,111 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { runChecks, validateRecipient } from "./autonomous-tests.mjs";
+import {
+  runChecks,
+  validateRecipient,
+  parseOptions,
+} from "./autonomous-tests.mjs";
+import { buildPlan } from "./test-plan.mjs";
+
+test("focused-window checks cannot block the development command", () => {
+  assert.deepEqual(parseOptions([]), {
+    profile: "regression",
+    concurrency: 3,
+    planOnly: false,
+  });
+  assert.throws(
+    () => parseOptions(["--recipient-report", "/tmp/old.json"]),
+    /OS recipient readiness is separate/,
+  );
+  assert.throws(() => parseOptions(["--jobs", "0"]), /Invalid arguments/);
+  assert.throws(() => parseOptions(["--jobs", "4"]), /Invalid arguments/);
+  assert.throws(() => parseOptions(["--plan", "--plan"]), /Duplicate option/);
+});
+
+test("development plan has no recipient or installed-app precondition", () => {
+  const plan = buildPlan();
+  assert.deepEqual(
+    plan.map((step) => step.id),
+    ["rust-contracts", "ui-contracts", "tooling-contracts"],
+  );
+  assert.ok(
+    plan[0].args.includes(
+      "everlast-dictation/measurement,everlast-dictation/test-control",
+    ),
+  );
+  assert.equal(plan[0].resource, "cargo");
+  assert.ok(
+    plan.every(
+      (step) =>
+        !step.args.some((arg) => /recipient-report|--ignored/.test(arg)),
+    ),
+  );
+  assert.throws(() => buildPlan("hardware"), /Unknown test profile/);
+  assert.ok(buildPlan("full").some((step) => step.id === "static-checks"));
+  const full = buildPlan("full");
+  assert.ok(full.some((step) => step.id === "native-offscreen-contracts"));
+  assert.ok(
+    full.every(
+      (step) => !step.args.includes("native_preferences_close_contract"),
+    ),
+  );
+  assert.ok(
+    full.every(
+      (step) =>
+        step.id !== "native-offscreen-contracts" || !step.args.includes("*"),
+    ),
+  );
+});
+
+test("independent checks run concurrently without overlapping a shared resource", async () => {
+  const directory = mkdtempSync(path.join(os.tmpdir(), "everlast-concurrent-"));
+  try {
+    const barrier = `const fs=require('node:fs');
+      fs.writeFileSync(process.argv[1], 'ready');
+      const started=Date.now();const poll=setInterval(()=>{
+        if(fs.existsSync(process.argv[2])){clearInterval(poll);process.exit(0)}
+        if(Date.now()-started>1500){clearInterval(poll);process.exit(9)}
+      },10);`;
+    const report = await runChecks({
+      cwd: directory,
+      reportDirectory: path.join(directory, "parallel"),
+      binding: "test",
+      concurrency: 2,
+      steps: ["a", "b"].map((name, i) => ({
+        id: name,
+        command: process.execPath,
+        args: [
+          "-e",
+          barrier,
+          path.join(directory, name),
+          path.join(directory, i ? "a" : "b"),
+        ],
+      })),
+    });
+    assert.equal(report.passed, true);
+    const lock = path.join(directory, "cargo.lock");
+    const shared = await runChecks({
+      cwd: directory,
+      reportDirectory: path.join(directory, "shared"),
+      binding: "test",
+      concurrency: 2,
+      steps: ["a", "b"].map((id) => ({
+        id,
+        resource: "cargo",
+        command: process.execPath,
+        args: [
+          "-e",
+          "const fs=require('node:fs');const p=process.argv[1];fs.closeSync(fs.openSync(p,'wx'));setTimeout(()=>fs.unlinkSync(p),100)",
+          lock,
+        ],
+      })),
+    });
+    assert.equal(shared.passed, true);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
 
 test("a failing child stops the run and preserves the failure report", async () => {
   const directory = mkdtempSync(path.join(os.tmpdir(), "everlast-autonomous-"));
@@ -35,6 +139,45 @@ test("a failing child stops the run and preserves the failure report", async () 
       false,
     );
     assert.equal(report.hardwareAcceptance, false);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("parallel failure drains running checks and leaves unstarted work skipped", async () => {
+  const directory = mkdtempSync(
+    path.join(os.tmpdir(), "everlast-parallel-failure-"),
+  );
+  try {
+    const report = await runChecks({
+      cwd: directory,
+      reportDirectory: path.join(directory, "run"),
+      binding: "test",
+      concurrency: 2,
+      steps: [
+        {
+          id: "fail",
+          command: process.execPath,
+          args: ["-e", "process.exit(7)"],
+        },
+        {
+          id: "finish",
+          command: process.execPath,
+          args: ["-e", "setTimeout(()=>{},200)"],
+        },
+        {
+          id: "skip",
+          command: process.execPath,
+          args: ["-e", "process.exit(0)"],
+        },
+      ],
+    });
+    assert.equal(report.passed, false);
+    assert.deepEqual(
+      report.steps.map((step) => step.status),
+      ["failed", "passed", "skipped"],
+    );
+    assert.equal(report.steps[1].cleanupConfirmed, true);
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }

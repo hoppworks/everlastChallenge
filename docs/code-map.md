@@ -100,3 +100,5 @@ lokalem Testzugang; der eigene Empfänger entspricht `6e3b009`. Der
 [Test-Control-Nachtrag](personal-review-sample-v3-test-control-addendum.md)
 bindet diese Quellen und bewahrt alle bisherigen menschlichen Prüffragen.
 Der erste vollständige autonome Einfügedurchlauf ist weiterhin offen.
+
+## Autonome Softwareprüfung v2

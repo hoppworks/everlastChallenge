@@ -827,6 +827,162 @@ impl<B: Backend> Owner<B> {
     }
 }
 
+/// Controlled platform boundary for joined runtime/owner regression tests.
+/// Only the OS effects are replaced; command handling, revalidation, commit
+/// ownership, replies and cleanup still run through `NativeService`.
+#[cfg(test)]
+pub(crate) mod contract_support {
+    use super::*;
+
+    #[derive(Default)]
+    struct State {
+        effects: Vec<&'static str>,
+        delivered: Vec<String>,
+    }
+
+    #[derive(Clone)]
+    pub(crate) struct Sink {
+        state: Arc<Mutex<State>>,
+        target_available: Arc<AtomicBool>,
+    }
+    impl Sink {
+        pub(crate) fn new() -> Self {
+            Self {
+                state: Arc::new(Mutex::new(State::default())),
+                target_available: Arc::new(AtomicBool::new(true)),
+            }
+        }
+        pub(crate) fn set_target_available(&self, available: bool) {
+            self.target_available.store(available, Ordering::Release);
+        }
+        pub(crate) fn observed(&self) -> Result<(Vec<&'static str>, Vec<String>), String> {
+            let state = self.state.lock().map_err(|_| "contract sink poisoned")?;
+            Ok((state.effects.clone(), state.delivered.clone()))
+        }
+        fn effect(&self, effect: &'static str) -> Result<(), String> {
+            self.state
+                .lock()
+                .map_err(|_| "contract sink poisoned")?
+                .effects
+                .push(effect);
+            Ok(())
+        }
+        fn target(&self) -> Result<(), String> {
+            if self.target_available.load(Ordering::Acquire) {
+                Ok(())
+            } else {
+                Err("controlled target unavailable".into())
+            }
+        }
+    }
+
+    struct ControlledBackend {
+        sink: Sink,
+        prepared: Option<(NonZeroU64, String)>,
+    }
+    impl Backend for ControlledBackend {
+        type Approval = NonZeroU64;
+        type Backup = ();
+        fn capture(
+            &mut self,
+            _: NonZeroU64,
+            _: ProcessIdentity,
+            _: &DeliveryToken,
+        ) -> Result<(), String> {
+            self.sink.effect("capture")?;
+            self.sink.target()
+        }
+        fn environment(&mut self, _: &DeliveryToken, _: Instant) -> Result<Environment, String> {
+            self.sink.effect("environment")?;
+            Ok(Environment {
+                process: ProcessIdentity::read(std::process::id() as i32)
+                    .map_err(|error| error.to_string())?,
+                modifiers_held: false,
+                accessibility_trusted: true,
+                secure_input: false,
+                pasteboard_name: "controlled-no-system-pasteboard".into(),
+            })
+        }
+        fn approve(
+            &mut self,
+            session: NonZeroU64,
+            _: ProcessIdentity,
+            _: &DeliveryToken,
+        ) -> Result<Self::Approval, String> {
+            self.sink.effect("approve")?;
+            self.sink.target()?;
+            Ok(session)
+        }
+        fn backup(&mut self, _: &str, _: &DeliveryToken) -> Result<(), String> {
+            self.sink.effect("backup")
+        }
+        fn prepare(
+            &mut self,
+            session: NonZeroU64,
+            _: String,
+            _: (),
+            text: String,
+            _: &DeliveryToken,
+        ) -> Result<(), String> {
+            self.sink.effect("prepare")?;
+            self.prepared = Some((session, text));
+            Ok(())
+        }
+        fn install(
+            &mut self,
+            session: NonZeroU64,
+            approval: Self::Approval,
+            _: &DeliveryToken,
+        ) -> Result<(), String> {
+            if session != approval || self.prepared.as_ref().is_none_or(|(id, _)| *id != session) {
+                return Err("controlled install lacks current preparation".into());
+            }
+            self.sink.effect("install")
+        }
+        fn send(
+            &mut self,
+            session: NonZeroU64,
+            approval: Self::Approval,
+            token: &DeliveryToken,
+        ) -> Result<(), String> {
+            if session != approval || token.session() != session {
+                return Err("controlled send lacks current approval".into());
+            }
+            let (_, text) = self
+                .prepared
+                .as_ref()
+                .filter(|(id, _)| *id == session)
+                .ok_or("controlled send lacks preparation")?;
+            token.try_commit().map_err(|error| error.to_string())?;
+            let mut state = self
+                .sink
+                .state
+                .lock()
+                .map_err(|_| "contract sink poisoned")?;
+            state.effects.push("send");
+            state.delivered.push(text.clone());
+            Ok(())
+        }
+        fn cleanup(&mut self, _: NonZeroU64) -> Result<(), String> {
+            self.prepared = None;
+            self.sink.effect("cleanup")
+        }
+        fn shutdown(self) -> Result<(), String> {
+            self.sink.effect("shutdown")
+        }
+    }
+
+    pub(crate) fn spawn(endpoint: NativeEndpoint, sink: Sink) -> Result<NativeService, String> {
+        NativeService::with_backend(
+            endpoint,
+            ControlledBackend {
+                sink,
+                prepared: None,
+            },
+        )
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

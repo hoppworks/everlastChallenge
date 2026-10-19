@@ -1,37 +1,80 @@
 # Autonomer Entwicklungs- und Testablauf
 
-## Ein Befehl ohne macOS-Freigaben
-
-Aus dem Repository-Root:
+## Entwicklung ohne Fenster oder Freigaben
 
 ```sh
 npm run test:autonomous
+npm run test:autonomous:full
 ```
 
-Der Einstieg führt statische Prüfungen, Kernverhalten, Ziel-Eignungsverträge,
-Runtime-Verbundtests, kontrollierte native Übergabeverträge sowie Replay-PCM-
-und Stopp-Verträge aus. Er benötigt weder Mikrofonaufnahme noch Modellgewichte,
-App-Installation oder Accessibility-Freigabe. `measurement` aktiviert hier nur
-explizit ausgewählte Testpfade; ignorierte Modelltests werden nicht gestartet.
-Kein mehrstündiger Qualitätslauf und keine Änderung der ausgelieferten Referenz.
+Das Standardprofil führt alle Rust-Library-Verträge einschließlich der
+kontrollierten Aufnahme-/Übergabekette, die UI-Verträge und die Node-Testwerkzeuge
+aus. Bis zu drei unabhängige Gruppen laufen parallel. Cargo-Gruppen teilen eine
+exklusive Ausführungsspur und konkurrieren nicht um denselben Build-Ordner.
+Das vollständige Softwareprofil ergänzt statische Prüfungen, Rust-Integrations-
+verträge und Python-Qualitätswerkzeugtests. Native Darstellungstests verwenden dabei ausschließlich unsichtbare eigene Objekte. Der sichtbare Fenster-Lifecycle-Test gehört ausdrücklich nicht in diese Profile. Es startet keine neue Modellmessung.
+
+Beide Befehle brauchen weder eine installierte oder laufende App noch ein
+fokussiertes Fenster, Mikrofon, Modellgewichte oder macOS-Freigaben. Es gibt
+keine Aufforderung zu einem Tastenkürzel, Klick oder Sprechtest. Der App-Testkanal
+ist kein Bestandteil dieser Entwicklungsschleife. `--recipient-report` wird
+hier nicht mehr akzeptiert: Eine Fokusvorbedingung darf Softwaretests nicht
+blockieren.
+
+```sh
+npm run test:autonomous -- --plan
+npm run test:autonomous -- --jobs 1
+```
+
+`--plan` zeigt ausschließlich die Befehle, ohne Tests oder Änderungen zu starten.
+`--jobs 1` führt dieselben Prüfungen nacheinander aus. Die Profile ändern keine
+Produktgrenzen. Bei einer fehlgeschlagenen Gruppe starten keine weiteren
+Gruppen; bereits laufende Gruppen werden mit ihrem Ergebnis abgeschlossen.
+Jede Gruppe bleibt zeitlich begrenzt. Signalabbruch und Timeout räumen die
+zugehörigen Kindprozesse auf.
 
 Jeder Lauf erhält einen neuen privaten Ordner unter `artifacts/autonomous-tests/`
-mit JSON-Bericht und einzelnen Befehlslogs. Der Bericht bindet die Befehle,
-Node-/Plattformdaten und den Inhalt der versionierten sowie nicht ignorierten
-Nicht-Markdown-Dateien an einen SHA256. Er enthält tatsächliche Exitcodes,
-Zeitpunkte, Loghashes und ausgeführte Rust-Testzahlen. Fehlgeschlagene Schritte
-stoppen die Folge; nachfolgende Schritte bleiben ausdrücklich übersprungen.
-Ein Cargo-Filter mit null ausgeführten Tests gilt als Fehler. Alte Berichte
-werden nicht überschrieben. Es gibt keine automatische Wiederholung und kein
-stillschweigendes Umdeuten alter Ergebnisse zu neuen Nachweisen.
+mit JSON-Bericht und einzelnen Befehlslogs. Der Bericht bindet das gewählte
+Profil, die tatsächlichen Befehle, Node-/Plattformdaten und die versionierten
+sowie nicht ignorierten Nicht-Markdown-Dateien an einen SHA256. Er enthält
+Exitcodes, Zeitpunkte, Loghashes und ausgeführte Rust-Testzahlen. Ein Cargo-Filter
+mit null ausgeführten Tests gilt als Fehler. Nicht gestartete Gruppen bleiben
+`skipped`; bestehende Berichte werden nicht überschrieben. Es gibt keine
+stillschweigende Wiederholung oder Übernahme alter Resultate.
 
-Der öffentliche JFK-Fixture-Verbund benutzt den echten CaptureHandle,
-RecordingOwner/DSP, CpalAudio-Poll-/Joinpfad, Runtime und InferenceService. Die
-PCM-Prüfung erfolgt im kontrollierten Decoder gegen einen unabhängig gepinnten
-Hash. Er prüft Stop und genau eine Übergabe mit Originaltoken, Abbruch mit
-verspätetem Decoderergebnis sowie widerrufene Übergabe bei abgelehntem Startziel.
-Decoder und nativer Endpunkt bleiben kontrolliert: kein Whisper-Qualitäts-,
-Latenz-, Mikrofon-, OS-Ziel- oder tatsächlicher Einfügenachweis daraus.
+## Durchgängiger Test mit kontrollierten Betriebssystemeffekten
+
+Der öffentliche JFK-PCM-Fixture läuft durch den echten CaptureHandle,
+RecordingOwner/DSP, CpalAudio-Poll-/Joinpfad, Runtime und InferenceService. Ein
+kontrollierter Decoder prüft die tatsächlich angekommenen PCM-Daten gegen einen
+unabhängig gepinnten Hash. Die native Dienstschleife verarbeitet die wirklichen
+Runtime-Kommandos; ein kontrollierter Betriebssystemadapter ersetzt nur das
+Startfeld, die Freigabe-/Fokusantworten, die Zwischenablage und den letzten
+Einfügeeffekt. Der Test prüft den beobachteten Inhalt des Ziel-Speichers, nicht
+nur ein behauptetes `Sent`-Ergebnis.
+
+Die bisherigen einzelnen Modulverträge bleiben bestehen. Der zusätzliche
+Verbundtest darf weder `Captured`/`Delivered::Sent` anstelle des Dienstes
+vortäuschen noch selbst den erfolgreichen Einfüge-Commit erzeugen. So wird
+beispielsweise ein versehentlich entfernter tatsächlicher `send`-Aufruf erkannt,
+auch wenn der Runtime-Zustand noch Erfolg meldet.
+
+Das belegt die Softwarekette unter kontrollierten Außenbedingungen. Es belegt
+keine reale AX-Erreichbarkeit, physische Hotkeyzustellung, Mikrofonqualität,
+Whisper-Erkennungsqualität oder Latenz. Diese Grenzen bleiben ausdrücklich im
+Bericht stehen.
+
+## Gesonderte Systemabnahme
+
+Der sichtbare Fenster-Lifecycle-Vertrag ist ausschließlich über `npm run test:os:windows` erreichbar. Dieser bewusst getrennte Befehl zeigt eigene native Fenster; er ist kein Teil des normalen oder vollständigen Softwareprofils.
+
+Reale OS-Adapter werden gezielt und gebündelt geprüft, wenn eine Änderung sie
+betrifft oder eine konkrete offene Systemfrage besteht. Derselbe manuelle
+Durchstich wird nicht nach jeder Softwareänderung wiederholt. Vorhandene
+passende Belege bleiben verwendbar. Standardmikrofon genügt; die vertagten
+Anzeigeprüfungen bleiben vertagt. Fehlende OS-Nachweise bleiben offen und werden
+nicht durch kontrollierte Tests als erledigt markiert. Sie blockieren weitere
+Softwareentwicklung und deren Regressionssuite nicht.
 
 ## Automatischer Zustandsbericht des eigenen Testfensters
 
@@ -51,11 +94,11 @@ normaler App-Quit schreibt soweit möglich einen gestoppten Endzustand.
 Ein bereits laufendes, separat geprüftes Testziel lässt sich lesend prüfen:
 
 ```sh
-npm run test:autonomous -- --recipient-report /absoluter/testordner/snapshot.json
+npm run test:os:readiness -- /absoluter/testordner/snapshot.json
 ```
 
-Der Einstieg lehnt fehlende, ungültige, ältere als zwei Sekunden, zukünftige,
-gestoppte oder nicht aktiv fokussierte Zustände vor dem Testlauf ab. Ein Zeitvorsprung von höchstens 100 ms wird als Uhrtoleranz akzeptiert. Er startet
+Dieser getrennte Diagnosebefehl lehnt fehlende, ungültige, ältere als zwei Sekunden, zukünftige,
+gestoppte oder nicht aktiv fokussierte Zustände ab; die Softwaretests sind davon unabhängig. Ein Zeitvorsprung von höchstens 100 ms wird als Uhrtoleranz akzeptiert. Er startet
 auch bei gültigem Bericht keine Aufnahme. Der Bericht ist eine eigene
 Punktbeobachtung; er beweist weder das von Everlast beim Hotkey erfasste Feld
 noch eine spätere automatische Einfügung. Diese Verbindung muss die echte

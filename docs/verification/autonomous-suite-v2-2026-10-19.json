@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "profile": "full",
+  "durationSeconds": 51.568,
+  "executedRustTests": 431,
+  "uiTests": 215,
+  "nodeTests": 41,
+  "pythonQualityToolingTests": 204,
+  "hardwareAcceptance": false,
+  "userInteractionRequired": false,
+  "joinedOwnerTestsAdded": 4,
+  "independentReview": "Visible integration test removed from software profile; scoped correction reviewed with no remaining findings.",
+  "personalReviewComplete": false,
+  "artifacts": [
+    {
+      "path": "artifacts/autonomous-tests/1792418382109-b405d3f8-bd1c-49d7-abba-809a7c5fe45c/report.json",
+      "sha256": "d3fd0a5c0066491437ac692983c76aa3b2e4aad6abbde2eb4e76e0cdcf5243f9"
+    },
+    {
+      "path": "artifacts/autonomous-suite-v2/joined-restored.log",
+      "sha256": "809590c25007c650630a6dea21ac403752a466801b2f7b0db8d646ce7498160d"
+    },
+    {
+      "path": "artifacts/autonomous-suite-v2/mutation-skip-native-send.log",
+      "sha256": "9b6b06a481ae99c5930fecf2d1517213712e47ef03502f5e8c46cd14ad9fe855"
+    }
+  ]
+}

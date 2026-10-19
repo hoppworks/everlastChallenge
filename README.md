@@ -12,7 +12,7 @@ Der [reale Fünf-Minuten-Hotkeylauf](docs/verification/r4-hotkey-maximum-2026-10
 
 ## Autonom prüfen
 
-`npm run test:autonomous` führt die schnellen Prüfungen ohne Mikrofon-/UI-Freigaben aus und schreibt einen gebundenen JSON-Bericht. Fehler stoppen den Lauf; es startet keine neue ASR-Qualifikation. Der [Testleitfaden](docs/autonomous-testing.md) beschreibt den öffentlichen Runtime-Verbund, den optionalen eigenen Fokusbericht und die verbleibenden echten OS-Abnahmen.
+`npm run test:autonomous` prüft Rust-Verträge, Oberfläche und Testwerkzeuge parallel, ohne laufende App, Mikrofon-/UI-Freigaben oder fokussiertes Fenster. `npm run test:autonomous:full` ergänzt statische Prüfungen, Integrationsverträge und Qualitätswerkzeugtests. Beide schreiben gebundene JSON-Berichte; keine neue ASR-Qualifikation wird gestartet. Der [Testleitfaden](docs/autonomous-testing.md) trennt diese Softwareprüfung von der verbleibenden echten OS-Abnahme.
 
 Der optionale [lokale Testzugang](docs/test-control.md) steuert Aufnahme, Stopp und Abbruch im Entwicklerbuild ohne physischen Hotkey. Er benötigt ein tatsächlich fokussiertes eigenes Testfeld; sein Einsatz beweist keine Zustellung des globalen OS-Tastenkürzels.
 

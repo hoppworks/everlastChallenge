@@ -15,103 +15,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const cargo = (...args) => ["test", "-p", ...args, "--locked"];
-export const steps = [
-  {
-    id: "entrypoint-regressions",
-    command: process.execPath,
-    args: [
-      "--test",
-      "scripts/autonomous-tests.test.mjs",
-      "scripts/sign-local-bundle.test.mjs",
-      "scripts/verify-signing-continuity.test.mjs",
-    ],
-  },
-  {
-    id: "recipient-reporter",
-    command: "cargo",
-    args: cargo("macos-integration", "--example", "native_text_recipient"),
-    requireRustTests: true,
-  },
-  { id: "static-checks", command: "npm", args: ["run", "check"] },
-  {
-    id: "core",
-    command: "cargo",
-    args: cargo("dictation-core", "--tests"),
-    requireRustTests: true,
-  },
-  {
-    id: "target-contract",
-    command: "cargo",
-    args: cargo("macos-integration", "--lib", "target::tests::"),
-    requireRustTests: true,
-  },
-  {
-    id: "runtime-connectors",
-    command: "cargo",
-    args: [
-      ...cargo(
-        "everlast-dictation",
-        "--lib",
-        "--features",
-        "measurement",
-        "runtime::tests::",
-      ),
-      "--",
-      "--test-threads=1",
-    ],
-    requireRustTests: true,
-  },
-  {
-    id: "native-delivery-contracts",
-    command: "cargo",
-    args: [
-      ...cargo(
-        "everlast-dictation",
-        "--lib",
-        "--features",
-        "measurement",
-        "native_service::tests::",
-      ),
-      "--",
-      "--test-threads=1",
-    ],
-    requireRustTests: true,
-  },
-  {
-    id: "replay-pcm",
-    command: "cargo",
-    args: [
-      ...cargo(
-        "everlast-dictation",
-        "--lib",
-        "--features",
-        "measurement",
-        "runtime::measurement::tests::pretranscription_tests::real_replay_resampling_and_partial_end_syllable_match_unsegmented_pcm",
-      ),
-      "--",
-      "--exact",
-      "--test-threads=1",
-    ],
-    requireRustTests: true,
-  },
-  {
-    id: "stop-handle",
-    command: "cargo",
-    args: [
-      ...cargo(
-        "everlast-dictation",
-        "--lib",
-        "--features",
-        "measurement",
-        "runtime::measurement::tests::stop_handle_tests::",
-      ),
-      "--",
-      "--test-threads=1",
-    ],
-    requireRustTests: true,
-  },
-];
+export { buildPlan } from "./test-plan.mjs";
+import { buildPlan } from "./test-plan.mjs";
+export const steps = buildPlan();
 
 export function validateRecipient(
   value,
@@ -149,7 +55,7 @@ export function validateRecipient(
   };
 }
 
-function readRecipient(filename) {
+export function readRecipient(filename) {
   const fd = openSync(filename, constants.O_RDONLY | constants.O_NOFOLLOW);
   try {
     const stat = fstatSync(fd);
@@ -161,7 +67,7 @@ function readRecipient(filename) {
   }
 }
 
-function sourceBinding(cwd) {
+function sourceBinding(cwd, plan) {
   const names = execFileSync(
     "git",
     ["ls-files", "-z", "--cached", "--others", "--exclude-standard"],
@@ -176,7 +82,7 @@ function sourceBinding(cwd) {
       node: process.version,
       platform: process.platform,
       arch: process.arch,
-      steps,
+      steps: plan,
     }),
   );
   for (const name of new Set(names)) {
@@ -285,7 +191,11 @@ export async function runChecks({
   reportDirectory,
   binding,
   recipient = null,
+  concurrency = 1,
+  profile = "custom",
 }) {
+  if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 3)
+    throw new Error("Concurrency must be an integer from 1 to 3");
   mkdirSync(reportDirectory, { mode: 0o700 }); // Exclusive: never overwrite a prior run.
   const reportFile = path.join(reportDirectory, "report.json");
   const report = {
@@ -293,6 +203,8 @@ export async function runChecks({
     kind: "everlast-autonomous-regression",
     startedAt: new Date().toISOString(),
     sourceBinding: binding,
+    profile,
+    concurrency,
     passed: false,
     hardwareAcceptance: false,
     recipient,
@@ -315,7 +227,8 @@ export async function runChecks({
     renameSync(temporary, reportFile);
   };
   persist();
-  for (const [index, step] of plan.entries()) {
+  const runStep = async (index) => {
+    const step = plan[index];
     const item = report.steps[index];
     item.status = "running";
     item.startedAt = new Date().toISOString();
@@ -337,7 +250,41 @@ export async function runChecks({
     item.status = item.exitCode === 0 && !item.reason ? "passed" : "failed";
     item.finishedAt = new Date().toISOString();
     persist();
-    if (item.status === "failed") break;
+  };
+  const pending = plan.map((_, index) => index);
+  const active = new Map();
+  const resources = new Set();
+  let failed = false;
+  while (pending.length || active.size) {
+    while (!failed && active.size < concurrency) {
+      const slot = pending.findIndex(
+        (index) =>
+          !plan[index].resource || !resources.has(plan[index].resource),
+      );
+      if (slot < 0) break;
+      const [index] = pending.splice(slot, 1);
+      const resource = plan[index].resource;
+      if (resource) resources.add(resource);
+      active.set(
+        index,
+        runStep(index)
+          .catch((error) => {
+            report.steps[index].status = "failed";
+            report.steps[index].reason = error.message;
+            report.steps[index].finishedAt = new Date().toISOString();
+            persist();
+          })
+          .then(() => {
+            if (report.steps[index].status === "failed") failed = true;
+          })
+          .finally(() => {
+            active.delete(index);
+            if (resource) resources.delete(resource);
+          }),
+      );
+    }
+    if (!active.size) break;
+    await Promise.race(active.values());
   }
   report.passed =
     report.steps.length > 0 &&
@@ -347,26 +294,47 @@ export async function runChecks({
   return report;
 }
 
+export function parseOptions(args) {
+  const options = { profile: "regression", concurrency: 3, planOnly: false };
+  const seen = new Set();
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (seen.has(arg)) throw new Error("Duplicate option");
+    seen.add(arg);
+    if (arg === "--plan") options.planOnly = true;
+    else if (
+      arg === "--profile" &&
+      ["regression", "full"].includes(args[i + 1])
+    )
+      options.profile = args[++i];
+    else if (arg === "--jobs" && /^[1-3]$/.test(args[i + 1] ?? ""))
+      options.concurrency = Number(args[++i]);
+    else
+      throw new Error(
+        "Invalid arguments; use --help. OS recipient readiness is separate: npm run test:os:readiness -- /absolute/snapshot.json",
+      );
+  }
+  return options;
+}
+
 async function main(args) {
-  if (args.includes("--help")) {
+  if (args.length === 1 && args[0] === "--help") {
     console.log(
-      "npm run test:autonomous [-- --recipient-report /absolute/snapshot.json]\nRuns bounded offline regressions. Optional fresh recipient readiness preflight; no recording or OS delivery.",
+      "npm run test:autonomous [-- --profile regression|full --jobs 1|2|3 --plan]\nNo installed app, microphone, model weights, permissions or focused window required.",
     );
     return;
   }
-  let recipient = null;
-  if (args.length) {
-    if (
-      args.length !== 2 ||
-      args[0] !== "--recipient-report" ||
-      !path.isAbsolute(args[1])
-    )
-      throw new Error("Invalid arguments; use --help");
-    recipient = readRecipient(args[1]);
-    if (!recipient.ready)
-      throw new Error(
-        "Recipient is not live, fresh, active and focused; no checks or audio started",
-      );
+  const options = parseOptions(args);
+  const plan = buildPlan(options.profile);
+  if (options.planOnly) {
+    console.log(
+      JSON.stringify(
+        { ...options, steps: plan, hardwareAcceptance: false },
+        null,
+        2,
+      ),
+    );
+    return;
   }
   const reportDirectory = path.join(
     root,
@@ -375,12 +343,13 @@ async function main(args) {
     `${Date.now()}-${randomUUID()}`,
   );
   mkdirSync(path.dirname(reportDirectory), { recursive: true, mode: 0o700 });
-  const binding = sourceBinding(root);
+  const binding = sourceBinding(root, plan);
   const report = await runChecks({
-    steps,
+    steps: plan,
     reportDirectory,
     binding,
-    recipient,
+    concurrency: options.concurrency,
+    profile: options.profile,
   });
   console.log(
     JSON.stringify({
