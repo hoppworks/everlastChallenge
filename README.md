@@ -2,7 +2,7 @@
 
 Native Diktier-App für Apple Silicon und macOS 27. Rust/Tauri 2 mit nativer AppKit-Oberfläche, lokale Whisper-Inferenz und systemnahe Audioaufnahme/Textübergabe.
 
-Aktueller installierter Prüfstand: [lokal signierter Build B](docs/verification/local-signing-2026-10-19.md). Die einmalige Umstellung von Ad-hoc auf eine lokale Identität und der anschließende Rechte-Erhaltungstest sind noch in Arbeit. R6 bleibt als Rückfallkopie erhalten. `npm run release:local` verwendet die lokal eingerichtete Signieridentität ohne Developer-Account.
+Aktueller installierter Prüfstand: [lokal signierter Build A, Version 0.1.0](docs/verification/local-signing-2026-10-19.md). Mikrofon- und Accessibility-Freigaben blieben beim Wechsel von B zu A ohne erneute Anfrage erhalten. Das belegt diese beiden Builds auf diesem Mac. R6 bleibt als Rückfallkopie erhalten. `npm run release:local` verwendet die lokal eingerichtete Signieridentität ohne Developer-Account.
 
 **Testversion (19.10.2026):** Die stabile Referenzfassung ist als lokale Testversion bereitgestellt. Die experimentellen FullPrefix-/Kontext-1400-Optimierungen sind nicht aktiv. Die Referenz hat ihre dokumentierte Modellqualitätsprüfung bestanden, erreicht aber das geplante Stop-bis-Text-Ziel von einer Sekunde nicht durchgehend. Die vollständige Leistungs-, Installations- und integrierte Produktabnahme bleibt offen. [P04 ist im bestätigten Standardmikrofonumfang technisch belegt](docs/verification/p04-standard-microphone-technical-v1.md); zusätzliche Geräte-/Bluetooth-Tests sind nicht erforderlich. Tatsächliche Belege stehen im [Ausführungsprotokoll](docs/execution-log.md), der vollständige Zielumfang im [Implementierungsplan](IMPLEMENTATION_PLAN.md).
 

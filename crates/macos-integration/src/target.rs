@@ -212,10 +212,18 @@ impl Element {
         } else {
             FieldRole::Other
         };
-        let secure = self
-            .string("AXSubrole")
-            .ok()
-            .map(|subrole| subrole == CFString::from_static_string("AXSecureTextField"));
+        let subrole = match self.attribute("AXSubrole") {
+            Ok(value) => match value.downcast_into::<CFString>() {
+                Some(value) => SubroleEvidence::Value(
+                    value == CFString::from_static_string("AXSecureTextField"),
+                ),
+                None => SubroleEvidence::UnexpectedType,
+            },
+            Err(TargetError::Accessibility(code)) => SubroleEvidence::Error(code),
+            Err(TargetError::Value) => SubroleEvidence::MissingValue,
+            Err(_) => SubroleEvidence::UnexpectedType,
+        };
+        let secure = subrole_security(role, subrole);
         let enabled = self
             .attribute("AXEnabled")
             .ok()
@@ -371,6 +379,25 @@ pub enum FieldRole {
     Other,
 }
 
+// Preserve absence codes separately from malformed replies and messaging failures.
+#[derive(Debug, Clone, Copy)]
+enum SubroleEvidence {
+    Value(bool),
+    Error(i32),
+    MissingValue,
+    UnexpectedType,
+}
+fn subrole_security(role: FieldRole, observation: SubroleEvidence) -> Option<bool> {
+    match observation {
+        SubroleEvidence::Value(secure) => Some(secure),
+        // NSAccessibility.accessibilitySubrole is nullable; AX documents these
+        // two absence replies. Scope this allowance to the standard text-area
+        // role, preserving unknown security for fields/combos and real errors.
+        SubroleEvidence::Error(-25205 | -25212) if role == FieldRole::TextArea => Some(false),
+        _ => None,
+    }
+}
+
 pub struct FieldEvidence {
     pub role: FieldRole,
     pub secure: Option<bool>,
@@ -456,6 +483,58 @@ mod tests {
             Err(TargetError::Process)
         ));
         Ok(())
+    }
+
+    #[test]
+    fn text_area_optional_subrole_absence_is_distinct_from_failed_or_malformed_queries() {
+        let eligibility = |role, observation| {
+            FieldEvidence {
+                role,
+                secure: subrole_security(role, observation),
+                enabled: Some(true),
+                value_settable: Some(true),
+            }
+            .eligibility()
+        };
+        // Public AX constants: AttributeUnsupported and NoValue. The optional
+        // subrole on a text area is distinct from a failed security query.
+        for code in [-25205, -25212] {
+            assert_eq!(
+                eligibility(FieldRole::TextArea, SubroleEvidence::Error(code)),
+                Ok(())
+            );
+            for role in [FieldRole::TextField, FieldRole::ComboBox, FieldRole::Other] {
+                assert_eq!(
+                    eligibility(role, SubroleEvidence::Error(code)),
+                    Err(HoldReason::UnconfirmedField)
+                );
+            }
+        }
+        for observation in [
+            SubroleEvidence::Error(-25204), // CannotComplete / messaging failure
+            SubroleEvidence::Error(-25202), // InvalidUIElement
+            SubroleEvidence::Error(-25208), // NotImplemented
+            SubroleEvidence::Error(-25211), // APIDisabled
+            SubroleEvidence::Error(0),
+            SubroleEvidence::UnexpectedType,
+            SubroleEvidence::MissingValue,
+        ] {
+            assert_eq!(
+                eligibility(FieldRole::TextArea, observation),
+                Err(HoldReason::UnconfirmedField)
+            );
+        }
+        for role in [
+            FieldRole::TextArea,
+            FieldRole::TextField,
+            FieldRole::ComboBox,
+        ] {
+            assert_eq!(
+                eligibility(role, SubroleEvidence::Value(true)),
+                Err(HoldReason::SecureField)
+            );
+            assert_eq!(eligibility(role, SubroleEvidence::Value(false)), Ok(()));
+        }
     }
 
     #[test]

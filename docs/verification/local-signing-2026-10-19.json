@@ -1,5 +1,5 @@
 {
-  "observedAtUtc": "2026-10-19T12:58:53.330647+00:00",
+  "observedAtUtc": "2026-10-19T13:03:29.793438+00:00",
   "appleDeveloperAccountCreated": false,
   "identityCertificateSha1": "73E69FEC7B988BA45831F5250114E400A920DD70",
   "privateKeyExported": false,
@@ -31,12 +31,12 @@
     "permissionsPreserved": null
   },
   "installedCandidate": {
-    "installedAtUtc": "2026-10-19T12:57:41.750197+00:00",
-    "candidate": "B",
-    "version": "0.1.1",
+    "installedAtUtc": "2026-10-19T13:03:07.895361+00:00",
+    "candidate": "A",
+    "version": "0.1.0",
     "sourceCommit": "40e7eaf",
     "r6Backup": "/Users/hoppworks/projects/everlastChallenge/artifacts/local-signing-v1/R6-before-local-signing.app",
-    "installedBinarySha256": "484f5b9c17bf2060661096706523a78b9ef8dafc3ec68cda0700170065a2cb15",
+    "installedBinarySha256": "fb086952d08e4dbcca49ce0ab70afbb0f434607fb0dd79ca7d92734b3f0060d4",
     "priorAppRunning": false,
     "settingsAndModelsRetained": true,
     "newPermissionsGrantedByAgent": false
@@ -45,7 +45,7 @@
     "microphone": "not-asked",
     "accessibility": "not-granted"
   },
-  "permissionContinuityProven": false,
+  "permissionContinuityProven": true,
   "autonomousRun": {
     "report": "artifacts/autonomous-tests/1792414689038-6c4432c3-7da4-4f97-b6e1-7d4af34a395c/report.json",
     "sha256": "6897c7206cecece27b675de30d1bdad1aa0f1a6ec7a87b953efaf5b166bd1756",
@@ -74,5 +74,20 @@
       "path": "scripts/autonomous-tests.mjs",
       "sha256": "548a485564c08d6480d6868574116cbd0c7bec87ecd439fd0644f10b92fb1fcd"
     }
-  ]
+  ],
+  "permissionContinuityEvidence": [
+    {
+      "path": "artifacts/local-signing-v1/permission-before-swap.json",
+      "sha256": "400be2d7b53660fffaeb8e7c5071e776aaf9464dc16d579721ca417b94f6a552"
+    },
+    {
+      "path": "artifacts/local-signing-v1/swap-to-a.json",
+      "sha256": "40e5ac0563afc6875631f25acd30413b4fda6dccec4054b987c25b46e7469dfb"
+    },
+    {
+      "path": "artifacts/local-signing-v1/permission-after-swap.json",
+      "sha256": "6888dee805e7fd3183ac5847ad46610ed3290feca26fd67ca8dbaeba757dbfe1"
+    }
+  ],
+  "permissionContinuityScope": "These two builds on this Mac; both UI permissions granted after swap, unchanged Accessibility TCC record, no new permission requests."
 }

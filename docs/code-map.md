@@ -92,3 +92,5 @@ Locks; ein noch gehaltener Stophandle darf das Runtimejoin nicht verhindern.
 Die [zentrale TC-Messung](verification/paced-six-reference-v4.md) dokumentiert
 auch die verfehlte absolute Latenzgrenze. Ein gültiger Einspeisetakt ersetzt
 weder Textqualität noch reale Mikrofon-, Hotkey- oder Empfängerabnahmen.
+
+## Ergänzung 19.10.2026: installierter Prüfstand nach Rechtevergleich

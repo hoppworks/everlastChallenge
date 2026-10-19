@@ -62,14 +62,14 @@ noch eine spätere automatische Einfügung. Diese Verbindung muss die echte
 UI-Abnahme gesondert belegen. Das neue Fenster wird weder per CLI zur Steuerung
 anderer Apps noch zum Umgehen von Computersteuerungsbeschränkungen verwendet.
 
-Die installierte R6 bleibt unverändert. Vorhandene Freigaben werden für diese
-Offline-Tests nicht angefasst. Die lesende Signieridentitätsprüfung am
-19.10.2026 ergab null gültige Codesigning-Identitäten; es wurde kein Zertifikat
-erzeugt, importiert oder im Schlüsselbund verändert.
+Die Offline-Tests verändern keine Freigaben. Der ursprüngliche Prüfstand war
+R6 ohne eingerichtete Signieridentität. Nach ausdrücklicher Freigabe wurde
+inzwischen eine lokale Identität eingerichtet und Build A installiert; siehe
+den [Signierungsbeleg](verification/local-signing-2026-10-19.md).
 
-Für zukünftige installierte Builds ist eine konstante Signieridentität mit
-kompatibler Designated Requirement vorgesehen. Erst ein tatsächlicher
-Zwei-Build-Test mit erhaltenen Freigaben belegt deren Beständigkeit. Das Anlegen
+Die zwei lokal signierten Builds B und A haben eine kompatible Designated
+Requirement. Beim tatsächlichen Wechsel blieben beide Rechte ohne erneute
+Anfrage erhalten. Dieser Nachweis gilt für diese zwei Builds auf diesem Mac. Das Anlegen
 oder Importieren einer Signieridentität benötigt nach dem Projektvertrag eine
 gesonderte ausdrückliche Freigabe. Die App-ID allein behebt wechselnde
 Ad-hoc-CDHashes nicht. Apples Hintergrund:
@@ -87,8 +87,8 @@ Beide Signaturen müssen gültig sein; Identifier und nichtleere Designated
 Requirement müssen übereinstimmen, der Codehash muss verschieden sein und
 Ad-hoc-Signaturen werden abgelehnt. Ein Erfolg bedeutet ausschließlich, dass
 der Vergleich für einen tatsächlichen Rechte-Erhaltungstest geeignet ist.
-`permissionsPreserved` bleibt immer unbekannt, bis der echte App-Wechsel mit
-Rechtebeobachtung ausgeführt wurde. Der vorbereitete lokale Weg ersetzt
+`permissionsPreserved` bleibt im rein statischen Hilfsprogramm immer unbekannt.
+Die getrennte reale Rechtebeobachtung steht im Signierungsbeleg. Der lokale Weg ersetzt
 keine Developer-ID-Distribution oder Notarisierung.
 
 ## Lokale Builds nach der einmaligen Einrichtung
