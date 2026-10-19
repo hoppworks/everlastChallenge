@@ -38,3 +38,25 @@ Unabhängiger Readback: 5.490 Bytes, SHA256
 8289284ef2a779be710324d5c3afed626278ae756e86cdd2af249878c715a42c.
 Die Vorprobe rechtfertigt derzeit keinen weiteren mehrstündigen Qualitätslauf.
 P06 bleibt offen; kein Gate wurde abgesenkt.
+
+## Inhaltlicher Offline-Readback
+
+Die vorhandenen Texte wurden danach ohne weitere ASR gegen das tatsächliche,
+SHA-gepinnte Fleurs-Gold und die eingefrorene quality.py-Normalisierung
+(`/usr/bin/python3`, Unicode 13) ausgewertet. DE15 enthält vier zusätzliche
+normalisierte Tokens gegenüber dem historischen Output, keine bloße
+Interpunktionsabweichung. Gegen 24 Goldwörter steigt die Einzelfall-WER von
+I0/D1/S1 = 2/24 (8,3333 %) auf I4/D1/S1 = 6/24 (25 %). Alle acht aktuellen
+DE15-Zeilen stimmen miteinander überein, ebenso die jeweils 30 historischen
+Reference-/FullPrefix-Zeilen. Die aktuelle Single-/Combo-Variante liefert
+identische Ergebnisse. DE10 bleibt unverändert: I1/D0/S3 = 4/21 (19,0476 %).
+
+Dies ist ein Urteil über genau zwei vorhandene Fälle, keine Korpus-WER und
+keine nachträgliche Qualifikation. Zusammen mit der verfehlten Diagnose-Latenz
+rechtfertigt es keine Aktivierung oder weiteren langen Korpuslauf dieser
+Variante. Die stabile Produktionsreferenz bleibt unverändert.
+
+Neuer privater Readback: `execution-v1/de15-quality-readback-v1.json`, 16.168 Bytes,
+SHA256 `cd0981d96d601e8c55ef5891d83c4970531747bba435559d6f36702eb8ba4b8c`.
+Zwölf Eingabebindungen erneut überprüft, Golddatei bytegleich mit der originalen
+Fleurs-TSV. Alte Belege unverändert; keine erneute Transkription.
