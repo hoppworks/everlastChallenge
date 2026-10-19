@@ -1,0 +1,113 @@
+{
+  "kind": "p04-technical-criteria-after-standard-microphone-scope",
+  "checkedAtUtc": "2026-10-19T11:19:56.352947+00:00",
+  "sourceRevision": "2abf49503fe8b8c43fd7916cc5be3cb9aea3be6f",
+  "technicalCriteriaProven": true,
+  "formalPackageComplete": false,
+  "formalDependency": "P03 remains incomplete because real sleep/wake acceptance is still open.",
+  "deviceScope": "Systemstandard only, per explicit user instruction; no additional microphone/Bluetooth/profile/unplug tests",
+  "sourceBindings": [
+    {
+      "path": "src-tauri/src/audio.rs",
+      "sha256": "231c0a517cc2b09296fc913a263c495e8b40ceeed51e211a9f22e2286bcecfb4"
+    },
+    {
+      "path": "src-tauri/src/runtime/tests/cpal_adapter_contract.rs",
+      "sha256": "21f2d8d5099d784cdbeb92db0dcfaf6c14354254a2334987666e2b0ff992f9ed"
+    },
+    {
+      "path": "crates/dictation-core/src/audio.rs",
+      "sha256": "4b45e24678529d3e12914173b3d99395e8a2b7e2dcfffe077aec48d2b2ed9aeb"
+    },
+    {
+      "path": "crates/dictation-core/tests/audio.rs",
+      "sha256": "7baa876c7a560206f966a741f4cb9c69eaece94a9799bf7b798081363f33ada0"
+    },
+    {
+      "path": "crates/dictation-core/tests/audio_properties.rs",
+      "sha256": "3cf8cba40e7c00586bea71f0ad47d7838c647f8b6c537bf3e2cf4fa1ae217ab1"
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "1174b345da1b1692dbf83562d071011e6de8c55edee43e2e910f700d91373089"
+    }
+  ],
+  "newEvidence": [
+    {
+      "path": "artifacts/p04-standard-callback-v1/focused-green.log",
+      "sha256": "832a3e952f6c702095e42bc5315ea9345d5e75397551b6c40819d69c89fc3ffc"
+    },
+    {
+      "path": "artifacts/p04-standard-callback-v1/callback-loss-mutant.log",
+      "sha256": "842b5312508303057d9a267f76247981e45b6f4f47939c16008b95bd184ec193"
+    },
+    {
+      "path": "artifacts/p04-standard-callback-v1/mutation.json",
+      "sha256": "7217defabcd9ba7688dfbaec30efc6a4ec11fd37a13b02d6ae6c2e8142a050a7"
+    },
+    {
+      "path": "artifacts/p04-standard-callback-v1/rustfmt-only.diff",
+      "sha256": "03a2e9af338639f3bb93cb8c2cd0565e6785af3d9b7231f26a26e4ab9e819a22"
+    },
+    {
+      "path": "artifacts/p04-standard-callback-v1/check.log",
+      "sha256": "d5a9f74213ff99b0b4350a0afd42a28be24bf95bc2050b9dc121daebfacbf475"
+    },
+    {
+      "path": "artifacts/p04-standard-callback-v1/test.log",
+      "sha256": "8d3251974be7de7561b4d87b56f8fe9f13d12af77838839c4d84eb836fbe4d97"
+    },
+    {
+      "path": "artifacts/p04-standard-callback-v1/integrated-checks.json",
+      "sha256": "0d83dd77238d7898f39eae345a103f7cbdeed23fbf5439c64d26977f3979383f"
+    },
+    {
+      "path": "artifacts/p04-standard-callback-v1/measurement-feature.log",
+      "sha256": "0acf5d50f5c71e442d6f29e319766885c8ff4f30ba9615d56067e48ff9c267e8"
+    },
+    {
+      "path": "artifacts/p04-standard-callback-v1/measurement-feature.json",
+      "sha256": "390eb2ce4372b0e01ea6bca05de3ed308ab053e8c91a6942338e8b78d41255dc"
+    },
+    {
+      "path": "artifacts/p04-standard-callback-v1/secrets.log",
+      "sha256": "eee01b8889eb49e90a3018284a12d94c825e66034e77d2990cd1a99b19365ce8"
+    },
+    {
+      "path": "artifacts/p04-standard-callback-v1/secrets.json",
+      "sha256": "ddd5ff6a40d1dd51b350f2f116e877f5004799fd6fc00b1f9c9c6f1ae4ed6fd3"
+    }
+  ],
+  "acceptance": {
+    "A06": "existing synthetic rate/channel/frequency/impulse/rounding/flush tests and existing real standard microphone evidence",
+    "A09": "existing DSP/pause/flush contracts; no new boundary or source omission",
+    "A13": "same production callback invoked with controlled CPAL DeviceNotAvailable through RecordingOwner/CpalAudio poll+join/Runtime actor; failure, retained text, no decode/delivery, immediate restart and shutdown",
+    "A14": "existing overflow/journal/ownership/resource contracts and buffer budget; reused100native start/cancel plus historical mixed100cycle resource test"
+  },
+  "independentReview": {
+    "correctness": "no findings",
+    "standards": "no findings",
+    "spec": "new callback contract covers identified remaining controlled A13 seam",
+    "evidenceDelta": "pre-rustfmt mutation snapshots and signature-only transition independently verified"
+  },
+  "tests": {
+    "npmRunCheckExit": 0,
+    "npmTestExit": 0,
+    "hostTestsPassed": 225,
+    "hostModelTestsIgnored": 2,
+    "focusedConnectorTestsPassed": 2,
+    "measurementFeatureFocusedTestsPassed": 2,
+    "mutationExitCode": 101,
+    "compileRed": "E0599 missing callback factory, not a product failure",
+    "behaviorRed": "controlled callback-loss mutant prevents expected failure state; sensitivity proof only",
+    "canonicalSecretScanExit": 0
+  },
+  "limits": [
+    "No microphone recording, device switch or app installation in this change",
+    "Installed R4 and packaged R5 not rebuilt; callback extraction preserves prior behavior but is a new source revision",
+    "No new P06 performance, quality or resource qualification",
+    "Requested payload budget is not an exact universal heap maximum",
+    "No automatic total package count increase while formal dependency remains open",
+    "Personal-review source/anchor delta for this source commit must be prepared before final human review"
+  ]
+}
