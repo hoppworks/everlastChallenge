@@ -9,6 +9,8 @@ use std::{
 
 mod cache;
 mod mlx_manifest;
+#[cfg(unix)]
+mod parallel_verification;
 mod reference_conversion;
 mod storage;
 use cache::CacheGuard;
@@ -334,6 +336,10 @@ fn verify(
     if file.metadata()?.len() != definition.bytes {
         return Err(ModelError::Size);
     }
+    #[cfg(unix)]
+    if let Some(result) = parallel_verification::verify_if_pinned(&file, definition, cancel) {
+        return result;
+    }
     let mut hasher = Sha256::new();
     let mut buffer = [0_u8; 65_536];
     let mut received = 0_u64;
@@ -552,6 +558,51 @@ mod tests {
         assert!(matches!(
             verify_file(&path, definition),
             Err(ModelError::Hash)
+        ));
+        Ok(())
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn parallel_model_verification_checks_every_position_and_exact_length()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("fixture.bin");
+        let definition = ModelDefinition {
+            id: "parallel-integrity-fixture",
+            file: "fixture.bin",
+            bytes: 17,
+            sha256: "918a954ac4dfb54ac39f068d9868227f69ab39bc362e2c9b0083bf6a109d6ad7",
+        };
+        let original = b"abcdefghijklmnopq";
+        fs::write(&path, original)?;
+        verify_file(&path, definition)?;
+        // Includes both sides of every chunk boundary and the partial tail.
+        for index in 0..original.len() {
+            let mut corrupt = *original;
+            corrupt[index] ^= 1;
+            fs::write(&path, corrupt)?;
+            assert!(
+                matches!(verify_file(&path, definition), Err(ModelError::Hash)),
+                "byte {index}"
+            );
+        }
+        for data in [
+            original[..16].to_vec(),
+            [original.as_slice(), b"x"].concat(),
+        ] {
+            fs::write(&path, data)?;
+            assert!(matches!(
+                verify_file(&path, definition),
+                Err(ModelError::Size)
+            ));
+        }
+        fs::write(&path, original)?;
+        let cancel = tokio_util::sync::CancellationToken::new();
+        cancel.cancel();
+        assert!(matches!(
+            verify_file_cancellable(&path, definition, &cancel),
+            Err(ModelError::Cancelled)
         ));
         Ok(())
     }
