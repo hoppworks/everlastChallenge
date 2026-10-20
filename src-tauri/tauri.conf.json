@@ -10,7 +10,17 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [{"label":"main","title":"Everlast Dictation","width":760,"height":720,"minWidth":560,"minHeight":600,"visible":false}],
+    "windows": [
+      {
+        "label": "main",
+        "title": "Everlast Dictation",
+        "width": 760,
+        "height": 720,
+        "minWidth": 560,
+        "minHeight": 600,
+        "visible": false
+      }
+    ],
     "security": {
       "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; frame-src 'none'",
       "capabilities": ["main"]
@@ -19,8 +29,18 @@
   "bundle": {
     "active": true,
     "targets": ["app", "dmg"],
-    "resources": {"../docs/licenses/": "licenses/"},
-    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns"],
-    "macOS": {"minimumSystemVersion":"27.0","signingIdentity":"-","infoPlist":"Info.plist","entitlements":"Entitlements.plist"}
+    "resources": { "../docs/licenses/": "licenses/" },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "27.0",
+      "signingIdentity": "-",
+      "infoPlist": "Info.plist",
+      "entitlements": "Entitlements.plist"
+    }
   }
 }
