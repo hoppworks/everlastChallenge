@@ -57,8 +57,8 @@ Assertion-REDs, Fix und Grenzen der neuen Capture-/Settings-Verbundtests.
   und [Neustart](../src-tauri/src/runtime/tests/restart_contract.rs) prüfen deren
   Verkabelung. Kontrollierte Worker sind keine nativen Mikrofone oder Empfänger.
 - React-/IPC-Tests stehen bei den Komponenten und beim Client. `src/main.tsx`
-  lädt nur den Starttext und CSS; die sichtbaren Controls sind AppKit. DOM-Tests
-  beweisen keine native VoiceOver-, Fokus- oder Fensterdarstellung.
+  mountet die aktive React-Oberfläche. DOM-Tests prüfen die Ansichten und
+  IPC-Reaktionen, aber keine native VoiceOver-, Fokus- oder Fensterdarstellung.
 - Der [selbst ausgeführte Funktionstest](verification/self-run-functional-2026-10-19.md)
   belegt echte Aufnahme und manuelles Kopieren/Einfügen in ein eigenes Testziel,
   keine automatische Zielerfassung oder automatische Übergabe. Der
