@@ -77,7 +77,7 @@ impl Options {
         }
         let mut language = false;
         let mut repeats = false;
-        for pair in arguments[2..].chunks_exact(2) {
+        for pair in arguments[2..].as_chunks::<2>().0 {
             match pair[0].to_str() {
                 Some("--language") if !language => {
                     result.language = match pair[1].to_str() {

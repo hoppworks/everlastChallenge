@@ -1,0 +1,5 @@
+# Native build input pins for mlxrs-sys 0.2.0
+
+The1100regular files in the released .crate archive are copied unchanged apart from vendor/mlx/CMakeLists.txt; Cargo cache marker.cargo-ok is excluded. The two existing archive downloads now require the SHA256 of their previously observed bytes: nlohmann/json3.11.3 d6c65aca… and Apple MetalCPP26 4df3c078…. Existing fmt12.1.0 tag is replaced by its observed full407c905e… commit. All source URLs, native MLX/MLX-C/GGUF revisions, build features, C++/Metal kernels, FFI, compiler and linkage are retained. No Cargo/CMake global toolchain hook is installed.
+
+The released source checksum, exact modified file hashes and immutable source revision are in EVERLAST-PATCH.json. The actual native build must be repeated to verify the download pins; this patch is not a universal reproducible-binary or offline-build claim. Preexisting source attribution gaps remain recorded in docs/licenses/third-party/mlx-native-provenance.json. Upstream source licenses remain present.

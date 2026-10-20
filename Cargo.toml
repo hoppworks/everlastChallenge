@@ -5,7 +5,7 @@ resolver = "2"
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.93"
+rust-version = "1.99.1"
 license = "MIT"
 publish = false
 
@@ -41,3 +41,7 @@ strip = "none"
 global-hotkey = { path = "vendor/global-hotkey" }
 whisper-rs-sys = { path = "vendor/whisper-rs-sys" }
 whisper-rs = { path = "vendor/whisper-rs" }
+mlxrs = { path = "vendor/mlxrs" }
+tokenizers = { path = "vendor/tokenizers" }
+
+mlxrs-sys = { path = "vendor/mlxrs-sys" }

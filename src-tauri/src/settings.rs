@@ -39,12 +39,20 @@ impl From<SettingsLanguage> for Language {
 pub enum ModelChoice {
     Reference,
     Small,
+    #[cfg(feature = "mlx")]
+    MlxFp16,
+    #[cfg(feature = "mlx")]
+    MlxReferenceEncoder,
 }
 impl ModelChoice {
     pub fn definition(self) -> ModelDefinition {
         match self {
             Self::Reference => REFERENCE,
             Self::Small => SMALL,
+            #[cfg(feature = "mlx")]
+            Self::MlxFp16 => crate::model::MLX_REFERENCE,
+            #[cfg(feature = "mlx")]
+            Self::MlxReferenceEncoder => crate::model::MLX_REFERENCE_COEFFICIENTS,
         }
     }
 }
@@ -107,6 +115,9 @@ impl Default for Settings {
             schema_version: SCHEMA_VERSION,
             device: None,
             language: SettingsLanguage::German,
+            #[cfg(feature = "mlx")]
+            model: ModelChoice::MlxReferenceEncoder,
+            #[cfg(not(feature = "mlx"))]
             model: ModelChoice::Reference,
             hotkey: Hotkey {
                 key: PhysicalKey::D,
@@ -263,19 +274,82 @@ mod tests {
     use super::*;
     use std::os::unix::fs::{PermissionsExt, symlink};
 
+    #[cfg(feature = "mlx")]
+    #[test]
+    fn mlx_build_defaults_to_the_qualified_reference_encoder() {
+        let selected = Settings::default().model;
+        assert_eq!(selected, ModelChoice::MlxReferenceEncoder);
+        assert_eq!(
+            selected.definition().id(),
+            crate::model::MLX_REFERENCE_COEFFICIENTS.id()
+        );
+    }
+
+    #[cfg(feature = "mlx")]
+    #[test]
+    fn reference_encoder_model_round_trips_with_its_source_and_derived_assets()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let store = SettingsStore::new(directory.path());
+        let selected = Settings {
+            model: ModelChoice::MlxReferenceEncoder,
+            ..Settings::default()
+        };
+        store.save(&selected)?;
+        let loaded = store.load()?.ok_or("derived settings missing")?;
+        assert_eq!(loaded.model, ModelChoice::MlxReferenceEncoder);
+        let assets = loaded
+            .model
+            .definition()
+            .installation_assets()
+            .collect::<Vec<_>>();
+        assert_eq!(assets.len(), 6);
+        assert_eq!(assets[0].id(), REFERENCE.id());
+        assert_eq!(
+            assets[5].id(),
+            crate::model::MLX_REFERENCE_COEFFICIENTS.id()
+        );
+        assert_eq!(
+            loaded.model.definition().installation_bytes(),
+            3_813_494_037
+        );
+        assert!(assets[5].url().is_empty());
+        Ok(())
+    }
+
+    #[cfg(feature = "mlx")]
+    #[test]
+    fn explicit_mlx_model_survives_settings_storage_with_its_verified_assets()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let store = SettingsStore::new(directory.path());
+        let settings = Settings {
+            model: ModelChoice::MlxFp16,
+            ..Settings::default()
+        };
+        store.save(&settings)?;
+        let loaded = store.load()?.ok_or("missing stored MLX choice")?;
+        assert_eq!(
+            loaded.model.definition().id(),
+            crate::model::MLX_REFERENCE.id()
+        );
+        assert_eq!(loaded.model.definition().installation_assets().count(), 5);
+        Ok(())
+    }
     #[test]
     fn missing_preferences_are_distinct_from_a_saved_default()
     -> Result<(), Box<dyn std::error::Error>> {
         let directory = tempfile::tempdir()?;
         let store = SettingsStore::new(directory.path());
         assert_eq!(store.load()?, None);
-        store.save(&Settings::default())?;
+        let saved = Settings::default();
+        store.save(&saved)?;
         let settings = store.load()?.ok_or("missing settings")?;
         assert_eq!(settings.language, SettingsLanguage::German);
         assert_eq!(settings.device, None);
         assert_eq!(settings.hotkey.key, PhysicalKey::D);
         assert!(settings.hotkey.option);
-        assert_eq!(settings.model, ModelChoice::Reference);
+        assert_eq!(settings, saved);
         Ok(())
     }
 

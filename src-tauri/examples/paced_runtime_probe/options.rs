@@ -32,7 +32,7 @@ pub enum OptionsError {
 impl std::fmt::Display for OptionsError {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         formatter.write_str(match self {
-            Self::ArgumentCount => "usage: paced_runtime_probe MODEL_PATH reference|small WAV de|en PARAMETERS_JSON OUTPUT_JSON RUNS [REFERENCE_UTF8|--expect-empty]",
+            Self::ArgumentCount => "usage: paced_runtime_probe MODEL_PATH reference|small|mlx-reference-encoder WAV de|en PARAMETERS_JSON OUTPUT_JSON RUNS [REFERENCE_UTF8|--expect-empty]",
             Self::ArgumentLength => "Each argument must contain 1 to 4096 bytes",
             Self::Model => "Model selection must be reference or small",
             Self::Language => "Language must be de or en",
@@ -57,6 +57,8 @@ impl Options {
         let definition = match arguments[1].to_str() {
             Some("reference") => REFERENCE,
             Some("small") => SMALL,
+            #[cfg(feature = "mlx")]
+            Some("mlx-reference-encoder") => everlast_dictation::model::MLX_REFERENCE_COEFFICIENTS,
             _ => return Err(OptionsError::Model),
         };
         let language = match arguments[3].to_str() {

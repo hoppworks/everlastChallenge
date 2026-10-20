@@ -1,0 +1,6 @@
+/* Copyright (C) 2024 Salvatore Sanfilippo <antirez@gmail.com>
+ * See LICENSE for licensing info.
+ *
+ * GGUF enums / structures are partially adapted
+ * the official GGUF implementation at from https://github.com/ggerganov/ggml/
+ */

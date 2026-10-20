@@ -1975,7 +1975,8 @@ static bool whisper_encode_external(const whisper_state & wstate) {
 
 static struct ggml_cgraph * whisper_build_graph_conv(
         whisper_context & wctx,
-          whisper_state & wstate) {
+          whisper_state & wstate,
+                   bool external_encoder = false) {
     const auto & model   = wctx.model;
     const auto & hparams = model.hparams;
 
@@ -2000,7 +2001,7 @@ static struct ggml_cgraph * whisper_build_graph_conv(
 
     struct ggml_tensor * cur = nullptr;
 
-    if (!whisper_encode_external(wstate)) {
+    if (!(external_encoder || whisper_encode_external(wstate))) {
         // convolution + gelu
         {
             cur = ggml_conv_1d_ph(ctx0, model.e_conv_1_w, mel, 1, 1);
@@ -2361,14 +2362,16 @@ static bool whisper_encode_internal(
               const int   mel_offset,
               const int   n_threads,
     ggml_abort_callback   abort_callback,
-                   void * abort_callback_data) {
+                   void * abort_callback_data,
+            const float * external_features = nullptr) {
     const int64_t t_start_us = ggml_time_us();
+    const bool external_encoder = external_features || whisper_encode_external(wstate);
 
     // conv
     {
         auto & sched = wstate.sched_conv.sched;
 
-        ggml_cgraph * gf = whisper_build_graph_conv(wctx, wstate);
+        ggml_cgraph * gf = whisper_build_graph_conv(wctx, wstate, external_encoder);
 
         if (!ggml_backend_sched_alloc_graph(sched, gf)) {
             // should never happen as we pre-allocate the memory
@@ -2402,23 +2405,29 @@ static bool whisper_encode_internal(
             ggml_backend_tensor_set(mel, wstate.inp_mel.data(), 0, ggml_nelements(mel)*sizeof(float));
         }
 
-        if (!whisper_encode_external(wstate)) {
+        if (!external_encoder) {
             if (!ggml_graph_compute_helper(sched, gf, n_threads)) {
                 return false;
             }
         } else {
             ggml_backend_sched_reset(sched);
 
+            if (external_features) {
+                WHISPER_ASSERT(wstate.embd_enc->type == GGML_TYPE_F32);
+                WHISPER_ASSERT(ggml_nelements(wstate.embd_enc) == 1920000);
+                ggml_backend_tensor_set(wstate.embd_enc, external_features, 0, 1920000*sizeof(float));
+            } else {
 #if defined(WHISPER_USE_COREML)
             whisper_coreml_encode(wstate.ctx_coreml, mel->ne[0], mel->ne[1], (float *) mel->data, (float *) wstate.embd_enc->data);
 #elif defined(WHISPER_USE_OPENVINO)
             whisper_openvino_encode(wstate.ctx_openvino, mel, wstate.embd_enc);
 #endif
+            }
         }
     }
 
     // encoder
-    if (!whisper_encode_external(wstate)) {
+    if (!external_encoder) {
         auto & sched = wstate.sched_encode.sched;
 
         ggml_cgraph * gf = whisper_build_graph_encoder(wctx, wstate);
@@ -6796,12 +6805,14 @@ static bool whisper_vad(
     return true;
 }
 
-int whisper_full_with_state(
+static int whisper_full_internal(
         struct whisper_context * ctx,
           struct whisper_state * state,
     struct whisper_full_params   params,
                    const float * samples,
-                           int   n_samples) {
+                           int   n_samples,
+                   const float * external_features,
+         whisper_encoder_usage * encoder_usage) {
     // clear old results
     auto & result_all = state->result_all;
 
@@ -7024,9 +7035,15 @@ int whisper_full_with_state(
         }
 
         // encode audio features starting at offset seek
-        if (!whisper_encode_internal(*ctx, *state, seek, params.n_threads, params.abort_callback, params.abort_callback_user_data)) {
+        const float * window_features = seek == 0 ? external_features : nullptr;
+        if (!whisper_encode_internal(*ctx, *state, seek, params.n_threads, params.abort_callback, params.abort_callback_user_data, window_features)) {
             WHISPER_LOG_ERROR("%s: failed to encode\n", __func__);
             return -6;
+        }
+
+        if (encoder_usage) {
+            if (window_features) ++encoder_usage->external_windows;
+            else ++encoder_usage->native_windows;
         }
 
         // if there is a very short audio segment left to process, we remove any past prompt since it tends
@@ -7756,6 +7773,25 @@ int whisper_full_with_state(
     }
 
     return 0;
+}
+
+int whisper_full_with_state(whisper_context *ctx, whisper_state *state,
+        whisper_full_params params, const float *samples, int n_samples) {
+    return whisper_full_internal(ctx,state,params,samples,n_samples,nullptr,nullptr);
+}
+
+int whisper_full_with_state_and_encoder(whisper_context *ctx, whisper_state *state,
+        whisper_full_params params, const float *samples, int n_samples,
+        const float *features, int n_features, whisper_encoder_usage *usage) {
+    if (usage) *usage = {};
+    if (!ctx || !state || !samples || !features || !usage || n_features != 1920000 ||
+        n_samples < 16000 || n_samples > 480000 || params.audio_ctx != 0 || params.offset_ms != 0 || params.duration_ms != 0 ||
+        !params.no_context || params.vad || params.detect_language || params.translate ||
+        !params.language || (strcmp(params.language,"de") != 0 && strcmp(params.language,"en") != 0) ||
+        params.strategy != WHISPER_SAMPLING_GREEDY || params.greedy.best_of != 1 ||
+        ctx->model.hparams.n_audio_ctx != 1500 || ctx->model.hparams.n_audio_state != 1280) return -42;
+    for (int i=0;i<n_features;++i) if(!std::isfinite(features[i])) return -42;
+    return whisper_full_internal(ctx,state,params,samples,n_samples,features,usage);
 }
 
 int whisper_full(

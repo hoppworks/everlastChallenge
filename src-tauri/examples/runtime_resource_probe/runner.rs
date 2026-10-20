@@ -119,6 +119,45 @@ pub struct DecoderControl {
     entered: Receiver<u64>,
     release: Sender<()>,
 }
+/// Initialize backend-owned resources inside the measured serial worker.
+/// Only the factory and the ordinary control channels cross threads.
+pub fn controlled_service<D: Decoder>(
+    initialize: impl FnOnce() -> Result<D, InferenceError> + Send + 'static,
+    expected: Arc<[f32]>,
+    timeout: Duration,
+) -> Result<
+    (
+        everlast_dictation::inference_service::InferenceService,
+        DecoderControl,
+    ),
+    everlast_dictation::inference_service::ServiceError,
+> {
+    let state = Arc::new(State::default());
+    let worker_state = Arc::clone(&state);
+    let (entered, receive) = bounded(1);
+    let (release, proceed) = bounded(1);
+    let service =
+        everlast_dictation::inference_service::InferenceService::with_initializer(move || {
+            Ok(Controlled {
+                inner: initialize()?,
+                expected,
+                state: worker_state,
+                entered,
+                release: proceed,
+                timeout,
+            })
+        })?;
+    Ok((
+        service,
+        DecoderControl {
+            state,
+            entered: receive,
+            release,
+        },
+    ))
+}
+
+#[cfg(test)]
 pub fn controlled<D: Decoder>(
     inner: D,
     expected: Arc<[f32]>,
@@ -151,6 +190,10 @@ impl Drop for Active<'_> {
     }
 }
 impl<D: Decoder> Decoder for Controlled<D> {
+    fn finish(self) -> Result<(), InferenceError> {
+        self.inner.finish()
+    }
+
     fn decode(&mut self, audio: &[f32], language: Language) -> Result<String, InferenceError> {
         self.state.active.store(true, Ordering::Release);
         let _active = Active(&self.state);
@@ -598,6 +641,77 @@ mod tests {
         atomic::{AtomicUsize, Ordering},
     };
     struct Fixed(Arc<AtomicUsize>);
+    #[test]
+    fn controlled_decoder_finishes_its_thread_owned_inner() -> Result<(), InferenceError> {
+        use std::{cell::Cell, rc::Rc};
+        struct Owned(Rc<Cell<bool>>);
+        impl Decoder for Owned {
+            fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+                Ok(String::new())
+            }
+            fn finish(self) -> Result<(), InferenceError> {
+                self.0.set(true);
+                Ok(())
+            }
+        }
+        let finished = Rc::new(Cell::new(false));
+        let (decoder, _) = controlled(Owned(Rc::clone(&finished)), Arc::from([]), WAIT);
+        decoder.finish()?;
+        assert!(
+            finished.get(),
+            "resource wrapper skipped backend-owned cleanup"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn resource_service_creates_and_finishes_non_send_decoder_on_one_worker()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use std::{rc::Rc, thread::ThreadId};
+        struct Owned {
+            owner: ThreadId,
+            _local: Rc<()>,
+            finished: Sender<ThreadId>,
+        }
+        impl Decoder for Owned {
+            fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+                Ok(String::new())
+            }
+            fn finish(self) -> Result<(), InferenceError> {
+                if self.owner != thread::current().id() {
+                    return Err(InferenceError::Decode);
+                }
+                self.finished
+                    .try_send(self.owner)
+                    .map_err(|_| InferenceError::Decode)
+            }
+        }
+        let (entered, ready) = bounded(1);
+        let (finished, observed) = bounded(1);
+        let caller = thread::current().id();
+        let (service, control) = controlled_service(
+            move || {
+                let owner = thread::current().id();
+                entered
+                    .try_send(owner)
+                    .map_err(|_| InferenceError::Decode)?;
+                Ok(Owned {
+                    owner,
+                    _local: Rc::new(()),
+                    finished,
+                })
+            },
+            Arc::from([]),
+            WAIT,
+        )?;
+        let owner = ready.recv_timeout(Duration::from_secs(5))?;
+        assert_ne!(owner, caller);
+        service.shutdown()?;
+        assert_eq!(observed.recv_timeout(Duration::from_secs(5))?, owner);
+        assert_eq!(control.diagnostics()?.started, 0);
+        Ok(())
+    }
+
     impl Decoder for Fixed {
         fn decode(&mut self, audio: &[f32], _: Language) -> Result<String, InferenceError> {
             assert_eq!(audio, &[0.125; 640]);

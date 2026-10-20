@@ -18,7 +18,15 @@ use std::{
 #[cfg(feature = "measurement")]
 pub(crate) mod observation;
 
-pub trait Decoder: Send + 'static {
+pub trait Decoder: 'static {
+    /// Release thread-owned backend resources before the serial worker exits.
+    fn finish(self) -> Result<(), InferenceError>
+    where
+        Self: Sized,
+    {
+        Ok(())
+    }
+
     fn decode(&mut self, audio: &[f32], language: Language) -> Result<String, InferenceError>;
 
     /// Actual worker identity and revocation scope; legacy decoders delegate unchanged.
@@ -197,11 +205,20 @@ impl InferenceService {
         definition: ModelDefinition,
         policy: crate::pipeline::Policy,
     ) -> Result<Self, ServiceError> {
+        if definition.is_mlx() {
+            #[cfg(feature = "mlx")]
+            if policy == crate::pipeline::Policy::Reference {
+                return Self::with_initializer(move || {
+                    crate::transcription::mlx::MlxEngine::load(&path, definition)
+                });
+            }
+            return Err(ServiceError::Backend(InferenceError::Context));
+        }
         match policy {
             crate::pipeline::Policy::Reference => {
-                Self::spawn(move || Engine::load(&path, definition))
+                Self::with_initializer(move || Engine::load(&path, definition))
             }
-            crate::pipeline::Policy::FullPrefix => Self::spawn(move || {
+            crate::pipeline::Policy::FullPrefix => Self::with_initializer(move || {
                 crate::transcription::prefix_cache::PrefixCacheDecoder::load(&path, definition)
             }),
         }
@@ -217,11 +234,13 @@ impl InferenceService {
     }
 
     /// Controlled decoder seam for deterministic worker/lifecycle verification.
-    pub fn with_decoder(decoder: impl Decoder) -> Result<Self, ServiceError> {
-        Self::spawn(move || Ok(decoder))
+    pub fn with_decoder(decoder: impl Decoder + Send) -> Result<Self, ServiceError> {
+        Self::with_initializer(move || Ok(decoder))
     }
 
-    fn spawn<D: Decoder>(
+    /// Initialize, use and drop the decoder on its permanent worker.
+    /// Only the factory crosses the thread boundary; the decoder may be !Send.
+    pub fn with_initializer<D: Decoder>(
         initialize: impl FnOnce() -> Result<D, InferenceError> + Send + 'static,
     ) -> Result<Self, ServiceError> {
         let shared = Arc::new(Shared::default());
@@ -232,11 +251,14 @@ impl InferenceService {
             .spawn(move || {
                 let _ready = ReadyGuard(Arc::clone(&owned));
                 let mut decoder = initialize()?;
-                if owned.shutdown.load(Ordering::Acquire) {
-                    return Ok(());
-                }
-                owned.ready.store(true, Ordering::Release);
-                inference_loop(&owned, &awakened, &mut decoder)
+                let result = if owned.shutdown.load(Ordering::Acquire) {
+                    Ok(())
+                } else {
+                    owned.ready.store(true, Ordering::Release);
+                    inference_loop(&owned, &awakened, &mut decoder)
+                };
+                let cleanup = decoder.finish().map_err(ServiceError::from);
+                result.and(cleanup)
             })
             .map_err(|_| ServiceError::Worker)?;
         Ok(Self {
@@ -578,17 +600,48 @@ mod tests {
     use std::time::{Duration, Instant};
 
     #[test]
+    fn shutdown_runs_fallible_decoder_cleanup_on_its_worker()
+    -> Result<(), Box<dyn std::error::Error>> {
+        struct FallibleCleanup(Sender<thread::ThreadId>);
+        impl Decoder for FallibleCleanup {
+            fn decode(&mut self, _: &[f32], _: Language) -> Result<String, InferenceError> {
+                Ok(String::new())
+            }
+            fn finish(self) -> Result<(), InferenceError> {
+                self.0
+                    .send(thread::current().id())
+                    .map_err(|_| InferenceError::Decode)?;
+                Err(InferenceError::Decode)
+            }
+        }
+        let (sent, received) = crossbeam_channel::bounded(1);
+        let service = InferenceService::with_initializer(move || Ok(FallibleCleanup(sent)))?;
+        wait_ready(&service)?;
+        assert!(matches!(
+            service.shutdown(),
+            Err(ServiceError::Backend(InferenceError::Decode))
+        ));
+        assert_ne!(
+            received.recv_timeout(Duration::from_secs(2))?,
+            thread::current().id()
+        );
+        Ok(())
+    }
+
+    #[test]
     fn initializer_and_decoder_owner_run_on_the_serial_worker()
     -> Result<(), Box<dyn std::error::Error>> {
         struct Owned {
             initialized: thread::ThreadId,
             dropped: Sender<thread::ThreadId>,
             calls: Arc<std::sync::atomic::AtomicUsize>,
+            local: std::rc::Rc<std::cell::Cell<usize>>,
         }
         impl Decoder for Owned {
             fn decode(&mut self, audio: &[f32], _: Language) -> Result<String, InferenceError> {
                 assert_eq!(thread::current().id(), self.initialized);
                 assert_eq!(audio, [0.1; 320]);
+                assert_eq!(self.local.replace(1), 0);
                 assert_eq!(self.calls.fetch_add(1, Ordering::AcqRel), 0);
                 Ok("legacy once on initialized owner".into())
             }
@@ -604,7 +657,7 @@ mod tests {
         let (admit, admission) = crossbeam_channel::bounded(1);
         let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let observed_calls = Arc::clone(&calls);
-        let service = InferenceService::spawn(move || {
+        let service = InferenceService::with_initializer(move || {
             let worker = thread::current().id();
             created
                 .send((worker, thread::current().name().map(str::to_owned)))
@@ -616,6 +669,7 @@ mod tests {
                 initialized: worker,
                 dropped,
                 calls,
+                local: std::rc::Rc::new(std::cell::Cell::new(0)),
             })
         })?;
         let (worker, name) = initialized.recv_timeout(Duration::from_secs(2))?;

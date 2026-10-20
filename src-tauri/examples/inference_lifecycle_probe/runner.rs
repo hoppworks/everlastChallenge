@@ -203,7 +203,7 @@ fn conclude(
     }
 }
 
-pub fn restart<D: Decoder>(
+pub fn restart<D: Decoder + Send>(
     decoder: D,
     samples: Vec<f32>,
     budget: Duration,
@@ -331,7 +331,7 @@ pub fn restart<D: Decoder>(
     conclude(outcome, shutdown_bounded(service, budget))
 }
 
-pub fn shutdown_held<D: Decoder>(
+pub fn shutdown_held<D: Decoder + Send>(
     decoder: D,
     samples: Vec<f32>,
     budget: Duration,

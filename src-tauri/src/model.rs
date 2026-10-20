@@ -8,8 +8,13 @@ use std::{
 };
 
 mod cache;
+mod mlx_manifest;
+mod reference_conversion;
 mod storage;
 use cache::CacheGuard;
+#[cfg(all(feature = "mlx", feature = "measurement"))]
+pub(crate) use mlx_manifest::MLX_REFERENCE_COEFFICIENTS as COEFFICIENT_CONTROL;
+pub use mlx_manifest::{MLX_REFERENCE, MLX_REFERENCE_COEFFICIENTS};
 use storage::VerifiedFile;
 pub const MODEL_REVISION: &str = "5359861c739e955e79d9a303bcbc70fb988958b1";
 
@@ -62,7 +67,50 @@ impl ModelDefinition {
     pub fn sha256(self) -> &'static str {
         self.sha256
     }
+    pub fn is_mlx(self) -> bool {
+        self.id == MLX_REFERENCE.id || self.is_reference_encoder()
+    }
+    pub fn is_reference_encoder(self) -> bool {
+        self.id == MLX_REFERENCE_COEFFICIENTS.id
+    }
+    /// All verified files needed before readiness, including the unchanged VAD.
+    pub fn installation_assets(self) -> impl Iterator<Item = Self> {
+        let support: &[Self] = if self.is_mlx() {
+            &mlx_manifest::SUPPORT
+        } else {
+            &[]
+        };
+        std::iter::once(if self.is_reference_encoder() {
+            REFERENCE
+        } else {
+            self
+        })
+        .chain(support.iter().copied())
+        .chain((self.id != VAD.id).then_some(VAD))
+        .chain(self.is_reference_encoder().then_some(self))
+    }
+    /// Select the application-owned cache namespace. Explicit probe paths stay
+    /// caller-owned; different MLX payloads must never share weights.safetensors.
+    pub fn cache_directory(self, models: &Path) -> PathBuf {
+        if self.is_mlx() {
+            models.join(self.id())
+        } else {
+            models.to_path_buf()
+        }
+    }
+
+    pub fn installation_bytes(self) -> u64 {
+        self.installation_assets().map(Self::bytes).sum()
+    }
+    /// Empty only for the local derived payload, which download_model converts
+    /// from the verified reference before constructing any network client.
     pub fn url(self) -> String {
+        if self.is_reference_encoder() {
+            return String::new();
+        }
+        if let Some(url) = mlx_manifest::url(self) {
+            return url.into();
+        }
         if self.id == VAD.id {
             return "https://huggingface.co/ggml-org/whisper-vad/resolve/9ffd54a1e1ee413ddf265af9913beaf518d1639b/ggml-silero-v5.1.2.bin".into();
         }
@@ -143,6 +191,9 @@ pub fn download_model(
         return Err(ModelError::Cancelled);
     }
     let _cache = prepare_cache(directory, definition, cancel)?;
+    if definition.is_reference_encoder() {
+        return reference_conversion::convert(directory, cancel, &mut progress);
+    }
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()?;
@@ -311,6 +362,56 @@ fn verify(
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn mlx_model_variants_have_separate_cache_namespaces() {
+        let root = Path::new("models");
+        assert_ne!(
+            MLX_REFERENCE.cache_directory(root),
+            MLX_REFERENCE_COEFFICIENTS.cache_directory(root)
+        );
+        assert_eq!(REFERENCE.cache_directory(root), root);
+        assert_eq!(SMALL.cache_directory(root), root);
+    }
+
+    #[test]
+    fn mlx_setup_accounts_for_every_pinned_asset_and_keeps_vad() {
+        let assets = MLX_REFERENCE.installation_assets().collect::<Vec<_>>();
+        assert_eq!(
+            assets
+                .iter()
+                .map(|asset| asset.file_name())
+                .collect::<Vec<_>>(),
+            [
+                "weights.safetensors",
+                "config.json",
+                "tokenizer.json",
+                "tokenizer_config.json",
+                "ggml-silero-v5.1.2.bin"
+            ]
+        );
+        assert_eq!(MLX_REFERENCE.installation_bytes(), 1_617_856_158);
+        assert_eq!(
+            REFERENCE.installation_bytes(),
+            REFERENCE.bytes() + VAD.bytes()
+        );
+        assert!(MLX_REFERENCE.is_mlx());
+        assert!(!REFERENCE.is_mlx());
+        assert!(
+            assets[0]
+                .url()
+                .contains("a4aaeec0636e6fef84abdcbe3544cb2bf7e9f6fb")
+        );
+        assert!(
+            assets[2]
+                .url()
+                .contains("41f01f3fe87f28c78e2fbf8b568835947dd65ed9")
+        );
+        assert_eq!(
+            assets[0].sha256(),
+            "951ed3fc1203e6a62467abb2144a96ce7eafca8fa77e3704fdb8635ff3e7f8a6"
+        );
+    }
+
     #[test]
     fn vad_manifest_is_pinned_independently_without_changing_asr_urls() {
         assert_eq!(VAD.id(), "silero-v5.1.2");

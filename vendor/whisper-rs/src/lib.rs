@@ -36,7 +36,7 @@ pub use whisper_grammar::{WhisperGrammarElement, WhisperGrammarElementType};
 pub use whisper_params::{FullParams, SamplingStrategy, SegmentCallbackData};
 #[cfg(feature = "raw-api")]
 pub use whisper_rs_sys;
-pub use whisper_state::{WhisperSegment, WhisperState, WhisperStateSegmentIterator, WhisperToken};
+pub use whisper_state::{EncoderUsage, WhisperSegment, WhisperState, WhisperStateSegmentIterator, WhisperToken};
 pub use whisper_vad::*;
 
 pub type WhisperSysContext = whisper_rs_sys::whisper_context;

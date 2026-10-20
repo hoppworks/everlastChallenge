@@ -1,0 +1,734 @@
+{
+  "schemaVersion": 1,
+  "kind": "immutable-primary-source-license-and-notice-evidence",
+  "researchDate": "2026-10-19",
+  "components": [
+    {
+      "name": "mlxrs",
+      "version": "0.2.0",
+      "repository": "https://github.com/findit-studio/mlxrs",
+      "revision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
+      "crateVcsInfo": {
+        "git": {
+          "sha1": "38744eb0dc1b91750991b12de0e24b1d0e475a6f"
+        },
+        "path_in_vcs": "mlxrs"
+      },
+      "crateVcsInfoSha256": "abd8594e4398e4d8de92dcb246b4d13956f66d00c809cc3edcea7d44aa4c3923",
+      "cachedCrateArchiveSha256": "dd72771402de14a1134490089ddeb6b744920291d07e7c238e1eaaee2db2400f",
+      "evidenceIds": [
+        "mlxrs-mit",
+        "mlxrs-apache"
+      ],
+      "originalCompleteLicenseBodyRecovered": true
+    },
+    {
+      "name": "mlxrs-sys",
+      "version": "0.2.0",
+      "repository": "https://github.com/findit-studio/mlxrs",
+      "revision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
+      "license": "MIT OR Apache-2.0",
+      "source": "local dependency patch with provenance",
+      "localPatchProvenance": {
+        "sourceKind": "local path dependency patched from the published crate",
+        "path": "vendor/mlxrs-sys",
+        "manifest": {
+          "path": "vendor/mlxrs-sys/EVERLAST-PATCH.json",
+          "sha256": "e92e68bde1a47e6b221d6e995a61d8c092dc4e19a32856ec3cb59a827569e084",
+          "bytes": 689
+        },
+        "upstreamRevision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
+        "upstreamRegistryChecksum": "ace6d5383b15cade95fbf8b7a10dfa5c4a84b3dcfa57abe012a5020208570f25",
+        "upstreamReleasedFilesTreeSha256": "39a0c953995ff1d54a55467671b024c7ac96fefce957cc9989a1d60c5d4288e2",
+        "effectiveReleasedFilesTreeSha256": "71faebc7011bca40a86e928a398a07be4a36572124c1ad2e0c7237b79b9695e3",
+        "releasedFileCount": 1100,
+        "changedReleasedFiles": [
+          "vendor/mlx/CMakeLists.txt"
+        ],
+        "excludedAddedFiles": [
+          "EVERLAST-PATCH.json",
+          "EVERLAST-PATCH.md"
+        ],
+        "hashDefinition": "SHA256 of UTF-8 compact JSON (sort_keys=True,ensure_ascii=False,separators comma/colon), regular archive files as objects path/sha256; list sorted by full relative path string (Unicode lexical); excludes Cargo cache marker and added application receipts; no fetched outputs",
+        "buildInputs": {
+          "path": "config/mlx-build-inputs.json",
+          "sha256": "1e0ca899d09e49d35e8515a2853eb785bffa17914bec4e30639f015a30b2a320",
+          "bytes": 2347
+        },
+        "verificationScope": "Local file/archive hash comparison only; no build, download or new advisory scan in this refresh."
+      },
+      "evidenceIds": [
+        "mlxrs-mit",
+        "mlxrs-apache",
+        "mlx",
+        "mlx-c",
+        "gguflib"
+      ],
+      "originalCompleteLicenseBodyRecovered": true,
+      "licenseScope": "Rust wrapper license inherited from workspace root; native subcomponent original licenses and embedded notices remain distinct evidence"
+    },
+    {
+      "name": "objc2-core-ml",
+      "version": "0.3.2",
+      "repository": "https://github.com/madsmtm/objc2",
+      "revision": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "crateVcsInfo": {
+        "git": {
+          "sha1": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b"
+        },
+        "path_in_vcs": "framework-crates/objc2-core-ml"
+      },
+      "crateVcsInfoSha256": "1d4bce9850105140920a0f6b8936a29910d2c2afae6452a58bf46a3cc22359b6",
+      "cachedCrateArchiveSha256": "201b055e6acfa0f9f15568255d3f03ce2b54bc86d1814442dc69138e36813e18",
+      "evidenceIds": [
+        "objc2-declaration"
+      ],
+      "originalCompleteLicenseBodyRecovered": false,
+      "limitation": "Exact upstream root LICENSE.md is a license declaration and SDK provenance note, linking external license terms; the repository at this revision does not carry complete MIT/Zlib/Apache text files. No copyright holder or license body has been invented."
+    },
+    {
+      "name": "objc2-image-io",
+      "version": "0.3.2",
+      "repository": "https://github.com/madsmtm/objc2",
+      "revision": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "crateVcsInfo": {
+        "git": {
+          "sha1": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b"
+        },
+        "path_in_vcs": "framework-crates/objc2-image-io"
+      },
+      "crateVcsInfoSha256": "583b666cbc15ad0671d5b1d819af352ac817f6e5293d019df09e45ad31dde6a7",
+      "cachedCrateArchiveSha256": "32b0446e98cf4a784cc7a0177715ff317eeaa8463841c616cfc78aa4f953c4ea",
+      "evidenceIds": [
+        "objc2-declaration"
+      ],
+      "originalCompleteLicenseBodyRecovered": false,
+      "limitation": "Exact upstream root LICENSE.md is a license declaration and SDK provenance note, linking external license terms; the repository at this revision does not carry complete MIT/Zlib/Apache text files. No copyright holder or license body has been invented."
+    },
+    {
+      "name": "objc2-metal",
+      "version": "0.3.2",
+      "repository": "https://github.com/madsmtm/objc2",
+      "revision": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "crateVcsInfo": {
+        "git": {
+          "sha1": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b"
+        },
+        "path_in_vcs": "framework-crates/objc2-metal"
+      },
+      "crateVcsInfoSha256": "ea5eaec8d2785ebed65a43cdf097051d8900c7547797cea4bb3c7ba4476e052a",
+      "cachedCrateArchiveSha256": "a0125f776a10d00af4152d74616409f0d4a2053a6f57fa5b7d6aa2854ac04794",
+      "evidenceIds": [
+        "objc2-declaration"
+      ],
+      "originalCompleteLicenseBodyRecovered": false,
+      "limitation": "Exact upstream root LICENSE.md is a license declaration and SDK provenance note, linking external license terms; the repository at this revision does not carry complete MIT/Zlib/Apache text files. No copyright holder or license body has been invented."
+    },
+    {
+      "name": "tauri-plugin",
+      "version": "2.7.2",
+      "repository": "https://github.com/tauri-apps/tauri",
+      "revision": "59b63ab500da9859f12d8888c3298bc29bba0b92",
+      "crateVcsInfo": {
+        "git": {
+          "sha1": "59b63ab500da9859f12d8888c3298bc29bba0b92"
+        },
+        "path_in_vcs": "crates/tauri-plugin"
+      },
+      "crateVcsInfoSha256": "91a4a696cdb5667e1655da9e50d18cb193bc15bf97d51b53cd8e4f5c52692a9c",
+      "cachedCrateArchiveSha256": "67fb21a77e8f94e8beb3325e583102488659365af0a3948b7ea244c5b779c291",
+      "evidenceIds": [
+        "tauri-mit",
+        "tauri-apache",
+        "tauri-spdx"
+      ],
+      "originalCompleteLicenseBodyRecovered": true
+    }
+  ],
+  "evidence": [
+    {
+      "id": "mlxrs-mit",
+      "repository": "https://github.com/findit-studio/mlxrs",
+      "revision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
+      "originalPath": "LICENSE-MIT",
+      "sourceUrl": "https://raw.githubusercontent.com/findit-studio/mlxrs/38744eb0dc1b91750991b12de0e24b1d0e475a6f/LICENSE-MIT",
+      "sourceSha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+      "sourceBytes": 1071,
+      "matchesCachedPackageOrBuildSource": false,
+      "cachedSourcePath": null,
+      "extraction": {
+        "method": "complete-original-file",
+        "byteStart": 0,
+        "byteEndExclusive": 1071
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0.txt",
+        "sha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+        "bytes": 1071,
+        "unaltered": true
+      }
+    },
+    {
+      "id": "mlxrs-apache",
+      "repository": "https://github.com/findit-studio/mlxrs",
+      "revision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
+      "originalPath": "LICENSE-APACHE",
+      "sourceUrl": "https://raw.githubusercontent.com/findit-studio/mlxrs/38744eb0dc1b91750991b12de0e24b1d0e475a6f/LICENSE-APACHE",
+      "sourceSha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+      "sourceBytes": 10847,
+      "matchesCachedPackageOrBuildSource": false,
+      "cachedSourcePath": null,
+      "extraction": {
+        "method": "complete-original-file",
+        "byteStart": 0,
+        "byteEndExclusive": 10847
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+        "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+        "bytes": 10847,
+        "unaltered": true
+      }
+    },
+    {
+      "id": "objc2-declaration",
+      "repository": "https://github.com/madsmtm/objc2",
+      "revision": "7b1abfd750a2cacaea71d6a56ecfb83cb7de560b",
+      "originalPath": "LICENSE.md",
+      "sourceUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+      "sourceSha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+      "sourceBytes": 1339,
+      "matchesCachedPackageOrBuildSource": false,
+      "cachedSourcePath": null,
+      "extraction": {
+        "method": "complete-original-file",
+        "byteStart": 0,
+        "byteEndExclusive": 1339
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
+        "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+        "bytes": 1339,
+        "unaltered": true
+      }
+    },
+    {
+      "id": "tauri-mit",
+      "repository": "https://github.com/tauri-apps/tauri",
+      "revision": "59b63ab500da9859f12d8888c3298bc29bba0b92",
+      "originalPath": "LICENSE-MIT",
+      "sourceUrl": "https://raw.githubusercontent.com/tauri-apps/tauri/59b63ab500da9859f12d8888c3298bc29bba0b92/LICENSE-MIT",
+      "sourceSha256": "9dd42ea92cff2ede5cd477cbfcce051b2d0115c0ac7f368ee88cb545055dff1d",
+      "sourceBytes": 1090,
+      "matchesCachedPackageOrBuildSource": false,
+      "cachedSourcePath": null,
+      "extraction": {
+        "method": "complete-original-file",
+        "byteStart": 0,
+        "byteEndExclusive": 1090
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/9dd42ea92cff2ede5cd477cbfcce051b2d0115c0ac7f368ee88cb545055dff1d.txt",
+        "sha256": "9dd42ea92cff2ede5cd477cbfcce051b2d0115c0ac7f368ee88cb545055dff1d",
+        "bytes": 1090,
+        "unaltered": true
+      }
+    },
+    {
+      "id": "tauri-apache",
+      "repository": "https://github.com/tauri-apps/tauri",
+      "revision": "59b63ab500da9859f12d8888c3298bc29bba0b92",
+      "originalPath": "LICENSE-APACHE-2.0",
+      "sourceUrl": "https://raw.githubusercontent.com/tauri-apps/tauri/59b63ab500da9859f12d8888c3298bc29bba0b92/LICENSE-APACHE-2.0",
+      "sourceSha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+      "sourceBytes": 10174,
+      "matchesCachedPackageOrBuildSource": false,
+      "cachedSourcePath": null,
+      "extraction": {
+        "method": "complete-original-file",
+        "byteStart": 0,
+        "byteEndExclusive": 10174
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594.txt",
+        "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+        "bytes": 10174,
+        "unaltered": true
+      }
+    },
+    {
+      "id": "tauri-spdx",
+      "repository": "https://github.com/tauri-apps/tauri",
+      "revision": "59b63ab500da9859f12d8888c3298bc29bba0b92",
+      "originalPath": "LICENSE.spdx",
+      "sourceUrl": "https://raw.githubusercontent.com/tauri-apps/tauri/59b63ab500da9859f12d8888c3298bc29bba0b92/LICENSE.spdx",
+      "sourceSha256": "5e834fe9788c524210deda859c46a550ffa5aa0cba9ea0572f0d81120e97c008",
+      "sourceBytes": 889,
+      "matchesCachedPackageOrBuildSource": false,
+      "cachedSourcePath": null,
+      "extraction": {
+        "method": "complete-original-file",
+        "byteStart": 0,
+        "byteEndExclusive": 889
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/5e834fe9788c524210deda859c46a550ffa5aa0cba9ea0572f0d81120e97c008.txt",
+        "sha256": "5e834fe9788c524210deda859c46a550ffa5aa0cba9ea0572f0d81120e97c008",
+        "bytes": 889,
+        "unaltered": true
+      }
+    },
+    {
+      "id": "mlx",
+      "repository": "https://github.com/ml-explore/mlx",
+      "revision": "1f8e74e3f12f31365464a6867c6579f0e9b29d85",
+      "originalPath": "LICENSE",
+      "sourceUrl": "https://raw.githubusercontent.com/ml-explore/mlx/1f8e74e3f12f31365464a6867c6579f0e9b29d85/LICENSE",
+      "sourceSha256": "ccfab7ccb2ea306f71531c8ca77bb55507606cd90768b1e32b8b52ab5b48cf01",
+      "sourceBytes": 1066,
+      "extraction": {
+        "method": "complete-original-file",
+        "byteStart": 0,
+        "byteEndExclusive": 1066
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/ccfab7ccb2ea306f71531c8ca77bb55507606cd90768b1e32b8b52ab5b48cf01.txt",
+        "sha256": "ccfab7ccb2ea306f71531c8ca77bb55507606cd90768b1e32b8b52ab5b48cf01",
+        "bytes": 1066,
+        "unaltered": true
+      },
+      "historicalCachedSourcePath": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mlxrs-sys-0.2.0/vendor/mlx/LICENSE",
+      "historicalMatchesCachedPackageOrBuildSource": true,
+      "effectiveSourcePath": "vendor/mlxrs-sys/vendor/mlx/LICENSE",
+      "effectiveSourceSha256": "ccfab7ccb2ea306f71531c8ca77bb55507606cd90768b1e32b8b52ab5b48cf01",
+      "matchesEffectiveSourceFile": true
+    },
+    {
+      "id": "mlx-c",
+      "repository": "https://github.com/ml-explore/mlx-c",
+      "revision": "c74db5307cc8ce122f48d97ef951b30578674e7f",
+      "originalPath": "LICENSE",
+      "sourceUrl": "https://raw.githubusercontent.com/ml-explore/mlx-c/c74db5307cc8ce122f48d97ef951b30578674e7f/LICENSE",
+      "sourceSha256": "44326a4ea062241ae6fc26ee2ec90bdc81af7eb7b9d3966181b733fa69d42057",
+      "sourceBytes": 1067,
+      "extraction": {
+        "method": "complete-original-file",
+        "byteStart": 0,
+        "byteEndExclusive": 1067
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/44326a4ea062241ae6fc26ee2ec90bdc81af7eb7b9d3966181b733fa69d42057.txt",
+        "sha256": "44326a4ea062241ae6fc26ee2ec90bdc81af7eb7b9d3966181b733fa69d42057",
+        "bytes": 1067,
+        "unaltered": true
+      },
+      "historicalCachedSourcePath": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mlxrs-sys-0.2.0/vendor/mlx-c/LICENSE",
+      "historicalMatchesCachedPackageOrBuildSource": true,
+      "effectiveSourcePath": "vendor/mlxrs-sys/vendor/mlx-c/LICENSE",
+      "effectiveSourceSha256": "44326a4ea062241ae6fc26ee2ec90bdc81af7eb7b9d3966181b733fa69d42057",
+      "matchesEffectiveSourceFile": true
+    },
+    {
+      "id": "gguflib",
+      "repository": "https://github.com/antirez/gguf-tools",
+      "revision": "8fa6eb65236618e28fd7710a0fba565f7faa1848",
+      "originalPath": "LICENSE",
+      "sourceUrl": "https://raw.githubusercontent.com/antirez/gguf-tools/8fa6eb65236618e28fd7710a0fba565f7faa1848/LICENSE",
+      "sourceSha256": "7cce16d2bf2e2ce6a7d70b5ecd5fb43c6409a97aa0750ff75c11823e6e8c9d05",
+      "sourceBytes": 1072,
+      "extraction": {
+        "method": "complete-original-file",
+        "byteStart": 0,
+        "byteEndExclusive": 1072
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/7cce16d2bf2e2ce6a7d70b5ecd5fb43c6409a97aa0750ff75c11823e6e8c9d05.txt",
+        "sha256": "7cce16d2bf2e2ce6a7d70b5ecd5fb43c6409a97aa0750ff75c11823e6e8c9d05",
+        "bytes": 1072,
+        "unaltered": true
+      },
+      "historicalCachedSourcePath": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mlxrs-sys-0.2.0/vendor/gguflib/LICENSE",
+      "historicalMatchesCachedPackageOrBuildSource": true,
+      "effectiveSourcePath": "vendor/mlxrs-sys/vendor/gguflib/LICENSE",
+      "effectiveSourceSha256": "7cce16d2bf2e2ce6a7d70b5ecd5fb43c6409a97aa0750ff75c11823e6e8c9d05",
+      "matchesEffectiveSourceFile": true
+    },
+    {
+      "id": "json",
+      "repository": "https://github.com/nlohmann/json",
+      "revision": "9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03",
+      "originalPath": "LICENSE.MIT",
+      "sourceUrl": "https://raw.githubusercontent.com/nlohmann/json/9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03/LICENSE.MIT",
+      "sourceSha256": "86b998c792894ccb911a1cb7994f7a9652894e7a094c0b5e45be2f553f45cf14",
+      "sourceBytes": 1076,
+      "matchesCachedPackageOrBuildSource": true,
+      "cachedSourcePath": "/Users/hoppworks/projects/everlastChallenge-mlx/target/release/build/mlxrs-sys-92bf196d210f22f6/out/build/_deps/json-src/LICENSE.MIT",
+      "extraction": {
+        "method": "complete-original-file",
+        "byteStart": 0,
+        "byteEndExclusive": 1076
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/86b998c792894ccb911a1cb7994f7a9652894e7a094c0b5e45be2f553f45cf14.txt",
+        "sha256": "86b998c792894ccb911a1cb7994f7a9652894e7a094c0b5e45be2f553f45cf14",
+        "bytes": 1076,
+        "unaltered": true
+      },
+      "cachedSourceRole": "historical fetched-build evidence for the unmodified archive/license bytes; active mlxrs-sys source and enforced downloads are identified in nativeBuildProvenance"
+    },
+    {
+      "id": "fmt",
+      "repository": "https://github.com/fmtlib/fmt",
+      "revision": "407c905e45ad75fc29bf0f9bb7c5c2fd3475976f",
+      "originalPath": "LICENSE",
+      "sourceUrl": "https://raw.githubusercontent.com/fmtlib/fmt/407c905e45ad75fc29bf0f9bb7c5c2fd3475976f/LICENSE",
+      "sourceSha256": "07580f2a3b35709ce703d523f447b242f6dfec7582a8c0df102c7fa2849375f8",
+      "sourceBytes": 1431,
+      "matchesCachedPackageOrBuildSource": true,
+      "cachedSourcePath": "/Users/hoppworks/projects/everlastChallenge-mlx/target/release/build/mlxrs-sys-92bf196d210f22f6/out/build/_deps/fmt-src/LICENSE",
+      "extraction": {
+        "method": "complete-original-file",
+        "byteStart": 0,
+        "byteEndExclusive": 1431
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/07580f2a3b35709ce703d523f447b242f6dfec7582a8c0df102c7fa2849375f8.txt",
+        "sha256": "07580f2a3b35709ce703d523f447b242f6dfec7582a8c0df102c7fa2849375f8",
+        "bytes": 1431,
+        "unaltered": true
+      },
+      "cachedSourceRole": "historical fetched-build evidence for the unmodified archive/license bytes; active mlxrs-sys source and enforced downloads are identified in nativeBuildProvenance"
+    },
+    {
+      "id": "pocketfft-notice",
+      "repository": "https://github.com/ml-explore/mlx",
+      "revision": "1f8e74e3f12f31365464a6867c6579f0e9b29d85",
+      "originalPath": "mlx/3rdparty/pocketfft.h",
+      "sourceUrl": "https://raw.githubusercontent.com/ml-explore/mlx/1f8e74e3f12f31365464a6867c6579f0e9b29d85/mlx/3rdparty/pocketfft.h",
+      "sourceSha256": "0eaea21304bf324639ff11022ee63faf48a8fab64afe5c3c2d1efefbe1d7dfa6",
+      "sourceBytes": 110508,
+      "extraction": {
+        "method": "first-block",
+        "byteStart": 0,
+        "byteEndExclusive": 1759
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/23e6ec9b1583d23a87482823daae0f591549d9d5f155438b90257f9b6e60a6b4.txt",
+        "sha256": "23e6ec9b1583d23a87482823daae0f591549d9d5f155438b90257f9b6e60a6b4",
+        "bytes": 1759,
+        "unaltered": true
+      },
+      "historicalCachedSourcePath": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mlxrs-sys-0.2.0/vendor/mlx/mlx/3rdparty/pocketfft.h",
+      "historicalMatchesCachedPackageOrBuildSource": true,
+      "effectiveSourcePath": "vendor/mlxrs-sys/vendor/mlx/mlx/3rdparty/pocketfft.h",
+      "effectiveSourceSha256": "0eaea21304bf324639ff11022ee63faf48a8fab64afe5c3c2d1efefbe1d7dfa6",
+      "matchesEffectiveSourceFile": true
+    },
+    {
+      "id": "small-vector-notice",
+      "repository": "https://github.com/ml-explore/mlx",
+      "revision": "1f8e74e3f12f31365464a6867c6579f0e9b29d85",
+      "originalPath": "mlx/small_vector.h",
+      "sourceUrl": "https://raw.githubusercontent.com/ml-explore/mlx/1f8e74e3f12f31365464a6867c6579f0e9b29d85/mlx/small_vector.h",
+      "sourceSha256": "2fd7d2a423a74b7857ae886ddae0b6c4183f5b9f1d6b8f8d3ba8db38a5ad4677",
+      "sourceBytes": 15531,
+      "extraction": {
+        "method": "initial-comments",
+        "byteStart": 0,
+        "byteEndExclusive": 1615
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/4a89c1257a9c716a1a0e94e2a38cbdddb318d9efe8cc8bd97b7bd405fc3c711b.txt",
+        "sha256": "4a89c1257a9c716a1a0e94e2a38cbdddb318d9efe8cc8bd97b7bd405fc3c711b",
+        "bytes": 1615,
+        "unaltered": true
+      },
+      "historicalCachedSourcePath": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mlxrs-sys-0.2.0/vendor/mlx/mlx/small_vector.h",
+      "historicalMatchesCachedPackageOrBuildSource": true,
+      "effectiveSourcePath": "vendor/mlxrs-sys/vendor/mlx/mlx/small_vector.h",
+      "effectiveSourceSha256": "2fd7d2a423a74b7857ae886ddae0b6c4183f5b9f1d6b8f8d3ba8db38a5ad4677",
+      "matchesEffectiveSourceFile": true
+    },
+    {
+      "id": "threadpool-notice",
+      "repository": "https://github.com/ml-explore/mlx",
+      "revision": "1f8e74e3f12f31365464a6867c6579f0e9b29d85",
+      "originalPath": "mlx/threadpool.h",
+      "sourceUrl": "https://raw.githubusercontent.com/ml-explore/mlx/1f8e74e3f12f31365464a6867c6579f0e9b29d85/mlx/threadpool.h",
+      "sourceSha256": "e22e3eb7a2ee0b06b0ea69e8a49375761de9b799dd96b06e7ae9e778d9820667",
+      "sourceBytes": 3656,
+      "extraction": {
+        "method": "initial-comments",
+        "byteStart": 0,
+        "byteEndExclusive": 1047
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/68f6145aff3816db1de4f301bde1fd1e02620c15522eccf732c53feb6938afa5.txt",
+        "sha256": "68f6145aff3816db1de4f301bde1fd1e02620c15522eccf732c53feb6938afa5",
+        "bytes": 1047,
+        "unaltered": true
+      },
+      "historicalCachedSourcePath": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mlxrs-sys-0.2.0/vendor/mlx/mlx/threadpool.h",
+      "historicalMatchesCachedPackageOrBuildSource": true,
+      "effectiveSourcePath": "vendor/mlxrs-sys/vendor/mlx/mlx/threadpool.h",
+      "effectiveSourceSha256": "e22e3eb7a2ee0b06b0ea69e8a49375761de9b799dd96b06e7ae9e778d9820667",
+      "matchesEffectiveSourceFile": true
+    },
+    {
+      "id": "jaccl-threadpool-notice",
+      "repository": "https://github.com/ml-explore/mlx",
+      "revision": "1f8e74e3f12f31365464a6867c6579f0e9b29d85",
+      "originalPath": "mlx/distributed/jaccl/lib/jaccl/threadpool.h",
+      "sourceUrl": "https://raw.githubusercontent.com/ml-explore/mlx/1f8e74e3f12f31365464a6867c6579f0e9b29d85/mlx/distributed/jaccl/lib/jaccl/threadpool.h",
+      "sourceSha256": "35c59282d7b7b778f38b4070c53eb37a353c04fa3d2f352d4f7b484495430a24",
+      "sourceBytes": 3697,
+      "extraction": {
+        "method": "initial-comments",
+        "byteStart": 0,
+        "byteEndExclusive": 1047
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/68f6145aff3816db1de4f301bde1fd1e02620c15522eccf732c53feb6938afa5.txt",
+        "sha256": "68f6145aff3816db1de4f301bde1fd1e02620c15522eccf732c53feb6938afa5",
+        "bytes": 1047,
+        "unaltered": true
+      },
+      "historicalCachedSourcePath": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mlxrs-sys-0.2.0/vendor/mlx/mlx/distributed/jaccl/lib/jaccl/threadpool.h",
+      "historicalMatchesCachedPackageOrBuildSource": true,
+      "effectiveSourcePath": "vendor/mlxrs-sys/vendor/mlx/mlx/distributed/jaccl/lib/jaccl/threadpool.h",
+      "effectiveSourceSha256": "35c59282d7b7b778f38b4070c53eb37a353c04fa3d2f352d4f7b484495430a24",
+      "matchesEffectiveSourceFile": true
+    },
+    {
+      "id": "metal-cexpf-notice",
+      "repository": "https://github.com/ml-explore/mlx",
+      "revision": "1f8e74e3f12f31365464a6867c6579f0e9b29d85",
+      "originalPath": "mlx/backend/metal/kernels/cexpf.h",
+      "sourceUrl": "https://raw.githubusercontent.com/ml-explore/mlx/1f8e74e3f12f31365464a6867c6579f0e9b29d85/mlx/backend/metal/kernels/cexpf.h",
+      "sourceSha256": "88b6e15a52a5800d98d9bc6da840ca5cf70bf572fda136409580c1f17b1e0aab",
+      "sourceBytes": 3639,
+      "extraction": {
+        "method": "initial-comments",
+        "byteStart": 0,
+        "byteEndExclusive": 878
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/6d4308d52aa3d6f486c80d4f2727fb8a49eb2bfc304c6ff9c8c3b2c2f83e82db.txt",
+        "sha256": "6d4308d52aa3d6f486c80d4f2727fb8a49eb2bfc304c6ff9c8c3b2c2f83e82db",
+        "bytes": 878,
+        "unaltered": true
+      },
+      "historicalCachedSourcePath": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mlxrs-sys-0.2.0/vendor/mlx/mlx/backend/metal/kernels/cexpf.h",
+      "historicalMatchesCachedPackageOrBuildSource": true,
+      "effectiveSourcePath": "vendor/mlxrs-sys/vendor/mlx/mlx/backend/metal/kernels/cexpf.h",
+      "effectiveSourceSha256": "88b6e15a52a5800d98d9bc6da840ca5cf70bf572fda136409580c1f17b1e0aab",
+      "matchesEffectiveSourceFile": true
+    },
+    {
+      "id": "metal-expm1f-notice",
+      "repository": "https://github.com/ml-explore/mlx",
+      "revision": "1f8e74e3f12f31365464a6867c6579f0e9b29d85",
+      "originalPath": "mlx/backend/metal/kernels/expm1f.h",
+      "sourceUrl": "https://raw.githubusercontent.com/ml-explore/mlx/1f8e74e3f12f31365464a6867c6579f0e9b29d85/mlx/backend/metal/kernels/expm1f.h",
+      "sourceSha256": "dbdf551f45723639da54d72e327008bde6ef01a2f1ed561bb065e251ab6c9f1a",
+      "sourceBytes": 3278,
+      "extraction": {
+        "method": "expm1f-comments",
+        "byteStart": 70,
+        "byteEndExclusive": 1502
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/6cfeb045d8aeccb8c57b54d33067b26c8b860beba99e801c1e824e72d1685039.txt",
+        "sha256": "6cfeb045d8aeccb8c57b54d33067b26c8b860beba99e801c1e824e72d1685039",
+        "bytes": 1432,
+        "unaltered": true
+      },
+      "historicalCachedSourcePath": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mlxrs-sys-0.2.0/vendor/mlx/mlx/backend/metal/kernels/expm1f.h",
+      "historicalMatchesCachedPackageOrBuildSource": true,
+      "effectiveSourcePath": "vendor/mlxrs-sys/vendor/mlx/mlx/backend/metal/kernels/expm1f.h",
+      "effectiveSourceSha256": "dbdf551f45723639da54d72e327008bde6ef01a2f1ed561bb065e251ab6c9f1a",
+      "matchesEffectiveSourceFile": true
+    },
+    {
+      "id": "gguflib-source-notice",
+      "repository": "https://github.com/antirez/gguf-tools",
+      "revision": "8fa6eb65236618e28fd7710a0fba565f7faa1848",
+      "originalPath": "gguflib.h",
+      "sourceUrl": "https://raw.githubusercontent.com/antirez/gguf-tools/8fa6eb65236618e28fd7710a0fba565f7faa1848/gguflib.h",
+      "sourceSha256": "ff0da6e597c303653318e1d99ca8be777281c0cd2bd3fd6b99f0816b59e65d91",
+      "sourceBytes": 7639,
+      "extraction": {
+        "method": "first-block",
+        "byteStart": 0,
+        "byteEndExclusive": 232
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/f2b0038cc313791cfaaeafdff89a9cedeec560955e3dd4fdc05a4d8bf90e693f.txt",
+        "sha256": "f2b0038cc313791cfaaeafdff89a9cedeec560955e3dd4fdc05a4d8bf90e693f",
+        "bytes": 232,
+        "unaltered": true
+      },
+      "historicalCachedSourcePath": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mlxrs-sys-0.2.0/vendor/gguflib/gguflib.h",
+      "historicalMatchesCachedPackageOrBuildSource": true,
+      "effectiveSourcePath": "vendor/mlxrs-sys/vendor/gguflib/gguflib.h",
+      "effectiveSourceSha256": "ff0da6e597c303653318e1d99ca8be777281c0cd2bd3fd6b99f0816b59e65d91",
+      "matchesEffectiveSourceFile": true
+    },
+    {
+      "id": "gguf-fp16-provenance",
+      "repository": "https://github.com/antirez/gguf-tools",
+      "revision": "8fa6eb65236618e28fd7710a0fba565f7faa1848",
+      "originalPath": "fp16.c",
+      "sourceUrl": "https://raw.githubusercontent.com/antirez/gguf-tools/8fa6eb65236618e28fd7710a0fba565f7faa1848/fp16.c",
+      "sourceSha256": "1b6d77bfe247359443de115c8554f2b83d98f1b248ba621825e303e41a1cf588",
+      "sourceBytes": 3033,
+      "extraction": {
+        "method": "first-block",
+        "byteStart": 0,
+        "byteEndExclusive": 397
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/3d82eb038b0e0bc9d25cb0f7ec1a1a34b28fbaa87f76f9f67bd4aec94b4446a7.txt",
+        "sha256": "3d82eb038b0e0bc9d25cb0f7ec1a1a34b28fbaa87f76f9f67bd4aec94b4446a7",
+        "bytes": 397,
+        "unaltered": true
+      },
+      "historicalCachedSourcePath": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mlxrs-sys-0.2.0/vendor/gguflib/fp16.c",
+      "historicalMatchesCachedPackageOrBuildSource": true,
+      "effectiveSourcePath": "vendor/mlxrs-sys/vendor/gguflib/fp16.c",
+      "effectiveSourceSha256": "1b6d77bfe247359443de115c8554f2b83d98f1b248ba621825e303e41a1cf588",
+      "matchesEffectiveSourceFile": true
+    },
+    {
+      "id": "gguf-sds-notice",
+      "repository": "https://github.com/antirez/gguf-tools",
+      "revision": "8fa6eb65236618e28fd7710a0fba565f7faa1848",
+      "originalPath": "sds.h",
+      "sourceUrl": "https://raw.githubusercontent.com/antirez/gguf-tools/8fa6eb65236618e28fd7710a0fba565f7faa1848/sds.h",
+      "sourceSha256": "1fca79237a549bff08c8e31d10007b48f7a290ce872af35863a8332d689c2ca1",
+      "sourceBytes": 8981,
+      "extraction": {
+        "method": "first-block",
+        "byteStart": 0,
+        "byteEndExclusive": 1726
+      },
+      "text": {
+        "path": "docs/licenses/third-party/texts/e52e05c8f533c266c0df63677b3cc05d408b23320ea3c4137974d6f36f8c2226.txt",
+        "sha256": "e52e05c8f533c266c0df63677b3cc05d408b23320ea3c4137974d6f36f8c2226",
+        "bytes": 1726,
+        "unaltered": true
+      },
+      "historicalCachedSourcePath": "/Users/hoppworks/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/mlxrs-sys-0.2.0/vendor/gguflib/sds.h",
+      "historicalMatchesCachedPackageOrBuildSource": true,
+      "effectiveSourcePath": "vendor/mlxrs-sys/vendor/gguflib/sds.h",
+      "effectiveSourceSha256": "1fca79237a549bff08c8e31d10007b48f7a290ce872af35863a8332d689c2ca1",
+      "matchesEffectiveSourceFile": true
+    },
+    {
+      "id": "metal-cpp",
+      "version": "metal-cpp_26",
+      "sourceUrl": "https://developer.apple.com/metal/cpp/files/metal-cpp_26.zip",
+      "revision": "sha256:4df3c078b9aadcb516212e9cb03004cbc5ce9a3e9c068fa3144d021db585a3a4",
+      "versionUrlImmutableByGitCommit": false,
+      "sourceArchiveSha256": "4df3c078b9aadcb516212e9cb03004cbc5ce9a3e9c068fa3144d021db585a3a4",
+      "sourceArchiveBytes": 260405,
+      "originalPath": "metal-cpp/LICENSE.txt",
+      "cachedSourcePath": "/Users/hoppworks/projects/everlastChallenge-mlx/target/release/build/mlxrs-sys-92bf196d210f22f6/out/build/_deps/metal_cpp-subbuild/metal_cpp-populate-prefix/src/metal-cpp_26.zip",
+      "matchesCachedPackageOrBuildSource": true,
+      "text": {
+        "path": "docs/licenses/third-party/texts/f4e92c7fe2aa066e294c0da9d08683dc9fb741ee6e6debbfad99a0c96e07c1f2.txt",
+        "sha256": "f4e92c7fe2aa066e294c0da9d08683dc9fb741ee6e6debbfad99a0c96e07c1f2",
+        "bytes": 11344,
+        "unaltered": true
+      },
+      "cachedSourceRole": "historical fetched-build evidence for the unmodified archive/license bytes; active mlxrs-sys source and enforced downloads are identified in nativeBuildProvenance"
+    }
+  ],
+  "nativeBuildProvenance": {
+    "mlxrsSysRevision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
+    "mlxVersion": "0.32.2",
+    "mlxRevision": "1f8e74e3f12f31365464a6867c6579f0e9b29d85",
+    "mlxCRevision": "c74db5307cc8ce122f48d97ef951b30578674e7f",
+    "gguflibRevision": "8fa6eb65236618e28fd7710a0fba565f7faa1848",
+    "jsonVersion": "3.11.3",
+    "jsonRevision": "9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03",
+    "jsonSourceArchiveUrl": "https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz",
+    "jsonSourceArchiveSha256": "d6c65aca6b1ed68e7a182f4757257b107ae403032760ed6ef121c9d55e81757d",
+    "fmtVersion": "12.1.0",
+    "fmtRevision": "407c905e45ad75fc29bf0f9bb7c5c2fd3475976f",
+    "fmtActualCachedHead": "407c905e45ad75fc29bf0f9bb7c5c2fd3475976f",
+    "metalCppVersion": "26",
+    "cmakeSourcesUseContentHashesForJsonAndMetalCpp": true,
+    "sourceConfiguration": "Active vendor/mlxrs-sys/EVERLAST-PATCH.json plus config/mlx-build-inputs.json bind the local source. Immutable upstream license sources and historical cached-build evidence are preserved separately. No build or download was run in this refresh.",
+    "releasedUpstreamCmakeSourcesUseContentHashesForJsonAndMetalCpp": false,
+    "effectiveFmtGitReference": "407c905e45ad75fc29bf0f9bb7c5c2fd3475976f",
+    "effectiveNativeDownloadPins": {
+      "json3.11.3": {
+        "url": "https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz",
+        "sha256": "d6c65aca6b1ed68e7a182f4757257b107ae403032760ed6ef121c9d55e81757d"
+      },
+      "metalCpp26": {
+        "url": "https://developer.apple.com/metal/cpp/files/metal-cpp_26.zip",
+        "sha256": "4df3c078b9aadcb516212e9cb03004cbc5ce9a3e9c068fa3144d021db585a3a4"
+      },
+      "fmt12.1.0": {
+        "repository": "https://github.com/fmtlib/fmt.git",
+        "commit": "407c905e45ad75fc29bf0f9bb7c5c2fd3475976f"
+      }
+    },
+    "effectiveMlxrsSysSource": {
+      "sourceKind": "local path dependency patched from the published crate",
+      "path": "vendor/mlxrs-sys",
+      "manifest": {
+        "path": "vendor/mlxrs-sys/EVERLAST-PATCH.json",
+        "sha256": "e92e68bde1a47e6b221d6e995a61d8c092dc4e19a32856ec3cb59a827569e084",
+        "bytes": 689
+      },
+      "upstreamRevision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
+      "upstreamRegistryChecksum": "ace6d5383b15cade95fbf8b7a10dfa5c4a84b3dcfa57abe012a5020208570f25",
+      "upstreamReleasedFilesTreeSha256": "39a0c953995ff1d54a55467671b024c7ac96fefce957cc9989a1d60c5d4288e2",
+      "effectiveReleasedFilesTreeSha256": "71faebc7011bca40a86e928a398a07be4a36572124c1ad2e0c7237b79b9695e3",
+      "releasedFileCount": 1100,
+      "changedReleasedFiles": [
+        "vendor/mlx/CMakeLists.txt"
+      ],
+      "excludedAddedFiles": [
+        "EVERLAST-PATCH.json",
+        "EVERLAST-PATCH.md"
+      ],
+      "hashDefinition": "SHA256 of UTF-8 compact JSON (sort_keys=True,ensure_ascii=False,separators comma/colon), regular archive files as objects path/sha256; list sorted by full relative path string (Unicode lexical); excludes Cargo cache marker and added application receipts; no fetched outputs",
+      "buildInputs": {
+        "path": "config/mlx-build-inputs.json",
+        "sha256": "1e0ca899d09e49d35e8515a2853eb785bffa17914bec4e30639f015a30b2a320",
+        "bytes": 2347
+      },
+      "verificationScope": "Local file/archive hash comparison only; no build, download or new advisory scan in this refresh."
+    }
+  },
+  "openEvidenceLimits": [
+    "The three objc2 components supply an original license declaration, not full bundled variant license texts.",
+    "Vendored gguflib/fp16.c attributes code to Maratyszcza/FP16 under MIT but does not pin the original FP16 source revision or include that upstream license text. Its exact vendored provenance comment is preserved; original FP16 attribution chain remains unresolved.",
+    "The Apple metal-cpp versioned URL is not a Git-immutable URL. The released upstream CMake was unpinned; the effective local mlxrs-sys patch now enforces the recorded archive SHA-256, and JSON also has URL_HASH while fmt uses its full recorded commit. This refresh verifies source bytes and receipts only; it does not establish a fresh build, offline operation or reproducible binaries.",
+    "Source-level native notices are conservatively preserved. Final linked or shipped closure and legal approval are not established."
+  ],
+  "finalLinkedClosureVerified": false,
+  "licenseLegalApprovalClaimed": false,
+  "sourceResolutionRefresh": {
+    "date": "2026-10-19",
+    "previousDocumentSha256": "0affd81d97845635d0dd732f1691e43ad222141db33281d7eb4c29fa40827010",
+    "cargoManifest": {
+      "path": "Cargo.toml",
+      "sha256": "5a31f2200f6faff99a7233fdc03b6e30b281ea01626764890c1aebe6c4f18952",
+      "bytes": 1227
+    },
+    "cargoLock": {
+      "path": "Cargo.lock",
+      "sha256": "fb9f49bed7bb9fd6b49ed15271d48467112794dee5057e362650c74c303acb20",
+      "bytes": 146961
+    },
+    "historicalEvidencePreserved": true,
+    "licenseTextBytesChanged": false,
+    "effectiveNativeSourceNotRegistryCache": true,
+    "method": "Static comparison of the cached published .crate, current vendor tree, patch receipt, enforced download pins and all existing license/notice text references."
+  }
+}

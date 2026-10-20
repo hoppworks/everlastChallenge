@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "baseCommit": "c35fd595c3712f8c9c8309d2ec8a74255c1081f4",
+  "preservesEarlierPatches": true,
+  "purpose": "optional bounded exact-Q5 MLX encoder / original CPP Full decoder bridge; no existing ABI struct change",
+  "changedOriginalFiles": [
+    {
+      "path": "vendor/whisper-rs-sys/build.rs",
+      "baseSha256": "c819290c9bee7ffbda54a38dfc0fbf825fb10de1455020999652a6ac85c460c6",
+      "currentSha256": "58e7bfe46cfdb05b60a2bbe63f92a7d88a511f339c9dd559400fbac6e5d07879"
+    },
+    {
+      "path": "vendor/whisper-rs-sys/src/bindings.rs",
+      "baseSha256": "7be784d3f55dff7ffc92e5f86b8c7a5065bc2618522fab3ae12bdeaaeb5612b1",
+      "currentSha256": "7bd8a740d8c70d362d980b01e03876e979e1149b8f226f383da9b1ae733e0edb"
+    },
+    {
+      "path": "vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp",
+      "baseSha256": "fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e",
+      "currentSha256": "52aa451c13c55645d2806ed2e7014fae50431cf6b49b749f9d66870c7c0023bb"
+    },
+    {
+      "path": "vendor/whisper-rs-sys/whisper.cpp/include/whisper.h",
+      "baseSha256": "0525b758571ab71c00ddd8ea2845f74af7c62dfa5100c5586655f75bdc5ef4be",
+      "currentSha256": "cff4e9db56b2acb9ac0c5b74ac16030220bb134e00e852e9fb33005bde57b303"
+    },
+    {
+      "path": "vendor/whisper-rs/src/lib.rs",
+      "baseSha256": "2218daa724d991a38eb121578861d00008ef4498460d916aed92d07252325c28",
+      "currentSha256": "d487fe7a5d45dedf094595a33543c17684eb663be23783efe9ac39ade1238d8c"
+    },
+    {
+      "path": "vendor/whisper-rs/src/whisper_state/mod.rs",
+      "baseSha256": "3bb8bda10aabe8bb46ba0c1cb5da68128284dfe33b4ef7cc5d8654acee63bdd9",
+      "currentSha256": "43b6e8645686380d76f44e75011d88355b091c45e5b5968e9c529d33f499b48a"
+    }
+  ],
+  "runtimeRed": "artifacts/mlx-qualification/encoder-bridge-contract-v1/red-clean.log",
+  "runtimeGreen": "artifacts/mlx-qualification/encoder-bridge-contract-v1/green.log",
+  "qualificationNotImplied": true
+}

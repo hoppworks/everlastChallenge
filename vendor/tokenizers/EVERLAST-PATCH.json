@@ -1,0 +1,10 @@
+{
+  "crate": "tokenizers",
+  "version": "0.23.2",
+  "upstreamRevision": "88a4498ad4ea1a9487b0a9b0ff881383fd5a06a3",
+  "registryChecksum": "7afbf6e88718afcc138bad01d6ccc3051dbbc3b2ce9793d8b8a3aeb610969cfc",
+  "patch": "Only Cargo.toml changes: alias paste to maintained pastey0.2.3. No tokenizer source or algorithm changes.",
+  "advisory": "https://rustsec.org/advisories/RUSTSEC-2024-0436",
+  "upstreamManifestSha256": "e514ac884cfc51d42fb7f6ffac71125cca85e8b6176e00a1bcccaec064cdd583",
+  "patchedManifestSha256": "328507a63595cb2855c09d94332a770556f59fa39b6e871474d55935eef55927"
+}

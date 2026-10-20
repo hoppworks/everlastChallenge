@@ -11,7 +11,7 @@ pub struct Options {
 impl Options {
     pub fn parse(args: &[OsString]) -> Result<Self, String> {
         if args.len() != 5 {
-            return Err("usage: paced_reference_probe MODEL_PATH reference|small SIX_CASE_MANIFEST PARAMETERS_JSON NEW_OUTPUT_JSON".into());
+            return Err("usage: paced_reference_probe MODEL_PATH reference|small|mlx-reference-encoder SIX_CASE_MANIFEST PARAMETERS_JSON NEW_OUTPUT_JSON".into());
         }
         if args
             .iter()
@@ -22,6 +22,8 @@ impl Options {
         let definition = match args[1].to_str() {
             Some("reference") => REFERENCE,
             Some("small") => SMALL,
+            #[cfg(feature = "mlx")]
+            Some("mlx-reference-encoder") => everlast_dictation::model::MLX_REFERENCE_COEFFICIENTS,
             _ => return Err("model must be reference or small".into()),
         };
         Ok(Self {

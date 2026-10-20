@@ -62,6 +62,8 @@ fn sources() -> Value {
 }
 
 pub use baseline::ExecutionMode;
+#[cfg(feature = "mlx")]
+pub use baseline::load_mlx_service;
 pub fn scheduling_template() -> Result<Value, serde_json::Error> {
     let mut value = template()?;
     value["configurationId"] = json!("paced-six-case-native-timestamps-owned-tc-v3");
@@ -70,6 +72,16 @@ pub fn scheduling_template() -> Result<Value, serde_json::Error> {
     }
     value["measurement"]["publisherThread"] =
         baseline::scheduling_template()?["measurement"]["publisherThread"].clone();
+    Ok(value)
+}
+pub fn mlx_template() -> Result<Value, serde_json::Error> {
+    let mut value = baseline::mlx_template()?;
+    let batch = scheduling_template()?;
+    value["measurement"] = batch["measurement"].clone();
+    value["measurement"]["variant"] = json!("complete-recording-mlx-reference-encoder");
+    value["batchSources"] = sources();
+    value["limits"] = batch["limits"].clone();
+    value["configurationId"] = json!("native-mlx-reference-encoder-six-case-v1");
     Ok(value)
 }
 pub fn context_template(reduced: bool) -> Result<Value, serde_json::Error> {
@@ -151,6 +163,8 @@ pub fn print_template(flag: &str) -> Result<Option<Value>, serde_json::Error> {
         "--print-full-prefix-reference-parameters" => full_prefix_template(false)?,
         "--print-full-prefix-candidate-parameters" => full_prefix_template(true)?,
         "--print-parameters" => template()?,
+        #[cfg(feature = "mlx")]
+        "--print-mlx-reference-encoder-parameters" => mlx_template()?,
         "--print-scheduling-parameters" => scheduling_template()?,
         "--print-context-reference-parameters" => context_template(false)?,
         "--print-context-candidate-parameters" => context_template(true)?,
@@ -165,6 +179,7 @@ pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
     }
     let value: Value = serde_json::from_slice(bytes).map_err(|_| "invalid parameter JSON")?;
     for (expected, mode) in [
+        (mlx_template(), ExecutionMode::MlxReferenceEncoder),
         (
             full_prefix_template(false),
             ExecutionMode::FullPrefixReference,

@@ -6,6 +6,8 @@ import {
   writeFileSync,
   rmSync,
   readFileSync,
+  renameSync,
+  realpathSync,
 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -174,6 +176,64 @@ test("app-only build normalizes target path and does not pass account credential
       result.bundle.startsWith(build.options.env.CARGO_TARGET_DIR + path.sep),
       true,
     );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("experimental bundle identity is read from this checkout before signing", () => {
+  const { root, bundle } = fixture();
+  try {
+    const experimental = path.join(
+      path.dirname(bundle),
+      "Everlast Dictation MLX.app",
+    );
+    renameSync(bundle, experimental);
+    writeFileSync(
+      path.join(root, "src-tauri/tauri.conf.json"),
+      JSON.stringify({
+        productName: "Everlast Dictation MLX",
+        identifier: "de.hoppworks.everlast-dictation-mlx",
+      }),
+    );
+    const calls = [];
+    const result = signLocalBundle({
+      root,
+      env: {},
+      run: commands(calls, {
+        ...info,
+        CFBundleIdentifier: "de.hoppworks.everlast-dictation-mlx",
+      }),
+      verify() {},
+    });
+    assert.equal(result.bundle, realpathSync(experimental));
+    assert.equal(
+      calls.filter((call) => call.program === "/usr/bin/codesign").length,
+      1,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("local MLX release builds through the kernel packaging helper", () => {
+  const { root } = fixture();
+  try {
+    mkdirSync(path.join(root, "scripts"));
+    const helper = path.join(root, "scripts/build-mlx-bundle.mjs");
+    writeFileSync(helper, "// MLX packaging entry point\n");
+    const calls = [];
+    signLocalBundle({
+      root,
+      build: true,
+      env: { PATH: process.env.PATH, APPLE_CERTIFICATE: "must-not-pass" },
+      run: commands(calls),
+      verify() {},
+    });
+    assert.equal(calls[0].program, process.execPath);
+    assert.deepEqual(calls[0].args, [realpathSync(helper)]);
+    assert.equal(calls[0].options.cwd, realpathSync(root));
+    assert.equal(calls[0].options.env.APPLE_CERTIFICATE, undefined);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

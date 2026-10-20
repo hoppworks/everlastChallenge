@@ -21,7 +21,25 @@ function run(command, args, options = {}) {
   });
 }
 
+export function resolveRustCoverageTools(compiler = run) {
+  const version = compiler("rustc", ["-vV"]);
+  const host = /^host: ([a-zA-Z0-9_.-]+)$/mu.exec(version)?.[1];
+  if (!host) throw new Error("Cannot identify the selected compiler host");
+  const sysroot = compiler("rustc", ["--print", "sysroot"]).trim();
+  if (!path.isAbsolute(sysroot))
+    throw new Error("The selected compiler sysroot must be absolute");
+  const directory = path.join(sysroot, "lib", "rustlib", host, "bin");
+  return {
+    profdata: path.join(directory, "llvm-profdata"),
+    cov: path.join(directory, "llvm-cov"),
+  };
+}
+
 export function measureRust({ manifest, directory, sourceRoot }) {
+  const tools = resolveRustCoverageTools();
+  for (const tool of Object.values(tools))
+    if (!fs.existsSync(tool))
+      throw new Error("Selected Rust toolchain needs llvm-tools-preview");
   const output = path.resolve(directory);
   fs.rmSync(output, { recursive: true, force: true });
   fs.mkdirSync(output, { recursive: true });
@@ -32,7 +50,7 @@ export function measureRust({ manifest, directory, sourceRoot }) {
   };
   const messages = run(
     "cargo",
-    ["test", "--manifest-path", manifest, "--tests", "--message-format=json"],
+    ["test", "--locked", "--manifest-path", manifest, "--tests", "--message-format=json"],
     { env: environment },
   );
   const objects = messages
@@ -53,8 +71,7 @@ export function measureRust({ manifest, directory, sourceRoot }) {
   if (!objects.length || !profiles.length)
     throw new Error("No instrumented Rust test artifacts");
   const merged = path.join(output, "merged.profdata");
-  run("xcrun", [
-    "llvm-profdata",
+  run(tools.profdata, [
     "merge",
     "-sparse",
     ...profiles,
@@ -62,8 +79,7 @@ export function measureRust({ manifest, directory, sourceRoot }) {
     merged,
   ]);
   const report = JSON.parse(
-    run("xcrun", [
-      "llvm-cov",
+    run(tools.cov, [
       "export",
       "--summary-only",
       objects[0],

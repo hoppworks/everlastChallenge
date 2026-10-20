@@ -1371,6 +1371,19 @@ fn permissions(native: ui_services::PermissionSnapshot) -> view::Permissions {
         },
     }
 }
+/// Legacy IPC field names expose the complete setup inventory and provenance.
+/// The locally derived payload's actual transport URL stays empty.
+fn model_view(definition: crate::model::ModelDefinition) -> view::Model {
+    view::Model {
+        name: definition.id().into(),
+        download_bytes: definition.installation_bytes().min(u64::from(u32::MAX)) as u32,
+        source_url: if definition.is_reference_encoder() {
+            crate::model::REFERENCE.url()
+        } else {
+            definition.url()
+        },
+    }
+}
 fn initial() -> view::Snapshot {
     let settings = Settings::default();
     let definition = settings.model.definition();
@@ -1379,13 +1392,9 @@ fn initial() -> view::Snapshot {
         running: true,
         setup: view::Setup {
             phase: view::SetupPhase::Checking,
-            model: view::Model {
-                name: definition.id().into(),
-                download_bytes: definition.bytes() as u32,
-                source_url: definition.url(),
-            },
+            model: model_view(definition),
             downloaded_bytes: 0,
-            total_bytes: definition.bytes() as u32,
+            total_bytes: definition.installation_bytes().min(u64::from(u32::MAX)) as u32,
             can_cancel: false,
             error: None,
         },
@@ -1447,11 +1456,7 @@ fn project(
         setup::Phase::Failed => view::SetupPhase::Failed,
     };
     let definition = application.setup.model;
-    result.setup.model = view::Model {
-        name: definition.id().into(),
-        download_bytes: definition.bytes() as u32,
-        source_url: definition.url(),
-    };
+    result.setup.model = model_view(definition);
     result.setup.downloaded_bytes = application.setup.received.min(u64::from(u32::MAX)) as u32;
     result.setup.total_bytes = application.setup.total.min(u64::from(u32::MAX)) as u32;
     result.setup.can_cancel = matches!(
@@ -1586,6 +1591,59 @@ mod tests {
             native_starts_lost: AtomicBool::new(false),
         }))
     }
+    #[test]
+    fn initial_model_disclosure_counts_the_complete_installation() {
+        let view = initial();
+        let definition = Settings::default().model.definition();
+        let total = definition.installation_bytes().min(u64::from(u32::MAX)) as u32;
+        assert_eq!(view.setup.model.download_bytes, total);
+        assert_eq!(view.setup.total_bytes, total);
+    }
+
+    #[cfg(feature = "mlx")]
+    #[test]
+    fn derived_model_disclosure_uses_the_verified_origin_and_installation_inventory() {
+        let definition = crate::model::MLX_REFERENCE_COEFFICIENTS;
+        let settings = Settings {
+            model: crate::settings::ModelChoice::MlxReferenceEncoder,
+            ..Settings::default()
+        };
+        let application = crate::application::Snapshot {
+            revision: 1,
+            running: true,
+            closing: false,
+            setup: setup::Snapshot {
+                revision: 1,
+                phase: setup::Phase::Missing,
+                model: definition,
+                received: 17,
+                total: definition.installation_bytes(),
+                failure: None,
+            },
+            runtime_available: false,
+            error: None,
+        };
+        let view = project(&application, None, &settings, initial().permissions);
+        assert!(
+            definition.url().is_empty(),
+            "the local payload has no download endpoint"
+        );
+        assert_eq!(view.setup.model.download_bytes, 3_813_494_037);
+        assert_eq!(view.setup.model.source_url, REFERENCE.url());
+        assert_eq!(view.setup.total_bytes, 3_813_494_037);
+        assert_eq!(view.setup.downloaded_bytes, 17);
+        let workspace = crate::native_presentation::workspace(&view);
+        assert!(workspace.setup_info.as_deref().is_some_and(|text| {
+            text.contains("3813,5 MB")
+                && text.contains("Einmalige Einrichtung mit Dateien von Hugging Face")
+                && !text.contains("Einmaliger Download")
+                && !text.contains("unbekannter Quelle")
+        }));
+        let preferences = crate::native_presentation::preferences(&view);
+        assert!(preferences.model_details.contains("3813,5 MB"));
+        assert!(preferences.model_details.contains(&REFERENCE.url()));
+    }
+
     #[test]
     fn sleep_before_runtime_handoff_blocks_start_and_wake_only_refreshes() {
         let desktop = unstarted_desktop();

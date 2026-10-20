@@ -70,3 +70,33 @@ test("checksum metadata outside the exact public dependency archive remains dete
 test("a non-checksum credential shape in that archive remains detectable", () => {
   assert.equal(scan(generated, `const API_KEY = "${nonChecksum}";`), 1);
 });
+
+const sourceBindings = [
+  {
+    file: "artifacts/implementation/f16-encoder-proposal/proposal.json",
+    key: "measurement-api.patch",
+    digest: "d2eb6fb5a8c5b46348bf7a0cc7cc7e483e8020b8c981a0c035c395167b0ea9ae",
+  },
+  {
+    file: "artifacts/implementation/mlx-f16-central-three-arm-readback.json",
+    key: "vendor/mlxrs/src/audio/stt/models/whisper/tokenizer.rs",
+    digest: "e663ac0710ad8355d9fea276a710089773f843c416cc9bd182a3178da10f5262",
+  },
+];
+
+test("the two verified public source bindings are accepted in their exact reports", () => {
+  for (const { file, key, digest } of sourceBindings)
+    assert.equal(scan(file, JSON.stringify({ [key]: digest })), 0);
+});
+
+test("other credential values in those exact reports remain detectable", () => {
+  for (const { file, key } of sourceBindings) {
+    assert.equal(scan(file, JSON.stringify({ [key]: checksum })), 1);
+    assert.equal(scan(file, `const API_KEY = "${nonChecksum}";`), 1);
+  }
+});
+
+test("the same public source digests in application source remain detectable", () => {
+  for (const { digest } of sourceBindings)
+    assert.equal(scan("src/credentials.rs", `const API_KEY = "${digest}";`), 1);
+});
