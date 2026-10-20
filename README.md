@@ -1,88 +1,157 @@
-# Everlast Dictation
+# Everlast Dictation MLX
 
-Native Diktier-App für Apple Silicon und macOS 27. Rust/Tauri 2 mit nativer AppKit-Oberfläche, lokale Whisper-Inferenz und systemnahe Audioaufnahme/Textübergabe.
+Isolierte Entwicklungsvariante für Apple Silicon und macOS 27. Dieses Checkout
+liegt getrennt unter `everlastChallenge-mlx`. Es installiert oder ersetzt die
+Original-App nicht. Appname, Bundle-ID, Datenverzeichnis und Entwicklungsport
+sind von der laufenden Referenzfassung getrennt.
 
-Aktueller installierter Prüfstand: normaler, lokal signierter Build `212d5e7`
-ohne Entwickler-Steuerkanal. Modellbereitschaft und beide Berechtigungen wurden
-angezeigt; die vollständige Einfügeabnahme steht noch aus. Ein [getrennter Entwicklertest](docs/verification/native-delivery-success-2026-10-19.md) bestätigt inzwischen echte Mikrofonaufnahme und einmalige Einfügung in den eigenen nativen Testempfänger. Die mehrstufige
-[native Zielerkennung](docs/verification/target-compatibility-2026-10-19.md)
-und Prüfung nach einmaligem Versand sind implementiert und automatisiert geprüft.
+Der aktuelle Kandidat verwendet **MLX für den Whisper-Encoder und den bisherigen
+whisper.cpp-Decoder für den vollständigen Text**. Die Modellkoeffizienten stammen
+bytegenau aus der bisherigen Q5-Referenz und werden lokal in F32 konvertiert.
+Sprache, VAD, Audioaufbereitung, Decoderparameter und Textübergabe bleiben auf dem
+bestehenden Pfad. Aufnahmen mit mehr als 30 Sekunden vorbereitetem PCM verwenden
+den bisherigen vollständigen Decoderpfad; spätere Whisper-Fenster ebenfalls.
+Es gibt keine satz-, datei- oder korpusspezifische Umschaltung.
 
-Aktuelles lokales Testpaket: **Everlast-Dictation-Testversion-0.1.0-native-212d5e7-r9.zip**
-in `~/Downloads/`. Der [R9-Paketbeleg](docs/verification/testversion-package-r9.md)
-nennt Quellstand, Buildfeatures und Prüfsummen. Ältere Pakete und die vorige
-Installation bleiben als Rückfallkopien erhalten. Kein öffentlicher Download;
-die [Kurzanleitung](TESTVERSION.md) beschreibt Einrichtung und bekannte Grenzen.
-`npm run release:local` verwendet die eingerichtete lokale Signieridentität
-ohne Developer-Account. Frühere Laufzeitnachweise bleiben in den jeweiligen
-Prüfberichten erhalten und ersetzen keine Abnahme des neuen Builds.
+Die vollständigen MLX-Decoder wurden wegen neuer Inhaltsfehler verworfen. Sie
+sind keine qualifizierte Alternative zum hybriden Kandidaten. Vorberechnung
+während der Aufnahme ist derzeit deaktiviert.
 
-**Testversion (19.10.2026):** Die stabile Referenzfassung ist als lokale Testversion bereitgestellt. Die experimentellen FullPrefix-/Kontext-1400-Optimierungen sind nicht aktiv. Die Referenz hat ihre dokumentierte Modellqualitätsprüfung bestanden, erreicht aber das geplante Stop-bis-Text-Ziel von einer Sekunde nicht durchgehend. [P06 ist nach der ausdrücklich gelockerten Geschwindigkeitsanforderung abgeschlossen](docs/verification/p06-closure-2026-10-19.md); die Installations- und integrierte Produktabnahme bleibt offen. Die gemessenen Geschwindigkeitsgrenzen werden weiterhin offengelegt. [P04 ist im bestätigten Standardmikrofonumfang technisch belegt](docs/verification/p04-standard-microphone-technical-v1.md); zusätzliche Geräte-/Bluetooth-Tests sind nicht erforderlich. Tatsächliche Belege stehen im [Ausführungsprotokoll](docs/execution-log.md), der vollständige Zielumfang im [Implementierungsplan](IMPLEMENTATION_PLAN.md).
+## Stand der Prüfung
 
-Die [Einstellungswiederherstellung](docs/verification/r4-settings-recovery-2026-10-19.md) wurde seinerzeit im installierten R4 geprüft. Der dabei gefundene falsche Status ist in R5 korrigiert und gezielt sichtbar geprüft; das historische R6-Paket und der aktuelle Entwicklerbuild enthalten diesen Anzeige-Fix.
+Standard dieser isolierten Variante ist der **F16-Encoder aus den verifizierten
+F32-Koeffizienten**, mit F32-Featureübergabe an den vollständigen bisherigen
+Decoder. Der wiederverwendbare MLX-Cache ist auf 256 MiB begrenzt; das ist kein
+Limit für den gesamten Prozess. Vorberechnung bleibt aus. Eine ausdrücklich
+bereits gespeicherte Modellwahl bleibt erhalten. Ein Build ohne Defaultfeatures
+kann weiterhin den bisherigen Referenzpfad verwenden.
 
-Der [reale Fünf-Minuten-Hotkeylauf](docs/verification/r4-hotkey-maximum-2026-10-19.md) bestätigt den automatischen Aufnahmestopp. Das Startfeld wurde dabei nicht bestätigt, daher keine Einfügung; zusätzliche Texte bei langem Nachlauf und die vollständige Vorwarnungs-/Fokusabnahme bleiben offen.
+Der aktuelle Kandidat besteht den vollständigen 100er-Qualitätsvergleich und
+zwölf vorab festgelegte Bestätigungsfälle aus acht neuen öffentlichen Aufnahmen
+und vier leiseren Varianten. Zwei verbesserte englische Ausgaben wurden als
+vollständige Textpaare einzeln und per SHA gebunden geprüft. Alle Sprach- und
+Testklassengruppen erfüllen den Vertrag. Das ist ein endlicher Korpusnachweis,
+keine universelle Fehlerfreiheitsgarantie. Deutsch bleibt die Produktsprache;
+Englisch dient zusätzlich dem Vergleich.
 
-## Autonom prüfen
+Der kontrollierte Sechsarmvergleich umfasst beide Paarreihenfolgen gegen CPP
+und gegen den bisherigen unbegrenzten F16-Cache: jeweils ein Warmup pro Prozess
+und 30 Echtzeitmessungen je DE/EN-5/10/15-s-Fall. Alle 1.086 Ausgaben wurden
+unabhängig geprüft; alle sechs Fallmediane und p95 verbessern sich gegen CPP.
+Das zentrale L ist der ungewichtete Mittelwert dieser sechs Fallmediane.
 
-`npm run test:autonomous` prüft Rust-Verträge, Oberfläche und Testwerkzeuge parallel, ohne laufende App, Mikrofon-/UI-Freigaben oder fokussiertes Fenster. `npm run test:autonomous:full` ergänzt statische Prüfungen, Integrationsverträge und Qualitätswerkzeugtests. Beide schreiben gebundene JSON-Berichte; keine neue ASR-Qualifikation wird gestartet. Der [Testleitfaden](docs/autonomous-testing.md) trennt diese Softwareprüfung von der verbleibenden echten OS-Abnahme.
+| Messgröße | Bisheriger CPP-Pfad | Gewählter F16-/Cache256-Pfad |
+| --- | ---: | ---: |
+| Zentrales Stop-bis-Text-L, erste Paarreihenfolge | 1,060 s | 0,356 s |
+| Zentrales Stop-bis-Text-L, Gegenreihenfolge | 1,057 s | 0,358 s |
+| macOS-Spitzen-Speicherfußabdruck | 0,809–0,812 GB | 3,179–3,180 GB |
 
-Der optionale [lokale Testzugang](docs/test-control.md) steuert Aufnahme, Stopp und Abbruch im Entwicklerbuild ohne physischen Hotkey. Er benötigt ein tatsächlich fokussiertes eigenes Testfeld; sein Einsatz beweist keine Zustellung des globalen OS-Tastenkürzels.
+Das sind **66,2–66,4 % weniger Stop-bis-Text-Zeit**. Gegen den unbegrenzten
+F16-Cache verändert sich L in diesen zwei Paaren um −0,07 % beziehungsweise
++0,78 %; einzelne p95 steigen bis 5,18 %. Dies ist ein angenommener gemessener
+RAM-/Speed-Kompromiss, kein statistischer Gleichheitsnachweis. Die beobachtete
+Modellbereitschaft im frischen Cache256-Prozess beträgt etwa 6,8 Sekunden und
+ist von der warmen Textlatenz getrennt. Betriebssystemcaches wurden nicht
+geleert; dies ist kein Start nach einem Rechnerneustart.
 
-## Lokal entwickeln
+Ein separater identischer Phasenvergleich senkt den warmen RSS-Median gegenüber
+dem unbegrenzten F16-Pfad von **1,414 auf 0,861 GB (−39,1 %)**. Der Spitzen-
+Speicherfußabdruck sinkt dort von 3,475 auf 3,176 GB (−8,6 %). Aktive
+Encoderallokationen bleiben etwa 1,274 GB; die Einsparung betrifft vor allem
+wiederverwendbaren Cache. Nach Finish werden die eigenen Modelle freigegeben,
+der Cache geleert und das vorherige Prozessbudget wiederhergestellt. RSS,
+MLX-Allokationen und Speicherfußabdruck überlappen und werden nicht addiert.
+GB meint dezimale Milliarden Byte.
 
-Geprüfte Ausgangsumgebung: macOS 27.0.1, arm64, Rust/Cargo 1.93.0, Node 22.23.1, npm 10.9.8 und Xcode 27.1. Kein anderer Rechner wurde geprüft.
+Die aktuellen Ressourcenbelege umfassen fünf Warmups und 100 Sitzungsfolgen
+mit Stop, Aufnahmeabbruch und Decoderabbruch: 72 echte Decoder-/PCM-Vergleiche,
+39 exakt referenzgleiche Stop-Ergebnisse und 66 textlose Abbrüche, reguläres
+Finish/Join. RSS nach Warmup 911.474.688 Byte, letzter Messpunkt vor Cleanup
+804.667.392 Byte; dies belegt keine universelle Leckfreiheit. Das dortige
+`loadMicros` misst nur Worker-Spawn/Setup vor asynchroner Modellbereitschaft.
 
-1. Projektabhängigkeiten installieren: `npm run setup`.
-2. Tauri-Entwicklungsstart: `npm run tauri -- dev`.
-3. Formatieren: `npm run format`.
-4. Statische Prüfungen: `npm run check`.
-5. Tests: `npm test`; Regel-Fixtures: `npm run test:guardrails`.
-6. Coverage: `npm run coverage`. Die Mindestwerte sind 90 % Kern-Zeilen und jeweils 80 % Frontend-Zeilen, Statements, Funktionen und Zweige. Die positiven/negativen instrumentierten Regel-Fixtures prüfen, dass die Grenzen tatsächlich durchgesetzt werden.
-7. Vollständige Prüfung: `npm run verify`. Zusätzlich benötigt: cargo-deny 0.19.0 und gitleaks 8.30.1 (vorhandene lokale Werkzeuge). Der Coverage-Lauf verwendet das lokale LLVM 21 aus Xcode passend zu rustc 1.93.0. Setup/Verify ändern keine globale Toolchain.
-8. Normalen Release ohne Entwickler-Testzugang bauen: `npm run release` (Ad-hoc-Signatur) oder nach bereits eingerichteter lokaler Identität `npm run release:local` (lokales Zertifikat). Der Befehl prüft anschließend Signatur, Mikrofon-Nutzungsbeschreibung und signiertes Audio-Input-Entitlement. Ein vorhandenes Bundle lässt sich mit `npm run verify:bundle` erneut prüfen. Keiner dieser Befehle aktiviert `test-control`; dafür gilt ausschließlich die gesonderte [Entwickleranleitung](docs/test-control.md#manual-build-and-launch-on-this-mac). Ein erzeugtes Bundle ist erst nach den Installations-/Laufzeitprüfungen im Plan ein abgenommenes Artefakt.
+Auch die übrigen 94 Fälle sind vollständig abgeschlossen: je ein Warmup und
+zehn Messungen, insgesamt **1.034 Ausgaben und elf vollständige Qualitätsrunden**.
+Alle Ausgaben entsprechen dem aktuellen Qualitätskandidaten; 1.023 sind exakt
+CPP-identisch, elf verwenden dasselbe zuvor geprüfte englische Verbesserungspaar.
+Alle 94 Prozessgruppen sind regulär beendet und unabhängig abwesend bestätigt.
+Die zwei 300-Sekunden-Fälle sind deutsch und verwenden den bisherigen CPP-Pfad.
+Beim erlaubten 30-Sekunden-Fall bleiben native Folgefenster erhalten. Der Restlauf
+liefert kein neues zentrales L und keine zusätzliche kontinuierliche Energieprüfung.
 
-## Aktuellen Entwicklungsstand ausprobieren
+Nachweise des gewählten Kandidaten:
 
-Die lokalen P05-Werkzeuge für öffentlichen Prüfkorpus, Referenzparameter und
-WER-Auswertung sind im [Korpus-Leitfaden](tests/fixtures/corpus/README.md)
-dokumentiert. Dateibackend-Ergebnisse ersetzen keine Echtzeit- oder installierte
-App-Abnahme.
+- `artifacts/implementation/ram-budget-v1/cache-runtime-paced-readback.{md,json}`
+- `artifacts/implementation/ram-budget-v1/cache-runtime-readback.{md,json}`
+- `artifacts/implementation/ram-budget-v1/cache-runtime-quality100-readback.{md,json}`
+- `artifacts/implementation/ram-budget-v1/cache-runtime-prospective-readback.{md,json}`
+- `artifacts/implementation/ram-budget-v1/cache-runtime-resource-readback.{md,json}`
+- `artifacts/implementation/ram-budget-v1/cache-runtime-remainder-readback.{md,json}`
 
-Bei Standard-Targetverzeichnis liegt der normale Release-Build unter `target/aarch64-apple-darwin/release/bundle/`: `npm run release` erzeugt App (`macos`) und DMG (`dmg`), `npm run release:local` ausschließlich die lokal signierte App (`macos`). Dieser direkte Entwicklungsstart ersetzt die noch offene Prüfung des heruntergeladenen, quarantänierten Installationsartefakts nicht.
+Rohbelege unter `artifacts/mlx-qualification/` werden nicht eingecheckt. Frühere
+F32-Vergleiche und fehlgeschlagene Versuche bleiben erhalten; ihre Ergebnisse
+werden nicht nachträglich auf den gewählten Kandidaten übertragen. Tracker und
+Ausführungsstand liegen unter `../everlastChallenge-mlx-plan/.scratch/mlx-speed/`.
+Die älteren Berichte unter `docs/verification/` betreffen überwiegend das Original.
+Aktuelle Projekt-/Bundle-/Offlineprüfungen werden unter
+`artifacts/implementation/final-acceptance-v1/` separat festgehalten.
 
-Beim Start wird nur der eigene Modellcache geprüft. Mit **Modell laden** lässt sich das gewählte Referenzmodell `large-v3-turbo-q5_0` (574 MB) von der im Fenster verlinkten, festgelegten Hugging-Face-Revision herunterladen. Die App prüft Größe und SHA-256 vor dem Laden. **Einrichtung abbrechen** beendet den Vorgang; ein neuer Versuch muss ausdrücklich gestartet werden. Ein erfolgreicher Download samt Modellinitialisierung ist im nativen Bundle geprüft. Die Referenz ist im [finalen Transkriptionsmanifest](config/release-transcription.json) gewählt; weitere Geschwindigkeitsoptimierung ist auf Nutzerauftrag nachgelagert. Zusätzlich benötigt der aktuelle Quellstand den fest gepinnten Silero-Sprachdetektor (0,9 MB). Die Einrichtung prüft beide Dateien und lädt fehlende Dateien nach ausdrücklichem Start; vorhandene geprüfte Dateien zählen zum Bereitstellungsfortschritt. Erst nach erfolgreichem Laden beider Modelle ist die Modelleinrichtung bereit. Der Sprachdetektor prüft die gesamte Aufnahme über eine getrennte pegelnormierte Kopie; bei erkannten Sprachanteilen erhält Whisper seine bisherigen Audiodaten unverändert. Fehler werden angezeigt und nicht als Stille behandelt. Im aktuellen Quellstand sperren Prüfung eines vorhandenen Cacheordners und Download den betreffenden Modellbestand gegen parallele Einrichtung. Beim Neustart werden ausschließlich eindeutig zugehörige Teildateien nachweislich beendeter Prozesse entfernt; aktive oder unklare Dateien bleiben erhalten. Eine belegte Sperre wird mit bewusstem erneutem Versuch gemeldet.
+## Entwickeln und prüfen
 
-Die sichtbare Hauptansicht und das eigene Einstellungsfenster verwenden echte
-AppKit-Steuerelemente. **Everlast Dictation → Einstellungen … (⌘,)** öffnet
-die nativen Tabs **Aufnahme**, **Berechtigungen** und **Modell**; der rote
-Fensterknopf oder **⌘W** schließt das Einstellungsfenster. Technische
-Modelldetails werden erst aufgeklappt. Die zurückgehaltene Tauri-WebView
-bleibt eine inerte Startfläche und steuert keine versteckten Formulare.
+Geprüfter Rechner: Apple M5, 32 GiB RAM, macOS 27.0.1, Xcode 27.1. Die lokale
+`rust-toolchain.toml` pinnt Rust **1.99.1**. Die globalen Rust-Defaults werden
+nicht umgestellt. Der native MLX-Build benötigt den passenden Apple-Metal-
+Toolchain-Baustein; dieser wurde auf dem Prüfhost über Apples Toolchainverwaltung
+bereitgestellt. Andere Macs oder macOS-Versionen wurden nicht gemessen.
 
-**Einstellungen** bietet im aktuellen Quellstand Mikrofonwahl, ein physisches Tastenkürzel mit mindestens Option, Command oder Control sowie den Modellstatus. Änderungen werden ausdrücklich gespeichert und sind während eines Diktats gesperrt. Nicht eindeutige Mikrofonnamen bleiben gesperrt; bei Registrierungs- oder Speicherfehlern wird der vorherige Zustand wiederhergestellt. Deutsch ist wählbar; Englisch ist in dieser Testversion noch nicht freigeschaltet. Außerdem enthält die Ansicht die ausdrücklichen Aktionen für Mikrofon und Bedienungshilfen. macOS verwaltet diese Freigaben. Mikrofonzugriff ist für Aufnahmen nötig; Bedienungshilfen werden für die automatische Übergabe an eine andere App benötigt. Die App bestätigt keine Freigabe stellvertretend. Nach Änderungen in den Systemeinstellungen die App wieder in den Vordergrund holen, damit sie den aktuellen Status liest.
+- Abhängigkeiten: `npm run setup`.
+- Statische Projektprüfung: `npm run check`.
+- Bestehende Testsuite: `npm test`; vollständig mit Coverage und Abhängigkeitsprüfung: `npm run verify`.
+- MLX-/Messverträge zusätzlich: `cargo test --workspace --locked --features mlx-encoder-f16,measurement,test-control` und die featuregebundenen Example-Tests.
+- App-only-Release: `npm run release:mlx` oder `npm run release`.
+- Bereits eingerichtete lokale Signieridentität: `npm run release:local`.
+- Gebautes Paket prüfen: `npm run verify:bundle`.
 
-Der implementierte Bedienweg ist **Aufnehmen → Stoppen** im Fenster oder die physische Tastenkombination **⌥D** im Zielprogramm. **Escape** bricht eine aktive Sitzung ab. Ein im Fenster gestartetes Diktat bleibt lokal; ein Hotkey-Diktat versucht die Übergabe ausschließlich an das zuvor geprüfte Ziel. Bei unsicherem Ziel bleibt der Text in der App zum bewussten Kopieren erhalten. „Einfügebefehl gesendet“ bestätigt nur den Versand des Tastaturereignisses, nicht den Inhalt im Zielprogramm. Aufnahme per Fensterbutton und manuelles Kopieren/Einfügen sind im installierten R4 geprüft; die automatische Übergabe bleibt offen.
+Der Releasehelper kopiert die tatsächlich verwendete `mlx.metallib` neben das
+App-Executable, signiert zuerst die kopierte Bibliothek und dann die App und
+prüft Signatur, Mikrofonbeschreibung und Audio-Entitlement. Das Ergebnis liegt
+unter `target/aarch64-apple-darwin/release/bundle/macos/Everlast Dictation MLX.app`.
+Die Befehle installieren, veröffentlichen oder notarieren nichts und aktivieren
+keinen Entwickler-Steuerkanal. Beim Verschieben müssen Signatur-xattrs erhalten
+bleiben, auf diesem Mac beispielsweise mit `ditto`.
 
-Die lokale Whisper-SDK-Korrektur und ihr numerischer Regressionsnachweis sind
-in [Kalibrierung v3](docs/verification/calibration-v3.md) dokumentiert.
-Bei Änderungen an vendertem C++ zuerst das betroffene sys-Buildprofil reinigen
-und den aktiven OUT_DIR-Quellhash prüfen; Details in
-[PATCHES.md](vendor/whisper-rs-sys/PATCHES.md). Die CPU-/Metal-Diagnose ist von
-Qualitäts- und Echtzeitabnahme getrennt; Small-Metal zeigt noch eine dokumentierte
-numerische Oracle-Abweichung.
+## Modelle und Laufzeit
 
-## Fehler beheben
+Die MLX-Encoder-Variante benötigt sechs geprüfte Dateien mit zusammen
+**3.813.494.037 Byte**: ursprüngliche Q5-Referenz, daraus erzeugte F32-Gewichte,
+Konfiguration, Tokenizer, Tokenizerkonfiguration und Silero-VAD. Die Einrichtung
+lädt fest gepinnte Eingaben erst nach ausdrücklichem Start und prüft Größe und
+SHA-256. Die F32-Datei wird mit sicherem Rust lokal erzeugt; sie hat keinen
+Downloadendpunkt. Ein Abbruch beseitigt ausschließlich die eigene Teildatei;
+ein vorhandenes geprüftes Ziel bleibt erhalten.
 
-Die folgenden Schritte beschreiben den aktuellen Quellstand. Installiert ist
-der normale Build `212d5e7`; R6 bleibt separat als historisches Testpaket
-verfügbar. Die vollständige Produkt- und Installationsabnahme steht noch aus.
+Beide MLX-Varianten verwenden getrennte Modellverzeichnisse unter ihrer festen
+Modell-ID. Das eigene AppData lautet
+`~/Library/Application Support/de.hoppworks.everlast-dictation-mlx/`.
+Die Original-App und deren Einstellungen/Modelle werden nicht übernommen oder
+verändert. Die isolierte App registriert kein globales Diktier-Tastenkürzel.
 
-| Beobachtung | Nächster Schritt |
-| --- | --- |
-| Aufnahme ist wegen fehlenden Mikrofonzugriffs gesperrt | Unter **Einstellungen** den Status prüfen. Bei **Noch nicht angefragt** die Aktion **Mikrofonzugriff anfragen** wählen und den macOS-Dialog selbst bestätigen. Bei einem anderen Status den dort angezeigten Hinweisen folgen. Anschließend zur App zurückkehren und den aktualisierten Status prüfen. |
-| Automatisches Einfügen ist nicht verfügbar | Unter **Einstellungen** den Status der Bedienungshilfen prüfen und die Freigabe selbst erteilen. Nach einem anderen Build kann die frühere Freigabe nicht mehr zur laufenden App passen. Erst nach erneut angezeigter Freigabe einen neuen Versuch starten. |
-| Das gewählte Mikrofon fehlt oder ist nicht eindeutig | Das Gerät verbinden, **Mikrofone aktualisieren** wählen und ein eindeutig bezeichnetes Gerät auswählen; anschließend ausdrücklich speichern. Für die vereinbarte Geräteabnahme genügt **Systemstandard**; weitere Mikrofon- oder Bluetooth-Tests sind nicht erforderlich. |
-| Ein Modell fehlt, der Download scheitert oder die Einrichtung ist belegt | Die angezeigte Ursache prüfen und die Einrichtung bewusst erneut starten. Einen noch laufenden Einrichtungsvorgang zuerst beenden; Modell- oder Sperrdateien nicht währenddessen manuell entfernen. Für die erste Einrichtung wird Internet benötigt. Offline-Betrieb setzt beide vollständig geprüften und geladenen Modelle voraus. |
-| Der erkannte Text bleibt in Everlast | Den Text prüfen, **Kopieren** wählen und bewusst im gewünschten Ziel einfügen. Ein unsicheres oder inzwischen gewechseltes Ziel wird zurückgehalten. Auch **Einfügebefehl gesendet** ist noch kein Beleg, dass die Ziel-App den Text übernommen hat. |
-| Die App meldet nicht lesbare Einstellungen | **Einstellungen zurücksetzen** wählen und die Rückfrage bestätigen, wenn die bisherigen Einstellungen ersetzt werden dürfen. Mikrofon, Sprache, Tastenkürzel und Modellauswahl werden zurückgesetzt; heruntergeladene Modelle bleiben erhalten. |
+Nach erfolgreicher Einrichtung arbeitet die Inferenz lokal. Initialisierung,
+Inference und Freigabe aller MLX-Objekte erfolgen im selben langlebigen Worker.
+Pro Auftrag wird frischer Decoderzustand verwendet. Abbrechen verwirft das
+Ergebnis der widerrufenen Sitzung; es verspricht keine harte Unterbrechung eines
+bereits laufenden Metal-Kernels. Texte werden nur nach vollständiger finaler
+Prüfung weitergegeben.
+
+Der zusätzliche Encoder hält neben der Referenz ein zweites ASR-Modell und einen
+zweiten VAD-Kontext bereit; je Auftrag arbeitet ein VAD. Der Speicherbedarf ist
+daher weiterhin höher als bei der bisherigen Q5-Referenz; gemessene Kosten und
+Grenzen stehen oben.
+
+## Grenzen und Abhängigkeiten
+
+Native MLX-/Metal-Bindings und der kleine lokale Encoder-Bridgepatch sind
+zusätzlicher Wartungsaufwand. Versionen, native Quellpins und Patchbelege stehen
+in `Cargo.lock`, `config/mlx-build-inputs.json` und den jeweiligen
+`vendor/*/PATCHES.md` bzw. `EVERLAST-PATCH.json`. Lizenz-/Herkunftsnachweise stehen
+unter `docs/licenses/`; dort offengelegte Lücken sind keine Rechtsfreigabe.

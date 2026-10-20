@@ -18,3 +18,17 @@ condition = "AND"
 targetRules = ["generic-api-key"]
 paths = ['''(^|/)artifacts/p06-exact-state-counter-diagnostic-v1/public-dependencies/[^/]+/\.cargo-checksum\.json$''']
 regexes = ['''^[a-f0-9]{64}$''']
+
+[[allowlists]]
+description = "Exact SHA-256 of the retained public measurement-api.patch, verified against its bytes; only this proposal report."
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = ['''(^|/)artifacts/implementation/f16-encoder-proposal/proposal\.json$''']
+regexes = ['''^d2eb6fb5a8c5b46348bf7a0cc7cc7e483e8020b8c981a0c035c395167b0ea9ae$''']
+
+[[allowlists]]
+description = "Exact SHA-256 of the frozen public Whisper tokenizer source, verified against its bytes; only this readback report."
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = ['''(^|/)artifacts/implementation/mlx-f16-central-three-arm-readback\.json$''']
+regexes = ['''^e663ac0710ad8355d9fea276a710089773f843c416cc9bd182a3178da10f5262$''']
