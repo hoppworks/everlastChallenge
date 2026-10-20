@@ -53,5 +53,14 @@ export function verifyBundle(bundle) {
 if (process.argv[1] === fileURLToPath(import.meta.url))
   verifyBundle(
     process.argv[2] ??
-      "target/aarch64-apple-darwin/release/bundle/macos/Everlast Dictation.app",
+      path.join(
+        process.env.CARGO_TARGET_DIR || "target",
+        "aarch64-apple-darwin/release/bundle/macos",
+        JSON.parse(
+          readFileSync(
+            new URL("../src-tauri/tauri.conf.json", import.meta.url),
+            "utf8",
+          ),
+        ).productName + ".app",
+      ),
   );

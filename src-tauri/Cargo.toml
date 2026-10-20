@@ -8,7 +8,7 @@ publish.workspace = true
 
 # Explicit developer-only audio injection for clocked measurement probes.
 [features]
-default = ["mlx-encoder-f16"]
+default = ["isolated", "mlx-encoder-f16"]
 isolated = []
 measurement = []
 test-control = ["macos-integration/test-control"]

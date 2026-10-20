@@ -17,7 +17,7 @@
     "test:guardrails": "node scripts/prove-guardrails.mjs",
     "coverage": "node scripts/coverage.mjs",
     "tauri": "tauri",
-    "release": "MACOSX_DEPLOYMENT_TARGET=27.0 tauri build --target aarch64-apple-darwin && node scripts/verify-bundle.mjs",
+    "release": "node scripts/build-mlx-bundle.mjs",
     "verify:bundle": "node scripts/verify-bundle.mjs",
     "check:contracts": "node scripts/check-contracts.mjs",
     "test:quality": "/usr/bin/python3 -m unittest discover -s tests/quality",
@@ -26,7 +26,8 @@
     "test:os:readiness": "node scripts/recipient-readiness.mjs",
     "test:os:windows": "cargo test --locked -p macos-integration --test native_preferences_close_contract",
     "release:local": "node scripts/sign-local-bundle.mjs --build",
-    "test:control": "node scripts/test-control.mjs"
+    "test:control": "node scripts/test-control.mjs",
+    "release:mlx": "node scripts/build-mlx-bundle.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.12.4",

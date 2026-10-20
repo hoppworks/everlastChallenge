@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import {
   closeSync,
+  existsSync,
   lstatSync,
   openSync,
   readFileSync,
@@ -36,11 +37,27 @@ function identity(root) {
     );
   return config.signingIdentity.toUpperCase();
 }
+function bundleConfiguration(root) {
+  const file = path.join(root, "src-tauri/tauri.conf.json");
+  if (!existsSync(file))
+    return {
+      productName: "Everlast Dictation",
+      identifier: "de.hoppworks.everlast-dictation",
+    };
+  regular(file, 65536);
+  const config = JSON.parse(readFileSync(file, "utf8"));
+  if (
+    !/^[A-Za-z0-9][A-Za-z0-9 ._-]{0,79}$/.test(config.productName) ||
+    !/^[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(config.identifier)
+  )
+    throw new Error("Invalid configured bundle identity");
+  return config;
+}
 export function builtBundlePath(root = ROOT, env = process.env) {
   const target = path.resolve(root, env.CARGO_TARGET_DIR || "target");
   return path.join(
     target,
-    "aarch64-apple-darwin/release/bundle/macos/Everlast Dictation.app",
+    `aarch64-apple-darwin/release/bundle/macos/${bundleConfiguration(root).productName}.app`,
   );
 }
 function validateBundle(bundle, run, root) {
@@ -61,7 +78,7 @@ function validateBundle(bundle, run, root) {
     }),
   );
   if (
-    info.CFBundleIdentifier !== "de.hoppworks.everlast-dictation" ||
+    info.CFBundleIdentifier !== bundleConfiguration(root).identifier ||
     info.CFBundleExecutable !== MAIN ||
     info.CFBundlePackageType !== "APPL"
   )
@@ -139,11 +156,21 @@ export function signLocalBundle({
       CARGO_TARGET_DIR: path.resolve(root, env.CARGO_TARGET_DIR || "target"),
       APPLE_SIGNING_IDENTITY: "-",
     });
-    run(
-      path.join(root, "node_modules/.bin/tauri"),
-      ["build", "--bundles", "app", "--target", "aarch64-apple-darwin"],
-      { cwd: root, env: buildEnv, stdio: "inherit" },
-    );
+    const mlxBuilder = path.join(root, "scripts/build-mlx-bundle.mjs");
+    if (existsSync(mlxBuilder)) {
+      regular(mlxBuilder, 65536);
+      run(process.execPath, [mlxBuilder], {
+        cwd: root,
+        env: buildEnv,
+        stdio: "inherit",
+      });
+    } else {
+      run(
+        path.join(root, "node_modules/.bin/tauri"),
+        ["build", "--bundles", "app", "--target", "aarch64-apple-darwin"],
+        { cwd: root, env: buildEnv, stdio: "inherit" },
+      );
+    }
   }
   bundle = path.resolve(root, bundle || builtBundlePath(root, env));
   const entitlements = validateBundle(bundle, run, root);
