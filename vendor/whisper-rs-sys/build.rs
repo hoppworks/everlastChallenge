@@ -271,6 +271,9 @@ fn main() {
     if cfg!(feature = "metal") {
         config.define("GGML_METAL", "ON");
         config.define("GGML_METAL_NDEBUG", "ON");
+        // Keep the already-qualified SIMD path in the CPP decoder. MLX has its
+        // own independent GPU backend; this does not disable its acceleration.
+        config.define("GGML_METAL_TENSOR", "OFF");
         config.define("GGML_METAL_EMBED_LIBRARY", "ON");
     } else {
         // Metal is enabled by default, so we need to explicitly disable it

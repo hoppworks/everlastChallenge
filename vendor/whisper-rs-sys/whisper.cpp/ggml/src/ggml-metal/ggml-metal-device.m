@@ -650,6 +650,11 @@ ggml_metal_device_t ggml_metal_device_init(void) {
             }
 
             dev->props.has_tensor = [dev->mtl_device supportsFamily:MTLGPUFamilyMetal4_GGML];
+#if defined(GGML_METAL_TENSOR_DISABLED)
+            // This app profile retains the qualified SIMD kernels. In SDK27
+            // the upstream 8x8 tensor probe fails, wasting work at each launch.
+            dev->props.has_tensor = false;
+#endif
             if (getenv("GGML_METAL_TENSOR_DISABLE") != NULL) {
                 dev->props.has_tensor = false;
             }

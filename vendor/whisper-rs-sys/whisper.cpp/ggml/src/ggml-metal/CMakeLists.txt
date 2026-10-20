@@ -19,6 +19,11 @@ target_link_libraries(ggml-metal PRIVATE
                       ${METALKIT_FRAMEWORK}
                       )
 
+option(GGML_METAL_TENSOR "Enable the optional Metal tensor API" ON)
+if (NOT GGML_METAL_TENSOR)
+    target_compile_definitions(ggml-metal PRIVATE GGML_METAL_TENSOR_DISABLED=1)
+endif()
+
 if (GGML_METAL_NDEBUG)
     add_compile_definitions(GGML_METAL_NDEBUG)
 endif()

@@ -200,3 +200,26 @@ The initial throwaway compute-skip prototype failed its second-call scheduler
 assertion; it is retained only under artifacts and is not this implementation.
 Quality/latency/resource qualification is recorded separately and is not implied
 by the native contract.
+
+
+## 2026-10-20: bounded startup and residency shutdown
+
+The macOS application build sets `GGML_METAL_TENSOR=OFF`; other direct CMake
+consumers keep the upstream default. On the qualified M5 / SDK27 host the
+original 8x8 capability shader fails compilation and already selects the SIMD
+path. Avoiding that unsuccessful optional probe preserves this host's effective
+CPP computation path. It does not disable the independent MLX GPU encoder.
+This is a measured application policy, not a claim that all Metal hardware or
+compiler revisions have identical capability results.
+
+The residency collection keeps its existing 500ms heartbeat interval. Its wait
+is now a dispatch semaphore with a timeout, signalled on destruction before the
+existing dispatch-group join. Destruction still waits for the worker and releases
+both synchronization objects afterwards. A native lifecycle fixture exercises
+this actual public init/free boundary: `scripts/native-tests/residency-shutdown.m`.
+The old library waited 480ms in that fixture; the modified library returned in
+about 0.02ms. GPU synchronization and resource ownership are unchanged.
+
+`build.rs` now synchronizes and watches the modified Metal source and its CMake
+file as well as the existing bridge files. Otherwise an incremental build could
+silently compile stale copies from `OUT_DIR`.
