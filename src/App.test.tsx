@@ -11,6 +11,7 @@ import { App } from "./App";
 import type { Snapshot } from "./ipc";
 
 const ipc = vi.hoisted(() => ({
+  clearTranscript: vi.fn<typeof import("./ipc").clearTranscript>(),
   connect: vi.fn<typeof import("./ipc").connect>(),
   command: vi.fn<typeof import("./ipc").command>(),
   sessionCommand: vi.fn<typeof import("./ipc").sessionCommand>(),
@@ -81,6 +82,7 @@ function snapshot(): Snapshot {
 beforeEach(() => {
   vi.resetAllMocks();
   ipc.command.mockResolvedValue(undefined);
+  ipc.clearTranscript.mockResolvedValue(undefined);
   ipc.sessionCommand.mockResolvedValue(undefined);
   ipc.saveSettings.mockResolvedValue(undefined);
 });
@@ -273,7 +275,9 @@ test.each([false, true])(
     );
     fireEvent.click(screen.getByRole("button", { name: "Löschen" }));
     await waitFor(() =>
-      expect(ipc.command).toHaveBeenCalledWith("transcript_clear"),
+      expect(ipc.clearTranscript).toHaveBeenCalledWith(
+        "Der gespeicherte Text.",
+      ),
     );
     expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
       "Der gespeicherte Text.",

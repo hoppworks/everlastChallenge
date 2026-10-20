@@ -289,6 +289,7 @@ mod tests {
             preferences: view::Preferences {
                 key_labels: Vec::new(),
                 current: SettingsDraft {
+                    model: None,
                     device: None,
                     language: settings.language,
                     hotkey: settings.hotkey,

@@ -1,5 +1,6 @@
 import { beforeEach, expect, test, vi } from "vitest";
 import {
+  clearTranscript,
   command,
   connect,
   decodeSnapshot,
@@ -327,7 +328,6 @@ test.each([
   "model_cancel",
   "recording_start",
   "transcript_copy",
-  "transcript_clear",
   "microphone_request",
   "accessibility_request",
 ] as const)("forwards explicit command %s", async (name) => {
@@ -569,4 +569,35 @@ test("accepts a persistent Held session and maximum-stop fact, rejecting malform
   expect(() =>
     decodeSnapshot({ ...value, session: { ...session, maximumReached: 1 } }),
   ).toThrow("Ungültiger Anwendungsstatus");
+});
+
+test("clear guards the displayed result instead of unconditionally deleting a newer transcript", async () => {
+  native.invoke.mockResolvedValue(undefined);
+  await clearTranscript("Angezeigter Text");
+  expect(native.invoke).toHaveBeenCalledWith("transcript_clear", {
+    expectedText: "Angezeigter Text",
+  });
+});
+test("qualified hybrid settings are accepted but the experimental decoder is rejected", async () => {
+  const settings = {
+    ...snapshot().preferences.current,
+    model: "mlx_reference_encoder" as const,
+  };
+  await saveSettings(settings);
+  expect(native.invoke).toHaveBeenCalledWith("settings_save", { settings });
+  await expect(
+    saveSettings({ ...settings, model: "mlx_fp16" } as never),
+  ).rejects.toThrow("Ungültige Einstellungen");
+});
+
+test("snapshot decoding accepts the saved qualified hybrid model without widening provenance", () => {
+  const value = snapshot();
+  value.preferences.current.model = "mlx_reference_encoder";
+  value.setup.model.downloadBytes = 3_813_494_037;
+  value.setup.totalBytes = 3_813_494_037;
+  expect(decodeSnapshot(value).preferences.current.model).toBe(
+    "mlx_reference_encoder",
+  );
+  value.setup.model.sourceUrl = "https://untrusted.test/model";
+  expect(() => decodeSnapshot(value)).toThrow("Ungültiger Anwendungsstatus");
 });

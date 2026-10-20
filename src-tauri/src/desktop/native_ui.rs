@@ -157,6 +157,7 @@ fn settings_draft(
         _ => return Err("Ungültige Sprache".into()),
     };
     Ok(SettingsDraft {
+        model: None,
         device: draft.device,
         language,
         hotkey: crate::settings::Hotkey {

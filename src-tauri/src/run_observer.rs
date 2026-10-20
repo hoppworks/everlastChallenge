@@ -432,6 +432,7 @@ mod tests {
             preferences: view::Preferences {
                 key_labels: vec![],
                 current: everlast_dictation::preferences::SettingsDraft {
+                    model: None,
                     device: settings.device,
                     language: settings.language,
                     hotkey: settings.hotkey,

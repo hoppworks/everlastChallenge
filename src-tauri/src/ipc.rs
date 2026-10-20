@@ -102,9 +102,10 @@ pub fn recording_cancel(
 pub async fn transcript_clear(
     window: WebviewWindow,
     desktop: State<'_, Desktop>,
+    expected_text: String,
 ) -> Result<(), String> {
     authorize(&window)?;
-    desktop.clear_text().await
+    desktop.clear_text(expected_text).await
 }
 #[tauri::command]
 pub async fn transcript_copy(

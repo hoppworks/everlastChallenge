@@ -607,7 +607,7 @@ impl Desktop {
             .cancel(session)
             .map_err(|error| error.to_string())
     }
-    pub async fn clear_text(&self) -> Result<(), String> {
+    pub async fn clear_text(&self, expected_text: String) -> Result<(), String> {
         let _admission = self
             .0
             .admissions
@@ -615,7 +615,7 @@ impl Desktop {
             .try_acquire_owned()
             .map_err(|_| "Zu viele laufende Anfragen")?;
         self.runtime()?
-            .clear_text()
+            .clear_text_if_unchanged(expected_text)
             .map_err(|error| error.to_string())?
             .await
             .map_err(|_| "Textanfrage beendet")?
@@ -934,6 +934,7 @@ impl Desktop {
         let mut shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
         match result {
             Ok(settings) => {
+                shared.preferences.needs_restart |= current.model != settings.model;
                 shared.settings = settings;
                 shared.preferences.error = None;
                 shared.action_error = None;
@@ -1290,6 +1291,7 @@ fn valid_id(id: u64) -> Result<(), String> {
 }
 fn draft_of(settings: &Settings) -> SettingsDraft {
     SettingsDraft {
+        model: crate::preferences::PreferenceModel::from_settings(settings),
         device: settings.device.clone(),
         language: settings.language,
         hotkey: settings.hotkey.clone(),
@@ -1346,6 +1348,7 @@ impl HotkeyRebinder for DesktopBinder<'_> {
 }
 fn preference_error(error: PreferencesError) -> String {
     match error {
+        PreferencesError::ModelUnavailable => "Dieses Modell ist in diesem Build nicht verfügbar".into(),
         PreferencesError::LanguageUnavailable => "Diese Sprache ist noch nicht freigegeben".into(),
         PreferencesError::Invalid(_) => "Mikrofon oder Tastenkürzel ist ungültig".into(),
         PreferencesError::Registration => "Tastenkürzel konnte nicht registriert werden; vorherige Einstellung bleibt".into(),

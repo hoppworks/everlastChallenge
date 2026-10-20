@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { AppView } from "./features/app/AppView";
-import { command, connect, sessionCommand, saveSettings } from "./ipc";
+import {
+  command,
+  connect,
+  sessionCommand,
+  saveSettings,
+  clearTranscript,
+} from "./ipc";
 import { SettingsView } from "./features/settings/SettingsView";
 import { RecoveryView } from "./features/settings/RecoveryView";
 import type { Snapshot } from "./ipc";
@@ -108,7 +114,7 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
           onStop={() => sessionAction("recording_stop")}
           onCancel={() => sessionAction("recording_cancel")}
           onCopy={() => run(() => command("transcript_copy"))}
-          onClear={() => run(() => command("transcript_clear"))}
+          onClear={() => run(() => clearTranscript(snapshot.session.text))}
           onSettings={() => setSettingsOpen(true)}
         />
       )}
