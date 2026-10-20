@@ -42,7 +42,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("binary", type=Path)
     parser.add_argument("model", type=Path)
-    parser.add_argument("selection", choices=("reference", "small"))
+    parser.add_argument("selection", choices=("reference", "small", "mlx-reference-encoder"))
     parser.add_argument("wav", type=Path)
     parser.add_argument("reference", type=Path)
     parser.add_argument("parameters", type=Path)
