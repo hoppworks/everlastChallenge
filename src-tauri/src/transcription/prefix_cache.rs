@@ -90,7 +90,7 @@ fn prepared_key(samples: &[f32], language: Language) -> PreparedKey {
     // Constant 4-KiB staging, never a second full PCM byte vector.
     let mut bytes = [0_u8; 4096];
     for chunk in samples.chunks(1024) {
-        for (sample, output) in chunk.iter().zip(bytes.chunks_exact_mut(4)) {
+        for (sample, output) in chunk.iter().zip(bytes.as_chunks_mut::<4>().0) {
             output.copy_from_slice(&sample.to_le_bytes());
         }
         hash.update(&bytes[..chunk.len() * 4]);
