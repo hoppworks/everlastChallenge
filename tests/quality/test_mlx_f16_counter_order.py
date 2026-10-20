@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 class CounterOrderTests(unittest.TestCase):
     def test_power_change_remains_primary_after_actual_owned_cleanup(self):
-        spec = importlib.util.spec_from_file_location("f16_counter_order", ROOT / "artifacts/implementation/run-f16-runtime-counter-order.py")
+        spec = importlib.util.spec_from_file_location("f16_counter_order", ROOT / "scripts/controlled_probe.py")
         runner = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(runner)
         control = runner.create_control()
@@ -26,7 +26,7 @@ class CounterOrderTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             folder = Path(directory)
             with self.assertRaisesRegex(ValueError, "power source/policy changed"):
-                runner.base.owned([sys.executable, "-c", "import time; time.sleep(30)"], folder,
+                runner.owned([sys.executable, "-c", "import time; time.sleep(30)"], folder,
                     control, [], "contract", "a" * 64, timeout_seconds=5, sample_interval_seconds=.01)
             result = json.loads((folder / "owner-completion.json").read_text())
             self.assertTrue(result["processReaped"])
