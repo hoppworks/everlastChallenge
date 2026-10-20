@@ -27,7 +27,9 @@
     "test:os:windows": "cargo test --locked -p macos-integration --test native_preferences_close_contract",
     "release:local": "node scripts/sign-local-bundle.mjs --build",
     "test:control": "node scripts/test-control.mjs",
-    "release:mlx": "node scripts/build-mlx-bundle.mjs"
+    "release:mlx": "node scripts/build-mlx-bundle.mjs",
+    "test:overnight-runner": "node --test scripts/overnight-runner.test.mjs",
+    "run:overnight": "node scripts/overnight-runner.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.12.4",
