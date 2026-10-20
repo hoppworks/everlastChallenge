@@ -89,6 +89,29 @@ pub enum InferenceError {
     Memory,
 }
 
+// Explicit developer instrumentation; ordinary builds never read this flag.
+fn load_stage<T>(
+    name: &str,
+    load: impl FnOnce() -> Result<T, InferenceError>,
+) -> Result<T, InferenceError> {
+    #[cfg(feature = "measurement")]
+    let started = (std::env::var_os("EVERLAST_MLX_LOAD_DIAGNOSTICS").as_deref()
+        == Some(std::ffi::OsStr::new("1")))
+    .then(std::time::Instant::now);
+    let result = load();
+    #[cfg(feature = "measurement")]
+    if let Some(started) = started {
+        eprintln!(
+            "{}",
+            serde_json::json!({"kind":"mlx-load-stage", "stage":name,
+            "elapsedMicros":started.elapsed().as_micros(), "ok":result.is_ok()})
+        );
+    }
+    #[cfg(not(feature = "measurement"))]
+    let _ = name;
+    result
+}
+
 pub struct Engine {
     context: WhisperContext,
     gate: speech_gate::SpeechGate,
@@ -121,19 +144,23 @@ impl Engine {
         definition: ModelDefinition,
         flash_attention: bool,
     ) -> Result<Self, InferenceError> {
-        verify_file(path, definition)?;
+        load_stage("reference-integrity", || {
+            verify_file(path, definition).map_err(Into::into)
+        })?;
         // Neither log_backend nor tracing_backend is enabled. Route backend
         // logging into the safe library hook instead of printing paths/audio.
         whisper_rs::install_logging_hooks();
-        let context = WhisperContext::new_with_params(
-            path.to_str().ok_or(InferenceError::ModelPath)?,
-            WhisperContextParameters {
-                use_gpu: true,
-                flash_attn: flash_attention,
-                ..Default::default()
-            },
-        )
-        .map_err(|_| InferenceError::Context)?;
+        let context = load_stage("reference-context", || {
+            WhisperContext::new_with_params(
+                path.to_str().ok_or(InferenceError::ModelPath)?,
+                WhisperContextParameters {
+                    use_gpu: true,
+                    flash_attn: flash_attention,
+                    ..Default::default()
+                },
+            )
+            .map_err(|_| InferenceError::Context)
+        })?;
         if !context.is_multilingual() {
             return Err(InferenceError::Context);
         }
@@ -141,7 +168,9 @@ impl Engine {
             .parent()
             .ok_or(InferenceError::ModelPath)?
             .join(crate::model::VAD.file_name());
-        let gate = speech_gate::SpeechGate::load(&vad_path)?;
+        let gate = load_stage("reference-gate", || {
+            speech_gate::SpeechGate::load(&vad_path)
+        })?;
         Ok(Self { context, gate })
     }
 

@@ -138,6 +138,18 @@ fn parse_arguments(arguments: Vec<std::ffi::OsString>) -> Result<Cli, Error> {
 }
 
 fn main() -> Result<(), Error> {
+    let process_started = Instant::now();
+    let trace = |phase: &str| {
+        if std::env::var_os("EVERLAST_MLX_LOAD_DIAGNOSTICS").as_deref()
+            == Some(std::ffi::OsStr::new("1"))
+        {
+            eprintln!(
+                "{}",
+                serde_json::json!({"kind":"probe-phase", "phase":phase, "elapsedMicros":process_started.elapsed().as_micros()})
+            );
+        }
+    };
+    trace("main-entry");
     let args = std::env::args_os().skip(1).take(7).collect::<Vec<_>>();
     if args.len() == 1
         && matches!(
@@ -176,6 +188,7 @@ fn main() -> Result<(), Error> {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .ok_or("repository root unavailable")?;
+    trace("before-model-load");
     let started = Instant::now();
     let mut service = None;
     #[cfg(feature = "measurement")]
@@ -213,6 +226,7 @@ fn main() -> Result<(), Error> {
         Err(error) => Some(error.to_string()),
     };
     let load_millis = started.elapsed().as_millis();
+    trace("model-loaded");
     let load_error = unavailable.clone();
     let mut results = Vec::with_capacity(manifest.cases.len());
     let mut observations = Vec::with_capacity(manifest.cases.len());
@@ -290,6 +304,7 @@ fn main() -> Result<(), Error> {
     }
     // Observation timeouts cancel admission, but do not claim a hard backend
     // interrupt. The owned worker is always joined before exporting results.
+    trace("transcription-complete");
     let cleanup_started = Instant::now();
     let cleanup_error = service
         .take()
@@ -368,8 +383,8 @@ fn main() -> Result<(), Error> {
         "observationTimeoutMillis": WAIT_LIMIT.as_millis(), "timeoutIsHardAbort": false,
         "nativeTimestampDiagnostic": {
             "enabled": cli.native_timestamps,
-            "modelInitializationOwner": if cli.native_timestamps || cli.context_reduced.is_some() || cli.flash_attention.is_some() { "developer-main-before-serial-worker" } else { "serial-inference-worker" },
-            "candidateInitializationDifference": cli.native_timestamps || cli.context_reduced.is_some() || cli.flash_attention.is_some(),
+            "modelInitializationOwner": if cli.native_timestamps || cli.context_reduced.is_some() || cli.flash_attention.is_some() { "developer-main-before-serial-worker" } else if cli.mlx_profile == MlxProfile::ReferenceEncoder { "MLX: serial-inference-worker; CPP: scoped helper joined before readiness" } else { "serial-inference-worker" },
+            "candidateInitializationDifference": cli.native_timestamps || cli.context_reduced.is_some() || cli.flash_attention.is_some() || cli.mlx_profile == MlxProfile::ReferenceEncoder,
             "boundedAcceptedSegmentObservationAllocatedPerJob": cli.native_timestamps,
             "sharedInferenceServiceJobLifecycle": true,
             "resourceQualified": false, "realTimeLatencyProtocolExecuted": false
@@ -379,11 +394,13 @@ fn main() -> Result<(), Error> {
         "flashAttentionExperiment": {"selected":cli.flash_attention,"newContextBothVariants":cli.flash_attention.is_some(),"noContextMutation":true,"gpuCoverageProven":false,"resourceQualified":false,"realTimeLatencyProtocolExecuted":false,"executionEvidence":"per-row receipt decodeAttempted; selected flag alone does not prove native execution"},
         "cases": observations,
     });
+    trace("before-report-write");
     input::write_reports(
         &cli.output,
         &serde_json::to_vec_pretty(&results)?,
         &serde_json::to_vec_pretty(&metadata)?,
     )?;
+    trace("after-report-write");
     if results.iter().any(|row| row.status == "failed")
         || cleanup_error.is_some()
         || metadata["contextCleanup"]["error"].is_string()

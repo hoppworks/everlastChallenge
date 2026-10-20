@@ -40,32 +40,17 @@ impl TimestampPolicy {
 
 mod complete_decode;
 
-// Explicit developer instrumentation; ordinary builds never read this flag.
-fn load_stage<T>(
-    name: &str,
-    load: impl FnOnce() -> Result<T, InferenceError>,
-) -> Result<T, InferenceError> {
-    #[cfg(feature = "measurement")]
-    let started = (std::env::var_os("EVERLAST_MLX_LOAD_DIAGNOSTICS").as_deref()
-        == Some(std::ffi::OsStr::new("1")))
-    .then(std::time::Instant::now);
-    let result = load();
-    #[cfg(feature = "measurement")]
-    if let Some(started) = started {
-        eprintln!(
-            "{}",
-            serde_json::json!({"kind":"mlx-load-stage", "stage":name,
-            "elapsedMicros":started.elapsed().as_micros(), "ok":result.is_ok()})
-        );
-    }
-    #[cfg(not(feature = "measurement"))]
-    let _ = name;
-    result
+use super::load_stage;
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum DecoderMode {
+    Mlx,
+    Reference,
 }
 
 pub struct MlxEngine {
     model: WhisperModel,
-    tokenizer: Tokenizer,
+    tokenizer: Option<Tokenizer>,
     gate: SpeechGate,
     best_of: Option<usize>,
     timestamps: TimestampPolicy,
@@ -87,6 +72,7 @@ impl MlxEngine {
             None,
             None,
             TimestampPolicy::Native,
+            DecoderMode::Mlx,
         )
     }
 
@@ -100,6 +86,7 @@ impl MlxEngine {
             None,
             None,
             TimestampPolicy::Native,
+            DecoderMode::Mlx,
         )
     }
 
@@ -110,8 +97,11 @@ impl MlxEngine {
         best_of: Option<usize>,
         payload: Option<ModelDefinition>,
         timestamps: TimestampPolicy,
+        decoder: DecoderMode,
     ) -> Result<Self, InferenceError> {
-        let result = Self::load_inner(path, definition, dtype, best_of, payload, timestamps);
+        let result = Self::load_inner(
+            path, definition, dtype, best_of, payload, timestamps, decoder,
+        );
         if result.is_err() {
             // Failed initialization also ends this dedicated worker's MLX life.
             cleanup_streams()?;
@@ -132,6 +122,7 @@ impl MlxEngine {
             Some(5),
             None,
             TimestampPolicy::Native,
+            DecoderMode::Mlx,
         )
     }
 
@@ -149,6 +140,7 @@ impl MlxEngine {
             None,
             None,
             TimestampPolicy::TextOnly,
+            DecoderMode::Mlx,
         )
     }
 
@@ -166,6 +158,7 @@ impl MlxEngine {
             None,
             None,
             TimestampPolicy::SingleWindowText,
+            DecoderMode::Mlx,
         )
     }
 
@@ -208,6 +201,7 @@ impl MlxEngine {
             best_of,
             None,
             TimestampPolicy::SingleWindowText,
+            DecoderMode::Mlx,
         )?;
         engine.multiwindow_reference = Some(reference);
         Ok(engine)
@@ -224,6 +218,7 @@ impl MlxEngine {
             None,
             Some(crate::model::COEFFICIENT_CONTROL),
             TimestampPolicy::Native,
+            DecoderMode::Mlx,
         )
     }
 
@@ -245,6 +240,7 @@ impl MlxEngine {
             None,
             Some(crate::model::COEFFICIENT_CONTROL),
             TimestampPolicy::SingleWindowText,
+            DecoderMode::Mlx,
         )?;
         engine.multiwindow_reference = Some(reference);
         Ok(engine)
@@ -282,25 +278,38 @@ impl MlxEngine {
         path: &Path,
         dtype: Dtype,
     ) -> Result<Self, InferenceError> {
-        let reference = load_stage("reference-decoder-and-gate", || {
-            super::Engine::load(
-                &path
-                    .parent()
-                    .ok_or(InferenceError::ModelPath)?
-                    .join(crate::model::REFERENCE.file_name()),
-                crate::model::REFERENCE,
-            )
+        let directory = path.parent().ok_or(InferenceError::ModelPath)?;
+        // Only the Send-capable CPP context is prepared in the helper. MLX
+        // objects are still created, used and dropped on the inference owner.
+        // Scoped join prevents readiness (or any returned error) from leaving
+        // model-loading work running in the background.
+        let (mut engine, reference) = std::thread::scope(|scope| {
+            let reference = std::thread::Builder::new()
+                .name("reference-loader".into())
+                .spawn_scoped(scope, || {
+                    load_stage("reference-decoder-and-gate", || {
+                        super::Engine::load(
+                            &directory.join(crate::model::REFERENCE.file_name()),
+                            crate::model::REFERENCE,
+                        )
+                    })
+                })
+                .map_err(|_| InferenceError::Context)?;
+            let engine = Self::load_profile(
+                path,
+                crate::model::MLX_REFERENCE,
+                dtype,
+                None,
+                Some(crate::model::MLX_REFERENCE_COEFFICIENTS),
+                TimestampPolicy::Native,
+                DecoderMode::Reference,
+            );
+            let reference = reference.join().map_err(|_| InferenceError::Context)?;
+            // Preserve the previous ordering when both independent loads fail.
+            let reference = reference?;
+            Ok::<_, InferenceError>((engine?, reference))
         })?;
-        let mut engine = Self::load_profile(
-            path,
-            crate::model::MLX_REFERENCE,
-            dtype,
-            None,
-            Some(crate::model::MLX_REFERENCE_COEFFICIENTS),
-            TimestampPolicy::Native,
-        )?;
         engine.multiwindow_reference = Some(reference);
-        engine.reference_encoder = true;
         #[cfg(feature = "measurement")]
         if std::env::var_os("EVERLAST_MLX_SEGMENT_DIAGNOSTICS").is_some_and(|flag| flag == "1") {
             let actual = match engine.model.dtype() {
@@ -394,6 +403,7 @@ impl MlxEngine {
         best_of: Option<usize>,
         payload: Option<ModelDefinition>,
         timestamps: TimestampPolicy,
+        decoder: DecoderMode,
     ) -> Result<Self, InferenceError> {
         if !definition.is_mlx() || path.file_name() != Some(definition.file_name().as_ref()) {
             return Err(InferenceError::Context);
@@ -446,9 +456,15 @@ impl MlxEngine {
         let model = load_stage("mlx-whisper-model", || {
             WhisperModel::load(directory, dimensions, dtype).map_err(|_| InferenceError::Context)
         })?;
-        let tokenizer = load_stage("tokenizer", || {
-            Tokenizer::from_path(directory, None).map_err(|_| InferenceError::Context)
-        })?;
+        let tokenizer = if decoder == DecoderMode::Mlx {
+            Some(load_stage("tokenizer", || {
+                Tokenizer::from_path(directory, None).map_err(|_| InferenceError::Context)
+            })?)
+        } else {
+            // The reference decoder owns its vocabulary. The files above are
+            // still integrity checked; a second parsed tokenizer is unused.
+            None
+        };
         whisper_rs::install_logging_hooks();
         let gate = load_stage("mlx-speech-gate", || {
             SpeechGate::load(&directory.join(crate::model::VAD.file_name()))
@@ -460,7 +476,7 @@ impl MlxEngine {
             best_of,
             timestamps,
             multiwindow_reference: None,
-            reference_encoder: false,
+            reference_encoder: decoder == DecoderMode::Reference,
             cache_budget: None,
         })
     }
@@ -545,7 +561,7 @@ impl MlxEngine {
             }
             let content_frames = mel.shape()[0].saturating_sub(N_FRAMES);
             let tokenizer = HFTokenizerWrapper::new(
-                tokenizer,
+                tokenizer.as_ref().ok_or(InferenceError::Context)?,
                 model.dims().is_multilingual(),
                 model.dims().num_languages(),
                 Some(language.code()),
