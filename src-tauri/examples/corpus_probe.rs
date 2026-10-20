@@ -10,11 +10,14 @@ mod context_parameters;
 mod flash_parameters;
 #[path = "corpus_probe/input.rs"]
 mod input;
+#[path = "corpus_probe/mlx_profile.rs"]
+mod mlx_profile;
 use everlast_dictation::{
     inference_service::{InferenceService, Job, WorkToken},
     model::{ModelDefinition, REFERENCE, SMALL, VAD},
     transcription::Language,
 };
+use mlx_profile::MlxProfile;
 use serde::Serialize;
 use std::{
     path::{Path, PathBuf},
@@ -48,6 +51,7 @@ struct Cli {
     manifest: PathBuf,
     output: PathBuf,
     native_timestamps: bool,
+    mlx_profile: MlxProfile,
     context_reduced: Option<bool>,
     flash_attention: Option<bool>,
     flash_parameters: Option<PathBuf>,
@@ -56,7 +60,7 @@ struct Cli {
 
 fn parse_arguments(arguments: Vec<std::ffi::OsString>) -> Result<Cli, Error> {
     if !(4..=6).contains(&arguments.len()) {
-        return Err("usage: corpus_probe MODEL reference|small MANIFEST OUTPUT [--native-timestamps | --context-reference PARAMETERS | --context-candidate PARAMETERS | --flash-reference PARAMETERS | --flash-candidate PARAMETERS]".into());
+        return Err("usage: corpus_probe MODEL reference|small|mlx-fp16 MANIFEST OUTPUT [--mlx-beam-five-window-reference | --mlx-q5-coefficients-single-window-reference | --mlx-single-window-reference-best-of-five | --mlx-single-window-reference | --mlx-single-window-text | --mlx-text-only | --mlx-q5-coefficients-f32 | --mlx-best-of-five | --mlx-f32 | --native-timestamps | --context-reference PARAMETERS | --context-candidate PARAMETERS | --flash-reference PARAMETERS | --flash-candidate PARAMETERS]".into());
     }
     if arguments
         .iter()
@@ -68,12 +72,19 @@ fn parse_arguments(arguments: Vec<std::ffi::OsString>) -> Result<Cli, Error> {
         return Err("invalid bounded CLI arguments or misplaced flag".into());
     }
     let mut native_timestamps = false;
+    let mlx_profile = arguments
+        .get(4)
+        .and_then(|flag| flag.to_str())
+        .and_then(MlxProfile::parse_flag)
+        .unwrap_or(MlxProfile::NativeTimestamps);
     let mut context_reduced = None;
     let mut flash_attention = None;
     let mut flash_parameters = None;
     let mut context_parameters = None;
     if let Some(flag) = arguments.get(4) {
         match flag.to_str() {
+            #[cfg(all(feature = "mlx", feature = "measurement"))]
+            Some(flag) if arguments.len() == 5 && MlxProfile::parse_flag(flag).is_some() => {}
             Some("--native-timestamps") if arguments.len() == 5 => native_timestamps = true,
             Some("--context-reference" | "--context-candidate")
                 if arguments.len() == 6 && !arguments[5].as_encoded_bytes().starts_with(b"--") =>
@@ -96,14 +107,29 @@ fn parse_arguments(arguments: Vec<std::ffi::OsString>) -> Result<Cli, Error> {
     let definition = match arguments[1].to_str() {
         Some("reference") => REFERENCE,
         Some("small") => SMALL,
-        _ => return Err("model selection must be reference or small".into()),
+        #[cfg(feature = "mlx")]
+        Some("mlx-fp16") => everlast_dictation::model::MLX_REFERENCE,
+        _ => {
+            return Err(
+                "model selection must be reference, small or feature-enabled mlx-fp16".into(),
+            );
+        }
     };
+    if definition.is_mlx()
+        && (native_timestamps || context_reduced.is_some() || flash_attention.is_some())
+    {
+        return Err("MLX cannot use whisper.cpp experiment options".into());
+    }
+    if mlx_profile != MlxProfile::NativeTimestamps && !definition.is_mlx() {
+        return Err("MLX compute experiments require the pinned MLX model".into());
+    }
     Ok(Cli {
         model: PathBuf::from(&arguments[0]),
         definition,
         manifest: PathBuf::from(&arguments[2]),
         output: PathBuf::from(&arguments[3]),
         native_timestamps,
+        mlx_profile,
         context_reduced,
         context_parameters,
         flash_attention,
@@ -143,6 +169,7 @@ fn main() -> Result<(), Error> {
     let context_document = context_document(&cli)?;
     let flash_document = flash_document(&cli)?;
     let definition = cli.definition;
+    let model_metadata = selected_model_metadata(&cli);
     let bytes = input::bounded_read(&cli.manifest, input::MAX_MANIFEST)?;
     let corpus_hash = input::digest(&bytes);
     let manifest = input::parse_manifest(&bytes)?;
@@ -163,10 +190,20 @@ fn main() -> Result<(), Error> {
             context_receipts = receipts;
             return Ok(worker);
         }
-        load_service(cli.model, definition, cli.native_timestamps)
+        load_service(
+            cli.model,
+            definition,
+            cli.native_timestamps,
+            cli.mlx_profile,
+        )
     })();
     #[cfg(not(feature = "measurement"))]
-    let loaded = load_service(cli.model, definition, cli.native_timestamps);
+    let loaded = load_service(
+        cli.model,
+        definition,
+        cli.native_timestamps,
+        cli.mlx_profile,
+    );
     let mut unavailable = match loaded {
         Ok(worker) => {
             let result = wait_ready(&worker);
@@ -290,10 +327,43 @@ fn main() -> Result<(), Error> {
             "energyFrameSamples":320, "prerollMillis":150, "tailMillis":200, "minimumBackendSamples":16000, "noContext":true, "translate":false, "detectLanguage":false,
             "noTimestamps":false, "printSpecial":false, "printProgress":false, "printRealtime":false, "printTimestamps":false,
             "speechGate":gate_metadata });
+    let engine = if cli.mlx_profile == MlxProfile::ReferenceEncoder {
+        let mut value = engine;
+        value["backend"] = serde_json::json!(
+            "mlxrs reference coefficient encoder + whisper.cpp reference decoder"
+        );
+        value["encoderDtype"] = serde_json::json!(cli.mlx_profile.dtype());
+        value["encoderCheckpointDtype"] = serde_json::json!("fp32");
+        value["encoderFeatureDtype"] = serde_json::json!("fp32");
+        value["decoderModelSha256"] =
+            serde_json::json!(everlast_dictation::model::REFERENCE.sha256());
+        value["timestampPolicy"] = cli.mlx_profile.timestamp_policy();
+        value["profile"] = serde_json::json!(cli.mlx_profile);
+        value["modelOwner"] = serde_json::json!("one serial inference worker for both backends");
+        value["completeGpuSynchronizationBeforeResult"] = serde_json::json!(true);
+        value["externalEncoderWindowsPerJob"] =
+            serde_json::json!("one first seek at 0 for prepared <=480000, subsequent seeks native");
+        value["warmAsrModels"] = serde_json::json!(2);
+        value["fallbackDifference"] = serde_json::Value::Null;
+        value
+    } else if definition.is_mlx() {
+        serde_json::json!({"backend":"mlxrs-0.2.0","dtype":cli.mlx_profile.dtype(),"audioContext":1500,"melWindow":"periodic Hann400; hop160; reflect center",
+            "beamSize":null,"samplingStrategy":if cli.mlx_profile.ranked() {"best-of-five sampling with fallback"}else{"greedy with temperature fallback"},
+            "bestOf":if cli.mlx_profile.ranked() {Some(5)}else{None},
+            "temperatures":if cli.mlx_profile.ranked() {vec![0.2,0.4,0.6,0.8,1.0]}else{vec![0.0,0.2,0.4,0.6,0.8,1.0]},
+            "compressionRatioThreshold":2.4,"logprobThreshold":-1.0,"noSpeechThreshold":0.6,
+            "conditionOnPreviousText":false,"optionalNonSpeechSuppression":false,"languageTokenSuppression":"all checkpoint languages; matches whisper.cpp",
+            "timestampPolicy":cli.mlx_profile.timestamp_policy(),"profile":cli.mlx_profile,"wordTimestamps":false,"translate":false,"detectLanguage":false,
+            "modelOwner":"serial-inference-worker","freshDecoderCachePerJob":true,
+            "completeGpuSynchronizationBeforeResult":true,"speechGate":gate_metadata,
+            "fallbackDifference":"zlib text compression ratio is not whisper.cpp token entropy"})
+    } else {
+        engine
+    };
     let metadata = serde_json::json!({
         "schemaVersion": 1, "processId":std::process::id(), "referenceKind": "file-backend-only", "corpusFileSha256": corpus_hash,
         "sourceRevision": std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
-        "model": { "id": definition.id(), "sha256": definition.sha256() },
+        "model": model_metadata,
         "loadMillis": load_millis, "loadError": load_error, "serviceError": unavailable, "cleanupMillis": cleanup_millis, "cleanupError": cleanup_error,
         "observationTimeoutMillis": WAIT_LIMIT.as_millis(), "timeoutIsHardAbort": false,
         "nativeTimestampDiagnostic": {
@@ -434,11 +504,28 @@ impl everlast_dictation::inference_service::Decoder for NativeTimestampDecoder {
     }
 }
 
+fn selected_model_metadata(cli: &Cli) -> serde_json::Value {
+    #[cfg(all(feature = "mlx", feature = "measurement"))]
+    if cli.mlx_profile.coefficient_control() {
+        return everlast_dictation::transcription::mlx::MlxEngine::coefficient_control_metadata();
+    }
+    serde_json::json!({"id":cli.definition.id(),"sha256":cli.definition.sha256()})
+}
+
 fn load_service(
     model: PathBuf,
     definition: ModelDefinition,
     native_timestamps: bool,
+    profile: MlxProfile,
 ) -> Result<InferenceService, Error> {
+    if profile != MlxProfile::NativeTimestamps {
+        #[cfg(all(feature = "mlx", feature = "measurement"))]
+        return Ok(InferenceService::with_initializer(move || {
+            mlx_profile::load(&model, definition, profile)
+        })?);
+        #[cfg(not(all(feature = "mlx", feature = "measurement")))]
+        return Err("native experiment requires MLX and measurement features".into());
+    }
     if native_timestamps {
         #[cfg(feature = "measurement")]
         {
@@ -602,6 +689,143 @@ mod tests {
             assert_eq!(cli.flash_parameters, Some(PathBuf::from("flash.json")));
             assert!(parse_arguments(cli_args(&[mode])).is_err());
             assert!(parse_arguments(cli_args(&[mode, "--context-candidate"])).is_err());
+        }
+        Ok(())
+    }
+
+    #[cfg(all(feature = "mlx", feature = "measurement"))]
+    #[test]
+    fn reference_coefficient_window_control_reports_its_real_local_payload() -> Result<(), Error> {
+        let mut args = cli_args(&["--mlx-q5-coefficients-single-window-reference"]);
+        args[1] = "mlx-fp16".into();
+        let cli = parse_arguments(args)?;
+        let metadata = selected_model_metadata(&cli);
+        assert_eq!(
+            metadata["sha256"],
+            "277a2661c6d85f7e620adad07f7fda78b052a5a66b2c16e9fb6ccb3ac134d042"
+        );
+        assert_eq!(cli.mlx_profile.dtype(), "fp32");
+        assert_eq!(
+            cli.mlx_profile.timestamp_policy()["multiwindowReference"]["sha256"],
+            REFERENCE.sha256()
+        );
+        Ok(())
+    }
+
+    #[cfg(all(feature = "mlx", feature = "measurement"))]
+    #[test]
+    fn ranked_single_window_search_requires_an_explicit_profile() -> Result<(), Error> {
+        let mut args = cli_args(&["--mlx-single-window-reference-best-of-five"]);
+        assert!(parse_arguments(args.clone()).is_err());
+        args[1] = "mlx-fp16".into();
+        assert!(
+            parse_arguments(args).is_ok(),
+            "ranked window search must be explicit"
+        );
+        Ok(())
+    }
+
+    #[cfg(all(feature = "mlx", feature = "measurement"))]
+    #[test]
+    fn reference_guard_is_explicit_and_discloses_both_asr_models() -> Result<(), Error> {
+        let mut args = cli_args(&["--mlx-single-window-reference"]);
+        assert!(parse_arguments(args.clone()).is_err());
+        args[1] = "mlx-fp16".into();
+        let cli = parse_arguments(args)?;
+        let policy = cli.mlx_profile.timestamp_policy();
+        assert_eq!(policy["singleWindowMaxPreparedSamples"], 480000);
+        assert_eq!(policy["multiwindowReference"]["sha256"], REFERENCE.sha256());
+        assert_eq!(policy["multiwindowReference"]["bytes"], REFERENCE.bytes());
+        assert_eq!(policy["bothAsrModelsResident"], true);
+        Ok(())
+    }
+
+    #[cfg(all(feature = "mlx", feature = "measurement"))]
+    #[test]
+    fn single_window_text_profile_is_explicit_and_never_changes_the_reference() -> Result<(), Error>
+    {
+        let mut args = cli_args(&["--mlx-single-window-text"]);
+        assert!(parse_arguments(args.clone()).is_err());
+        args[1] = "mlx-fp16".into();
+        assert!(
+            parse_arguments(args).is_ok(),
+            "single-window text policy must be explicitly selectable"
+        );
+        Ok(())
+    }
+
+    #[cfg(all(feature = "mlx", feature = "measurement"))]
+    #[test]
+    fn text_only_decoding_is_an_explicit_mlx_only_performance_profile() -> Result<(), Error> {
+        let mut args = cli_args(&["--mlx-text-only"]);
+        assert!(parse_arguments(args.clone()).is_err());
+        args[1] = "mlx-fp16".into();
+        assert!(
+            parse_arguments(args).is_ok(),
+            "text-only native profile must be explicitly selectable"
+        );
+        Ok(())
+    }
+
+    #[cfg(all(feature = "mlx", feature = "measurement"))]
+    #[test]
+    fn exact_reference_coefficients_are_an_explicit_mlx_only_control() -> Result<(), Error> {
+        let mut args = cli_args(&["--mlx-q5-coefficients-f32"]);
+        assert!(parse_arguments(args.clone()).is_err());
+        args[1] = "mlx-fp16".into();
+        assert!(
+            parse_arguments(args).is_ok(),
+            "derived coefficient control must be explicit"
+        );
+        let metadata =
+            everlast_dictation::transcription::mlx::MlxEngine::coefficient_control_metadata();
+        assert_eq!(
+            metadata["sha256"],
+            "277a2661c6d85f7e620adad07f7fda78b052a5a66b2c16e9fb6ccb3ac134d042"
+        );
+        assert_eq!(metadata["derivedFrom"]["sha256"], REFERENCE.sha256());
+        assert!(metadata["downloadUrl"].is_null());
+        Ok(())
+    }
+
+    #[cfg(all(feature = "mlx", feature = "measurement"))]
+    #[test]
+    fn best_of_five_sampling_is_explicit_and_never_changes_the_reference_arm() -> Result<(), Error>
+    {
+        let mut args = cli_args(&["--mlx-best-of-five"]);
+        assert!(parse_arguments(args.clone()).is_err());
+        args[1] = "mlx-fp16".into();
+        assert_eq!(parse_arguments(args)?.mlx_profile, MlxProfile::BestOfFive);
+        Ok(())
+    }
+
+    #[cfg(all(feature = "mlx", feature = "measurement"))]
+    #[test]
+    fn f32_compute_is_an_explicit_mlx_only_quality_experiment() -> Result<(), Error> {
+        let mut args = cli_args(&["--mlx-f32"]);
+        assert!(parse_arguments(args.clone()).is_err());
+        args[1] = "mlx-fp16".into();
+        assert_eq!(parse_arguments(args)?.mlx_profile, MlxProfile::Float32);
+        Ok(())
+    }
+
+    #[cfg(feature = "mlx")]
+    #[test]
+    fn mlx_selection_is_explicit_and_rejects_cpp_only_experiments() -> Result<(), Error> {
+        let mut arguments = cli_args(&[]);
+        arguments[1] = "mlx-fp16".into();
+        assert_eq!(
+            parse_arguments(arguments)?.definition.id(),
+            everlast_dictation::model::MLX_REFERENCE.id()
+        );
+        for flags in [
+            vec!["--native-timestamps"],
+            vec!["--context-candidate", "freeze.json"],
+            vec!["--flash-reference", "freeze.json"],
+        ] {
+            let mut arguments = cli_args(&flags);
+            arguments[1] = "mlx-fp16".into();
+            assert!(parse_arguments(arguments).is_err());
         }
         Ok(())
     }

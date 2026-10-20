@@ -165,7 +165,7 @@ impl SetupService {
                     phase: Phase::Missing,
                     model: definition,
                     received: 0,
-                    total: definition.bytes() + model::VAD.bytes(),
+                    total: definition.installation_bytes(),
                     failure: None,
                 },
                 cancel: None,
@@ -324,7 +324,7 @@ fn run(
     let result = (|| {
         let mut completed = 0;
         let mut asr_path = None;
-        for asset in [definition, model::VAD] {
+        for asset in definition.installation_assets() {
             let cached = match backend.inspect(directory, asset, cancel) {
                 Ok(path) => path,
                 Err(ModelError::Hash | ModelError::Size) if download => None,
@@ -372,7 +372,7 @@ fn run(
                 let phase = shared.snapshot.phase;
                 shared.update(phase, completed, None);
             }
-            if asr_path.is_none() {
+            if asset.id() == definition.id() {
                 asr_path = Some(path);
             }
         }
@@ -520,6 +520,72 @@ mod tests {
         setup.shutdown()?;
         Ok(())
     }
+
+    #[test]
+    fn mlx_readiness_requires_all_assets_and_counts_their_verified_bytes()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let setup = SetupService::with_backend(
+            PathBuf::from("fixture"),
+            model::MLX_REFERENCE,
+            Arc::new(Fixture),
+        );
+        assert_eq!(setup.snapshot()?.total, 1_617_856_158);
+        setup.start(true)?;
+        let snapshot = finished(&setup)?;
+        assert_eq!(snapshot.phase, Phase::Ready);
+        assert_eq!(snapshot.received, 1_617_856_158);
+        assert_eq!(snapshot.total, snapshot.received);
+        let ready = setup.take_ready()?.ok_or("warm service missing")?;
+        ready.shutdown()?;
+        setup.shutdown()?;
+        Ok(())
+    }
+    struct DerivedFixture;
+    impl Backend for DerivedFixture {
+        fn inspect(
+            &self,
+            directory: &Path,
+            definition: ModelDefinition,
+            _: &CancellationToken,
+        ) -> Result<Option<PathBuf>, ModelError> {
+            Ok(Some(directory.join(definition.file_name())))
+        }
+        fn download(
+            &self,
+            _: &Path,
+            _: ModelDefinition,
+            _: &CancellationToken,
+            _: &mut dyn FnMut(u64),
+        ) -> Result<PathBuf, ModelError> {
+            Err(ModelError::Network)
+        }
+        fn load(
+            &self,
+            path: PathBuf,
+            definition: ModelDefinition,
+        ) -> Result<InferenceService, Failure> {
+            if path.file_name() != Some(definition.file_name().as_ref()) {
+                return Err(Failure::Initialization);
+            }
+            InferenceService::with_decoder(EmptyDecoder).map_err(|_| Failure::Initialization)
+        }
+    }
+    #[test]
+    fn derived_model_readiness_loads_the_primary_after_its_source_assets()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let setup = SetupService::with_backend(
+            PathBuf::from("fixture"),
+            model::MLX_REFERENCE_COEFFICIENTS,
+            Arc::new(DerivedFixture),
+        );
+        setup.start(false)?;
+        assert_eq!(finished(&setup)?.phase, Phase::Ready);
+        let ready = setup.take_ready()?.ok_or("missing derived model worker")?;
+        ready.shutdown()?;
+        setup.shutdown()?;
+        Ok(())
+    }
+
     #[test]
     fn cache_check_never_downloads_implicitly() -> Result<(), Box<dyn std::error::Error>> {
         let setup = SetupService::with_backend(

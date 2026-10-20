@@ -31,6 +31,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let options = options::Options::parse(&arguments)?;
     let parameter_bytes = input::bounded_read(&options.parameters, 1024 * 1024)?;
     let (parameter_document, execution_mode) = parameters::select(&parameter_bytes)?;
+    execution_mode.validate_model(options.definition)?;
     let bytes = input::bounded_read(&options.wav, input::MAX_AUDIO)?;
     let wav = hound::WavReader::new(Cursor::new(&bytes))?;
     let declared = input::Audio {
@@ -63,16 +64,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
     let mut receipts = None;
-    let loaded = if execution_mode.full_prefix().is_some() {
-        everlast_dictation::inference_service::InferenceService::load_prefix_cache(
-            options.model,
-            options.definition,
-        )
-        .map(|service| (service, None))
-        .map_err(|error| Box::new(error) as Box<dyn std::error::Error>)
-    } else {
-        runner::audio_context::load(options.model, options.definition, variant)
-    };
+    let loaded = (|| {
+        #[cfg(feature = "mlx")]
+        if execution_mode == parameters::ExecutionMode::MlxReferenceEncoder {
+            return parameters::load_mlx_service(options.model, options.definition)
+                .map(|service| (service, None))
+                .map_err(|error| Box::new(error) as Box<dyn std::error::Error>);
+        }
+        if execution_mode.full_prefix().is_some() {
+            everlast_dictation::inference_service::InferenceService::load_prefix_cache(
+                options.model,
+                options.definition,
+            )
+            .map(|service| (service, None))
+            .map_err(|error| Box::new(error) as Box<dyn std::error::Error>)
+        } else {
+            runner::audio_context::load(options.model, options.definition, variant)
+        }
+    })();
     let mut unavailable = match loaded {
         Ok((service, context_receipts)) => {
             receipts = context_receipts;
@@ -294,7 +303,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "debugAssertions":cfg!(debug_assertions),
         "processId":std::process::id(),"sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
         "fixtureSha256":declared.sha256,"inputFrames":samples.len(),"sampleRate":16000,"channels":1,
-        "model":{"id":options.definition.id(),"sha256":options.definition.sha256()},
+        "backend":if options.definition.is_reference_encoder(){"mlxrs-encoder+whisper.cpp-decoder"}else{"whisper.cpp"},"model":{"id":options.definition.id(),"sha256":options.definition.sha256()},
         "language":options.language.code(),"parameterDocumentSha256":input::digest(&parameter_bytes),
         "parameters":parameter_document,"contextCleanup":context_cleanup,"pretranscriptionCandidate":execution_mode.pretranscription(),"fullPrefixCandidate":execution_mode.full_prefix(),"jobTraceAfterCleanup":job_trace_after_cleanup,"jobTraceAfterCleanupError":job_trace_after_cleanup_error,"hostObservation":host,
         "referenceSha256":reference_bytes.as_ref().map(|data| input::digest(data)),
@@ -304,7 +313,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "engineElapsedSummary":engine_summary,"engineRtfSummary":engine_rtf_summary,
         "engineTimingCoverage":{"measuredRuns":measured_rows.len(),"withActualEngineTiming":measured_rows.iter().filter(|row|row.engine_elapsed_nanos.is_some()).count()},
         "expectedOutcome":options.expected_outcome,
-        "engineRtfDefinition":if execution_mode.full_prefix().is_some(){"sum actual scoped decoder call elapsed / (unique final recorded N/16000); includes preparation/hash/hit work; processed overlapping frames separate; not native kernel time or stop-to-text"}else{"actual Decoder::decode duration / (passed 16-kHz frames / 16000); production Engine includes energy/VAD/preparation/fresh ASR state; not pure ASR or stop-to-text"},
+        "engineRtfDefinition":if execution_mode.full_prefix().is_some(){"sum actual scoped decoder call elapsed / (unique final recorded N/16000); includes preparation/hash/hit work; processed overlapping frames separate; not native kernel time or stop-to-text"}else{"actual Decoder::decode duration / (passed 16-kHz frames / 16000); selected decoder includes shared energy/VAD/preparation/fresh backend decoder state; not pure ASR or stop-to-text"},
         "cleanup":cleanup,
         "thirtyMeasuredRunsCompleted":options.runs==30&&passed,
         "L":null,"notAggregateL":true,"qualified":false,

@@ -5,6 +5,8 @@ use dictation_core::audio::{EnergyProfile, MAX_SAMPLES, speech_range};
 use std::path::Path;
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
+#[cfg(feature = "mlx")]
+pub mod mlx;
 mod phase;
 mod speech_gate;
 use phase::Phase;
@@ -360,6 +362,24 @@ fn decode_with_audio_ctx<const SUPPRESS_TIMESTAMPS: bool, O: ObservationSink>(
     observation: &mut O,
     audio_ctx: i32,
 ) -> Result<String, InferenceError> {
+    decode_with_features::<SUPPRESS_TIMESTAMPS, _>(
+        context,
+        input,
+        language,
+        observation,
+        audio_ctx,
+        None,
+    )
+}
+
+fn decode_with_features<const SUPPRESS_TIMESTAMPS: bool, O: ObservationSink>(
+    context: &WhisperContext,
+    input: &[f32],
+    language: Language,
+    observation: &mut O,
+    audio_ctx: i32,
+    features: Option<&[f32]>,
+) -> Result<String, InferenceError> {
     observation.phase_start(Phase::StateCreate);
     let state = context.create_state().map_err(|_| InferenceError::Context);
     observation.phase_end(Phase::StateCreate);
@@ -385,9 +405,16 @@ fn decode_with_audio_ctx<const SUPPRESS_TIMESTAMPS: bool, O: ObservationSink>(
         }
         observation.full_started();
         observation.phase_start(Phase::NativeFull);
-        let full = state
-            .full(parameters, input)
-            .map_err(|_| InferenceError::Decode);
+        let full = if let Some(features)=features {
+            state.full_with_encoder(parameters,input,features).map(|usage| {
+                #[cfg(feature="measurement")]
+                if std::env::var_os("EVERLAST_MLX_SEGMENT_DIAGNOSTICS").is_some_and(|flag| flag=="1") {
+                    eprintln!("{}",serde_json::json!({"kind":"mlx-reference-encoder-usage","preparedFrames":input.len(),"externalWindows":usage.external_windows,"nativeWindows":usage.native_windows}));
+                }
+                #[cfg(not(feature="measurement"))]
+                let _ = usage;
+            })
+        } else {state.full(parameters,input)}.map_err(|_|InferenceError::Decode);
         observation.phase_end(Phase::NativeFull);
         full?;
         observation.phase_start(Phase::TextJoin);

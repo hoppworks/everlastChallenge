@@ -56,15 +56,65 @@ pub fn validate(bytes: &[u8]) -> Result<Value, String> {
         .map_err(|_| "resource runtime configuration could not be encoded")?;
     baseline::validate(&runtime_bytes)?;
     let actual = template().map_err(|_| "compiled resource template is invalid")?;
-    if supplied != actual {
+    let matches = supplied == actual;
+    #[cfg(feature = "mlx")]
+    let matches = matches || supplied == mlx_template().map_err(|e| e.to_string())?;
+    if !matches {
         return Err("resource parameter document differs from this compiled workload; freeze a new document before running".into());
     }
     Ok(supplied)
 }
 
+#[cfg(feature = "mlx")]
+pub fn mlx_template() -> Result<Value, serde_json::Error> {
+    let mut value = template()?;
+    value["configurationId"] = json!("runtime-lifecycle-resource-mlx-reference-encoder-v1");
+    value["runtimeBaseline"] = baseline::mlx_template()?;
+    value["workload"]["backendInitialization"] =
+        json!("factory on permanent inference worker; wrapper forwards backend finish");
+    Ok(value)
+}
+
+pub fn select(
+    bytes: &[u8],
+    definition: everlast_dictation::model::ModelDefinition,
+) -> Result<Value, String> {
+    let value = validate(bytes)?;
+    let (_, mode) = baseline::select(
+        &serde_json::to_vec(&value["runtimeBaseline"]).map_err(|e| e.to_string())?,
+    )?;
+    mode.validate_model(definition)?;
+    Ok(value)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(feature = "mlx")]
+    #[test]
+    fn frozen_mlx_resource_workload_rejects_reference_model_or_missing_guard_asset()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use everlast_dictation::model::{MLX_REFERENCE_COEFFICIENTS, REFERENCE};
+        let document = mlx_template()?;
+        let bytes = serde_json::to_vec(&document)?;
+        assert!(select(&bytes, MLX_REFERENCE_COEFFICIENTS).is_ok());
+        assert!(select(&bytes, REFERENCE).is_err());
+        assert!(
+            select(
+                &serde_json::to_vec(&template()?)?,
+                MLX_REFERENCE_COEFFICIENTS
+            )
+            .is_err()
+        );
+        let mut changed = document;
+        changed["runtimeBaseline"]["models"]
+            .as_array_mut()
+            .ok_or("missing model list")?
+            .pop();
+        assert!(select(&serde_json::to_vec(&changed)?, MLX_REFERENCE_COEFFICIENTS).is_err());
+        Ok(())
+    }
 
     #[test]
     fn frozen_resource_workload_requires_exact_counts_sources_and_runtime_parameters()

@@ -41,3 +41,7 @@ strip = "none"
 global-hotkey = { path = "vendor/global-hotkey" }
 whisper-rs-sys = { path = "vendor/whisper-rs-sys" }
 whisper-rs = { path = "vendor/whisper-rs" }
+mlxrs = { path = "vendor/mlxrs" }
+tokenizers = { path = "vendor/tokenizers" }
+
+mlxrs-sys = { path = "vendor/mlxrs-sys" }

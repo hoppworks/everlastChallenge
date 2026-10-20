@@ -45,7 +45,7 @@ pub fn workspace(snapshot: &Snapshot) -> WorkspaceState {
             )
             .replace('.', ",");
             native_message(&format!(
-                "{} · {megabytes} MB\nEinmaliger Download von {source}; danach lokal und offline.",
+                "{} · {megabytes} MB\nEinmalige Einrichtung mit Dateien von {source}; danach lokal und offline.",
                 snapshot.setup.model.name
             ))
         }),
@@ -462,9 +462,13 @@ mod tests {
             let view = workspace(&snapshot);
             let info = view.setup_info.as_deref();
             assert!(info.is_some_and(|text| text.contains("large-v3-turbo-q5_0 · 574,0 MB")));
-            assert!(info.is_some_and(|text| text.contains("Download von Hugging Face")));
+            assert!(
+                info.is_some_and(|text| text.contains("Einrichtung mit Dateien von Hugging Face"))
+            );
             assert!(info.is_some_and(|text| {
-                text.contains("Einmaliger Download von Hugging Face; danach lokal und offline.")
+                text.contains(
+                    "Einmalige Einrichtung mit Dateien von Hugging Face; danach lokal und offline.",
+                )
             }));
         }
         snapshot.setup.phase = SetupPhase::Ready;

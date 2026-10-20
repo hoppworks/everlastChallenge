@@ -485,7 +485,7 @@ impl<O: HasWindowHandle + 'static> NativeWorkspace<O> {
         let progress = NSProgressIndicator::new(main);
         progress.setMinValue(0.0);
         progress.setMaxValue(1.0);
-        progress.setAccessibilityLabel(Some(&NSString::from_str("Modelldownload")));
+        progress.setAccessibilityLabel(Some(&NSString::from_str("Modelleinrichtung")));
         let scroll = NSScrollView::new(main);
         scroll.setBorderType(NSBorderType::BezelBorder);
         scroll.setBackgroundColor(&NSColor::textBackgroundColor());

@@ -1448,7 +1448,7 @@ mod tests {
         fn new() -> Result<Self, Box<dyn std::error::Error>> {
             Self::with_decoder(FixtureDecoder)
         }
-        fn with_decoder(decoder: impl Decoder) -> Result<Self, Box<dyn std::error::Error>> {
+        fn with_decoder(decoder: impl Decoder + Send) -> Result<Self, Box<dyn std::error::Error>> {
             let (audio, events) = bounded(3);
             let (started, starts) = bounded(4);
             let (stopped, stops) = bounded(4);
