@@ -533,6 +533,30 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn streamed_hash_matches_million_a_vector_and_rejects_same_size_corruption()
+    -> Result<(), Box<dyn std::error::Error>> {
+        // Standard SHA-256 million-'a' vector crosses all streaming buffer boundaries.
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("million-a.bin");
+        let definition = ModelDefinition {
+            id: "million-a",
+            file: "million-a.bin",
+            bytes: 1_000_000,
+            sha256: "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0",
+        };
+        let mut bytes = vec![b'a'; 1_000_000];
+        std::fs::write(&path, &bytes)?;
+        verify_file(&path, definition)?;
+        bytes[65_536] = b'b';
+        std::fs::write(&path, &bytes)?;
+        assert!(matches!(
+            verify_file(&path, definition),
+            Err(ModelError::Hash)
+        ));
+        Ok(())
+    }
+
+    #[test]
     fn cancelled_hash_verification_does_not_open_the_file() -> Result<(), Box<dyn std::error::Error>>
     {
         let directory = tempfile::tempdir()?;

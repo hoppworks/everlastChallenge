@@ -40,6 +40,29 @@ impl TimestampPolicy {
 
 mod complete_decode;
 
+// Explicit developer instrumentation; ordinary builds never read this flag.
+fn load_stage<T>(
+    name: &str,
+    load: impl FnOnce() -> Result<T, InferenceError>,
+) -> Result<T, InferenceError> {
+    #[cfg(feature = "measurement")]
+    let started = (std::env::var_os("EVERLAST_MLX_LOAD_DIAGNOSTICS").as_deref()
+        == Some(std::ffi::OsStr::new("1")))
+    .then(std::time::Instant::now);
+    let result = load();
+    #[cfg(feature = "measurement")]
+    if let Some(started) = started {
+        eprintln!(
+            "{}",
+            serde_json::json!({"kind":"mlx-load-stage", "stage":name,
+            "elapsedMicros":started.elapsed().as_micros(), "ok":result.is_ok()})
+        );
+    }
+    #[cfg(not(feature = "measurement"))]
+    let _ = name;
+    result
+}
+
 pub struct MlxEngine {
     model: WhisperModel,
     tokenizer: Tokenizer,
@@ -172,10 +195,12 @@ impl MlxEngine {
         best_of: Option<usize>,
     ) -> Result<Self, InferenceError> {
         let directory = path.parent().ok_or(InferenceError::ModelPath)?;
-        let reference = super::Engine::load(
-            &directory.join(crate::model::REFERENCE.file_name()),
-            crate::model::REFERENCE,
-        )?;
+        let reference = load_stage("reference-decoder-and-gate", || {
+            super::Engine::load(
+                &directory.join(crate::model::REFERENCE.file_name()),
+                crate::model::REFERENCE,
+            )
+        })?;
         let mut engine = Self::load_profile(
             path,
             definition,
@@ -257,13 +282,15 @@ impl MlxEngine {
         path: &Path,
         dtype: Dtype,
     ) -> Result<Self, InferenceError> {
-        let reference = super::Engine::load(
-            &path
-                .parent()
-                .ok_or(InferenceError::ModelPath)?
-                .join(crate::model::REFERENCE.file_name()),
-            crate::model::REFERENCE,
-        )?;
+        let reference = load_stage("reference-decoder-and-gate", || {
+            super::Engine::load(
+                &path
+                    .parent()
+                    .ok_or(InferenceError::ModelPath)?
+                    .join(crate::model::REFERENCE.file_name()),
+                crate::model::REFERENCE,
+            )
+        })?;
         let mut engine = Self::load_profile(
             path,
             crate::model::MLX_REFERENCE,
@@ -378,7 +405,9 @@ impl MlxEngine {
             } else {
                 asset
             };
-            verify_file(&directory.join(checked.file_name()), checked)?;
+            load_stage(&format!("verify:{}", checked.file_name()), || {
+                verify_file(&directory.join(checked.file_name()), checked).map_err(Into::into)
+            })?;
         }
         // The upstream loader merges every safetensors file and auto-detects
         // CoreML directories. Only the pinned MLX payload is admitted here.
@@ -414,12 +443,16 @@ impl MlxEngine {
         if !dimensions.is_multilingual() || dimensions.n_audio_ctx() != 1500 {
             return Err(InferenceError::Context);
         }
-        let model = WhisperModel::load(directory, dimensions, dtype)
-            .map_err(|_| InferenceError::Context)?;
-        let tokenizer =
-            Tokenizer::from_path(directory, None).map_err(|_| InferenceError::Context)?;
+        let model = load_stage("mlx-whisper-model", || {
+            WhisperModel::load(directory, dimensions, dtype).map_err(|_| InferenceError::Context)
+        })?;
+        let tokenizer = load_stage("tokenizer", || {
+            Tokenizer::from_path(directory, None).map_err(|_| InferenceError::Context)
+        })?;
         whisper_rs::install_logging_hooks();
-        let gate = SpeechGate::load(&directory.join(crate::model::VAD.file_name()))?;
+        let gate = load_stage("mlx-speech-gate", || {
+            SpeechGate::load(&directory.join(crate::model::VAD.file_name()))
+        })?;
         Ok(Self {
             model,
             tokenizer,

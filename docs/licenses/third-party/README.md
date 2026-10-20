@@ -1,5 +1,9 @@
 # Drittbestandteile: vorbereitete Lizenztexte
 
+Aktueller Zusatz für beschleunigte, weiterhin vollständige Modell-Hashes:
+[`sha2-asm` 0.6.4, MIT](sha256-acceleration.json), einschließlich unverändertem
+Original-Lizenztext. Die folgenden Inventarangaben bleiben ihre historische Basis.
+
 Historische Inventarbasis **b34914c7aa88402208850fa589f5c2ee17f07705**, Ziel Apple Silicon/macOS.
 Addendum: separat belegter Build-injizierter Laufzeithelfer, siehe `materialRevision` im Inventar.
 **Vorbereitet; finale Linkclosure und Release-Bundle noch nicht geprüft.**
