@@ -118,7 +118,12 @@ fn main() {
 
     // Keep the bounded local native extension in sync with its compiled tree.
     // The upstream build copies the tree only once per OUT_DIR.
-    for relative in ["src/whisper.cpp", "include/whisper.h"] {
+    for relative in [
+        "src/whisper.cpp",
+        "include/whisper.h",
+        "ggml/src/ggml-metal/ggml-metal-device.m",
+        "ggml/src/ggml-metal/CMakeLists.txt",
+    ] {
         let source = PathBuf::from("whisper.cpp").join(relative);
         println!("cargo:rerun-if-changed={}", source.display());
         std::fs::copy(&source, whisper_root.join(relative)).expect("sync local encoder bridge source");
