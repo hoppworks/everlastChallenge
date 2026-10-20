@@ -1,0 +1,5569 @@
+{
+  "schemaVersion": 1,
+  "readUtc": "2026-10-20T08:06:50.144249+00:00",
+  "kind": "independent integrated-runtime RAM phase comparison",
+  "allExecutionAndMemoryChecksPassed": true,
+  "ramEvidenceSufficient": true,
+  "allChecksPassed": false,
+  "qualified": false,
+  "fullSpeedQualified": false,
+  "fullQualityQualified": false,
+  "fullProductQualified": false,
+  "findings": [
+    {
+      "id": "stale-diagnostic-limit",
+      "severity": "P2 documentation",
+      "location": "cache-runtime-ram-v1/result.json: limits",
+      "text": "no cache clearing or allocator limit change; optional warm peak accounting reset has explicit before/after observations",
+      "evidence": true,
+      "effect": "Historical text contradicts real256MiB install and finish cache clear. Keep raw data; correct future frozen source only."
+    }
+  ],
+  "checkedAssertions": 198,
+  "profiles": {
+    "reference-encoder-f16-ram-profile-v3": {
+      "resultSha256": "b158a27eb29522db6159440d1c76e93e226ade3493f163c454f2e32f9b314b5c",
+      "runFreezeSha256": "cb7259e0219e38e2b079c5decb80f8ce0a250bcbb7054da78168e664996f8baa",
+      "completionSha256": "cd9708371f250ff7eb53337161bfa3955545175f47df646f9eafbe0a12fd49ee",
+      "protectedWitnessCount": 3542,
+      "sourceRecordCount": 3521,
+      "fixture": {
+        "sha256": "67718418a15f877ec263f7c864e6b72fd41365afebeb78e915a4c97066bb6670",
+        "frames": 80000,
+        "sampleRate": 16000,
+        "channels": 1
+      },
+      "referenceSha256": "d36dec2ebe1f1082ce1e143a85ab83793d413ddc8ff1e96aac1c635278050fbf",
+      "referenceText": "Orlando Mendoza schoss mit seinem M16-Gewehr auf die Touristen.",
+      "workload": {
+        "behaviorPassed": true,
+        "setupTimingPassed": true,
+        "firstError": null,
+        "rows": [
+          {
+            "id": "warmup-001",
+            "warmup": true,
+            "operation": "StopComplete",
+            "session": 1,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6768247,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 23416
+          },
+          {
+            "id": "warmup-002",
+            "warmup": true,
+            "operation": "StopComplete",
+            "session": 2,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6747208,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 25583
+          },
+          {
+            "id": "warmup-003",
+            "warmup": true,
+            "operation": "StopComplete",
+            "session": 3,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6771319,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 21291
+          },
+          {
+            "id": "measured-001",
+            "warmup": false,
+            "operation": "StopComplete",
+            "session": 4,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 8100619,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 26833
+          },
+          {
+            "id": "measured-002",
+            "warmup": false,
+            "operation": "CancelCapture",
+            "session": 5,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 31477,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 0,
+            "decoderCompleted": 0,
+            "decoderCompared": 0,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 320,
+            "publicationCount": 1,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 7000
+          },
+          {
+            "id": "measured-003",
+            "warmup": false,
+            "operation": "CancelDecoderEntry",
+            "session": 6,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6707578,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 28417
+          },
+          {
+            "id": "measured-004",
+            "warmup": false,
+            "operation": "StopComplete",
+            "session": 7,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6687532,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 28500
+          },
+          {
+            "id": "measured-005",
+            "warmup": false,
+            "operation": "CancelCapture",
+            "session": 8,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 32563,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 0,
+            "decoderCompleted": 0,
+            "decoderCompared": 0,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 320,
+            "publicationCount": 1,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 4334
+          },
+          {
+            "id": "measured-006",
+            "warmup": false,
+            "operation": "CancelDecoderEntry",
+            "session": 9,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6712375,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 26583
+          },
+          {
+            "id": "measured-007",
+            "warmup": false,
+            "operation": "StopComplete",
+            "session": 10,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6738139,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 17917
+          },
+          {
+            "id": "measured-008",
+            "warmup": false,
+            "operation": "CancelCapture",
+            "session": 11,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 31484,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 0,
+            "decoderCompleted": 0,
+            "decoderCompared": 0,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 320,
+            "publicationCount": 1,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 11416
+          },
+          {
+            "id": "measured-009",
+            "warmup": false,
+            "operation": "CancelDecoderEntry",
+            "session": 12,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6712083,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 31083
+          },
+          {
+            "id": "measured-010",
+            "warmup": false,
+            "operation": "StopComplete",
+            "session": 13,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6707165,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 23084
+          },
+          {
+            "id": "measured-011",
+            "warmup": false,
+            "operation": "CancelCapture",
+            "session": 14,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 32736,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 0,
+            "decoderCompleted": 0,
+            "decoderCompared": 0,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 320,
+            "publicationCount": 1,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 5333
+          },
+          {
+            "id": "measured-012",
+            "warmup": false,
+            "operation": "CancelDecoderEntry",
+            "session": 15,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6701209,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 64416
+          },
+          {
+            "id": "measured-013",
+            "warmup": false,
+            "operation": "StopComplete",
+            "session": 16,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6710558,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": false,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 22667
+          }
+        ],
+        "decoderCallsStarted": 12,
+        "decoderCallsCompleted": 12
+      },
+      "decoderDiagnostics": {
+        "started": 12,
+        "completed": 12,
+        "compared": 12,
+        "mismatches": 0,
+        "active": false,
+        "armed": false,
+        "lastError": null
+      },
+      "observations": [
+        {
+          "index": 0,
+          "key": "before-load",
+          "phase": "before-load",
+          "details": null,
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 546892,
+          "activeBytes": 0,
+          "cacheBytes": 0,
+          "peakActiveBytes": 0,
+          "rssBytes": 20922368,
+          "physicalFootprintRounded": "8417K",
+          "physicalPeakRounded": "8417K"
+        },
+        {
+          "index": 1,
+          "key": "after-load",
+          "phase": "after-load",
+          "details": {
+            "loadMicrosExcludingOsSamples": 6908782,
+            "observedEncoderDtype": "fp16",
+            "compiledEncoderPrecision": "fp16"
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 8033615,
+          "activeBytes": 8,
+          "cacheBytes": 0,
+          "peakActiveBytes": 8,
+          "rssBytes": 740261888,
+          "physicalFootprintRounded": "682.1M",
+          "physicalPeakRounded": "682.1M"
+        },
+        {
+          "index": 2,
+          "key": "ready",
+          "phase": "ready",
+          "details": null,
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 8629485,
+          "activeBytes": 8,
+          "cacheBytes": 0,
+          "peakActiveBytes": 8,
+          "rssBytes": 740294656,
+          "physicalFootprintRounded": "682.1M",
+          "physicalPeakRounded": "682.1M"
+        },
+        {
+          "index": 3,
+          "key": "before-decode:1",
+          "phase": "before-decode",
+          "details": {
+            "call": 1,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 14244035,
+          "activeBytes": 8,
+          "cacheBytes": 0,
+          "peakActiveBytes": 8,
+          "rssBytes": 740769792,
+          "physicalFootprintRounded": "682.6M",
+          "physicalPeakRounded": "682.6M"
+        },
+        {
+          "index": 4,
+          "key": "after-decode:1",
+          "phase": "after-decode",
+          "details": {
+            "call": 1,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 15386787,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1129800892,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 1403158528,
+          "physicalFootprintRounded": "3.0G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 5,
+          "key": "before-decode:2",
+          "phase": "before-decode",
+          "details": {
+            "call": 2,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 21131678,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1129800892,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 1403158528,
+          "physicalFootprintRounded": "2.9G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 6,
+          "key": "after-decode:2",
+          "phase": "after-decode",
+          "details": {
+            "call": 2,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 22141622,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 1410433024,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 7,
+          "key": "before-decode:3",
+          "phase": "before-decode",
+          "details": {
+            "call": 3,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 27874126,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 1410433024,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 8,
+          "key": "after-decode:3",
+          "phase": "after-decode",
+          "details": {
+            "call": 3,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 28905244,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 1413890048,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 9,
+          "key": "checkpoint:warmup-003",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "warmup-003",
+            "status": "ok",
+            "includeVmmap": true,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 29605476,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 1413890048,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 10,
+          "key": "before-warm-peak-reset",
+          "phase": "before-warm-peak-reset",
+          "details": null,
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 35352395,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 1413906432,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 11,
+          "key": "after-warm-peak-reset",
+          "phase": "after-warm-peak-reset",
+          "details": {
+            "resetSucceeded": true,
+            "purpose": "warm-workspace accounting only"
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 36040939,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 0,
+          "rssBytes": 1413939200,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 12,
+          "key": "before-decode:4",
+          "phase": "before-decode",
+          "details": {
+            "call": 4,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 36728790,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 0,
+          "rssBytes": 1413939200,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 13,
+          "key": "after-decode:4",
+          "phase": "after-decode",
+          "details": {
+            "call": 4,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 37702764,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1416871936,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 14,
+          "key": "checkpoint:measured-001",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-001",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 38399825,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1416871936,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 15,
+          "key": "checkpoint:measured-002",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-002",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 39126782,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1416871936,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 16,
+          "key": "before-decode:5",
+          "phase": "before-decode",
+          "details": {
+            "call": 5,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 44861681,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1416888320,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 17,
+          "key": "after-decode:5",
+          "phase": "after-decode",
+          "details": {
+            "call": 5,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 45833558,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1417871360,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 18,
+          "key": "checkpoint:measured-003",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-003",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 46530254,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1417871360,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 19,
+          "key": "before-decode:6",
+          "phase": "before-decode",
+          "details": {
+            "call": 6,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 52238314,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1417887744,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 20,
+          "key": "after-decode:6",
+          "phase": "after-decode",
+          "details": {
+            "call": 6,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 53206573,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1418854400,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 21,
+          "key": "checkpoint:measured-004",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-004",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 54031727,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1416675328,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 22,
+          "key": "checkpoint:measured-005",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-005",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 54758503,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1416691712,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 23,
+          "key": "before-decode:7",
+          "phase": "before-decode",
+          "details": {
+            "call": 7,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 60500055,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1416691712,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 24,
+          "key": "after-decode:7",
+          "phase": "after-decode",
+          "details": {
+            "call": 7,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 61469915,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1416708096,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 25,
+          "key": "checkpoint:measured-006",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-006",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 62161733,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1416675328,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 26,
+          "key": "before-decode:8",
+          "phase": "before-decode",
+          "details": {
+            "call": 8,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 67901419,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1416675328,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 27,
+          "key": "after-decode:8",
+          "phase": "after-decode",
+          "details": {
+            "call": 8,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 68890894,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1416691712,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 28,
+          "key": "checkpoint:measured-007",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-007",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 69590302,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1413791744,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 29,
+          "key": "checkpoint:measured-008",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-008",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 70310019,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1413808128,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 30,
+          "key": "before-decode:9",
+          "phase": "before-decode",
+          "details": {
+            "call": 9,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 76053342,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1413808128,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 31,
+          "key": "after-decode:9",
+          "phase": "after-decode",
+          "details": {
+            "call": 9,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 77021461,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1413857280,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 32,
+          "key": "checkpoint:measured-009",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-009",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 77716171,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1413857280,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 33,
+          "key": "before-decode:10",
+          "phase": "before-decode",
+          "details": {
+            "call": 10,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 83451700,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1413857280,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 34,
+          "key": "after-decode:10",
+          "phase": "after-decode",
+          "details": {
+            "call": 10,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 84422367,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1413873664,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 35,
+          "key": "checkpoint:measured-010",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-010",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 85110663,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1391394816,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 36,
+          "key": "checkpoint:measured-011",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-011",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 85832547,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1391411200,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 37,
+          "key": "before-decode:11",
+          "phase": "before-decode",
+          "details": {
+            "call": 11,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 91567706,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1391411200,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 38,
+          "key": "after-decode:11",
+          "phase": "after-decode",
+          "details": {
+            "call": 11,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 92532881,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1391427584,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 39,
+          "key": "checkpoint:measured-012",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-012",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 93226099,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1391427584,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 40,
+          "key": "before-decode:12",
+          "phase": "before-decode",
+          "details": {
+            "call": 12,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 98967499,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1391443968,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 41,
+          "key": "after-decode:12",
+          "phase": "after-decode",
+          "details": {
+            "call": 12,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 99928379,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1391460352,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 42,
+          "key": "checkpoint:measured-013",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-013",
+            "status": "ok",
+            "includeVmmap": true,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 100626725,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1391460352,
+          "physicalFootprintRounded": "3.2G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 43,
+          "key": "before-finish",
+          "phase": "before-finish",
+          "details": {
+            "calls": 12
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 101314713,
+          "activeBytes": 1274062868,
+          "cacheBytes": 1341334788,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 1391493120,
+          "physicalFootprintRounded": "3.1G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 44,
+          "key": "after-finish",
+          "phase": "after-finish",
+          "details": {
+            "finishSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 101961850,
+          "activeBytes": 114688,
+          "cacheBytes": 2615282968,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 821248000,
+          "physicalFootprintRounded": "2.6G",
+          "physicalPeakRounded": "3.2G"
+        },
+        {
+          "index": 45,
+          "key": "after-join",
+          "phase": "after-join",
+          "details": {
+            "joined": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 102593526,
+          "activeBytes": 0,
+          "cacheBytes": 2615397656,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 821116928,
+          "physicalFootprintRounded": "2.6G",
+          "physicalPeakRounded": "3.2G"
+        }
+      ],
+      "warmCheckpointSummary": {
+        "count": 13,
+        "rssMinBytes": 1391394816,
+        "rssMedianBytes": 1413857280,
+        "rssMaxBytes": 1417871360,
+        "cacheMinBytes": 1341334788,
+        "cacheMedianBytes": 1341334788,
+        "cacheMaxBytes": 1341334788,
+        "activeDistinctBytes": [
+          1274062868
+        ],
+        "peakActiveDistinctBytes": [
+          1960732824
+        ],
+        "physicalFootprintRoundedValues": [
+          "3.1G",
+          "3.2G"
+        ]
+      },
+      "cleanup": {
+        "joined": true,
+        "error": null,
+        "elapsedMicros": 1335263
+      },
+      "wholeProcessPeaks": {
+        "maximumRssBytes": 1486028800,
+        "peakFootprintBytes": 3474918280
+      },
+      "darwinTimeSeconds": {
+        "real": 103.13,
+        "user": 18.58,
+        "system": 21.05
+      },
+      "owner": {
+        "qualified": false,
+        "exitCode": 0,
+        "terminationConfirmed": true,
+        "watchdogExpired": false,
+        "powerObservationError": null,
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/bin/runtime_memory_profile",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-conversion-v1/models/weights.safetensors",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/corpus/audio/fleurs-de-test-1736.wav",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/reference.txt",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/result.json",
+          "--warm-peak-reset"
+        ],
+        "startedUtc": "2026-10-20T07:42:51.753252+00:00",
+        "wrapperPid": 93767,
+        "processReaped": true,
+        "forcedGroupCleanup": false,
+        "cleanupObservationErrors": [],
+        "cancelled": false,
+        "finishedUtc": "2026-10-20T07:44:34Z"
+      },
+      "currentGroupCheck": {
+        "ownerPgid": 93767,
+        "probePidFromAllVmmapHeaders": 93768,
+        "signal": 0,
+        "ownerGroupAbsent": true,
+        "checkedUtc": "2026-10-20T08:06:50.099761+00:00"
+      },
+      "power": {
+        "count": 22,
+        "phases": {
+          "before": 1,
+          "sample": 20,
+          "after": 1
+        },
+        "source": "AC Power",
+        "policySha256": "82b51724bc5fab9e0bbddf4401c56eaf477f32702878606a0f1ac4a9a011ff1e",
+        "maxGapSeconds": 5.102945
+      },
+      "historicalLimits": [
+        "diagnostic OS sampling perturbs time; no speed or L acceptance",
+        "workerSpawnMicros ends before asynchronous model initialization; use worker-local after-load timing for model load",
+        "3 warmups and 13 cycles are a short RAM profile, not the full 100-cycle resource gate",
+        "MLX active/cache/peak and RSS/macOS physical footprint are distinct overlapping metrics; never sum them",
+        "OS phase observations do not capture every transient allocation; external time -l retains whole-process maxima",
+        "no cache clearing or allocator limit change; optional warm peak accounting reset has explicit before/after observations",
+        "decoder entry cancellation uses the existing wrapper barrier; no native kernel interruption claim",
+        "input/reference bytes and bounded diagnostic records remain resident throughout the workload"
+      ]
+    },
+    "cache-runtime-ram-v1": {
+      "resultSha256": "2d07fb74468e3f1c843276ee0e0e3298cbf1a7bbdfd90499438f4a3229030915",
+      "runFreezeSha256": "383b926248880ff206da4ded5adc33748ae02ba5240d2f04b02d4217486d5fdb",
+      "completionSha256": "cf56bf6691824f898f0f7141daad5fd377198e8f91892b2453fbbac1ea18e0f2",
+      "protectedWitnessCount": 3553,
+      "sourceRecordCount": 3523,
+      "fixture": {
+        "sha256": "67718418a15f877ec263f7c864e6b72fd41365afebeb78e915a4c97066bb6670",
+        "frames": 80000,
+        "sampleRate": 16000,
+        "channels": 1
+      },
+      "referenceSha256": "d36dec2ebe1f1082ce1e143a85ab83793d413ddc8ff1e96aac1c635278050fbf",
+      "referenceText": "Orlando Mendoza schoss mit seinem M16-Gewehr auf die Touristen.",
+      "workload": {
+        "behaviorPassed": true,
+        "setupTimingPassed": true,
+        "firstError": null,
+        "rows": [
+          {
+            "id": "warmup-001",
+            "warmup": true,
+            "operation": "StopComplete",
+            "session": 1,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6763387,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 264750
+          },
+          {
+            "id": "warmup-002",
+            "warmup": true,
+            "operation": "StopComplete",
+            "session": 2,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6672303,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 263791
+          },
+          {
+            "id": "warmup-003",
+            "warmup": true,
+            "operation": "StopComplete",
+            "session": 3,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6655541,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 251625
+          },
+          {
+            "id": "measured-001",
+            "warmup": false,
+            "operation": "StopComplete",
+            "session": 4,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 7961754,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 257959
+          },
+          {
+            "id": "measured-002",
+            "warmup": false,
+            "operation": "CancelCapture",
+            "session": 5,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 36434,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 0,
+            "decoderCompleted": 0,
+            "decoderCompared": 0,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 320,
+            "publicationCount": 1,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 5166
+          },
+          {
+            "id": "measured-003",
+            "warmup": false,
+            "operation": "CancelDecoderEntry",
+            "session": 6,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6634648,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 268459
+          },
+          {
+            "id": "measured-004",
+            "warmup": false,
+            "operation": "StopComplete",
+            "session": 7,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6647457,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 253459
+          },
+          {
+            "id": "measured-005",
+            "warmup": false,
+            "operation": "CancelCapture",
+            "session": 8,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 32204,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 0,
+            "decoderCompleted": 0,
+            "decoderCompared": 0,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 320,
+            "publicationCount": 1,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 5417
+          },
+          {
+            "id": "measured-006",
+            "warmup": false,
+            "operation": "CancelDecoderEntry",
+            "session": 9,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6638451,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 257916
+          },
+          {
+            "id": "measured-007",
+            "warmup": false,
+            "operation": "StopComplete",
+            "session": 10,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6638407,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 260750
+          },
+          {
+            "id": "measured-008",
+            "warmup": false,
+            "operation": "CancelCapture",
+            "session": 11,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 36275,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 0,
+            "decoderCompleted": 0,
+            "decoderCompared": 0,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 320,
+            "publicationCount": 1,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 5125
+          },
+          {
+            "id": "measured-009",
+            "warmup": false,
+            "operation": "CancelDecoderEntry",
+            "session": 12,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6641129,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 259750
+          },
+          {
+            "id": "measured-010",
+            "warmup": false,
+            "operation": "StopComplete",
+            "session": 13,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6625113,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 252166
+          },
+          {
+            "id": "measured-011",
+            "warmup": false,
+            "operation": "CancelCapture",
+            "session": 14,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 32160,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 0,
+            "decoderCompleted": 0,
+            "decoderCompared": 0,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 320,
+            "publicationCount": 1,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 2166
+          },
+          {
+            "id": "measured-012",
+            "warmup": false,
+            "operation": "CancelDecoderEntry",
+            "session": 15,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6644761,
+            "startBusyObservations": [],
+            "terminal": "Cancelled",
+            "referenceMatch": null,
+            "textAbsent": true,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": true,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 2153875
+          },
+          {
+            "id": "measured-013",
+            "warmup": false,
+            "operation": "StopComplete",
+            "session": 16,
+            "status": "ok",
+            "error": null,
+            "elapsedMicros": 6636805,
+            "startBusyObservations": [],
+            "terminal": "Local",
+            "referenceMatch": true,
+            "textAbsent": false,
+            "decoderStarted": 1,
+            "decoderCompleted": 1,
+            "decoderCompared": 1,
+            "decoderMismatches": 0,
+            "decoderError": null,
+            "controllerIdleAndWrapperIdle": true,
+            "ownerFreeConfirmedByNextStart": false,
+            "feedFrames": 80000,
+            "publicationCount": 250,
+            "feedTimingValid": true,
+            "maximumPublicationDeviationNanos": 265667
+          }
+        ],
+        "decoderCallsStarted": 12,
+        "decoderCallsCompleted": 12
+      },
+      "decoderDiagnostics": {
+        "started": 12,
+        "completed": 12,
+        "compared": 12,
+        "mismatches": 0,
+        "active": false,
+        "armed": false,
+        "lastError": null
+      },
+      "observations": [
+        {
+          "index": 0,
+          "key": "before-load",
+          "phase": "before-load",
+          "details": null,
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 679903,
+          "activeBytes": 0,
+          "cacheBytes": 0,
+          "peakActiveBytes": 0,
+          "rssBytes": 21381120,
+          "physicalFootprintRounded": "8849K",
+          "physicalPeakRounded": "8849K"
+        },
+        {
+          "index": 1,
+          "key": "after-load",
+          "phase": "after-load",
+          "details": {
+            "loadMicrosExcludingOsSamples": 11645145,
+            "observedEncoderDtype": "fp16",
+            "compiledEncoderPrecision": "fp16",
+            "cacheBudgetBytes": 268435456
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 12914069,
+          "activeBytes": 8,
+          "cacheBytes": 0,
+          "peakActiveBytes": 8,
+          "rssBytes": 743063552,
+          "physicalFootprintRounded": "684.7M",
+          "physicalPeakRounded": "684.7M"
+        },
+        {
+          "index": 2,
+          "key": "ready",
+          "phase": "ready",
+          "details": null,
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 13486295,
+          "activeBytes": 8,
+          "cacheBytes": 0,
+          "peakActiveBytes": 8,
+          "rssBytes": 743063552,
+          "physicalFootprintRounded": "684.7M",
+          "physicalPeakRounded": "684.7M"
+        },
+        {
+          "index": 3,
+          "key": "before-decode:1",
+          "phase": "before-decode",
+          "details": {
+            "call": 1,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 19091306,
+          "activeBytes": 8,
+          "cacheBytes": 0,
+          "peakActiveBytes": 8,
+          "rssBytes": 743538688,
+          "physicalFootprintRounded": "685.1M",
+          "physicalPeakRounded": "685.1M"
+        },
+        {
+          "index": 4,
+          "key": "after-decode:1",
+          "phase": "after-decode",
+          "details": {
+            "call": 1,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 20244114,
+          "activeBytes": 1274062868,
+          "cacheBytes": 270826612,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 933904384,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 5,
+          "key": "before-decode:2",
+          "phase": "before-decode",
+          "details": {
+            "call": 2,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 25949814,
+          "activeBytes": 1274062868,
+          "cacheBytes": 270826612,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 925925376,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 6,
+          "key": "after-decode:2",
+          "phase": "after-decode",
+          "details": {
+            "call": 2,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 26905795,
+          "activeBytes": 1274062868,
+          "cacheBytes": 274693272,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 933724160,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 7,
+          "key": "before-decode:3",
+          "phase": "before-decode",
+          "details": {
+            "call": 3,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 32624246,
+          "activeBytes": 1274062868,
+          "cacheBytes": 274693272,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 925761536,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 8,
+          "key": "after-decode:3",
+          "phase": "after-decode",
+          "details": {
+            "call": 3,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 33574966,
+          "activeBytes": 1274062868,
+          "cacheBytes": 272284824,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 915537920,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 9,
+          "key": "checkpoint:warmup-003",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "warmup-003",
+            "status": "ok",
+            "includeVmmap": true,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 34230015,
+          "activeBytes": 1274062868,
+          "cacheBytes": 272284824,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 907575296,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 10,
+          "key": "before-warm-peak-reset",
+          "phase": "before-warm-peak-reset",
+          "details": null,
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 39935334,
+          "activeBytes": 1274062868,
+          "cacheBytes": 272284824,
+          "peakActiveBytes": 2307180660,
+          "rssBytes": 907575296,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 11,
+          "key": "after-warm-peak-reset",
+          "phase": "after-warm-peak-reset",
+          "details": {
+            "resetSucceeded": true,
+            "purpose": "warm-workspace accounting only"
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 40594716,
+          "activeBytes": 1274062868,
+          "cacheBytes": 272284824,
+          "peakActiveBytes": 0,
+          "rssBytes": 907608064,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 12,
+          "key": "before-decode:4",
+          "phase": "before-decode",
+          "details": {
+            "call": 4,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 41252037,
+          "activeBytes": 1274062868,
+          "cacheBytes": 272284824,
+          "peakActiveBytes": 0,
+          "rssBytes": 907608064,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 13,
+          "key": "after-decode:4",
+          "phase": "after-decode",
+          "details": {
+            "call": 4,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 42181612,
+          "activeBytes": 1274062868,
+          "cacheBytes": 269581464,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 912392192,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 14,
+          "key": "checkpoint:measured-001",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-001",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 42849125,
+          "activeBytes": 1274062868,
+          "cacheBytes": 269581464,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 904429568,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 15,
+          "key": "checkpoint:measured-002",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-002",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 43535590,
+          "activeBytes": 1274062868,
+          "cacheBytes": 269581464,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 904445952,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 16,
+          "key": "before-decode:5",
+          "phase": "before-decode",
+          "details": {
+            "call": 5,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 49237031,
+          "activeBytes": 1274062868,
+          "cacheBytes": 269581464,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 904445952,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 17,
+          "key": "after-decode:5",
+          "phase": "after-decode",
+          "details": {
+            "call": 5,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 50169110,
+          "activeBytes": 1274062868,
+          "cacheBytes": 270728344,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 907132928,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 18,
+          "key": "checkpoint:measured-003",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-003",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 50828090,
+          "activeBytes": 1274062868,
+          "cacheBytes": 270728344,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 899186688,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 19,
+          "key": "before-decode:6",
+          "phase": "before-decode",
+          "details": {
+            "call": 6,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 56530431,
+          "activeBytes": 1274062868,
+          "cacheBytes": 270728344,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 899186688,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 20,
+          "key": "after-decode:6",
+          "phase": "after-decode",
+          "details": {
+            "call": 6,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 57472849,
+          "activeBytes": 1274062868,
+          "cacheBytes": 271875224,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 901562368,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 21,
+          "key": "checkpoint:measured-004",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-004",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 58141693,
+          "activeBytes": 1274062868,
+          "cacheBytes": 271875224,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 893616128,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 22,
+          "key": "checkpoint:measured-005",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-005",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 58835261,
+          "activeBytes": 1274062868,
+          "cacheBytes": 271875224,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 893648896,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 23,
+          "key": "before-decode:7",
+          "phase": "before-decode",
+          "details": {
+            "call": 7,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 64538290,
+          "activeBytes": 1274062868,
+          "cacheBytes": 271875224,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 893648896,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 24,
+          "key": "after-decode:7",
+          "phase": "after-decode",
+          "details": {
+            "call": 7,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 65472679,
+          "activeBytes": 1274062868,
+          "cacheBytes": 268691620,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 875380736,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 25,
+          "key": "checkpoint:measured-006",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-006",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 66130791,
+          "activeBytes": 1274062868,
+          "cacheBytes": 268691620,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 867418112,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 26,
+          "key": "before-decode:8",
+          "phase": "before-decode",
+          "details": {
+            "call": 8,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 71833333,
+          "activeBytes": 1274062868,
+          "cacheBytes": 268691620,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 867434496,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 27,
+          "key": "after-decode:8",
+          "phase": "after-decode",
+          "details": {
+            "call": 8,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 72764224,
+          "activeBytes": 1274062868,
+          "cacheBytes": 277490852,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 868859904,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 28,
+          "key": "checkpoint:measured-007",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-007",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 73421729,
+          "activeBytes": 1274062868,
+          "cacheBytes": 277490852,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 860897280,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 29,
+          "key": "checkpoint:measured-008",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-008",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 74111177,
+          "activeBytes": 1274062868,
+          "cacheBytes": 277490852,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 860913664,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 30,
+          "key": "before-decode:9",
+          "phase": "before-decode",
+          "details": {
+            "call": 9,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 79814626,
+          "activeBytes": 1274062868,
+          "cacheBytes": 277490852,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 860913664,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 31,
+          "key": "after-decode:9",
+          "phase": "after-decode",
+          "details": {
+            "call": 9,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 80752158,
+          "activeBytes": 1274062868,
+          "cacheBytes": 272079012,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 855818240,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 32,
+          "key": "checkpoint:measured-009",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-009",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 81409161,
+          "activeBytes": 1274062868,
+          "cacheBytes": 272079012,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 847855616,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 33,
+          "key": "before-decode:10",
+          "phase": "before-decode",
+          "details": {
+            "call": 10,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 87100675,
+          "activeBytes": 1274062868,
+          "cacheBytes": 272079012,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 847872000,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 34,
+          "key": "after-decode:10",
+          "phase": "after-decode",
+          "details": {
+            "call": 10,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 88028638,
+          "activeBytes": 1274062868,
+          "cacheBytes": 269370532,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 849281024,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 35,
+          "key": "checkpoint:measured-010",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-010",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 88685488,
+          "activeBytes": 1274062868,
+          "cacheBytes": 269370532,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 841318400,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 36,
+          "key": "checkpoint:measured-011",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-011",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 89365334,
+          "activeBytes": 1274062868,
+          "cacheBytes": 269370532,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 841334784,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 37,
+          "key": "before-decode:11",
+          "phase": "before-decode",
+          "details": {
+            "call": 11,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 95070381,
+          "activeBytes": 1274062868,
+          "cacheBytes": 269370532,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 841334784,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 38,
+          "key": "after-decode:11",
+          "phase": "after-decode",
+          "details": {
+            "call": 11,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 96009064,
+          "activeBytes": 1274062868,
+          "cacheBytes": 277732528,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 823066624,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 39,
+          "key": "checkpoint:measured-012",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-012",
+            "status": "ok",
+            "includeVmmap": false,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 96665500,
+          "activeBytes": 1274062868,
+          "cacheBytes": 277732528,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 812466176,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 40,
+          "key": "before-decode:12",
+          "phase": "before-decode",
+          "details": {
+            "call": 12,
+            "frames": 80000
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 102362894,
+          "activeBytes": 1274062868,
+          "cacheBytes": 277732528,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 812482560,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 41,
+          "key": "after-decode:12",
+          "phase": "after-decode",
+          "details": {
+            "call": 12,
+            "frames": 80000,
+            "decodeSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 103290642,
+          "activeBytes": 1274062868,
+          "cacheBytes": 270731440,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 794247168,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 42,
+          "key": "checkpoint:measured-013",
+          "phase": "checkpoint",
+          "details": {
+            "afterId": "measured-013",
+            "status": "ok",
+            "includeVmmap": true,
+            "controllerIdleAndWrapperIdle": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 103958815,
+          "activeBytes": 1274062868,
+          "cacheBytes": 270731440,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 786300928,
+          "physicalFootprintRounded": "2.2G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 43,
+          "key": "before-finish",
+          "phase": "before-finish",
+          "details": {
+            "calls": 12
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 104612090,
+          "activeBytes": 1274062868,
+          "cacheBytes": 270731440,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 786317312,
+          "physicalFootprintRounded": "2.1G",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 44,
+          "key": "after-finish",
+          "phase": "after-finish",
+          "details": {
+            "finishSucceeded": true
+          },
+          "thread": "ThreadId(2)",
+          "elapsedMicros": 105180939,
+          "activeBytes": 114688,
+          "cacheBytes": 12,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 210206720,
+          "physicalFootprintRounded": "174.6M",
+          "physicalPeakRounded": "3.0G"
+        },
+        {
+          "index": 45,
+          "key": "after-join",
+          "phase": "after-join",
+          "details": {
+            "joined": true
+          },
+          "thread": "ThreadId(1)",
+          "elapsedMicros": 105736387,
+          "activeBytes": 0,
+          "cacheBytes": 114700,
+          "peakActiveBytes": 1960732824,
+          "rssBytes": 210042880,
+          "physicalFootprintRounded": "174.5M",
+          "physicalPeakRounded": "3.0G"
+        }
+      ],
+      "warmCheckpointSummary": {
+        "count": 13,
+        "rssMinBytes": 786300928,
+        "rssMedianBytes": 860913664,
+        "rssMaxBytes": 904445952,
+        "cacheMinBytes": 268691620,
+        "cacheMedianBytes": 270731440,
+        "cacheMaxBytes": 277732528,
+        "activeDistinctBytes": [
+          1274062868
+        ],
+        "peakActiveDistinctBytes": [
+          1960732824
+        ],
+        "physicalFootprintRoundedValues": [
+          "2.1G",
+          "2.2G"
+        ]
+      },
+      "cleanup": {
+        "joined": true,
+        "error": null,
+        "elapsedMicros": 1222256
+      },
+      "wholeProcessPeaks": {
+        "maximumRssBytes": 1383710720,
+        "peakFootprintBytes": 3176466976
+      },
+      "darwinTimeSeconds": {
+        "real": 106.46,
+        "user": 18.53,
+        "system": 19.27
+      },
+      "owner": {
+        "qualified": false,
+        "exitCode": 0,
+        "terminationConfirmed": true,
+        "watchdogExpired": false,
+        "powerObservationError": null,
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/cache-runtime-ram-v1/bin/runtime_memory_profile",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-conversion-v1/models/weights.safetensors",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/corpus/audio/fleurs-de-test-1736.wav",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/cache-runtime-ram-v1/reference.txt",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/cache-runtime-ram-v1/result.json",
+          "--warm-peak-reset"
+        ],
+        "startedUtc": "2026-10-20T08:03:26.806782+00:00",
+        "wrapperPid": 96488,
+        "processReaped": true,
+        "forcedGroupCleanup": false,
+        "cleanupObservationErrors": [],
+        "cancelled": false,
+        "finishedUtc": "2026-10-20T08:05:13Z"
+      },
+      "currentGroupCheck": {
+        "ownerPgid": 96488,
+        "probePidFromAllVmmapHeaders": 96489,
+        "signal": 0,
+        "ownerGroupAbsent": true,
+        "checkedUtc": "2026-10-20T08:06:50.142623+00:00"
+      },
+      "power": {
+        "count": 22,
+        "phases": {
+          "before": 1,
+          "sample": 20,
+          "after": 1
+        },
+        "source": "AC Power",
+        "policySha256": "82b51724bc5fab9e0bbddf4401c56eaf477f32702878606a0f1ac4a9a011ff1e",
+        "maxGapSeconds": 5.106141
+      },
+      "historicalLimits": [
+        "diagnostic OS sampling perturbs time; no speed or L acceptance",
+        "workerSpawnMicros ends before asynchronous model initialization; use worker-local after-load timing for model load",
+        "3 warmups and 13 cycles are a short RAM profile, not the full 100-cycle resource gate",
+        "MLX active/cache/peak and RSS/macOS physical footprint are distinct overlapping metrics; never sum them",
+        "OS phase observations do not capture every transient allocation; external time -l retains whole-process maxima",
+        "no cache clearing or allocator limit change; optional warm peak accounting reset has explicit before/after observations",
+        "decoder entry cancellation uses the existing wrapper barrier; no native kernel interruption claim",
+        "input/reference bytes and bounded diagnostic records remain resident throughout the workload"
+      ]
+    }
+  },
+  "samePhaseDeltas": [
+    {
+      "key": "before-load",
+      "baseline": {
+        "index": 0,
+        "key": "before-load",
+        "phase": "before-load",
+        "details": null,
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 546892,
+        "activeBytes": 0,
+        "cacheBytes": 0,
+        "peakActiveBytes": 0,
+        "rssBytes": 20922368,
+        "physicalFootprintRounded": "8417K",
+        "physicalPeakRounded": "8417K"
+      },
+      "candidate": {
+        "index": 0,
+        "key": "before-load",
+        "phase": "before-load",
+        "details": null,
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 679903,
+        "activeBytes": 0,
+        "cacheBytes": 0,
+        "peakActiveBytes": 0,
+        "rssBytes": 21381120,
+        "physicalFootprintRounded": "8849K",
+        "physicalPeakRounded": "8849K"
+      },
+      "rssSavedBytes": -458752,
+      "cacheSavedBytes": 0,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "8417K",
+      "roundedPhysicalFootprintAfter": "8849K"
+    },
+    {
+      "key": "after-load",
+      "baseline": {
+        "index": 1,
+        "key": "after-load",
+        "phase": "after-load",
+        "details": {
+          "loadMicrosExcludingOsSamples": 6908782,
+          "observedEncoderDtype": "fp16",
+          "compiledEncoderPrecision": "fp16"
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 8033615,
+        "activeBytes": 8,
+        "cacheBytes": 0,
+        "peakActiveBytes": 8,
+        "rssBytes": 740261888,
+        "physicalFootprintRounded": "682.1M",
+        "physicalPeakRounded": "682.1M"
+      },
+      "candidate": {
+        "index": 1,
+        "key": "after-load",
+        "phase": "after-load",
+        "details": {
+          "loadMicrosExcludingOsSamples": 11645145,
+          "observedEncoderDtype": "fp16",
+          "compiledEncoderPrecision": "fp16",
+          "cacheBudgetBytes": 268435456
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 12914069,
+        "activeBytes": 8,
+        "cacheBytes": 0,
+        "peakActiveBytes": 8,
+        "rssBytes": 743063552,
+        "physicalFootprintRounded": "684.7M",
+        "physicalPeakRounded": "684.7M"
+      },
+      "rssSavedBytes": -2801664,
+      "cacheSavedBytes": 0,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "682.1M",
+      "roundedPhysicalFootprintAfter": "684.7M"
+    },
+    {
+      "key": "ready",
+      "baseline": {
+        "index": 2,
+        "key": "ready",
+        "phase": "ready",
+        "details": null,
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 8629485,
+        "activeBytes": 8,
+        "cacheBytes": 0,
+        "peakActiveBytes": 8,
+        "rssBytes": 740294656,
+        "physicalFootprintRounded": "682.1M",
+        "physicalPeakRounded": "682.1M"
+      },
+      "candidate": {
+        "index": 2,
+        "key": "ready",
+        "phase": "ready",
+        "details": null,
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 13486295,
+        "activeBytes": 8,
+        "cacheBytes": 0,
+        "peakActiveBytes": 8,
+        "rssBytes": 743063552,
+        "physicalFootprintRounded": "684.7M",
+        "physicalPeakRounded": "684.7M"
+      },
+      "rssSavedBytes": -2768896,
+      "cacheSavedBytes": 0,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "682.1M",
+      "roundedPhysicalFootprintAfter": "684.7M"
+    },
+    {
+      "key": "before-decode:1",
+      "baseline": {
+        "index": 3,
+        "key": "before-decode:1",
+        "phase": "before-decode",
+        "details": {
+          "call": 1,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 14244035,
+        "activeBytes": 8,
+        "cacheBytes": 0,
+        "peakActiveBytes": 8,
+        "rssBytes": 740769792,
+        "physicalFootprintRounded": "682.6M",
+        "physicalPeakRounded": "682.6M"
+      },
+      "candidate": {
+        "index": 3,
+        "key": "before-decode:1",
+        "phase": "before-decode",
+        "details": {
+          "call": 1,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 19091306,
+        "activeBytes": 8,
+        "cacheBytes": 0,
+        "peakActiveBytes": 8,
+        "rssBytes": 743538688,
+        "physicalFootprintRounded": "685.1M",
+        "physicalPeakRounded": "685.1M"
+      },
+      "rssSavedBytes": -2768896,
+      "cacheSavedBytes": 0,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "682.6M",
+      "roundedPhysicalFootprintAfter": "685.1M"
+    },
+    {
+      "key": "after-decode:1",
+      "baseline": {
+        "index": 4,
+        "key": "after-decode:1",
+        "phase": "after-decode",
+        "details": {
+          "call": 1,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 15386787,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1129800892,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 1403158528,
+        "physicalFootprintRounded": "3.0G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "candidate": {
+        "index": 4,
+        "key": "after-decode:1",
+        "phase": "after-decode",
+        "details": {
+          "call": 1,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 20244114,
+        "activeBytes": 1274062868,
+        "cacheBytes": 270826612,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 933904384,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 469254144,
+      "cacheSavedBytes": 858974280,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.0G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "before-decode:2",
+      "baseline": {
+        "index": 5,
+        "key": "before-decode:2",
+        "phase": "before-decode",
+        "details": {
+          "call": 2,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 21131678,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1129800892,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 1403158528,
+        "physicalFootprintRounded": "2.9G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "candidate": {
+        "index": 5,
+        "key": "before-decode:2",
+        "phase": "before-decode",
+        "details": {
+          "call": 2,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 25949814,
+        "activeBytes": 1274062868,
+        "cacheBytes": 270826612,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 925925376,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 477233152,
+      "cacheSavedBytes": 858974280,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "2.9G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "after-decode:2",
+      "baseline": {
+        "index": 6,
+        "key": "after-decode:2",
+        "phase": "after-decode",
+        "details": {
+          "call": 2,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 22141622,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 1410433024,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 6,
+        "key": "after-decode:2",
+        "phase": "after-decode",
+        "details": {
+          "call": 2,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 26905795,
+        "activeBytes": 1274062868,
+        "cacheBytes": 274693272,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 933724160,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 476708864,
+      "cacheSavedBytes": 1066641516,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "before-decode:3",
+      "baseline": {
+        "index": 7,
+        "key": "before-decode:3",
+        "phase": "before-decode",
+        "details": {
+          "call": 3,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 27874126,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 1410433024,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 7,
+        "key": "before-decode:3",
+        "phase": "before-decode",
+        "details": {
+          "call": 3,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 32624246,
+        "activeBytes": 1274062868,
+        "cacheBytes": 274693272,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 925761536,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 484671488,
+      "cacheSavedBytes": 1066641516,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "after-decode:3",
+      "baseline": {
+        "index": 8,
+        "key": "after-decode:3",
+        "phase": "after-decode",
+        "details": {
+          "call": 3,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 28905244,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 1413890048,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 8,
+        "key": "after-decode:3",
+        "phase": "after-decode",
+        "details": {
+          "call": 3,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 33574966,
+        "activeBytes": 1274062868,
+        "cacheBytes": 272284824,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 915537920,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 498352128,
+      "cacheSavedBytes": 1069049964,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:warmup-003",
+      "baseline": {
+        "index": 9,
+        "key": "checkpoint:warmup-003",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "warmup-003",
+          "status": "ok",
+          "includeVmmap": true,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 29605476,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 1413890048,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 9,
+        "key": "checkpoint:warmup-003",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "warmup-003",
+          "status": "ok",
+          "includeVmmap": true,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 34230015,
+        "activeBytes": 1274062868,
+        "cacheBytes": 272284824,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 907575296,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 506314752,
+      "cacheSavedBytes": 1069049964,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "before-warm-peak-reset",
+      "baseline": {
+        "index": 10,
+        "key": "before-warm-peak-reset",
+        "phase": "before-warm-peak-reset",
+        "details": null,
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 35352395,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 1413906432,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 10,
+        "key": "before-warm-peak-reset",
+        "phase": "before-warm-peak-reset",
+        "details": null,
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 39935334,
+        "activeBytes": 1274062868,
+        "cacheBytes": 272284824,
+        "peakActiveBytes": 2307180660,
+        "rssBytes": 907575296,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 506331136,
+      "cacheSavedBytes": 1069049964,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "after-warm-peak-reset",
+      "baseline": {
+        "index": 11,
+        "key": "after-warm-peak-reset",
+        "phase": "after-warm-peak-reset",
+        "details": {
+          "resetSucceeded": true,
+          "purpose": "warm-workspace accounting only"
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 36040939,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 0,
+        "rssBytes": 1413939200,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 11,
+        "key": "after-warm-peak-reset",
+        "phase": "after-warm-peak-reset",
+        "details": {
+          "resetSucceeded": true,
+          "purpose": "warm-workspace accounting only"
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 40594716,
+        "activeBytes": 1274062868,
+        "cacheBytes": 272284824,
+        "peakActiveBytes": 0,
+        "rssBytes": 907608064,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 506331136,
+      "cacheSavedBytes": 1069049964,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "before-decode:4",
+      "baseline": {
+        "index": 12,
+        "key": "before-decode:4",
+        "phase": "before-decode",
+        "details": {
+          "call": 4,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 36728790,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 0,
+        "rssBytes": 1413939200,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 12,
+        "key": "before-decode:4",
+        "phase": "before-decode",
+        "details": {
+          "call": 4,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 41252037,
+        "activeBytes": 1274062868,
+        "cacheBytes": 272284824,
+        "peakActiveBytes": 0,
+        "rssBytes": 907608064,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 506331136,
+      "cacheSavedBytes": 1069049964,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "after-decode:4",
+      "baseline": {
+        "index": 13,
+        "key": "after-decode:4",
+        "phase": "after-decode",
+        "details": {
+          "call": 4,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 37702764,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1416871936,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 13,
+        "key": "after-decode:4",
+        "phase": "after-decode",
+        "details": {
+          "call": 4,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 42181612,
+        "activeBytes": 1274062868,
+        "cacheBytes": 269581464,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 912392192,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 504479744,
+      "cacheSavedBytes": 1071753324,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-001",
+      "baseline": {
+        "index": 14,
+        "key": "checkpoint:measured-001",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-001",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 38399825,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1416871936,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 14,
+        "key": "checkpoint:measured-001",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-001",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 42849125,
+        "activeBytes": 1274062868,
+        "cacheBytes": 269581464,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 904429568,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 512442368,
+      "cacheSavedBytes": 1071753324,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-002",
+      "baseline": {
+        "index": 15,
+        "key": "checkpoint:measured-002",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-002",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 39126782,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1416871936,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 15,
+        "key": "checkpoint:measured-002",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-002",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 43535590,
+        "activeBytes": 1274062868,
+        "cacheBytes": 269581464,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 904445952,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 512425984,
+      "cacheSavedBytes": 1071753324,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "before-decode:5",
+      "baseline": {
+        "index": 16,
+        "key": "before-decode:5",
+        "phase": "before-decode",
+        "details": {
+          "call": 5,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 44861681,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1416888320,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 16,
+        "key": "before-decode:5",
+        "phase": "before-decode",
+        "details": {
+          "call": 5,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 49237031,
+        "activeBytes": 1274062868,
+        "cacheBytes": 269581464,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 904445952,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 512442368,
+      "cacheSavedBytes": 1071753324,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "after-decode:5",
+      "baseline": {
+        "index": 17,
+        "key": "after-decode:5",
+        "phase": "after-decode",
+        "details": {
+          "call": 5,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 45833558,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1417871360,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 17,
+        "key": "after-decode:5",
+        "phase": "after-decode",
+        "details": {
+          "call": 5,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 50169110,
+        "activeBytes": 1274062868,
+        "cacheBytes": 270728344,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 907132928,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 510738432,
+      "cacheSavedBytes": 1070606444,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-003",
+      "baseline": {
+        "index": 18,
+        "key": "checkpoint:measured-003",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-003",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 46530254,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1417871360,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 18,
+        "key": "checkpoint:measured-003",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-003",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 50828090,
+        "activeBytes": 1274062868,
+        "cacheBytes": 270728344,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 899186688,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 518684672,
+      "cacheSavedBytes": 1070606444,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "before-decode:6",
+      "baseline": {
+        "index": 19,
+        "key": "before-decode:6",
+        "phase": "before-decode",
+        "details": {
+          "call": 6,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 52238314,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1417887744,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 19,
+        "key": "before-decode:6",
+        "phase": "before-decode",
+        "details": {
+          "call": 6,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 56530431,
+        "activeBytes": 1274062868,
+        "cacheBytes": 270728344,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 899186688,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 518701056,
+      "cacheSavedBytes": 1070606444,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "after-decode:6",
+      "baseline": {
+        "index": 20,
+        "key": "after-decode:6",
+        "phase": "after-decode",
+        "details": {
+          "call": 6,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 53206573,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1418854400,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 20,
+        "key": "after-decode:6",
+        "phase": "after-decode",
+        "details": {
+          "call": 6,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 57472849,
+        "activeBytes": 1274062868,
+        "cacheBytes": 271875224,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 901562368,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 517292032,
+      "cacheSavedBytes": 1069459564,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-004",
+      "baseline": {
+        "index": 21,
+        "key": "checkpoint:measured-004",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-004",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 54031727,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1416675328,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 21,
+        "key": "checkpoint:measured-004",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-004",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 58141693,
+        "activeBytes": 1274062868,
+        "cacheBytes": 271875224,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 893616128,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 523059200,
+      "cacheSavedBytes": 1069459564,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-005",
+      "baseline": {
+        "index": 22,
+        "key": "checkpoint:measured-005",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-005",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 54758503,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1416691712,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 22,
+        "key": "checkpoint:measured-005",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-005",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 58835261,
+        "activeBytes": 1274062868,
+        "cacheBytes": 271875224,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 893648896,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 523042816,
+      "cacheSavedBytes": 1069459564,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "before-decode:7",
+      "baseline": {
+        "index": 23,
+        "key": "before-decode:7",
+        "phase": "before-decode",
+        "details": {
+          "call": 7,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 60500055,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1416691712,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 23,
+        "key": "before-decode:7",
+        "phase": "before-decode",
+        "details": {
+          "call": 7,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 64538290,
+        "activeBytes": 1274062868,
+        "cacheBytes": 271875224,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 893648896,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 523042816,
+      "cacheSavedBytes": 1069459564,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "after-decode:7",
+      "baseline": {
+        "index": 24,
+        "key": "after-decode:7",
+        "phase": "after-decode",
+        "details": {
+          "call": 7,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 61469915,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1416708096,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 24,
+        "key": "after-decode:7",
+        "phase": "after-decode",
+        "details": {
+          "call": 7,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 65472679,
+        "activeBytes": 1274062868,
+        "cacheBytes": 268691620,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 875380736,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 541327360,
+      "cacheSavedBytes": 1072643168,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-006",
+      "baseline": {
+        "index": 25,
+        "key": "checkpoint:measured-006",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-006",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 62161733,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1416675328,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 25,
+        "key": "checkpoint:measured-006",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-006",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 66130791,
+        "activeBytes": 1274062868,
+        "cacheBytes": 268691620,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 867418112,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 549257216,
+      "cacheSavedBytes": 1072643168,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "before-decode:8",
+      "baseline": {
+        "index": 26,
+        "key": "before-decode:8",
+        "phase": "before-decode",
+        "details": {
+          "call": 8,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 67901419,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1416675328,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 26,
+        "key": "before-decode:8",
+        "phase": "before-decode",
+        "details": {
+          "call": 8,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 71833333,
+        "activeBytes": 1274062868,
+        "cacheBytes": 268691620,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 867434496,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 549240832,
+      "cacheSavedBytes": 1072643168,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "after-decode:8",
+      "baseline": {
+        "index": 27,
+        "key": "after-decode:8",
+        "phase": "after-decode",
+        "details": {
+          "call": 8,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 68890894,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1416691712,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 27,
+        "key": "after-decode:8",
+        "phase": "after-decode",
+        "details": {
+          "call": 8,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 72764224,
+        "activeBytes": 1274062868,
+        "cacheBytes": 277490852,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 868859904,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 547831808,
+      "cacheSavedBytes": 1063843936,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-007",
+      "baseline": {
+        "index": 28,
+        "key": "checkpoint:measured-007",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-007",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 69590302,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1413791744,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 28,
+        "key": "checkpoint:measured-007",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-007",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 73421729,
+        "activeBytes": 1274062868,
+        "cacheBytes": 277490852,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 860897280,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 552894464,
+      "cacheSavedBytes": 1063843936,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-008",
+      "baseline": {
+        "index": 29,
+        "key": "checkpoint:measured-008",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-008",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 70310019,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1413808128,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 29,
+        "key": "checkpoint:measured-008",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-008",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 74111177,
+        "activeBytes": 1274062868,
+        "cacheBytes": 277490852,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 860913664,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 552894464,
+      "cacheSavedBytes": 1063843936,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "before-decode:9",
+      "baseline": {
+        "index": 30,
+        "key": "before-decode:9",
+        "phase": "before-decode",
+        "details": {
+          "call": 9,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 76053342,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1413808128,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 30,
+        "key": "before-decode:9",
+        "phase": "before-decode",
+        "details": {
+          "call": 9,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 79814626,
+        "activeBytes": 1274062868,
+        "cacheBytes": 277490852,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 860913664,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 552894464,
+      "cacheSavedBytes": 1063843936,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "after-decode:9",
+      "baseline": {
+        "index": 31,
+        "key": "after-decode:9",
+        "phase": "after-decode",
+        "details": {
+          "call": 9,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 77021461,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1413857280,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 31,
+        "key": "after-decode:9",
+        "phase": "after-decode",
+        "details": {
+          "call": 9,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 80752158,
+        "activeBytes": 1274062868,
+        "cacheBytes": 272079012,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 855818240,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 558039040,
+      "cacheSavedBytes": 1069255776,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-009",
+      "baseline": {
+        "index": 32,
+        "key": "checkpoint:measured-009",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-009",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 77716171,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1413857280,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 32,
+        "key": "checkpoint:measured-009",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-009",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 81409161,
+        "activeBytes": 1274062868,
+        "cacheBytes": 272079012,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 847855616,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 566001664,
+      "cacheSavedBytes": 1069255776,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "before-decode:10",
+      "baseline": {
+        "index": 33,
+        "key": "before-decode:10",
+        "phase": "before-decode",
+        "details": {
+          "call": 10,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 83451700,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1413857280,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 33,
+        "key": "before-decode:10",
+        "phase": "before-decode",
+        "details": {
+          "call": 10,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 87100675,
+        "activeBytes": 1274062868,
+        "cacheBytes": 272079012,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 847872000,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 565985280,
+      "cacheSavedBytes": 1069255776,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "after-decode:10",
+      "baseline": {
+        "index": 34,
+        "key": "after-decode:10",
+        "phase": "after-decode",
+        "details": {
+          "call": 10,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 84422367,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1413873664,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 34,
+        "key": "after-decode:10",
+        "phase": "after-decode",
+        "details": {
+          "call": 10,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 88028638,
+        "activeBytes": 1274062868,
+        "cacheBytes": 269370532,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 849281024,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 564592640,
+      "cacheSavedBytes": 1071964256,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-010",
+      "baseline": {
+        "index": 35,
+        "key": "checkpoint:measured-010",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-010",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 85110663,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1391394816,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 35,
+        "key": "checkpoint:measured-010",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-010",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 88685488,
+        "activeBytes": 1274062868,
+        "cacheBytes": 269370532,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 841318400,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 550076416,
+      "cacheSavedBytes": 1071964256,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-011",
+      "baseline": {
+        "index": 36,
+        "key": "checkpoint:measured-011",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-011",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 85832547,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1391411200,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 36,
+        "key": "checkpoint:measured-011",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-011",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 89365334,
+        "activeBytes": 1274062868,
+        "cacheBytes": 269370532,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 841334784,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 550076416,
+      "cacheSavedBytes": 1071964256,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "before-decode:11",
+      "baseline": {
+        "index": 37,
+        "key": "before-decode:11",
+        "phase": "before-decode",
+        "details": {
+          "call": 11,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 91567706,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1391411200,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 37,
+        "key": "before-decode:11",
+        "phase": "before-decode",
+        "details": {
+          "call": 11,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 95070381,
+        "activeBytes": 1274062868,
+        "cacheBytes": 269370532,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 841334784,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 550076416,
+      "cacheSavedBytes": 1071964256,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "after-decode:11",
+      "baseline": {
+        "index": 38,
+        "key": "after-decode:11",
+        "phase": "after-decode",
+        "details": {
+          "call": 11,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 92532881,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1391427584,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 38,
+        "key": "after-decode:11",
+        "phase": "after-decode",
+        "details": {
+          "call": 11,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 96009064,
+        "activeBytes": 1274062868,
+        "cacheBytes": 277732528,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 823066624,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 568360960,
+      "cacheSavedBytes": 1063602260,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-012",
+      "baseline": {
+        "index": 39,
+        "key": "checkpoint:measured-012",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-012",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 93226099,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1391427584,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 39,
+        "key": "checkpoint:measured-012",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-012",
+          "status": "ok",
+          "includeVmmap": false,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 96665500,
+        "activeBytes": 1274062868,
+        "cacheBytes": 277732528,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 812466176,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 578961408,
+      "cacheSavedBytes": 1063602260,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "before-decode:12",
+      "baseline": {
+        "index": 40,
+        "key": "before-decode:12",
+        "phase": "before-decode",
+        "details": {
+          "call": 12,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 98967499,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1391443968,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 40,
+        "key": "before-decode:12",
+        "phase": "before-decode",
+        "details": {
+          "call": 12,
+          "frames": 80000
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 102362894,
+        "activeBytes": 1274062868,
+        "cacheBytes": 277732528,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 812482560,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 578961408,
+      "cacheSavedBytes": 1063602260,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "after-decode:12",
+      "baseline": {
+        "index": 41,
+        "key": "after-decode:12",
+        "phase": "after-decode",
+        "details": {
+          "call": 12,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 99928379,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1391460352,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 41,
+        "key": "after-decode:12",
+        "phase": "after-decode",
+        "details": {
+          "call": 12,
+          "frames": 80000,
+          "decodeSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 103290642,
+        "activeBytes": 1274062868,
+        "cacheBytes": 270731440,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 794247168,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 597213184,
+      "cacheSavedBytes": 1070603348,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "checkpoint:measured-013",
+      "baseline": {
+        "index": 42,
+        "key": "checkpoint:measured-013",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-013",
+          "status": "ok",
+          "includeVmmap": true,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 100626725,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1391460352,
+        "physicalFootprintRounded": "3.2G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 42,
+        "key": "checkpoint:measured-013",
+        "phase": "checkpoint",
+        "details": {
+          "afterId": "measured-013",
+          "status": "ok",
+          "includeVmmap": true,
+          "controllerIdleAndWrapperIdle": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 103958815,
+        "activeBytes": 1274062868,
+        "cacheBytes": 270731440,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 786300928,
+        "physicalFootprintRounded": "2.2G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 605159424,
+      "cacheSavedBytes": 1070603348,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.2G",
+      "roundedPhysicalFootprintAfter": "2.2G"
+    },
+    {
+      "key": "before-finish",
+      "baseline": {
+        "index": 43,
+        "key": "before-finish",
+        "phase": "before-finish",
+        "details": {
+          "calls": 12
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 101314713,
+        "activeBytes": 1274062868,
+        "cacheBytes": 1341334788,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 1391493120,
+        "physicalFootprintRounded": "3.1G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 43,
+        "key": "before-finish",
+        "phase": "before-finish",
+        "details": {
+          "calls": 12
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 104612090,
+        "activeBytes": 1274062868,
+        "cacheBytes": 270731440,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 786317312,
+        "physicalFootprintRounded": "2.1G",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 605175808,
+      "cacheSavedBytes": 1070603348,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "3.1G",
+      "roundedPhysicalFootprintAfter": "2.1G"
+    },
+    {
+      "key": "after-finish",
+      "baseline": {
+        "index": 44,
+        "key": "after-finish",
+        "phase": "after-finish",
+        "details": {
+          "finishSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 101961850,
+        "activeBytes": 114688,
+        "cacheBytes": 2615282968,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 821248000,
+        "physicalFootprintRounded": "2.6G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 44,
+        "key": "after-finish",
+        "phase": "after-finish",
+        "details": {
+          "finishSucceeded": true
+        },
+        "thread": "ThreadId(2)",
+        "elapsedMicros": 105180939,
+        "activeBytes": 114688,
+        "cacheBytes": 12,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 210206720,
+        "physicalFootprintRounded": "174.6M",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 611041280,
+      "cacheSavedBytes": 2615282956,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "2.6G",
+      "roundedPhysicalFootprintAfter": "174.6M"
+    },
+    {
+      "key": "after-join",
+      "baseline": {
+        "index": 45,
+        "key": "after-join",
+        "phase": "after-join",
+        "details": {
+          "joined": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 102593526,
+        "activeBytes": 0,
+        "cacheBytes": 2615397656,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 821116928,
+        "physicalFootprintRounded": "2.6G",
+        "physicalPeakRounded": "3.2G"
+      },
+      "candidate": {
+        "index": 45,
+        "key": "after-join",
+        "phase": "after-join",
+        "details": {
+          "joined": true
+        },
+        "thread": "ThreadId(1)",
+        "elapsedMicros": 105736387,
+        "activeBytes": 0,
+        "cacheBytes": 114700,
+        "peakActiveBytes": 1960732824,
+        "rssBytes": 210042880,
+        "physicalFootprintRounded": "174.5M",
+        "physicalPeakRounded": "3.0G"
+      },
+      "rssSavedBytes": 611074048,
+      "cacheSavedBytes": 2615282956,
+      "activeChangedBytes": 0,
+      "peakActiveChangedBytes": 0,
+      "roundedPhysicalFootprintBefore": "2.6G",
+      "roundedPhysicalFootprintAfter": "174.5M"
+    }
+  ],
+  "summary": {
+    "warmCheckpointRssMedianSavedBytes": 552943616,
+    "warmCheckpointCacheMedianSavedBytes": 1070603348,
+    "wholeMaximumRssSavedBytes": 102318080,
+    "wholePeakFootprintSavedBytes": 298451304,
+    "afterJoinRssSavedBytes": 611074048,
+    "afterJoinCacheSavedBytes": 2615282956,
+    "sameWarmActiveAndPeakActive": true
+  },
+  "productionSourceDelta": [
+    "src-tauri/src/transcription/mlx.rs",
+    "vendor/mlxrs/EVERLAST-PATCH.json",
+    "vendor/mlxrs/EVERLAST-PATCH.md",
+    "vendor/mlxrs/src/memory/cache.rs",
+    "vendor/mlxrs/src/memory/counters.rs",
+    "vendor/mlxrs/src/memory/mod.rs"
+  ],
+  "fullTextEvidenceLimit": "Bound helper compares complete published Stop text to reference at runtime:8 StopComplete receipts per run. Raw full transcript objects are not exported.4 CancelDecoderEntry calls finish without publishing text; decoder compared counters concern PCM input equality, not output equality. No independent raw transcript re-comparison claimed.",
+  "limits": [
+    "One fixed DE5 workload,3 warmups+13 sessions and46 observations per run, not full resource or quality qualification.",
+    "Twelve actual decodes include8 StopComplete and4 CancelDecoderEntry;4 CaptureCancel have no decode.",
+    "OS observations perturb time; no speed inference from session/user/system duration.",
+    "vmmap labels are rounded; no exact byte delta inferred from3.2G to2.2G.",
+    "Peak reset affects MLX active peak only, not OS process peak.",
+    "No model/GPU/build/nonzero signals, production-source or raw measurement changes by reviewer."
+  ],
+  "smallHashes": {
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/run-freeze.json": "cb7259e0219e38e2b079c5decb80f8ce0a250bcbb7054da78168e664996f8baa",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/result.json": "b158a27eb29522db6159440d1c76e93e226ade3493f163c454f2e32f9b314b5c",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/sources-before.json": "5c02376778490ac2af075bbb395259d3255acb09460010a68891b82e486566d8",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/build-receipt.json": "b51d0b280f5ef07af3d37bf38ef350a3a3ed36db4689a32b15206e8e4f4f7ea6",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/source/src-tauri/examples/runtime_memory_profile.rs": "76bf8ba4e9d8fefb0abdaacfbf2f2e4e9fe2933a62c1b173a9a9f63daf402cb6",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/source/src-tauri/examples/runtime_resource_probe/runner.rs": "9d2674f9dfc44b2ba801399d4e0e9c07bf2f937f471f4123c6ebbfe6fbd1ac5f",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/source/src-tauri/examples/runtime_resource_probe/metrics.rs": "58aa5e4ad60865c99864b3bc0936f130263af541b7ec0b8ec1a0d50cd1ab05d8",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/source/src-tauri/examples/paced_runtime_probe/runner.rs": "814a1ed9b37ad6b31fb7cc7101f30403a21fdc3673a5bc8244214a0ff19bb55e",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/source/src-tauri/src/transcription/mlx.rs": "082f20996a6ef9f761fff77dc65cc8219818282686f4a4ba7d6a353ab8a5e699",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/source/src-tauri/src/inference_service.rs": "e139cf39880cecfa8b7ad713bc3b63947a0005c5d6843d5c4575f45bae0195b2",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/source/src-tauri/src/runtime.rs": "1d95e6cd103e7ca457bcfe484e95a9d91c8bc6fcb0c2715efe631fad96acfe40",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/source/src-tauri/src/transcription.rs": "051960360ee9436fc0f4444ff8364611a7ecf7262111f440728a40b2ec0dd16d",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/source/vendor/mlxrs/src/memory/counters.rs": "6d9b6715469ca93556396f9466b6c42212f44e4b1e5cae29efc4069073d87e08",
+    "artifacts/corpus/audio/fleurs-de-test-1736.wav": "67718418a15f877ec263f7c864e6b72fd41365afebeb78e915a4c97066bb6670",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/reference.txt": "d36dec2ebe1f1082ce1e143a85ab83793d413ddc8ff1e96aac1c635278050fbf",
+    "artifacts/mlx-qualification/reference-encoder-f16-ram-profile-v3/completion.json": "cd9708371f250ff7eb53337161bfa3955545175f47df646f9eafbe0a12fd49ee",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/run-freeze.json": "383b926248880ff206da4ded5adc33748ae02ba5240d2f04b02d4217486d5fdb",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/result.json": "2d07fb74468e3f1c843276ee0e0e3298cbf1a7bbdfd90499438f4a3229030915",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/sources-before.json": "36d6fd238a05bb83e9e9c39d27ec1358348641c9fcd6d5d7fdc4094985a831ae",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/build-receipt.json": "7dd82e1ad2d1951d0bd72f8dac0d3638072249c59c0ff4a8f0b32815ee2a7d00",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/source/src-tauri/examples/runtime_memory_profile.rs": "a2b7442c72fe509dfce33c6477fe6c2e15a2b40f395db4f9f645e0b828f11326",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/source/src-tauri/examples/runtime_resource_probe/runner.rs": "9d2674f9dfc44b2ba801399d4e0e9c07bf2f937f471f4123c6ebbfe6fbd1ac5f",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/source/src-tauri/examples/runtime_resource_probe/metrics.rs": "58aa5e4ad60865c99864b3bc0936f130263af541b7ec0b8ec1a0d50cd1ab05d8",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/source/src-tauri/examples/paced_runtime_probe/runner.rs": "814a1ed9b37ad6b31fb7cc7101f30403a21fdc3673a5bc8244214a0ff19bb55e",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/source/src-tauri/src/transcription/mlx.rs": "0f1d1575a023c7059d036f30d384df56ef5191e3f673d08cdc2b2a7a18567ae5",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/source/src-tauri/src/inference_service.rs": "e139cf39880cecfa8b7ad713bc3b63947a0005c5d6843d5c4575f45bae0195b2",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/source/src-tauri/src/runtime.rs": "1d95e6cd103e7ca457bcfe484e95a9d91c8bc6fcb0c2715efe631fad96acfe40",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/source/src-tauri/src/transcription.rs": "051960360ee9436fc0f4444ff8364611a7ecf7262111f440728a40b2ec0dd16d",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/source/vendor/mlxrs/src/memory/counters.rs": "32a2b77b91892391c409bbf07dd884523388db62b78ee20a622f0f6c6e4ea67e",
+    "artifacts/implementation/cache-runtime-profile.py": "fb9308cd210b750f98a5b2c3986e1acab76b1c751b645827c30196489367d389",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/control/cache-runtime-profile.py": "fb9308cd210b750f98a5b2c3986e1acab76b1c751b645827c30196489367d389",
+    "artifacts/implementation/build-f16-runtime-qualification.py": "1004c269bb665fd698e53e6621bbc8c66fcfbb03d60d8e78802ec640b22041b6",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/control/build-f16-runtime-qualification.py": "1004c269bb665fd698e53e6621bbc8c66fcfbb03d60d8e78802ec640b22041b6",
+    "artifacts/implementation/run-f16-runtime-central.py": "e141cfe4d77db94bef7cddc8e35648a8c3ef936e25ac3dfdebae38d56c9880ba",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/control/run-f16-runtime-central.py": "e141cfe4d77db94bef7cddc8e35648a8c3ef936e25ac3dfdebae38d56c9880ba",
+    "artifacts/implementation/run-f16-runtime-quality.py": "27cab7a7d7e8eae5c039c582c7f774ecbc5e1b9437bed15fd855931145be35c8",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/control/run-f16-runtime-quality.py": "27cab7a7d7e8eae5c039c582c7f774ecbc5e1b9437bed15fd855931145be35c8",
+    "artifacts/implementation/run-f16-runtime-counter-order.py": "cb9a1837822090cedc66a5190921ec808cb4a88b599a1114a6ddf35981e7bbbe",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/control/run-f16-runtime-counter-order.py": "cb9a1837822090cedc66a5190921ec808cb4a88b599a1114a6ddf35981e7bbbe",
+    "scripts/owned_probe.py": "07f5fcbe7193277cef432962ceaf31b2f867303d8cde6d9b078789df87b045be",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/control/owned_probe.py": "07f5fcbe7193277cef432962ceaf31b2f867303d8cde6d9b078789df87b045be",
+    "artifacts/implementation/run-reference-encoder-power-control.py": "662b2342eebf7268cb5354198844a4013883aa5c91a246e628bc31a6a61cbc04",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/control/run-reference-encoder-power-control.py": "662b2342eebf7268cb5354198844a4013883aa5c91a246e628bc31a6a61cbc04",
+    "artifacts/mlx-qualification/cache-budget-screen-v2/completion.json": "ff0d10b0db163d9f8cea6ffdb11d557db2d040d5f63f6016e1ff3fb83f703a99",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/reference.txt": "d36dec2ebe1f1082ce1e143a85ab83793d413ddc8ff1e96aac1c635278050fbf",
+    "artifacts/mlx-qualification/cache-runtime-ram-v1/completion.json": "cf56bf6691824f898f0f7141daad5fd377198e8f91892b2453fbbac1ea18e0f2"
+  },
+  "checks": [
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:completed-bound",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:source-build-chain",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:protected-witnesses",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:source-records",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:source:src-tauri/examples/runtime_memory_profile.rs",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:source:src-tauri/examples/runtime_resource_probe/runner.rs",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:source:src-tauri/examples/runtime_resource_probe/metrics.rs",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:source:src-tauri/examples/paced_runtime_probe/runner.rs",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:source:src-tauri/src/transcription/mlx.rs",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:source:src-tauri/src/inference_service.rs",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:source:src-tauri/src/runtime.rs",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:source:src-tauri/src/transcription.rs",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:source:vendor/mlxrs/src/memory/counters.rs",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:input:fleurs-de-test-1736.wav",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:input:reference.txt",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:reference-bound",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:result-contract",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:workload-complete",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:warmup-001",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:warmup-002",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:warmup-003",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-001",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-002",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-003",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-004",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-005",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-006",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-007",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-008",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-009",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-010",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-011",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-012",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:row:measured-013",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:diagnostics-clean",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:46-phase-order",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:0",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:1",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:2",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:3",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:4",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:5",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:6",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:7",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:8",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:9",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:10",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:11",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:12",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:13",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:14",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:15",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:16",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:17",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:18",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:19",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:20",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:21",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:22",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:23",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:24",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:25",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:26",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:27",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:28",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:29",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:30",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:31",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:32",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:33",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:34",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:35",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:36",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:37",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:38",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:39",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:40",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:41",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:42",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:43",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:44",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:observation:45",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:worker-pid-stable",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:reset-only-peak",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:actual-dtype",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:load-budget-usage",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:owner-clean",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:command",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:power",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:current-group-absent",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:time-log",
+      "passed": true
+    },
+    {
+      "name": "reference-encoder-f16-ram-profile-v3:stable",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:completed-bound",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:source-build-chain",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:protected-witnesses",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:source-records",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:source:src-tauri/examples/runtime_memory_profile.rs",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:source:src-tauri/examples/runtime_resource_probe/runner.rs",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:source:src-tauri/examples/runtime_resource_probe/metrics.rs",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:source:src-tauri/examples/paced_runtime_probe/runner.rs",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:source:src-tauri/src/transcription/mlx.rs",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:source:src-tauri/src/inference_service.rs",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:source:src-tauri/src/runtime.rs",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:source:src-tauri/src/transcription.rs",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:source:vendor/mlxrs/src/memory/counters.rs",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:control:cache-runtime-profile.py",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:control:build-f16-runtime-qualification.py",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:control:run-f16-runtime-central.py",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:control:run-f16-runtime-quality.py",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:control:run-f16-runtime-counter-order.py",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:control:owned_probe.py",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:control:run-reference-encoder-power-control.py",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:screen-bound",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:input:fleurs-de-test-1736.wav",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:input:reference.txt",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:reference-bound",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:result-contract",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:workload-complete",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:warmup-001",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:warmup-002",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:warmup-003",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-001",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-002",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-003",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-004",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-005",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-006",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-007",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-008",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-009",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-010",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-011",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-012",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:row:measured-013",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:diagnostics-clean",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:46-phase-order",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:0",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:1",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:2",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:3",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:4",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:5",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:6",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:7",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:8",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:9",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:10",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:11",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:12",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:13",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:14",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:15",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:16",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:17",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:18",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:19",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:20",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:21",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:22",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:23",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:24",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:25",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:26",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:27",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:28",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:29",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:30",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:31",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:32",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:33",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:34",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:35",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:36",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:37",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:38",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:39",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:40",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:41",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:42",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:43",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:44",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:observation:45",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:worker-pid-stable",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:reset-only-peak",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:actual-dtype",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:actual-budget",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:load-budget-usage",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:owner-clean",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:command",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:power",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:current-group-absent",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:time-log",
+      "passed": true
+    },
+    {
+      "name": "cache-runtime-ram-v1:stable",
+      "passed": true
+    },
+    {
+      "name": "same_phase_input_reference",
+      "passed": true
+    },
+    {
+      "name": "cache_only_production_delta",
+      "passed": true
+    },
+    {
+      "name": "same_workload_os_helper:src-tauri/examples/runtime_resource_probe/runner.rs",
+      "passed": true
+    },
+    {
+      "name": "same_workload_os_helper:src-tauri/examples/runtime_resource_probe/metrics.rs",
+      "passed": true
+    },
+    {
+      "name": "same_workload_os_helper:src-tauri/examples/paced_runtime_probe/runner.rs",
+      "passed": true
+    }
+  ],
+  "warmComparisonDefinition": "Same13 measured-session checkpoints after3 warmups; arithmetic statistics of OS RSS snapshots, not per-call latency.",
+  "warmRssMedianReductionFraction": 0.3910887073410974,
+  "descriptionFindingPreservesOriginalData": true,
+  "rawFullTranscriptsExported": false,
+  "exactPublishedStopTextChecksPerProfile": 8,
+  "cancelledDecoderOutputTextNotPublishedPerProfile": 4
+}
