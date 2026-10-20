@@ -21,7 +21,7 @@ registry to local path; versions and dependency edges remain unchanged.
   `.cargo-ok` extraction marker. It is intentionally omitted from this vendor
   copy because it is not a published source file.
 - `ORIGINAL_FILES.json` records all **33 published original paths**, their byte
-  counts and hashes. The **only changed original file** is
+  counts and hashes. At that VAD-only stage the **only changed original file** was
   `src/whisper_vad.rs`. Added files are this note, the original-file inventory,
   and the standalone regression launcher under `regression/`.
 - Original module SHA256:
@@ -121,3 +121,17 @@ measure native model memory, exercise the real loader, prove whole-process RSS
 stability, or qualify P05 lifecycle behavior. Integrated Cargo linkage, checks
 and real native smoke evidence are recorded in
 [wrapper-lifetime-fix.md](../../docs/verification/wrapper-lifetime-fix.md).
+
+## Isolated optional encoder bridge (2026-10-19)
+
+`WhisperState::full_with_encoder` is an additive safe wrapper around the separately
+recorded native extension. It borrows PCM/features only for the synchronous call,
+checks length/finiteness before FFI, and returns actual external/native window
+counts. The native side checks the remaining bounded policy. The caller must bind
+features to this exact prepared PCM and encoder model; this is a semantic caller
+contract and no cryptographic proof is invented. Existing `full` remains unchanged.
+`src/lib.rs` additionally reexports `EncoderUsage`; `src/whisper_state/mod.rs`
+contains the new wrapper/type. These are the two additional original-file changes
+beyond the preserved VAD ownership patch. Exact prior/current hashes are in
+[the native bridge receipt](../whisper-rs-sys/EVERLAST-ENCODER-PATCH.json).
+The VAD lifetime fixture and all historical limits above remain applicable.

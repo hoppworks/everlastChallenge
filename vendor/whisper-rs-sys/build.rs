@@ -116,6 +116,14 @@ fn main() {
         });
     }
 
+    // Keep the bounded local native extension in sync with its compiled tree.
+    // The upstream build copies the tree only once per OUT_DIR.
+    for relative in ["src/whisper.cpp", "include/whisper.h"] {
+        let source = PathBuf::from("whisper.cpp").join(relative);
+        println!("cargo:rerun-if-changed={}", source.display());
+        std::fs::copy(&source, whisper_root.join(relative)).expect("sync local encoder bridge source");
+    }
+
     if env::var("WHISPER_DONT_GENERATE_BINDINGS").is_ok() {
         let _: u64 = std::fs::copy("src/bindings.rs", out.join("bindings.rs"))
             .expect("Failed to copy bindings.rs");

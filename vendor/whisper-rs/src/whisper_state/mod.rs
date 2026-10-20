@@ -11,6 +11,10 @@ pub use iterator::WhisperStateSegmentIterator;
 pub use segment::WhisperSegment;
 pub use token::WhisperToken;
 
+/// Actual encoder routes used by one completed native full call.
+#[derive(Debug,Clone,Copy,PartialEq,Eq)]
+pub struct EncoderUsage { pub external_windows:i32, pub native_windows:i32 }
+
 /// Rustified pointer to a Whisper state.
 #[derive(Debug)]
 pub struct WhisperState {
@@ -315,6 +319,21 @@ impl WhisperState {
         } else {
             Err(WhisperError::GenericError(ret))
         }
+    }
+
+    /// Run full native decoding with finite contiguous F32 [1500,1280] encoder
+    /// features for the first seek only. The caller must bind features to this
+    /// exact prepared audio and encoder model. Native C validates the bounded
+    /// de/en, no-context, greedy policy. Subsequent seeks encode natively.
+    /// No pointer or feature storage survives the call.
+    pub fn full_with_encoder(&mut self, params: FullParams, data: &[f32], features: &[f32]) -> Result<EncoderUsage, WhisperError> {
+        if !(16000..=480000).contains(&data.len()) || features.len()!=1920000 || features.iter().any(|x| !x.is_finite()) {
+            return Err(WhisperError::GenericError(-42));
+        }
+        let mut usage = whisper_rs_sys::whisper_encoder_usage { external_windows:0, native_windows:0 };
+        let ret=unsafe { whisper_rs_sys::whisper_full_with_state_and_encoder(self.ctx.ctx,self.ptr,params.fp,data.as_ptr(),data.len() as c_int,features.as_ptr(),features.len() as c_int,&mut usage) };
+        if ret!=0 {return Err(WhisperError::GenericError(ret));}
+        Ok(EncoderUsage { external_windows:usage.external_windows, native_windows:usage.native_windows })
     }
 
     /// Number of generated text segments.

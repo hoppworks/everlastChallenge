@@ -1,0 +1,15 @@
+{
+  "crate": "mlxrs-sys",
+  "version": "0.2.0",
+  "upstreamRevision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
+  "registryChecksum": "ace6d5383b15cade95fbf8b7a10dfa5c4a84b3dcfa57abe012a5020208570f25",
+  "source": "https://crates.io/api/v1/crates/mlxrs-sys/0.2.0/download",
+  "patchPurpose": "Pin the actual existing JSON/MetalCPP archive bytes and fmt revision in native FetchContent; no C++/Metal/FFI algorithm changes.",
+  "changedFiles": [
+    {
+      "path": "vendor/mlx/CMakeLists.txt",
+      "upstreamSha256": "609cc1c59996fd33c71a2c1630cec738d3b2aed690ab06407ea78d99d56d7fdc",
+      "patchedSha256": "b6ac384654809530f593e89bf260812e61592667f05cd7a86b57f28d168a5a35"
+    }
+  ]
+}

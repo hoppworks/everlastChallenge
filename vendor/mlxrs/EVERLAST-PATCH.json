@@ -1,0 +1,77 @@
+{
+  "crate": "mlxrs",
+  "version": "0.2.0",
+  "upstreamRevision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
+  "registryChecksum": "dd72771402de14a1134490089ddeb6b744920291d07e7c238e1eaaee2db2400f",
+  "source": "https://crates.io/api/v1/crates/mlxrs/0.2.0/download",
+  "patchPurpose": "Inference-only playback separation; Whisper periodic Hann; validated optional native encoder positions; actual EOS for text-only completion. Original model arithmetic preserved; rejected beam experiment archived outside runtime source. Exclusive reusable-buffer cache budgets with teardown-safe release and corrected allocator-counter documentation; model arithmetic unchanged.",
+  "changedFiles": [
+    {
+      "path": "Cargo.toml",
+      "upstreamSha256": "49be399b06d6c8fd5fbbb5c343367c905e742b84efe8001f667c16c7cdf75e45",
+      "patchedSha256": "5ab491f5200c1507453b43e1d4be18433ec8f24dc7d7a6eea69f2e44c0e237f8"
+    },
+    {
+      "path": "src/audio/playback/mod.rs",
+      "upstreamSha256": "f925cc160b6b335dce256943943f25050600c6249eb586c6014378e14b6ddc44",
+      "patchedSha256": "25475f72183c8048b8dcd47ea30910e66c8d33dd89f67d768d7f7dd2dc2ea260"
+    },
+    {
+      "path": "src/audio/playback/config.rs",
+      "upstreamSha256": "60632a19d100d556243ba553f74659f2482fcd3fe6e3385b8af64a35d3730d34",
+      "patchedSha256": "9c0922efef4b86b9d52a389ebb7fae8a84d93124fb7336893435f57b3ce47ec3"
+    },
+    {
+      "path": "src/audio/dsp.rs",
+      "upstreamSha256": "d37a183e93013ed41a7c747571d3ca8ac3edd7ea41e74a4a3a059ff8fb19e163",
+      "patchedSha256": "377a4711323fac97c6591a4871226ea9cc877c00d28776a0a99b3ba35a58f06a"
+    },
+    {
+      "path": "src/audio/stt/models/whisper/audio.rs",
+      "upstreamSha256": "9a7cbf05a1ee6499072bff38430899dcecfb20c93ff437ca8d9c7ccd7c8c704f",
+      "patchedSha256": "b8017d7415e93c36e45f5cca7a155406e25a8eef063bf9d855c3db39d06ef227"
+    },
+    {
+      "path": "src/audio/stt/models/whisper/audio/tests.rs",
+      "upstreamSha256": "21081ac311295568943c81bbd233287c19ca5c526aaec5f31cb0e2cf60925063",
+      "patchedSha256": "1728b099d5b0f7212e31581f1e563c824baecd4d84d39f603af8ed905cde709d"
+    },
+    {
+      "path": "src/audio/stt/models/whisper/model.rs",
+      "upstreamSha256": "bf12a05dfba234b8e3e4b73938bac7651518dbe257d873f8b46c73d3e1e6ae1e",
+      "patchedSha256": "3e39b25b4b497b01c7ca4282d6864f30e32447ff10ae10b500432c131f28676b"
+    },
+    {
+      "path": "src/audio/stt/models/whisper/encoder.rs",
+      "upstreamSha256": "a7a7e571e2f616c8c717f295a7d82ef65c3842fd9145c80e67eeef4cecb0607b",
+      "patchedSha256": "52e1331440edc6031436fa61454776bb4e53161e4a226ae82a9f4dc00b70f00f"
+    },
+    {
+      "path": "src/audio/stt/models/whisper/decoding.rs",
+      "upstreamSha256": "3068c14e34de7aa75a17fd70b9bc462ee82cde62e9f6211fc77f20612dfc1732",
+      "patchedSha256": "3c22177bb7ead797194698fc9116544e1279381ca02330eef355104e05d45048"
+    },
+    {
+      "path": "src/memory/cache.rs",
+      "upstreamSha256": null,
+      "patchedSha256": "28c06318d818256c18a6e175dc8fae4f973acd6d694c52ddd44f309527d1c126"
+    },
+    {
+      "path": "src/memory/mod.rs",
+      "upstreamSha256": "dda605b7e21a0189b3d6507ce05e7e387cdd0392ee97d41c1e341d127e659fda",
+      "patchedSha256": "3edf5193ec4eb6853f6d0e9a9997b097c3612547f22a63d9b525b58e8d90623e"
+    },
+    {
+      "path": "src/memory/counters.rs",
+      "upstreamSha256": "6d9b6715469ca93556396f9466b6c42212f44e4b1e5cae29efc4069073d87e08",
+      "patchedSha256": "32a2b77b91892391c409bbf07dd884523388db62b78ee20a622f0f6c6e4ea67e"
+    }
+  ],
+  "whisperWindowCorrection": {
+    "reference": "https://github.com/ml-explore/mlx-examples/blob/796f5b53cab69a3d48a44233ce21aae889e94a08/whisper/mlx_whisper/audio.py#L94",
+    "formula": "periodic Hann400 uses denominator400; prior symmetric helper used399",
+    "independentOracle": "tests/fixtures/mlx/whisper-mel-oracle-v1.json",
+    "redMaxAbsoluteError": 0.07384147,
+    "greenMaximumAllowedAbsoluteError": 0.0002
+  }
+}

@@ -613,6 +613,23 @@ extern "C" {
                            const float * samples,
                                    int   n_samples);
 
+    // Isolated optional encoder bridge. The original full entry remains unchanged.
+    // One original 16-kHz input <=30s, explicit de/en, no context/VAD/translation,
+    // unchanged greedy best_of=1 and full model audio context. Features must be
+    // finite contiguous F32 [1500,1280], matching this context's encoder model.
+    // They replace only the first seek==0 encoder; subsequent seeks use native
+    // encoding. Full decoding/fallback/segment rules remain authoritative.
+    struct whisper_encoder_usage { int external_windows; int native_windows; };
+    WHISPER_API int whisper_full_with_state_and_encoder(
+                struct whisper_context * ctx,
+                  struct whisper_state * state,
+            struct whisper_full_params   params,
+                           const float * samples,
+                                   int   n_samples,
+                           const float * features,
+                                   int   n_features,
+          struct whisper_encoder_usage * usage);
+
     // Split the input audio in chunks and process each chunk separately using whisper_full_with_state()
     // Result is stored in the default state of the context
     // Not thread safe if executed in parallel on the same context.
