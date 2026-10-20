@@ -31,7 +31,6 @@ use tokio::sync::{Semaphore, oneshot};
 #[path = "desktop/start_observer.rs"]
 mod start_observer;
 
-mod native_ui;
 #[cfg(feature = "test-control")]
 mod test_control;
 
@@ -279,6 +278,11 @@ impl Desktop {
             .checked_add(1)
             .ok_or("Einstellungsanfragen ausgeschöpft; Anwendung neu starten")?;
         Ok(shared.settings_requests)
+    }
+    /// Published settings navigation counter; reading it never clones a transcript.
+    pub fn settings_request(&self) -> Result<u32, String> {
+        let shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+        Ok(shared.view.settings_request)
     }
     /// Read only the bounded native projection when its revision changes.
     pub fn native_header_after(
@@ -1561,7 +1565,7 @@ impl Drop for Finish {
 
 #[cfg(test)]
 mod tests {
-    mod native_ack_contract;
+    mod settings_ack_contract;
     use super::*;
     use crate::{controller::SessionSnapshot, model::REFERENCE, runtime::RuntimeSnapshot};
     pub(super) fn unstarted_desktop() -> Desktop {
@@ -1635,16 +1639,6 @@ mod tests {
         assert_eq!(view.setup.model.source_url, REFERENCE.url());
         assert_eq!(view.setup.total_bytes, 3_813_494_037);
         assert_eq!(view.setup.downloaded_bytes, 17);
-        let workspace = crate::native_presentation::workspace(&view);
-        assert!(workspace.setup_info.as_deref().is_some_and(|text| {
-            text.contains("3813,5 MB")
-                && text.contains("Einmalige Einrichtung mit Dateien von Hugging Face")
-                && !text.contains("Einmaliger Download")
-                && !text.contains("unbekannter Quelle")
-        }));
-        let preferences = crate::native_presentation::preferences(&view);
-        assert!(preferences.model_details.contains("3813,5 MB"));
-        assert!(preferences.model_details.contains(&REFERENCE.url()));
     }
 
     #[test]

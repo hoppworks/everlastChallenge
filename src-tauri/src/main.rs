@@ -210,7 +210,7 @@ impl NativeUi {
         if let Some(control) = &mut self.test_control {
             control.poll(&self.desktop);
         }
-        let (request, _) = self.desktop.native_settings_request()?;
+        let request = self.desktop.settings_request()?;
         if request != self.settings_request {
             self.settings_request = request;
             self.window
