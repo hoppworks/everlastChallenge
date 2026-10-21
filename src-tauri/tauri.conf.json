@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Everlast Dictation",
+  "productName": "Everlast Coding Challenge",
   "version": "0.1.0",
   "identifier": "de.hoppworks.everlast-dictation",
   "build": {
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Everlast Dictation",
+        "title": "Everlast Coding Challenge",
         "width": 760,
         "height": 720,
         "minWidth": 560,

@@ -317,7 +317,9 @@ test("denied microphone explains recovery while accessibility retains its explic
   expect(
     screen.getByText(/System Settings → Privacy & Security → Accessibility/),
   ).toBeDefined();
-  expect(screen.getAllByText(/aktiviere Everlast Dictation/)).toHaveLength(2);
+  expect(
+    screen.getAllByText(/aktiviere Everlast Coding Challenge/),
+  ).toHaveLength(2);
   expect(
     screen.queryByRole("button", { name: "Mikrofonzugriff anfragen" }),
   ).toBeNull();
@@ -338,7 +340,7 @@ test("restricted permissions explain system restrictions without a self-approval
   expect(screen.getAllByText(/System- oder Verwaltungsvorgaben/)).toHaveLength(
     2,
   );
-  expect(screen.queryByText(/aktiviere Everlast Dictation/)).toBeNull();
+  expect(screen.queryByText(/aktiviere Everlast Coding Challenge/)).toBeNull();
   expect(
     screen.queryByRole("button", { name: /anfragen|freigeben/ }),
   ).toBeNull();

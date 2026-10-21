@@ -40,7 +40,7 @@ const microphoneHelp: Partial<
   Record<AppViewProps["permissions"]["microphone"], string>
 > = {
   denied:
-    "Öffne System Settings → Privacy & Security → Microphone und aktiviere Everlast Dictation.",
+    "Öffne System Settings → Privacy & Security → Microphone und aktiviere Everlast Coding Challenge.",
   restricted:
     "Der Mikrofonzugriff ist durch System- oder Verwaltungsvorgaben eingeschränkt. Prüfe diese Vorgaben oder wende dich an die Geräteverwaltung.",
   unavailable:
@@ -50,7 +50,7 @@ const accessibilityHelp: Partial<
   Record<AppViewProps["permissions"]["accessibility"], string>
 > = {
   denied:
-    "Öffne System Settings → Privacy & Security → Accessibility und aktiviere Everlast Dictation.",
+    "Öffne System Settings → Privacy & Security → Accessibility und aktiviere Everlast Coding Challenge.",
   restricted:
     "Die Bedienungshilfen sind durch System- oder Verwaltungsvorgaben eingeschränkt. Prüfe diese Vorgaben oder wende dich an die Geräteverwaltung.",
   unavailable:
@@ -399,8 +399,8 @@ export function SettingsView(props: SettingsViewProps) {
               permissions.accessibility === "denied" ||
               permissions.accessibility === "restricted") && (
               <p className="settings-help">
-                Kehre nach der Änderung zu Everlast Dictation zurück. Die App
-                prüft den Status dann erneut.
+                Kehre nach der Änderung zu Everlast Coding Challenge zurück. Die
+                App prüft den Status dann erneut.
               </p>
             )}
             {(permissions.microphone === "notDetermined" ||

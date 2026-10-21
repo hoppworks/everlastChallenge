@@ -816,7 +816,7 @@ impl<B: Backend> Owner<B> {
         let environment = self.backend.environment(token, deadline)?;
         self.check(token)?;
         if !environment.accessibility_trusted {
-            return Err("Die Freigabe für Bedienungshilfen fehlt. Prüfe vor dem nächsten Diktat Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen → Everlast Dictation.".into());
+            return Err("Die Freigabe für Bedienungshilfen fehlt. Prüfe vor dem nächsten Diktat Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen → Everlast Coding Challenge.".into());
         }
         if environment.secure_input {
             return Err("Eine geschützte Eingabe ist aktiv. Wähle nach deren Abschluss für das nächste Diktat ein normales beschreibbares Textfeld.".into());

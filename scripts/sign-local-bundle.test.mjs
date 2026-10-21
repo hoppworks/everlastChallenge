@@ -38,7 +38,7 @@ function fixture() {
   const root = mkdtempSync(path.join(os.tmpdir(), "everlast-sign-test-"));
   const bundle = path.join(
     root,
-    "target/aarch64-apple-darwin/release/bundle/macos/Everlast Dictation.app",
+    "target/aarch64-apple-darwin/release/bundle/macos/Everlast Coding Challenge.app",
   );
   mkdirSync(path.join(bundle, "Contents/MacOS"), { recursive: true });
   mkdirSync(path.join(root, "src-tauri"));
@@ -186,13 +186,13 @@ test("experimental bundle identity is read from this checkout before signing", (
   try {
     const experimental = path.join(
       path.dirname(bundle),
-      "Everlast Dictation MLX.app",
+      "Everlast Coding Challenge MLX.app",
     );
     renameSync(bundle, experimental);
     writeFileSync(
       path.join(root, "src-tauri/tauri.conf.json"),
       JSON.stringify({
-        productName: "Everlast Dictation MLX",
+        productName: "Everlast Coding Challenge MLX",
         identifier: "de.hoppworks.everlast-dictation-mlx",
       }),
     );

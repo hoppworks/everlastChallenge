@@ -127,10 +127,10 @@ export function AppView(props: AppViewProps) {
     setup.totalBytes > 0;
 
   return (
-    <main className="dictation-app" aria-label="Everlast Dictation">
+    <main className="dictation-app" aria-label="Everlast Coding Challenge">
       {!props.nativeHeader && (
         <header className="app-header">
-          <h1>Everlast Dictation</h1>
+          <h1>Everlast Coding Challenge</h1>
           <button type="button" onClick={props.onSettings}>
             Einstellungen
           </button>

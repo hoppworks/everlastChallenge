@@ -41,7 +41,7 @@ function bundleConfiguration(root) {
   const file = path.join(root, "src-tauri/tauri.conf.json");
   if (!existsSync(file))
     return {
-      productName: "Everlast Dictation",
+      productName: "Everlast Coding Challenge",
       identifier: "de.hoppworks.everlast-dictation",
     };
   regular(file, 65536);

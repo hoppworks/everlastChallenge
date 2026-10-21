@@ -32,7 +32,7 @@ impl NativeTray {
             .set_text(state.text.replace('&', "&&"))
             .map_err(|error| error.to_string())?;
         self.tray
-            .set_tooltip(Some(format!("Everlast Dictation · {}", state.text)))
+            .set_tooltip(Some(format!("Everlast Coding Challenge · {}", state.text)))
             .map_err(|error| error.to_string())?;
         self.tray
             .set_title(Some(state.title))
@@ -276,7 +276,7 @@ fn application_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     let quit = MenuItem::with_id(
         app,
         "application-quit",
-        "Everlast Dictation beenden",
+        "Everlast Coding Challenge beenden",
         true,
         Some("CmdOrCtrl+Q"),
     )?;
@@ -289,10 +289,10 @@ fn application_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     )?;
     let application = Submenu::with_items(
         app,
-        "Everlast Dictation",
+        "Everlast Coding Challenge",
         true,
         &[
-            &PredefinedMenuItem::about(app, Some("Über Everlast Dictation"), None)?,
+            &PredefinedMenuItem::about(app, Some("Über Everlast Coding Challenge"), None)?,
             &PredefinedMenuItem::separator(app)?,
             &settings,
             &PredefinedMenuItem::separator(app)?,
@@ -355,8 +355,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             #[cfg(not(feature = "measurement"))]
             let desktop = Desktop::spawn(app.handle().clone()).map_err(std::io::Error::other)?;
             app.manage(desktop);
-            let open =
-                MenuItem::with_id(app, "open", "Everlast Dictation öffnen", true, None::<&str>)?;
+            let open = MenuItem::with_id(
+                app,
+                "open",
+                "Everlast Coding Challenge öffnen",
+                true,
+                None::<&str>,
+            )?;
             let quit = MenuItem::with_id(app, "quit", "Beenden", true, None::<&str>)?;
             let status =
                 MenuItem::with_id(app, "status", "Status wird geladen", false, None::<&str>)?;
@@ -364,7 +369,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 MenuItem::with_id(app, "settings", "Einstellungen …", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&status, &open, &settings, &quit])?;
             let mut tray = TrayIconBuilder::new()
-                .tooltip("Everlast Dictation")
+                .tooltip("Everlast Coding Challenge")
                 .menu(&menu)
                 .show_menu_on_left_click(true)
                 .on_menu_event(|app, event| match event.id().as_ref() {

@@ -57,7 +57,7 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
   if (!snapshot)
     return (
       <main className="dictation-app">
-        {!nativeHeader && <h1>Everlast Dictation</h1>}
+        {!nativeHeader && <h1>Everlast Coding Challenge</h1>}
         <p role="status" aria-live="polite">
           Anwendung wird gestartet …
         </p>

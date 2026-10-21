@@ -6,6 +6,7 @@ import {
   lstatSync,
   openSync,
   readSync,
+  readFileSync,
   realpathSync,
 } from "node:fs";
 import { createHash } from "node:crypto";
@@ -25,7 +26,16 @@ import {
 } from "./single-press-playback.mjs";
 import { createWatchdogAdapter } from "./single-press-watchdog-adapter.mjs";
 
-export const INSTALLED_BUNDLE = "/Applications/Everlast Dictation.app";
+const productName = JSON.parse(
+  readFileSync(
+    new URL("../src-tauri/tauri.conf.json", import.meta.url),
+    "utf8",
+  ),
+).productName;
+export const INSTALLED_BUNDLE = path.join(
+  "/Applications",
+  `${productName}.app`,
+);
 export const INSTALLED_EXECUTABLE = path.join(
   INSTALLED_BUNDLE,
   "Contents/MacOS/everlast-dictation",

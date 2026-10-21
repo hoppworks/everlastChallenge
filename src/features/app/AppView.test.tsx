@@ -32,7 +32,7 @@ function fixture(): AppViewProps {
 test("names the dictation utility and provides settings", () => {
   render(<AppView {...fixture()} />);
   expect(
-    screen.getByRole("heading", { name: "Everlast Dictation" }),
+    screen.getByRole("heading", { name: "Everlast Coding Challenge" }),
   ).toBeDefined();
   expect(screen.getByRole("button", { name: "Einstellungen" })).toBeDefined();
 });
@@ -41,7 +41,7 @@ test("native header owns session controls while body keeps transcript and orient
   const props = fixture();
   const view = render(<AppView {...props} nativeHeader />);
   expect(
-    screen.queryByRole("heading", { name: "Everlast Dictation" }),
+    screen.queryByRole("heading", { name: "Everlast Coding Challenge" }),
   ).toBeNull();
   expect(screen.queryByRole("button", { name: "Einstellungen" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Aufnehmen" })).toBeNull();
