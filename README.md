@@ -167,3 +167,10 @@ das konfigurierte globale Tastenkürzel und Escape bleiben systemweit verfügbar
 
 Der Anwendungscode steht entsprechend der Manifestdeklaration unter [MIT](LICENSE).
 Drittanbieter behalten ihre eigenen [Lizenzen und Herkunftshinweise](docs/licenses/third-party/README.md).
+
+Für **realfft 3.5.0** enthält der verwendete Upstream-Stand keine vollständige
+originale MIT-Lizenzdatei mit Copyrightnotice. Die unveränderte MIT-Deklaration,
+Autorenmetadaten und eine ausdrücklich gekennzeichnete standardisierte
+MIT-Ergänzung liegen bei; ein Copyrightinhaber oder Jahr wird nicht erfunden.
+Diese verbleibende Herkunftsgrenze ist im
+[Lizenznachtrag](docs/verification/license-completion-2026-10-21.md) dokumentiert.
