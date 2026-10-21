@@ -157,10 +157,7 @@ damit nicht neu gemessen.
 
 Bibliotheken, Modelle und lokale Patches sind unter
 [Abhängigkeiten](docs/dependencies.md) und [Lizenzen](docs/licenses/third-party/README.md)
-zugeordnet. Die Git-Historie bewahrt die Commitfolge der Implementierung einschließlich
-der nachträglich atomar versionierten MLX-Arbeit. Nicht öffentliche Dokumente
-und Metadaten wurden vor Veröffentlichung bereinigt; die Commitfolge wird nicht
-gesquasht. Details stehen in der Veröffentlichungsprüfung.
+zugeordnet.
 
 ### Kompakte Palette
 
