@@ -1,5 +1,3 @@
-# Code-Wegweiser
-
 ## Ein Diktat durch den Code verfolgen
 
 ```mermaid

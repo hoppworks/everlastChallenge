@@ -6,7 +6,7 @@ Die exakte R6-Roundtrip-App ist seit 11:38:29 UTC unter
 Executable-SHA256:
 `2cd8582c5d1c64c23a5d8c4cd66553aa8b132d11d4a7c8ff19346dc231b30dbe`.
 Der installierte Hash wurde nach der Installation erneut direkt gelesen und
-stimmt mit dem [R6-Paketbeleg](testversion-package-r6.md) überein.
+stimmt mit dem R6-Paketbeleg überein.
 
 Die vorherige R4 wurde regulär beendet; PID83623 war vor dem Austausch
 abwesend. Originalbundle und zusätzliche Rückfallkopie bleiben unter

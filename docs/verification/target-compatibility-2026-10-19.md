@@ -1,5 +1,3 @@
-# Mehrstufige Zielerkennung und Nachprüfung, 19.10.2026
-
 ## Verhalten
 
 Die Zielerkennung versucht systemweiten Fokus, Fokus der gebundenen App und deren fokussiertes Fenster. Jeder Kandidat muss dieselbe PID und Prozessstartidentität besitzen. Ein fehlender Suchweg oder undurchsichtiger Container darf zum nächsten Weg führen; falsche Werttypen, fremde Prozesse, sichere oder explizit deaktivierte Textfelder dürfen nicht so übergangen werden. Nach erfolgreicher Erfassung bleibt dasselbe AX-Element gebunden.

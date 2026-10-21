@@ -1,7 +1,7 @@
 # Lizenzmaterial: injizierter Laufzeithelfer
 
 Vorbereitet, keine juristische Freigabe und keine abgeschlossene P11-Abnahme.
-Die Ergänzung ist im [Testpaket R3](testversion-package-r3.md) separat beigelegt;
+Die Ergänzung ist im Testpaket R3 separat beigelegt;
 keine installierte App, Signatur oder historische ZIP-Datei wurde verändert. Es wurde kein Build ausgeführt.
 
 Die historische Inventarbasis bleibt

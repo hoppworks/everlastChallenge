@@ -11,3 +11,5 @@
 
 # Local planning scratch must not become publication content.
 /.scratch/
+
+/.private/

@@ -1,5 +1,3 @@
-# Echte Aufnahme-Lifecycleprüfungen, 19.10.2026
-
 ## Kandidat und Verfahren
 
 Installiert: `/Applications/Everlast Dictation.app`, Produktquellstand 634d6c9,

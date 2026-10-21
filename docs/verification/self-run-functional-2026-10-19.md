@@ -1,5 +1,3 @@
-# Selbst ausgeführter Funktionstest, 19.10.2026
-
 ## Unverändertes Produkt und isoliertes Ziel
 
 Installiert: `/Applications/Everlast Dictation.app`, Produktquellstand

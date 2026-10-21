@@ -40,5 +40,3 @@ begrenzten Vergleiche; keine gesamte geänderte Datei wird als identisch
 behauptet. Private Detailbelege: `artifacts/offline-continuation-v1/reference-transfer.*`.
 Der neue JSON-Bericht ergänzt die inzwischen feste Commitbindung `ee1a6a4`;
 der damalige 9a2a903-plus-WIP-Autorenbeleg bleibt unverändert erhalten.
-
-## Aussagegrenze

@@ -1,5 +1,3 @@
-# Technische Korrekturen und Technikstand — 21.10.2026
-
 ## Die sieben Befunde
 
 | Befund | Korrektur | Gezielte Evidenz |
@@ -80,5 +78,3 @@ Zusätzlich wurde die neue native Copy-IPC im normalen Release ausgeführt und d
 Ergebnis im eigenen leeren nativen Testfeld gelesen: identischer Text, 20 UTF-8-
 Bytes und passender SHA-256. Dieser Beleg ist ausdrücklich manuelles Copy/Paste,
 nicht ein zweiter automatischer Übergabenachweis.
-
-## Extern verbleibend

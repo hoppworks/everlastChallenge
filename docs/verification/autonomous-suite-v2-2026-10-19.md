@@ -1,5 +1,3 @@
-# Autonome Testsuite v2, 19.10.2026
-
 ## Anlass und neue Testgrenze
 
 Zwei reale Läufe im unveränderten Entwicklerbuild `f592fcd` starteten und stoppten ohne physisches Kürzel. Beide erkannten den festen öffentlichen Satz exakt, hielten ihn aber wegen nicht bestätigter Editierbarkeit des Startfelds zurück. Im zweiten Lauf blieb der eigene Empfänger über alle 18 protokollierten Beobachtungen vorn. Das beweist keinen erfolgreichen Einfügevorgang. Die Rohbelege liegen unter `artifacts/test-control-v1/autonomous-live-20261019/`.

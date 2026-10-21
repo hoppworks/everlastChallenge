@@ -1,7 +1,7 @@
 # R4: tatsächliche lokale Einrichtung und nativer Funktionstest
 
 Beobachtet am 19.10.2026 auf dem dokumentierten Mac (M5, macOS 27.0.1).
-Dieser Nachtrag folgt auf die unveränderte [Paketvorprüfung](testversion-package-r4.md).
+Dieser Nachtrag folgt auf die unveränderte Paketvorprüfung.
 [Strukturierter Beleg](r4-installed-smoke-2026-10-19.json).
 
 ## Installationsgrenze
@@ -20,8 +20,6 @@ kein anderer Browser, keine Änderung an Quarantäne oder Sicherheitsregeln.
 Der lokale Server ist beendet. Die anschließende lokale Entwicklungsinstallation
 ersetzt ausdrücklich nicht P11s Browser-/Quarantäne-/Installationsabnahme.
 Es liegt kein verwertbarer Screenshot der Browsermeldung vor.
-
-## Tatsächlich beobachtet
 
 ## Erkannte Abweichung und Grenzen
 

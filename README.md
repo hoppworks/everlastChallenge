@@ -15,6 +15,12 @@ aber nicht als Produktstandard übernommen.
 
 ## In wenigen Minuten durch das Repository
 
+1. [Technische Entscheidungen](docs/engineering-decisions.md): zentrale Invarianten und Abwägungen.
+2. [Code-Wegweiser](docs/code-map.md): vom Aufnahmestart bis zum Einfügen.
+3. [Guardrails](docs/guardrails.md): automatisierte Architektur- und Qualitätsregeln.
+4. [Leistung](docs/performance.md) und [Vergleich](docs/comparison.md): Messwerte und Grenzen.
+5. [KI-Nutzung](docs/ai-review.md): Werkzeuge und überprüfte Beispiele.
+
 ## Fertige App starten
 
 Den separat bereitgestellten macOS-ZIP entpacken und die `.app` nach Programme

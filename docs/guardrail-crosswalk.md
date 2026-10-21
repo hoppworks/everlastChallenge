@@ -34,8 +34,6 @@ Keine Vollübernahme und keine lückenlose Sicherheitsprüfung wird behauptet.
 | Alle public items dokumentieren | Teilweise, bewusst fokussiert | Öffentliche System-/FFI-Verträge und Architekturpfade dokumentieren; Rust-Hostmodule sind kein veröffentlichtes Bibliotheks-SDK. Keine erfundenen trivialisierenden Docstrings als Vollständigkeitskennzahl |
 | Nur Cargo statt isoliertem rustc | Abweichend | Cargo für App/Integration; sehr kleine Harnesses ohne Modell-/Tauri-Link dienen schnellen Negativbelegen. Kein solcher Harness ersetzt den App-Build |
 
-## React / TypeScript
-
 ## Workflow und Agentenregeln
 
 Die tatsächlichen Regeln, Kommandos und Ausnahmen stehen in den jeweiligen

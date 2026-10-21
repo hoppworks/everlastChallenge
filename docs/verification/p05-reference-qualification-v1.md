@@ -2,7 +2,7 @@
 
 Stand:18.10.2026, Produkt-/Messquellen `b9799b6`; abgeschlossener
 Messnachweis im Archivcommit `3d4e6ab`. Entscheidung nach P05 und §13 des
-[Implementierungsplans](../../IMPLEMENTATION_PLAN.md#measurement).
+Implementierungsplans.
 
 **`large-v3-turbo-q5_0` ist als vollständige Referenz qualifiziert und vorläufig
 gewählt. `small-q5_1` ist wegen deutscher clean-WER über10% ausgeschlossen.**

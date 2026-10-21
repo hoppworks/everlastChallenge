@@ -1,5 +1,3 @@
-# Abhängigkeiten und Herkunft
-
 ## ARM-SHA-256-Beschleunigung
 
 `sha2` bleibt auf 0.10.9. Sein offizielles `asm`-Feature aktiviert auf Apple

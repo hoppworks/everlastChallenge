@@ -57,5 +57,3 @@ SHA256 `a877da2a106d5e0a71ff6ad4e58d3ac74860aa58c03a4a681e5df38c1f8e8baf`,
 Quellkennung `cd47ff5+wrapper-cstring-a4e481fa`.
 Der native C++-Quellstand bleibt
 `fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e`.
-
-## Aussagegrenze

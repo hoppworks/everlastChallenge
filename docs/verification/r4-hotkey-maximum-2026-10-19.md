@@ -1,5 +1,3 @@
-# Reale Hotkeyaufnahme bis zur Fünf-Minuten-Grenze
-
 ## Ablauf und tatsächlich bestandener Teil
 
 Die öffentliche Fleurs-Datei mit SHA256

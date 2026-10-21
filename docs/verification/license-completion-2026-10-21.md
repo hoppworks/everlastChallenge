@@ -1,5 +1,3 @@
-# Lizenznachtrag — 21.10.2026
-
 ## Änderungen
 
 - **FP16:** vollständiger MIT-Originaltext mit den drei ursprünglichen
@@ -35,8 +33,6 @@ Nach Entfernung der Signatur sind die alten und neuen Executable-Dateien bytegle
 die MLX-Metallib ist unverändert. Das Bundle enthält die vollständige bereinigte
 Main-Historie. `npm run check:fast` und die Quell-/Historien-Geheimnisscans sind
 erfolgreich. Die installierte App wurde nicht ersetzt.
-
-## Verbleibende Grenze
 
 ## Ergänzende Herkunftsprüfung
 
