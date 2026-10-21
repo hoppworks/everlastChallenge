@@ -31,7 +31,6 @@ use tokio::sync::{Semaphore, oneshot};
 #[path = "desktop/start_observer.rs"]
 mod start_observer;
 
-mod native_ui;
 #[cfg(feature = "test-control")]
 mod test_control;
 
@@ -279,6 +278,11 @@ impl Desktop {
             .checked_add(1)
             .ok_or("Einstellungsanfragen ausgeschöpft; Anwendung neu starten")?;
         Ok(shared.settings_requests)
+    }
+    /// Published settings navigation counter; reading it never clones a transcript.
+    pub fn settings_request(&self) -> Result<u32, String> {
+        let shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+        Ok(shared.view.settings_request)
     }
     /// Read only the bounded native projection when its revision changes.
     pub fn native_header_after(
@@ -607,7 +611,7 @@ impl Desktop {
             .cancel(session)
             .map_err(|error| error.to_string())
     }
-    pub async fn clear_text(&self) -> Result<(), String> {
+    pub async fn clear_text(&self, expected_text: String) -> Result<(), String> {
         let _admission = self
             .0
             .admissions
@@ -615,7 +619,7 @@ impl Desktop {
             .try_acquire_owned()
             .map_err(|_| "Zu viele laufende Anfragen")?;
         self.runtime()?
-            .clear_text()
+            .clear_text_if_unchanged(expected_text)
             .map_err(|error| error.to_string())?
             .await
             .map_err(|_| "Textanfrage beendet")?
@@ -934,6 +938,7 @@ impl Desktop {
         let mut shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
         match result {
             Ok(settings) => {
+                shared.preferences.needs_restart |= current.model != settings.model;
                 shared.settings = settings;
                 shared.preferences.error = None;
                 shared.action_error = None;
@@ -1290,6 +1295,7 @@ fn valid_id(id: u64) -> Result<(), String> {
 }
 fn draft_of(settings: &Settings) -> SettingsDraft {
     SettingsDraft {
+        model: crate::preferences::PreferenceModel::from_settings(settings),
         device: settings.device.clone(),
         language: settings.language,
         hotkey: settings.hotkey.clone(),
@@ -1346,6 +1352,7 @@ impl HotkeyRebinder for DesktopBinder<'_> {
 }
 fn preference_error(error: PreferencesError) -> String {
     match error {
+        PreferencesError::ModelUnavailable => "Dieses Modell ist in diesem Build nicht verfügbar".into(),
         PreferencesError::LanguageUnavailable => "Diese Sprache ist noch nicht freigegeben".into(),
         PreferencesError::Invalid(_) => "Mikrofon oder Tastenkürzel ist ungültig".into(),
         PreferencesError::Registration => "Tastenkürzel konnte nicht registriert werden; vorherige Einstellung bleibt".into(),
@@ -1371,6 +1378,19 @@ fn permissions(native: ui_services::PermissionSnapshot) -> view::Permissions {
         },
     }
 }
+/// Legacy IPC field names expose the complete setup inventory and provenance.
+/// The locally derived payload's actual transport URL stays empty.
+fn model_view(definition: crate::model::ModelDefinition) -> view::Model {
+    view::Model {
+        name: definition.id().into(),
+        download_bytes: definition.installation_bytes().min(u64::from(u32::MAX)) as u32,
+        source_url: if definition.is_reference_encoder() {
+            crate::model::REFERENCE.url()
+        } else {
+            definition.url()
+        },
+    }
+}
 fn initial() -> view::Snapshot {
     let settings = Settings::default();
     let definition = settings.model.definition();
@@ -1379,13 +1399,9 @@ fn initial() -> view::Snapshot {
         running: true,
         setup: view::Setup {
             phase: view::SetupPhase::Checking,
-            model: view::Model {
-                name: definition.id().into(),
-                download_bytes: definition.bytes() as u32,
-                source_url: definition.url(),
-            },
+            model: model_view(definition),
             downloaded_bytes: 0,
-            total_bytes: definition.bytes() as u32,
+            total_bytes: definition.installation_bytes().min(u64::from(u32::MAX)) as u32,
             can_cancel: false,
             error: None,
         },
@@ -1447,11 +1463,7 @@ fn project(
         setup::Phase::Failed => view::SetupPhase::Failed,
     };
     let definition = application.setup.model;
-    result.setup.model = view::Model {
-        name: definition.id().into(),
-        download_bytes: definition.bytes() as u32,
-        source_url: definition.url(),
-    };
+    result.setup.model = model_view(definition);
     result.setup.downloaded_bytes = application.setup.received.min(u64::from(u32::MAX)) as u32;
     result.setup.total_bytes = application.setup.total.min(u64::from(u32::MAX)) as u32;
     result.setup.can_cancel = matches!(
@@ -1553,7 +1565,7 @@ impl Drop for Finish {
 
 #[cfg(test)]
 mod tests {
-    mod native_ack_contract;
+    mod settings_ack_contract;
     use super::*;
     use crate::{controller::SessionSnapshot, model::REFERENCE, runtime::RuntimeSnapshot};
     pub(super) fn unstarted_desktop() -> Desktop {
@@ -1586,6 +1598,49 @@ mod tests {
             native_starts_lost: AtomicBool::new(false),
         }))
     }
+    #[test]
+    fn initial_model_disclosure_counts_the_complete_installation() {
+        let view = initial();
+        let definition = Settings::default().model.definition();
+        let total = definition.installation_bytes().min(u64::from(u32::MAX)) as u32;
+        assert_eq!(view.setup.model.download_bytes, total);
+        assert_eq!(view.setup.total_bytes, total);
+    }
+
+    #[cfg(feature = "mlx")]
+    #[test]
+    fn derived_model_disclosure_uses_the_verified_origin_and_installation_inventory() {
+        let definition = crate::model::MLX_REFERENCE_COEFFICIENTS;
+        let settings = Settings {
+            model: crate::settings::ModelChoice::MlxReferenceEncoder,
+            ..Settings::default()
+        };
+        let application = crate::application::Snapshot {
+            revision: 1,
+            running: true,
+            closing: false,
+            setup: setup::Snapshot {
+                revision: 1,
+                phase: setup::Phase::Missing,
+                model: definition,
+                received: 17,
+                total: definition.installation_bytes(),
+                failure: None,
+            },
+            runtime_available: false,
+            error: None,
+        };
+        let view = project(&application, None, &settings, initial().permissions);
+        assert!(
+            definition.url().is_empty(),
+            "the local payload has no download endpoint"
+        );
+        assert_eq!(view.setup.model.download_bytes, 3_813_494_037);
+        assert_eq!(view.setup.model.source_url, REFERENCE.url());
+        assert_eq!(view.setup.total_bytes, 3_813_494_037);
+        assert_eq!(view.setup.downloaded_bytes, 17);
+    }
+
     #[test]
     fn sleep_before_runtime_handoff_blocks_start_and_wake_only_refreshes() {
         let desktop = unstarted_desktop();

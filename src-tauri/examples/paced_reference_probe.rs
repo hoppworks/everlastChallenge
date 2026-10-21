@@ -38,6 +38,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     report::check_new(&options.output)?;
     let parameter_bytes = input::bounded_read(&options.parameters, 1024 * 1024)?;
     let (parameter_document, execution_mode) = parameters::select(&parameter_bytes)?;
+    execution_mode.validate_model(options.definition)?;
     let manifest_bytes = input::bounded_read(&options.manifest, input::MAX_MANIFEST)?;
     let cases = manifest::parse(&manifest_bytes)?;
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -66,16 +67,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
     if failure.is_none() {
-        let loaded = if execution_mode.full_prefix().is_some() {
-            everlast_dictation::inference_service::InferenceService::load_prefix_cache(
-                options.model,
-                options.definition,
-            )
-            .map(|service| (service, None))
-            .map_err(|error| Box::new(error) as Box<dyn std::error::Error>)
-        } else {
-            runner::audio_context::load(options.model, options.definition, variant)
-        };
+        let loaded = (|| {
+            #[cfg(feature = "mlx")]
+            if execution_mode == parameters::ExecutionMode::MlxReferenceEncoder {
+                return parameters::load_mlx_service(options.model, options.definition)
+                    .map(|service| (service, None))
+                    .map_err(|error| Box::new(error) as Box<dyn std::error::Error>);
+            }
+            if execution_mode.full_prefix().is_some() {
+                everlast_dictation::inference_service::InferenceService::load_prefix_cache(
+                    options.model,
+                    options.definition,
+                )
+                .map(|service| (service, None))
+                .map_err(|error| Box::new(error) as Box<dyn std::error::Error>)
+            } else {
+                runner::audio_context::load(options.model, options.definition, variant)
+            }
+        })();
         failure = match loaded {
             Ok((service, context_receipts)) => {
                 receipts = context_receipts;
@@ -227,7 +236,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
         "debugAssertions":cfg!(debug_assertions),"hostObservation":host,
         "manifestSha256":input::digest(&manifest_bytes),"parameterDocumentSha256":input::digest(&parameter_bytes),"parameters":parameter_document,"contextCleanup":context_cleanup,"pretranscriptionCandidate":execution_mode.pretranscription(),"fullPrefixCandidate":execution_mode.full_prefix(),"jobTraceAfterCleanup":job_trace_after_cleanup,"jobTraceAfterCleanupError":job_trace_after_cleanup_error,
-        "model":{"id":options.definition.id(),"sha256":options.definition.sha256()},
+        "backend":if options.definition.is_reference_encoder(){"mlxrs-encoder+whisper.cpp-decoder"}else{"whisper.cpp"},"model":{"id":options.definition.id(),"sha256":options.definition.sha256()},
         "engineRtfDefinition":if execution_mode.full_prefix().is_some(){Some("sum actual scoped decoder elapsed / (unique final recorded N/16000); includes preparation/hash/hit work; processed overlapping frames separate; not native kernel time or stop-to-text")}else{None},
         "warmupRuns":1,"measuredRunsPerCase":batch::RUNS_PER_CASE,"requestedRows":batch::TOTAL_RUNS,"fixtures":fixtures,
         "loadMillis":load_millis,"initialFailure":failure,"runs":observations,"cleanup":cleanup,"statistics":summary,

@@ -1,0 +1,21 @@
+{
+  "kind": "bounded follow-up screen requested by user",
+  "candidate": "mlx-fp16 --mlx-single-window-text; no CPP ASR fallback",
+  "sharedVad": "Silero via whisper.cpp; this is pure MLX ASR, not a binary free of whisper.cpp",
+  "baseline": "qualified F16 encoder / CPP decoder hybrid",
+  "binary": "/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/release/examples/corpus_probe",
+  "binarySha256": "9e5db28ed1b5d8350eb4c532b2f8192d70ea6d88f1b75a2ba206be545630a04d",
+  "runtimeSource": "2ded384b7a8eb2136db9544d6d60b14c84fda07d",
+  "sourceReuse": "ASR numerical path unchanged by later UI/clipboard/guardrail commits; experiment stays bound to frozen binary",
+  "cases": [
+    "fleurs-de-test-1736",
+    "fleurs-de-test-1663",
+    "fleurs-de-test-1668",
+    "fleurs-de-test-1667",
+    "mlx-confirmation-en-1690",
+    "fleurs-de-test-1732-thirty-second-v1"
+  ],
+  "repetitions": 1,
+  "stopCondition": "record any regression; never qualify or replace product from this small screen",
+  "timingLimit": "single file-helper observations and process peak RSS, not app latency or warm-memory guarantee"
+}

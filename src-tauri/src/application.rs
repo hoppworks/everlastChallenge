@@ -131,9 +131,11 @@ impl AppSupervisor {
             .app_data_dir()
             .map_err(|error| ApplicationError::Worker(error.to_string()))?
             .join("models");
-        Self::spawn(directory, definition, move |endpoint| {
-            NativeService::for_app(endpoint, app)
-        })
+        Self::spawn(
+            definition.cache_directory(&directory),
+            definition,
+            move |endpoint| NativeService::for_app(endpoint, app),
+        )
     }
     /// Starts the owner with a trusted host-selected model directory and native factory.
     /// This is a host integration boundary, not an IPC command: never pass renderer paths

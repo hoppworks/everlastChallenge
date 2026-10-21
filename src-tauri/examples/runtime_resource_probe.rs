@@ -18,7 +18,6 @@ mod shared;
 
 use dictation_core::audio::AudioFormat;
 use everlast_dictation::{
-    inference_service::InferenceService,
     model::{REFERENCE, SMALL},
     runtime::measurement::MeasuredRuntime,
     transcription::Engine,
@@ -55,24 +54,39 @@ fn main() -> Result<(), Error> {
         );
         return Ok(());
     }
+    #[cfg(feature = "mlx")]
+    if args.len() == 1 && args[0] == "--print-mlx-reference-encoder-parameters" {
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&parameters::mlx_template()?)?
+        );
+        return Ok(());
+    }
     if args.len() != 6
         || args
             .iter()
             .any(|arg| arg.is_empty() || arg.as_encoded_bytes().len() > 4096)
     {
-        return Err("usage: runtime_resource_probe MODEL reference|small WAV REFERENCE_UTF8 PARAMETERS_JSON NEW_OUTPUT_JSON".into());
+        return Err("usage: runtime_resource_probe MODEL reference|small|mlx-reference-encoder WAV REFERENCE_UTF8 PARAMETERS_JSON NEW_OUTPUT_JSON".into());
     }
     let definition = match args[1].to_str() {
         Some("reference") => REFERENCE,
         Some("small") => SMALL,
-        _ => return Err("model selection must be reference or small".into()),
+        #[cfg(feature = "mlx")]
+        Some("mlx-reference-encoder") => everlast_dictation::model::MLX_REFERENCE_COEFFICIENTS,
+        _ => {
+            return Err(
+                "model selection must be reference, small or feature-enabled mlx-reference-encoder"
+                    .into(),
+            );
+        }
     };
     let output = Path::new(&args[5]);
     if output.try_exists()? {
         return Err("output must be a new path".into());
     }
     let parameter_bytes = input::bounded_read(Path::new(&args[4]), 1024 * 1024)?;
-    let parameter_document = parameters::validate(&parameter_bytes)?;
+    let parameter_document = parameters::select(&parameter_bytes, definition)?;
     let wav_bytes = input::bounded_read(Path::new(&args[2]), input::MAX_AUDIO)?;
     let wav = hound::WavReader::new(Cursor::new(&wav_bytes))?;
     let audio = input::Audio {
@@ -93,10 +107,32 @@ fn main() -> Result<(), Error> {
     let config = runner::Config::production();
     let load_started = Instant::now();
     let initialized = (|| -> Result<_, String> {
-        let engine = Engine::load(Path::new(&args[0]), definition).map_err(|e| e.to_string())?;
-        let (decoder, control) =
-            runner::controlled(engine, std::sync::Arc::clone(&samples), runner::WAIT);
-        let service = InferenceService::with_decoder(decoder).map_err(|e| e.to_string())?;
+        let model = std::path::PathBuf::from(&args[0]);
+        let (service, control) = {
+            #[cfg(feature = "mlx")]
+            if definition.is_mlx() {
+                runner::controlled_service(
+                    move || {
+                        everlast_dictation::transcription::mlx::MlxEngine::load(&model, definition)
+                    },
+                    std::sync::Arc::clone(&samples),
+                    runner::WAIT,
+                )
+            } else {
+                runner::controlled_service(
+                    move || Engine::load(&model, definition),
+                    std::sync::Arc::clone(&samples),
+                    runner::WAIT,
+                )
+            }
+            #[cfg(not(feature = "mlx"))]
+            runner::controlled_service(
+                move || Engine::load(&model, definition),
+                std::sync::Arc::clone(&samples),
+                runner::WAIT,
+            )
+        }
+        .map_err(|e| e.to_string())?;
         let runtime = MeasuredRuntime::spawn(
             service,
             1,

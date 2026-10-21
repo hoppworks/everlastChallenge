@@ -40,7 +40,7 @@ const microphoneHelp: Partial<
   Record<AppViewProps["permissions"]["microphone"], string>
 > = {
   denied:
-    "Öffne System Settings → Privacy & Security → Microphone und aktiviere Everlast Dictation.",
+    "Öffne System Settings → Privacy & Security → Microphone und aktiviere Everlast Coding Challenge.",
   restricted:
     "Der Mikrofonzugriff ist durch System- oder Verwaltungsvorgaben eingeschränkt. Prüfe diese Vorgaben oder wende dich an die Geräteverwaltung.",
   unavailable:
@@ -50,7 +50,7 @@ const accessibilityHelp: Partial<
   Record<AppViewProps["permissions"]["accessibility"], string>
 > = {
   denied:
-    "Öffne System Settings → Privacy & Security → Accessibility und aktiviere Everlast Dictation.",
+    "Öffne System Settings → Privacy & Security → Accessibility und aktiviere Everlast Coding Challenge.",
   restricted:
     "Die Bedienungshilfen sind durch System- oder Verwaltungsvorgaben eingeschränkt. Prüfe diese Vorgaben oder wende dich an die Geräteverwaltung.",
   unavailable:
@@ -128,8 +128,9 @@ export function SettingsView(props: SettingsViewProps) {
         {props.error && <p role="alert">{props.error}</p>}
         {preferences.needsRestart && (
           <p role="alert">
-            Die Einstellungen konnten nicht vollständig angewendet werden. Bitte
-            starte die App neu, bevor du sie änderst.
+            Bitte starte die App neu, um die gespeicherte Modellwahl zu laden
+            oder die Einstellungen wieder vollständig anzuwenden. Bis dahin sind
+            Aufnahme und weitere Änderungen gesperrt.
           </p>
         )}
         {preferences.error && <p role="alert">{preferences.error}</p>}
@@ -301,6 +302,44 @@ export function SettingsView(props: SettingsViewProps) {
           <section className="settings-detail" aria-labelledby="settings-model">
             <h3 id="settings-model">Sprachmodell</h3>
             <p>{setup.model.name}</p>
+            <label>
+              Erkennungsmodell
+              <select
+                disabled={disabled}
+                value={draft.model ?? ""}
+                onChange={(event) =>
+                  setDraft({
+                    ...draft,
+                    model: event.target.value as
+                      | "reference"
+                      | "mlx_reference_encoder",
+                  })
+                }
+              >
+                {!preferences.current.model && (
+                  <option value="" disabled>
+                    Bisherige Modellwahl beibehalten
+                  </option>
+                )}
+                <option value="mlx_reference_encoder">
+                  MLX-Hybrid · optimierter Encoder, whisper.cpp-Decoder
+                </option>
+                <option value="reference">whisper.cpp · Referenz</option>
+              </select>
+            </label>
+            <p className="settings-help">
+              Der Wechsel wird erst nach dem Speichern und einem Neustart aktiv.
+              Danach wird das gewählte Modell geprüft und bei Bedarf
+              eingerichtet. Mikrofon und Tastenkürzel bleiben erhalten.
+            </p>
+            <button
+              type="button"
+              className="primary-action"
+              disabled={disabled || !dirty || !valid}
+              onClick={() => props.onSave(draft)}
+            >
+              Modellwahl speichern
+            </button>
             <p>{phaseLabels[setup.phase]}</p>
             {setup.error && <p role="alert">{setup.error}</p>}
             <p className="settings-help">
@@ -310,7 +349,7 @@ export function SettingsView(props: SettingsViewProps) {
               <summary>Modelldetails</summary>
               <dl>
                 <div>
-                  <dt>Downloadgröße</dt>
+                  <dt>Installationsbedarf einschließlich lokaler Ableitung</dt>
                   <dd>
                     {new Intl.NumberFormat("de-DE", {
                       maximumFractionDigits: 1,
@@ -360,8 +399,8 @@ export function SettingsView(props: SettingsViewProps) {
               permissions.accessibility === "denied" ||
               permissions.accessibility === "restricted") && (
               <p className="settings-help">
-                Kehre nach der Änderung zu Everlast Dictation zurück. Die App
-                prüft den Status dann erneut.
+                Kehre nach der Änderung zu Everlast Coding Challenge zurück. Die
+                App prüft den Status dann erneut.
               </p>
             )}
             {(permissions.microphone === "notDetermined" ||

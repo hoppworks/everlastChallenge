@@ -12,6 +12,7 @@ use core_graphics::{
     event_source::{CGEventSource, CGEventSourceStateID},
 };
 use objc2::MainThreadMarker;
+use std::time::{Duration, Instant};
 
 #[derive(Debug, thiserror::Error)]
 pub enum PasteError {
@@ -50,6 +51,7 @@ pub struct ReadyPaste {
 /// This confirms only event dispatch. It contains no claim about target text.
 pub struct SentPaste {
     clipboard: ClipboardLease,
+    restore_after: Instant,
 }
 
 impl PreparedPaste {
@@ -148,13 +150,21 @@ impl ReadyPaste {
         }
         events.down.post(CGEventTapLocation::HID);
         events.up.post(CGEventTapLocation::HID);
-        Ok(SentPaste { clipboard })
+        Ok(SentPaste {
+            clipboard,
+            restore_after: Instant::now() + Duration::from_millis(500),
+        })
     }
 }
 
 impl SentPaste {
+    /// The recipient read window starts after the actual event posts, not their acknowledgment.
+    pub(crate) fn restore_after(&self) -> Instant {
+        self.restore_after
+    }
+
     /// Schedule outside the send step; neither delay nor restore proves receipt.
-    pub fn restore(self, main: MainThreadMarker) -> Result<RestoreOutcome, ClipboardError> {
+    pub(crate) fn restore(self, main: MainThreadMarker) -> Result<RestoreOutcome, ClipboardError> {
         self.clipboard.restore(main)
     }
 }

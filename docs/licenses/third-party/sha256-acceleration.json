@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "kind": "hardware SHA-256 acceleration dependency addendum",
+  "components": [
+    {
+      "name": "sha2-asm",
+      "version": "0.6.4",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "packageChecksum": "b845214d6175804686b2bd482bcffe96651bb2d1200742b712003504a2dac1ab",
+      "repository": "https://github.com/RustCrypto/asm-hashes",
+      "license": "MIT",
+      "text": {
+        "path": "docs/licenses/third-party/texts/85010e75aef5bdcd10b9ce39e8865dfab508f620f9ddb6ca6e54833fe97f36fa.txt",
+        "sha256": "85010e75aef5bdcd10b9ce39e8865dfab508f620f9ddb6ca6e54833fe97f36fa",
+        "bytes": 1114,
+        "originalPath": "LICENSE"
+      },
+      "scope": "sha2 0.10.9 asm feature enables runtime-detected AArch64 SHA instructions with software fallback; declared transitive native dependency retained conservatively"
+    }
+  ]
+}

@@ -107,6 +107,9 @@ impl Registry for NativeRegistry {
         macos_integration::keyboard::escape_key_pressed()
     }
     fn register(&mut self, key: Shortcut, handler: Handler) -> Result<(), String> {
+        if cfg!(feature = "isolated") {
+            return Err("Globale Tastenkürzel sind im isolierten MLX-Versuch deaktiviert".into());
+        }
         let observe = self.1;
         self.0
             .global_shortcut()

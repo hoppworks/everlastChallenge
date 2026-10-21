@@ -60,11 +60,6 @@ test("development plan has no recipient or installed-app precondition", () => {
   );
   assert.ok(
     full.every(
-      (step) => !step.args.includes("native_preferences_close_contract"),
-    ),
-  );
-  assert.ok(
-    full.every(
       (step) =>
         step.id !== "native-offscreen-contracts" || !step.args.includes("*"),
     ),

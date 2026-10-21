@@ -543,6 +543,7 @@ struct ggml_metal_rsets {
     atomic_int  d_loop;
 
     dispatch_group_t d_group;
+    dispatch_semaphore_t d_wake;
 };
 
 ggml_metal_rsets_t ggml_metal_rsets_init(void) {
@@ -569,6 +570,7 @@ ggml_metal_rsets_t ggml_metal_rsets_init(void) {
     atomic_store_explicit(&res->d_loop, 2*res->keep_alive_s, memory_order_relaxed);
 
     res->d_group = dispatch_group_create();
+    res->d_wake = dispatch_semaphore_create(0);
 
     // start a background thread that periodically requests residency for all the currently active sets in the collection
     // the requests stop after a certain amount of time (keep_alive_s) of inactivity
@@ -589,8 +591,9 @@ ggml_metal_rsets_t ggml_metal_rsets_init(void) {
                       [res->lock unlock];
                   }
 
-                  // half a second
-                  usleep(500 * 1000);
+                  // Keep the interval while allowing shutdown to wake now.
+                  dispatch_semaphore_wait(res->d_wake,
+                      dispatch_time(DISPATCH_TIME_NOW, 500 * NSEC_PER_MSEC));
               }
         }
 #endif
@@ -608,9 +611,11 @@ void ggml_metal_rsets_free(ggml_metal_rsets_t rsets) {
     GGML_ASSERT([rsets->data count] == 0);
 
     atomic_store_explicit(&rsets->d_stop, true, memory_order_relaxed);
+    dispatch_semaphore_signal(rsets->d_wake);
 
     dispatch_group_wait(rsets->d_group, DISPATCH_TIME_FOREVER);
     dispatch_release(rsets->d_group);
+    dispatch_release(rsets->d_wake);
 
     [rsets->data release];
     [rsets->lock release];
@@ -645,6 +650,11 @@ ggml_metal_device_t ggml_metal_device_init(void) {
             }
 
             dev->props.has_tensor = [dev->mtl_device supportsFamily:MTLGPUFamilyMetal4_GGML];
+#if defined(GGML_METAL_TENSOR_DISABLED)
+            // This app profile retains the qualified SIMD kernels. In SDK27
+            // the upstream 8x8 tensor probe fails, wasting work at each launch.
+            dev->props.has_tensor = false;
+#endif
             if (getenv("GGML_METAL_TENSOR_DISABLE") != NULL) {
                 dev->props.has_tensor = false;
             }

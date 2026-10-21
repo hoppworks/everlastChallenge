@@ -451,7 +451,8 @@ impl CaptureHandle {
         + Send
         + 'static,
     ) -> Result<Self, CaptureError> {
-        let link = (policy == crate::pipeline::Policy::FullPrefix)
+        let link = policy
+            .is_full_prefix()
             .then(|| Arc::new(full_prefix::PrefixLink::default()));
         let owner_link = link.clone();
         let mut handle = Self::spawn(session, move |events, stop, maximum, progress| {

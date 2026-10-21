@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: unhandled and void-discarded promises fail; explicit catch passes
+not ok 1 - unhandled and void-discarded promises fail; explicit catch passes
+  ---
+  duration_ms: 472.1585
+  type: 'test'
+  location: '/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/scripts/async-guardrails.test.mjs:10:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await messages(source)).includes("@typescript-eslint/no-floating-promises"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/scripts/async-guardrails.test.mjs:12:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: async callbacks cannot silently enter void event interfaces
+not ok 2 - async callbacks cannot silently enter void event interfaces
+  ---
+  duration_ms: 5.640958
+  type: 'test'
+  location: '/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/scripts/async-guardrails.test.mjs:16:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await messages("const run: () => void = async () => {}; run();")).includes("@typescript-eslint/no-misused-promises"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/scripts/async-guardrails.test.mjs:17:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit any cannot bypass a checked interface
+not ok 3 - explicit any cannot bypass a checked interface
+  ---
+  duration_ms: 5.1335
+  type: 'test'
+  location: '/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/scripts/async-guardrails.test.mjs:19:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok((await messages("export const bad: any = 1;")).includes("@typescript-eslint/no-explicit-any"))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/scripts/async-guardrails.test.mjs:20:10)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 0
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 562.751792

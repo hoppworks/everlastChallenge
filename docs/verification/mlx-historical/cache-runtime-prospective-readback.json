@@ -1,0 +1,1562 @@
+{
+  "schemaVersion": 1,
+  "qualified": false,
+  "allIndependentChecksPassed": true,
+  "prospective12Passed": true,
+  "stage": "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12",
+  "readUtc": "2026-10-20T08:12:22.528608+00:00",
+  "checks": [
+    {
+      "check": "build receipt bound, successful and unchanged sources",
+      "passed": true
+    },
+    {
+      "check": "source manifest bound to build and receipt",
+      "passed": true
+    },
+    {
+      "check": "build freeze bound to selection, run and policy",
+      "passed": true
+    },
+    {
+      "check": "policy is bound 256MiB",
+      "passed": true
+    },
+    {
+      "check": "explicit FP16 build with original Reference default",
+      "passed": true
+    },
+    {
+      "check": "release compilation transcript hash",
+      "passed": true
+    },
+    {
+      "check": "compiled artifact features corpus_probe",
+      "passed": true
+    },
+    {
+      "check": "compiled artifact features paced_runtime_probe",
+      "passed": true
+    },
+    {
+      "check": "compiled artifact features paced_reference_probe",
+      "passed": true
+    },
+    {
+      "check": "compiled artifact features runtime_resource_probe",
+      "passed": true
+    },
+    {
+      "check": "compiled artifact features encoder_precision_probe",
+      "passed": true
+    },
+    {
+      "check": "compiled artifact features runtime_memory_profile",
+      "passed": true
+    },
+    {
+      "check": "run freeze explicit two-arm order and no retry",
+      "passed": true
+    },
+    {
+      "check": "selected binary hash matches immutable build receipt",
+      "passed": true
+    },
+    {
+      "check": "all registered frozen file fingerprints unchanged",
+      "passed": true,
+      "detail": {
+        "checked": 3562,
+        "mismatches": []
+      }
+    },
+    {
+      "check": "all compiled source records represented by unchanged run witnesses",
+      "passed": true,
+      "detail": {
+        "count": 3523,
+        "bad": []
+      }
+    },
+    {
+      "check": "all compiled sources same witness as accepted quality100",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "check": "model retained from quality100 weights.safetensors",
+      "passed": true
+    },
+    {
+      "check": "model retained from quality100 config.json",
+      "passed": true
+    },
+    {
+      "check": "model retained from quality100 tokenizer.json",
+      "passed": true
+    },
+    {
+      "check": "model retained from quality100 tokenizer_config.json",
+      "passed": true
+    },
+    {
+      "check": "model retained from quality100 ggml-silero-v5.1.2.bin",
+      "passed": true
+    },
+    {
+      "check": "model retained from quality100 ggml-large-v3-turbo-q5_0.bin",
+      "passed": true
+    },
+    {
+      "check": "binary/kernel witness same as accepted quality100 bin/corpus_probe",
+      "passed": true
+    },
+    {
+      "check": "binary/kernel witness same as accepted quality100 bin/mlx.metallib",
+      "passed": true
+    },
+    {
+      "check": "selected source hash scripts/corpus.py",
+      "passed": true
+    },
+    {
+      "check": "selected source hash scripts/quality.py",
+      "passed": true
+    },
+    {
+      "check": "selected source hash scripts/compare_mlx_quality.py",
+      "passed": true
+    },
+    {
+      "check": "selected source hash src-tauri/examples/corpus_probe.rs",
+      "passed": true
+    },
+    {
+      "check": "control copy and original hash run-f16-runtime-counter-order.py",
+      "passed": true
+    },
+    {
+      "check": "control copy and original hash owned_probe.py",
+      "passed": true
+    },
+    {
+      "check": "control copy and original hash run-f16-runtime-central.py",
+      "passed": true
+    },
+    {
+      "check": "control copy and original hash run-f16-runtime-quality.py",
+      "passed": true
+    },
+    {
+      "check": "control copy and original hash run-cache-runtime-quality.py",
+      "passed": true
+    },
+    {
+      "check": "control copy and original hash run-cache-runtime-prospective.py",
+      "passed": true
+    },
+    {
+      "check": "run bound runnerSha256",
+      "passed": true
+    },
+    {
+      "check": "run bound ownerRunnerSha256",
+      "passed": true
+    },
+    {
+      "check": "run bound ownershipHelperSha256",
+      "passed": true
+    },
+    {
+      "check": "run bound reaperSha256",
+      "passed": true
+    },
+    {
+      "check": "prepare wrapper exactly retained",
+      "passed": true
+    },
+    {
+      "check": "original deterministic preparation helper bound",
+      "passed": true
+    },
+    {
+      "check": "corpus helper bound",
+      "passed": true
+    },
+    {
+      "check": "manifest and selection hashes bound",
+      "passed": true
+    },
+    {
+      "check": "quality100 prerequisite accepted and bound",
+      "passed": true
+    },
+    {
+      "check": "quality100 prerequisite candidate.json",
+      "passed": true
+    },
+    {
+      "check": "quality100 prerequisite completion.json",
+      "passed": true
+    },
+    {
+      "check": "quality100 prerequisite semantic-reviews.json",
+      "passed": true
+    },
+    {
+      "check": "quality100 prerequisite owner-completion.json",
+      "passed": true
+    },
+    {
+      "check": "prior independent quality100 readback bound",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/corpus/fleurs-base.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/coefficient-window-confirmation-v1/manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/coefficient-window-confirmation-v1/selection.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/confirmation-native-timestamps-v1/manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/confirmation-native-timestamps-v1/selection.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/confirmation-ranked-v1/manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/confirmation-ranked-v1/selection.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/confirmation-v1/manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/confirmation-v1/selection.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/decoder-diagnosis-v1/manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/f32-v1/de-clean-manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/fp16-v2/canonical90-manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/fp16-v2/supplement10-manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/native-reference-encoder-abba-v1/central-manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/reference-encoder-confirmation-v1/manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/reference-encoder-confirmation-v1/selection.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/reference-encoder-f16-calibration-v1/manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/reference-encoder-f16-runtime-v1/central-abba/central-manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/reference-encoder-f16-runtime-v1/central-counter-order-v2/central-manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/reference-encoder-f16-runtime-v1/prospective12/manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/reference-encoder-f16-runtime-v1/prospective12/selection.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/reference-encoder-f16-runtime-v1/quality100/manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/reference-encoder-prospective-v1/manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/reference-encoder-prospective-v1/selection.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash artifacts/mlx-qualification/reference-encoder-remainder-v2/cases/reference-manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/acceptance-reference-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/acceptance-reference-parameters-v2.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/acceptance-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/calibration-v2.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/central-reference-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/deadline-wait-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/deadline-wait-run-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/long-clip-context-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/long-control-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/manifest.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/model-init-manifest-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/model-init-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/native-runtime-restart-run-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/native-timestamps-acceptance-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/native-timestamps-calibration-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/native-timestamps-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/native-timestamps-supplement-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/native-timestamps-supplement-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/observed-long-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/observed-short-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/observed-short-parameters-v2.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/observed-short-parameters-v3.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-context-quality-manifest-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-context-quality-run-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-context-quality-selection-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-corpus-context-candidate-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-corpus-context-reference-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-corpus-flash-candidate-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-corpus-flash-reference-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-flash-attention-quality-run-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-pretrans-screening-candidate-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-pretrans-screening-reference-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-pretranscription-continuation-adoption-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-pretranscription-continuation-epoch-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-pretranscription-continuation-run-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-pretranscription-screening-run-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-pretranscription-screening-run-v2.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/p06-pretranscription-screening-run-v3.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-reference-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-remainder-run-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-rtf-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-rtf-smoke-run-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-runtime-tc-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-runtime-tc-smoke-run-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-six-reference-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-six-reference-parameters-v2.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-six-reference-parameters-v3.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-six-reference-parameters-v4.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-six-reference-run-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-six-reference-run-v2.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-six-reference-run-v3.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/paced-six-reference-run-v4.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/pretranscription-quality-denominators-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/publisher-scheduling-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/publisher-scheduling-run-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/reference-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/reference-parameters-v2.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/reference-parameters-v3.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/reference-parameters-v4.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/reference-parameters-v5.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/remainder-timing-selection-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/replay-wait-long-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/runtime-resource-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/runtime-resource-parameters-v2.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/runtime-resource-run-v2.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/synthetic-speech-diagnostic-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/synthetic-speech-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/thirty-second-v1.json",
+      "passed": true
+    },
+    {
+      "check": "exclusion source hash tests/fixtures/corpus/weak-slice-parameters-v1.json",
+      "passed": true
+    },
+    {
+      "check": "all exclusion IDs independently recomputed",
+      "passed": true,
+      "detail": {
+        "de": 64,
+        "en": 52
+      }
+    },
+    {
+      "check": "pinned TSV de_de-test",
+      "passed": true
+    },
+    {
+      "check": "first four unused canonical choices de_de-test",
+      "passed": true
+    },
+    {
+      "check": "pinned TSV en_us-test",
+      "passed": true
+    },
+    {
+      "check": "first four unused canonical choices en_us-test",
+      "passed": true
+    },
+    {
+      "check": "selection pre-ASR rules and scope",
+      "passed": true
+    },
+    {
+      "check": "12 unique cases from 8 original sources",
+      "passed": true
+    },
+    {
+      "check": "case references selected TSV row mlx-f16-prospective-de-1713",
+      "passed": true
+    },
+    {
+      "check": "selected PCM hash mlx-f16-prospective-de-1713",
+      "passed": true
+    },
+    {
+      "check": "PCM format and declared frames mlx-f16-prospective-de-1713",
+      "passed": true
+    },
+    {
+      "check": "original conversion declaration mlx-f16-prospective-de-1713",
+      "passed": true
+    },
+    {
+      "check": "case references selected TSV row mlx-f16-prospective-de-1713-quiet",
+      "passed": true
+    },
+    {
+      "check": "selected PCM hash mlx-f16-prospective-de-1713-quiet",
+      "passed": true
+    },
+    {
+      "check": "PCM format and declared frames mlx-f16-prospective-de-1713-quiet",
+      "passed": true
+    },
+    {
+      "check": "fixed quiet derived PCM mlx-f16-prospective-de-1713-quiet",
+      "passed": true
+    },
+    {
+      "check": "case references selected TSV row mlx-f16-prospective-de-1714",
+      "passed": true
+    },
+    {
+      "check": "selected PCM hash mlx-f16-prospective-de-1714",
+      "passed": true
+    },
+    {
+      "check": "PCM format and declared frames mlx-f16-prospective-de-1714",
+      "passed": true
+    },
+    {
+      "check": "original conversion declaration mlx-f16-prospective-de-1714",
+      "passed": true
+    },
+    {
+      "check": "case references selected TSV row mlx-f16-prospective-de-1714-quiet",
+      "passed": true
+    },
+    {
+      "check": "selected PCM hash mlx-f16-prospective-de-1714-quiet",
+      "passed": true
+    },
+    {
+      "check": "PCM format and declared frames mlx-f16-prospective-de-1714-quiet",
+      "passed": true
+    },
+    {
+      "check": "fixed quiet derived PCM mlx-f16-prospective-de-1714-quiet",
+      "passed": true
+    },
+    {
+      "check": "case references selected TSV row mlx-f16-prospective-de-1715",
+      "passed": true
+    },
+    {
+      "check": "selected PCM hash mlx-f16-prospective-de-1715",
+      "passed": true
+    },
+    {
+      "check": "PCM format and declared frames mlx-f16-prospective-de-1715",
+      "passed": true
+    },
+    {
+      "check": "original conversion declaration mlx-f16-prospective-de-1715",
+      "passed": true
+    },
+    {
+      "check": "case references selected TSV row mlx-f16-prospective-de-1717",
+      "passed": true
+    },
+    {
+      "check": "selected PCM hash mlx-f16-prospective-de-1717",
+      "passed": true
+    },
+    {
+      "check": "PCM format and declared frames mlx-f16-prospective-de-1717",
+      "passed": true
+    },
+    {
+      "check": "original conversion declaration mlx-f16-prospective-de-1717",
+      "passed": true
+    },
+    {
+      "check": "case references selected TSV row mlx-f16-prospective-en-1702",
+      "passed": true
+    },
+    {
+      "check": "selected PCM hash mlx-f16-prospective-en-1702",
+      "passed": true
+    },
+    {
+      "check": "PCM format and declared frames mlx-f16-prospective-en-1702",
+      "passed": true
+    },
+    {
+      "check": "original conversion declaration mlx-f16-prospective-en-1702",
+      "passed": true
+    },
+    {
+      "check": "case references selected TSV row mlx-f16-prospective-en-1702-quiet",
+      "passed": true
+    },
+    {
+      "check": "selected PCM hash mlx-f16-prospective-en-1702-quiet",
+      "passed": true
+    },
+    {
+      "check": "PCM format and declared frames mlx-f16-prospective-en-1702-quiet",
+      "passed": true
+    },
+    {
+      "check": "fixed quiet derived PCM mlx-f16-prospective-en-1702-quiet",
+      "passed": true
+    },
+    {
+      "check": "case references selected TSV row mlx-f16-prospective-en-1703",
+      "passed": true
+    },
+    {
+      "check": "selected PCM hash mlx-f16-prospective-en-1703",
+      "passed": true
+    },
+    {
+      "check": "PCM format and declared frames mlx-f16-prospective-en-1703",
+      "passed": true
+    },
+    {
+      "check": "original conversion declaration mlx-f16-prospective-en-1703",
+      "passed": true
+    },
+    {
+      "check": "case references selected TSV row mlx-f16-prospective-en-1703-quiet",
+      "passed": true
+    },
+    {
+      "check": "selected PCM hash mlx-f16-prospective-en-1703-quiet",
+      "passed": true
+    },
+    {
+      "check": "PCM format and declared frames mlx-f16-prospective-en-1703-quiet",
+      "passed": true
+    },
+    {
+      "check": "fixed quiet derived PCM mlx-f16-prospective-en-1703-quiet",
+      "passed": true
+    },
+    {
+      "check": "case references selected TSV row mlx-f16-prospective-en-1704",
+      "passed": true
+    },
+    {
+      "check": "selected PCM hash mlx-f16-prospective-en-1704",
+      "passed": true
+    },
+    {
+      "check": "PCM format and declared frames mlx-f16-prospective-en-1704",
+      "passed": true
+    },
+    {
+      "check": "original conversion declaration mlx-f16-prospective-en-1704",
+      "passed": true
+    },
+    {
+      "check": "case references selected TSV row mlx-f16-prospective-en-1705",
+      "passed": true
+    },
+    {
+      "check": "selected PCM hash mlx-f16-prospective-en-1705",
+      "passed": true
+    },
+    {
+      "check": "PCM format and declared frames mlx-f16-prospective-en-1705",
+      "passed": true
+    },
+    {
+      "check": "original conversion declaration mlx-f16-prospective-en-1705",
+      "passed": true
+    },
+    {
+      "check": "selection record precedes all WAVs, manifest and ASR",
+      "passed": true
+    },
+    {
+      "check": "quality acceptance preceded both ASR arms",
+      "passed": true
+    },
+    {
+      "check": "reference raw output bound to completion",
+      "passed": true
+    },
+    {
+      "check": "reference all12 full objects and order",
+      "passed": true
+    },
+    {
+      "check": "reference all12 metadata complete/order",
+      "passed": true
+    },
+    {
+      "check": "reference metadata corpus/process/errors",
+      "passed": true
+    },
+    {
+      "check": "reference owner object exact completion",
+      "passed": true
+    },
+    {
+      "check": "reference clean owner",
+      "passed": true
+    },
+    {
+      "check": "reference actual command exactly selected arm",
+      "passed": true
+    },
+    {
+      "check": "reference process group independently absent",
+      "passed": true
+    },
+    {
+      "check": "reference no unparsed diagnostic lines",
+      "passed": true
+    },
+    {
+      "check": "candidate raw output bound to completion",
+      "passed": true
+    },
+    {
+      "check": "candidate all12 full objects and order",
+      "passed": true
+    },
+    {
+      "check": "candidate all12 metadata complete/order",
+      "passed": true
+    },
+    {
+      "check": "candidate metadata corpus/process/errors",
+      "passed": true
+    },
+    {
+      "check": "candidate owner object exact completion",
+      "passed": true
+    },
+    {
+      "check": "candidate clean owner",
+      "passed": true
+    },
+    {
+      "check": "candidate actual command exactly selected arm",
+      "passed": true
+    },
+    {
+      "check": "candidate process group independently absent",
+      "passed": true
+    },
+    {
+      "check": "candidate no unparsed diagnostic lines",
+      "passed": true
+    },
+    {
+      "check": "two arms serial and completed",
+      "passed": true
+    },
+    {
+      "check": "all12 complete text/status/id objects equal",
+      "passed": true
+    },
+    {
+      "check": "all original CPP decoder options preserved",
+      "passed": true
+    },
+    {
+      "check": "explicit metadata FP16 reference encoder",
+      "passed": true
+    },
+    {
+      "check": "reference model and candidate derived model identities",
+      "passed": true
+    },
+    {
+      "check": "reference no MLX events",
+      "passed": true
+    },
+    {
+      "check": "one actual FP16 checkpoint load",
+      "passed": true
+    },
+    {
+      "check": "one actual 256MiB worker cache budget installation",
+      "passed": true
+    },
+    {
+      "check": "12 actual external encoders, none skipped/native-only",
+      "passed": true
+    },
+    {
+      "check": "independent word distances reproduce all4 stored WER groups",
+      "passed": true
+    },
+    {
+      "check": "frozen comparator reproduces full stored comparison",
+      "passed": true
+    },
+    {
+      "check": "no changed pairs or semantic review bypass",
+      "passed": true
+    }
+  ],
+  "checksPassed": 230,
+  "checkCount": 230,
+  "findings": [],
+  "selection": {
+    "freshnessScope": "94 pinned prior inventories; not a claim about unknown human exposure",
+    "exclusionSourceCount": 94,
+    "excludedCounts": {
+      "de": 64,
+      "en": 52
+    },
+    "selected": {
+      "de_de-test": [
+        {
+          "sentenceId": 1713,
+          "filename": "10504450071805589678.wav",
+          "frames": 368640
+        },
+        {
+          "sentenceId": 1714,
+          "filename": "10991454026397809707.wav",
+          "frames": 266880
+        },
+        {
+          "sentenceId": 1715,
+          "filename": "10936392554848150051.wav",
+          "frames": 209280
+        },
+        {
+          "sentenceId": 1717,
+          "filename": "10618529918679729733.wav",
+          "frames": 219840
+        }
+      ],
+      "en_us-test": [
+        {
+          "sentenceId": 1702,
+          "filename": "1483818313790875806.wav",
+          "frames": 162880
+        },
+        {
+          "sentenceId": 1703,
+          "filename": "6284223441572848962.wav",
+          "frames": 161920
+        },
+        {
+          "sentenceId": 1704,
+          "filename": "13245569655363672734.wav",
+          "frames": 117120
+        },
+        {
+          "sentenceId": 1705,
+          "filename": "10550734868852131138.wav",
+          "frames": 161920
+        }
+      ]
+    },
+    "de1716SkippedRows": [
+      {
+        "sentenceId": 1716,
+        "filename": "4323453320486766053.wav",
+        "frames": 651840
+      }
+    ],
+    "sourceRecordingCount": 8,
+    "quietDerivedCount": 4,
+    "audio": [
+      {
+        "id": "mlx-f16-prospective-de-1713",
+        "sourceSentenceId": 1713,
+        "sourceFilename": "10504450071805589678.wav",
+        "frames": 368640,
+        "quietDerived": false,
+        "audioSha256": "793a049ffc5d77a59e0587d00e144df0d4ba899dbfa5731789281c2634af1f10"
+      },
+      {
+        "id": "mlx-f16-prospective-de-1713-quiet",
+        "sourceSentenceId": 1713,
+        "sourceFilename": "10504450071805589678.wav",
+        "frames": 368640,
+        "quietDerived": true,
+        "audioSha256": "2401d2a18cdec38a075c400ec623ae7936a22e4545f86e69821ceb0246ba6167"
+      },
+      {
+        "id": "mlx-f16-prospective-de-1714",
+        "sourceSentenceId": 1714,
+        "sourceFilename": "10991454026397809707.wav",
+        "frames": 266880,
+        "quietDerived": false,
+        "audioSha256": "efe2bd656d988370b2b3892d072589cd12300a8e0c6952d6f5c60640a2cf75a8"
+      },
+      {
+        "id": "mlx-f16-prospective-de-1714-quiet",
+        "sourceSentenceId": 1714,
+        "sourceFilename": "10991454026397809707.wav",
+        "frames": 266880,
+        "quietDerived": true,
+        "audioSha256": "0ccd8e0f4cdc5bcd4b3dfb4daf2d32dd8cb68c1e2d3208e7dcc550898c112b5e"
+      },
+      {
+        "id": "mlx-f16-prospective-de-1715",
+        "sourceSentenceId": 1715,
+        "sourceFilename": "10936392554848150051.wav",
+        "frames": 209280,
+        "quietDerived": false,
+        "audioSha256": "5180c0c33aec5a4ae26490d35d781cd4280a8f3f89d28726ee6f130354fc94c2"
+      },
+      {
+        "id": "mlx-f16-prospective-de-1717",
+        "sourceSentenceId": 1717,
+        "sourceFilename": "10618529918679729733.wav",
+        "frames": 219840,
+        "quietDerived": false,
+        "audioSha256": "298c05bd467036fc0a105d088202ff682323035dff7ed7be98a928be3139dc4f"
+      },
+      {
+        "id": "mlx-f16-prospective-en-1702",
+        "sourceSentenceId": 1702,
+        "sourceFilename": "1483818313790875806.wav",
+        "frames": 162880,
+        "quietDerived": false,
+        "audioSha256": "a22dd526efaf3e23dc0456fae1b96229a062d1fcfac8ca03c67658b66b38b895"
+      },
+      {
+        "id": "mlx-f16-prospective-en-1702-quiet",
+        "sourceSentenceId": 1702,
+        "sourceFilename": "1483818313790875806.wav",
+        "frames": 162880,
+        "quietDerived": true,
+        "audioSha256": "bb073d3b01bf057ef0e0ce9b8184e4479df14dfd3bc63e678bee5295ac5ecd8a"
+      },
+      {
+        "id": "mlx-f16-prospective-en-1703",
+        "sourceSentenceId": 1703,
+        "sourceFilename": "6284223441572848962.wav",
+        "frames": 161920,
+        "quietDerived": false,
+        "audioSha256": "3ab031faabde411f6c3d9e8b75afc33901c1093984d9a2a050a336e3c9e1a8bd"
+      },
+      {
+        "id": "mlx-f16-prospective-en-1703-quiet",
+        "sourceSentenceId": 1703,
+        "sourceFilename": "6284223441572848962.wav",
+        "frames": 161920,
+        "quietDerived": true,
+        "audioSha256": "7a07369dc11829d5ca30d9402c7c82f5645dd5f63228d94ab5fdfe3b61c5b89e"
+      },
+      {
+        "id": "mlx-f16-prospective-en-1704",
+        "sourceSentenceId": 1704,
+        "sourceFilename": "13245569655363672734.wav",
+        "frames": 117120,
+        "quietDerived": false,
+        "audioSha256": "f4758d7be3317aee631c24290d6dafd0b3b5f8a69986a31120ff0403ca667fbb"
+      },
+      {
+        "id": "mlx-f16-prospective-en-1705",
+        "sourceSentenceId": 1705,
+        "sourceFilename": "10550734868852131138.wav",
+        "frames": 161920,
+        "quietDerived": false,
+        "audioSha256": "a9a94845f7b92d15842d41fc20279c9ae8dd27144f31403a8fc909301792de3c"
+      }
+    ]
+  },
+  "rawObservations": {
+    "caseCountPerArm": 12,
+    "metadataRowCount": 24,
+    "fullObjectsIdentical": 12,
+    "changedPairs": 0,
+    "sourceRecordings": 8,
+    "quietVariants": 4,
+    "groups": [
+      {
+        "split": "acceptance",
+        "language": "de",
+        "class": "challenging",
+        "caseCount": 2,
+        "baselineEdits": 1,
+        "candidateEdits": 1,
+        "refWords": 50,
+        "werDelta": 0.0,
+        "passed": true
+      },
+      {
+        "split": "acceptance",
+        "language": "de",
+        "class": "clean",
+        "caseCount": 4,
+        "baselineEdits": 6,
+        "candidateEdits": 6,
+        "refWords": 104,
+        "werDelta": 0.0,
+        "passed": true
+      },
+      {
+        "split": "acceptance",
+        "language": "en",
+        "class": "challenging",
+        "caseCount": 2,
+        "baselineEdits": 3,
+        "candidateEdits": 3,
+        "refWords": 32,
+        "werDelta": 0.0,
+        "passed": true
+      },
+      {
+        "split": "acceptance",
+        "language": "en",
+        "class": "clean",
+        "caseCount": 4,
+        "baselineEdits": 6,
+        "candidateEdits": 6,
+        "refWords": 68,
+        "werDelta": 0.0,
+        "passed": true
+      }
+    ],
+    "cases": [
+      {
+        "id": "mlx-f16-prospective-de-1713",
+        "baselineEdits": 3,
+        "candidateEdits": 3,
+        "refWords": 26,
+        "fullObjectEqual": true
+      },
+      {
+        "id": "mlx-f16-prospective-de-1713-quiet",
+        "baselineEdits": 1,
+        "candidateEdits": 1,
+        "refWords": 26,
+        "fullObjectEqual": true
+      },
+      {
+        "id": "mlx-f16-prospective-de-1714",
+        "baselineEdits": 1,
+        "candidateEdits": 1,
+        "refWords": 24,
+        "fullObjectEqual": true
+      },
+      {
+        "id": "mlx-f16-prospective-de-1714-quiet",
+        "baselineEdits": 0,
+        "candidateEdits": 0,
+        "refWords": 24,
+        "fullObjectEqual": true
+      },
+      {
+        "id": "mlx-f16-prospective-de-1715",
+        "baselineEdits": 0,
+        "candidateEdits": 0,
+        "refWords": 30,
+        "fullObjectEqual": true
+      },
+      {
+        "id": "mlx-f16-prospective-de-1717",
+        "baselineEdits": 2,
+        "candidateEdits": 2,
+        "refWords": 24,
+        "fullObjectEqual": true
+      },
+      {
+        "id": "mlx-f16-prospective-en-1702",
+        "baselineEdits": 1,
+        "candidateEdits": 1,
+        "refWords": 19,
+        "fullObjectEqual": true
+      },
+      {
+        "id": "mlx-f16-prospective-en-1702-quiet",
+        "baselineEdits": 1,
+        "candidateEdits": 1,
+        "refWords": 19,
+        "fullObjectEqual": true
+      },
+      {
+        "id": "mlx-f16-prospective-en-1703",
+        "baselineEdits": 2,
+        "candidateEdits": 2,
+        "refWords": 13,
+        "fullObjectEqual": true
+      },
+      {
+        "id": "mlx-f16-prospective-en-1703-quiet",
+        "baselineEdits": 2,
+        "candidateEdits": 2,
+        "refWords": 13,
+        "fullObjectEqual": true
+      },
+      {
+        "id": "mlx-f16-prospective-en-1704",
+        "baselineEdits": 0,
+        "candidateEdits": 0,
+        "refWords": 21,
+        "fullObjectEqual": true
+      },
+      {
+        "id": "mlx-f16-prospective-en-1705",
+        "baselineEdits": 3,
+        "candidateEdits": 3,
+        "refWords": 15,
+        "fullObjectEqual": true
+      }
+    ]
+  },
+  "execution": {
+    "owners": {
+      "reference": {
+        "qualified": false,
+        "exitCode": 0,
+        "terminationConfirmed": true,
+        "watchdogExpired": false,
+        "command": [
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/bin/corpus_probe",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-conversion-v1/models/ggml-large-v3-turbo-q5_0.bin",
+          "reference",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/manifest.json",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/reference/result.json"
+        ],
+        "startedUtc": "2026-10-20T08:10:36.213081+00:00",
+        "wrapperPid": 97554,
+        "processReaped": true,
+        "forcedGroupCleanup": false,
+        "cleanupObservationErrors": [],
+        "cancelled": false,
+        "finishedUtc": "2026-10-20T08:10:50.063550+00:00"
+      },
+      "candidate": {
+        "qualified": false,
+        "exitCode": 0,
+        "terminationConfirmed": true,
+        "watchdogExpired": false,
+        "command": [
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/bin/corpus_probe",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-conversion-v1/models/weights.safetensors",
+          "mlx-fp16",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/manifest.json",
+          "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/candidate/result.json",
+          "--mlx-reference-encoder"
+        ],
+        "startedUtc": "2026-10-20T08:10:50.129057+00:00",
+        "wrapperPid": 97577,
+        "processReaped": true,
+        "forcedGroupCleanup": false,
+        "cleanupObservationErrors": [],
+        "cancelled": false,
+        "finishedUtc": "2026-10-20T08:11:01.504677+00:00"
+      }
+    },
+    "groupAbsence": [
+      {
+        "pgid": 97554,
+        "absent": true,
+        "observation": "ESRCH",
+        "checkedUtc": "2026-10-20T08:12:22.523585+00:00"
+      },
+      {
+        "pgid": 97577,
+        "absent": true,
+        "observation": "ESRCH",
+        "checkedUtc": "2026-10-20T08:12:22.523938+00:00"
+      }
+    ],
+    "fp16LoadedReceipt": [
+      {
+        "kind": "mlx-reference-encoder-loaded",
+        "encoderComputeDtype": "fp16",
+        "checkpointDtype": "fp32",
+        "bridgeFeatureDtype": "fp32",
+        "checkpointSha256": "277a2661c6d85f7e620adad07f7fda78b052a5a66b2c16e9fb6ccb3ac134d042",
+        "decoderModelSha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2"
+      }
+    ],
+    "cacheBudgetReceipt": [
+      {
+        "kind": "mlx-cache-budget-installed",
+        "bytes": 268435456,
+        "previousBytes": 32641751449,
+        "scope": "model-owning-worker"
+      }
+    ],
+    "usageReceiptCount": 12,
+    "preparedFramesInOrder": [
+      368640,
+      307040,
+      266880,
+      264480,
+      209280,
+      219840,
+      162880,
+      161120,
+      161440,
+      161440,
+      117120,
+      161920
+    ],
+    "loadMillis": {
+      "reference": 1278,
+      "candidate": 6964
+    },
+    "cleanupMillis": {
+      "reference": 3,
+      "candidate": 14
+    }
+  },
+  "bindings": {
+    "runFreezeSha256": "2f0b9d2935bfb9f2de4171eaaaf48730f953c37b8ed6f32545d62fd44967d173",
+    "buildFreezeSha256": "54e0559bb1afdd1b439f134839f4482287115cbb5145c796b1e5a6853af2c5f1",
+    "quality100AcceptanceSha256": "2dec40823b7fef912941a18fb23ba83d706cce0b6d289bc9d47b8542a4127ab3",
+    "completionSha256": "74ccb0a78e4f2413f257faa2aab4cf185a6871c4e54c7ad4fa09f9e4d9b172fa",
+    "manifestSha256": "22d76d2e8b5bb8ec5348130a927e83af965b727c81fe8353b928da29f5451b44",
+    "selectionSha256": "404e7bf7841eeeed243a3fd21a72ca353388e5079a47e31ca8c28822287250eb",
+    "comparisonSha256": "89eaf6e0f15e0c567572533b4f8bdf711d5eed545ddfb12bc563327a5820aa62",
+    "referenceSha256": "b990162634fe570f6778e72a907793083c89f5dcd6677a2ac180c83a53ec8dd4",
+    "candidateSha256": "b990162634fe570f6778e72a907793083c89f5dcd6677a2ac180c83a53ec8dd4",
+    "cachePolicyContextSha256": "860cebee07cc2a506fa7f5d51eb60000b26917ad532a1256d9b25d6b545e633b",
+    "fileFingerprintsChecked": 3562,
+    "sourcePinsChecked": 3523,
+    "binaryAndKernelNewHashesComputed": false,
+    "models": [
+      {
+        "path": "artifacts/mlx-qualification/reference-encoder-conversion-v1/models/weights.safetensors",
+        "bytes": 3235574296,
+        "sha256": "277a2661c6d85f7e620adad07f7fda78b052a5a66b2c16e9fb6ccb3ac134d042",
+        "sameQuality100Fingerprint": true,
+        "rehashPerformed": false
+      },
+      {
+        "path": "artifacts/mlx-qualification/reference-encoder-conversion-v1/models/config.json",
+        "bytes": 268,
+        "sha256": "b34fc29e4e11e0a25e812775dd67f4dd16fc2c8eb43d28ae25ff7d660ecb6379",
+        "sameQuality100Fingerprint": true,
+        "rehashPerformed": false
+      },
+      {
+        "path": "artifacts/mlx-qualification/reference-encoder-conversion-v1/models/tokenizer.json",
+        "bytes": 2710337,
+        "sha256": "297b13372ac43916285644fb9687add3cc62ee2a1adb60da3dc25cc94c1871fd",
+        "sameQuality100Fingerprint": true,
+        "rehashPerformed": false
+      },
+      {
+        "path": "artifacts/mlx-qualification/reference-encoder-conversion-v1/models/tokenizer_config.json",
+        "bytes": 282843,
+        "sha256": "844b642c73a91359722f47b35705f7174686df33d252695d8572cf9ac03a6389",
+        "sameQuality100Fingerprint": true,
+        "rehashPerformed": false
+      },
+      {
+        "path": "artifacts/mlx-qualification/reference-encoder-conversion-v1/models/ggml-silero-v5.1.2.bin",
+        "bytes": 885098,
+        "sha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+        "sameQuality100Fingerprint": true,
+        "rehashPerformed": false
+      },
+      {
+        "path": "artifacts/mlx-qualification/reference-encoder-conversion-v1/models/ggml-large-v3-turbo-q5_0.bin",
+        "bytes": 574041195,
+        "sha256": "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2",
+        "sameQuality100Fingerprint": true,
+        "rehashPerformed": false
+      }
+    ],
+    "smallHashes": {
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/build-receipt.json": "63951b29f72fd9165e719e6ab99f8da34483ff58f1abe4d55480838ce9a05642",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/sources-before.json": "144fd33853306a9b0adb2772680f8929bfd6823fdd4c2d1c93028b6b3988f69c",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/freeze.json": "54e0559bb1afdd1b439f134839f4482287115cbb5145c796b1e5a6853af2c5f1",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/cache-policy-context.json": "860cebee07cc2a506fa7f5d51eb60000b26917ad532a1256d9b25d6b545e633b",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/cargo-messages.jsonl": "13e5ee774a81eda413e5f11d8508a6bdde977904fe4ed684c3dfd9598e8b7a27",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/source/scripts/corpus.py": "2ec69cfbd00b183caf8defb53450ab5da5711f5fac0fe7e64463cfbb3d6ca5d6",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/source/scripts/quality.py": "0b9a37959d2fedfacd2c70643b134ce548a4e4cf6a281e1a4d95bec89aa6be5c",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/source/scripts/compare_mlx_quality.py": "969025c92ac0e968d6060790d7dc4117813ac1ce8ce9b325b8e0de387e059b14",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/source/src-tauri/examples/corpus_probe.rs": "2c494efb2193179e185c07afe5281f075f353a3e68e2028ea02c1e3013c45971",
+      "artifacts/implementation/run-f16-runtime-counter-order.py": "cb9a1837822090cedc66a5190921ec808cb4a88b599a1114a6ddf35981e7bbbe",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/control/run-f16-runtime-counter-order.py": "cb9a1837822090cedc66a5190921ec808cb4a88b599a1114a6ddf35981e7bbbe",
+      "scripts/owned_probe.py": "07f5fcbe7193277cef432962ceaf31b2f867303d8cde6d9b078789df87b045be",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/control/owned_probe.py": "07f5fcbe7193277cef432962ceaf31b2f867303d8cde6d9b078789df87b045be",
+      "artifacts/implementation/run-f16-runtime-central.py": "e141cfe4d77db94bef7cddc8e35648a8c3ef936e25ac3dfdebae38d56c9880ba",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/control/run-f16-runtime-central.py": "e141cfe4d77db94bef7cddc8e35648a8c3ef936e25ac3dfdebae38d56c9880ba",
+      "artifacts/implementation/run-f16-runtime-quality.py": "27cab7a7d7e8eae5c039c582c7f774ecbc5e1b9437bed15fd855931145be35c8",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/control/run-f16-runtime-quality.py": "27cab7a7d7e8eae5c039c582c7f774ecbc5e1b9437bed15fd855931145be35c8",
+      "artifacts/implementation/run-cache-runtime-quality.py": "d68a6ddde126dcde1f73aa950406b26909d9d0eaf3daa6bc87c2dff051a60ef5",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/control/run-cache-runtime-quality.py": "d68a6ddde126dcde1f73aa950406b26909d9d0eaf3daa6bc87c2dff051a60ef5",
+      "artifacts/implementation/run-cache-runtime-prospective.py": "2691b5012515c06956784f2ea010fa4cd27728e7b5b3af3a9711445d41d449db",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/control/run-cache-runtime-prospective.py": "2691b5012515c06956784f2ea010fa4cd27728e7b5b3af3a9711445d41d449db",
+      "artifacts/implementation/run-reference-encoder-power-control.py": "662b2342eebf7268cb5354198844a4013883aa5c91a246e628bc31a6a61cbc04",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/cache-prepare-runner.py": "ae802b1df2f976ddb2aa44a7dfba0edcb57a3d7f792a1806a17af50736e82715",
+      "artifacts/implementation/prepare-cache-runtime-prospective.py": "ae802b1df2f976ddb2aa44a7dfba0edcb57a3d7f792a1806a17af50736e82715",
+      "artifacts/implementation/prepare-f16-runtime-prospective.py": "af497f1c732a0ed07948cf26dee77887060eda262da07f4c77585b224aa69ec0",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/manifest.json": "22d76d2e8b5bb8ec5348130a927e83af965b727c81fe8353b928da29f5451b44",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/selection.json": "404e7bf7841eeeed243a3fd21a72ca353388e5079a47e31ca8c28822287250eb",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/quality100/acceptance-readback.json": "2dec40823b7fef912941a18fb23ba83d706cce0b6d289bc9d47b8542a4127ab3",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/quality100/candidate.json": "35088cbfdec3aa1f8b9fb389b51ca5293c5020015eacb84f429fd04ce022b3b1",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/quality100/completion.json": "6e19f04eb42f7bc2f8173ed697d8c220c9a78084876e412857cc39e41a71a10e",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/quality100/semantic-reviews.json": "a798ef8a361b9d2ed6ad08c8464e31a7cefcdd306f73d65597686c0e51159b7a",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/quality100/owner-completion.json": "687b5c398d9c6ae5dadbef0335d440e9d6d5f3df04a216505cdd82d88eb79419",
+      "artifacts/implementation/ram-budget-v1/cache-runtime-quality100-readback.json": "55a28603caa1e46c5d026b4ede387b7400e5c2ab0b0b3cb6b335b7018c18a429",
+      "artifacts/corpus/fleurs-base.json": "f1032b4db6eb8e1e23e675d8a5f929b3e95a47bb913f3de52258640f5fc9f8b8",
+      "artifacts/mlx-qualification/coefficient-window-confirmation-v1/manifest.json": "9fad5bc8ce5fc9a5dbffbc8b0d9ce84ac7c67e7ccf6845f7c11a8d0a52bf448d",
+      "artifacts/mlx-qualification/coefficient-window-confirmation-v1/selection.json": "82dddec469f9a014d6ad5a04774e5905b2516d73a276c00f0263c614aaf7f5a4",
+      "artifacts/mlx-qualification/confirmation-native-timestamps-v1/manifest.json": "9fad5bc8ce5fc9a5dbffbc8b0d9ce84ac7c67e7ccf6845f7c11a8d0a52bf448d",
+      "artifacts/mlx-qualification/confirmation-native-timestamps-v1/selection.json": "82dddec469f9a014d6ad5a04774e5905b2516d73a276c00f0263c614aaf7f5a4",
+      "artifacts/mlx-qualification/confirmation-ranked-v1/manifest.json": "9fad5bc8ce5fc9a5dbffbc8b0d9ce84ac7c67e7ccf6845f7c11a8d0a52bf448d",
+      "artifacts/mlx-qualification/confirmation-ranked-v1/selection.json": "82dddec469f9a014d6ad5a04774e5905b2516d73a276c00f0263c614aaf7f5a4",
+      "artifacts/mlx-qualification/confirmation-v1/manifest.json": "9fad5bc8ce5fc9a5dbffbc8b0d9ce84ac7c67e7ccf6845f7c11a8d0a52bf448d",
+      "artifacts/mlx-qualification/confirmation-v1/selection.json": "82dddec469f9a014d6ad5a04774e5905b2516d73a276c00f0263c614aaf7f5a4",
+      "artifacts/mlx-qualification/decoder-diagnosis-v1/manifest.json": "7225d91c555d27b969785800280b6e963250962158e0a90b3efe43d37015cc3d",
+      "artifacts/mlx-qualification/f32-v1/de-clean-manifest.json": "3d23dbe33e417eb8b77ded34e634b242598ae1d8c4f7c606cedf6301eea6c7e7",
+      "artifacts/mlx-qualification/fp16-v2/canonical90-manifest.json": "06bcd8c65f2b1b08a8ced55683ed14dd7e5411c13dfdfd281eb4e81e0dae2041",
+      "artifacts/mlx-qualification/fp16-v2/supplement10-manifest.json": "8522a0489b658bf6c4c5bc7633d0161694b0ba45ab336d25d20305ed0dad87b7",
+      "artifacts/mlx-qualification/native-reference-encoder-abba-v1/central-manifest.json": "244b2cd766874855174699f8568dbb09ae664380a98b272bf6588293f44a36b5",
+      "artifacts/mlx-qualification/reference-encoder-confirmation-v1/manifest.json": "9fad5bc8ce5fc9a5dbffbc8b0d9ce84ac7c67e7ccf6845f7c11a8d0a52bf448d",
+      "artifacts/mlx-qualification/reference-encoder-confirmation-v1/selection.json": "82dddec469f9a014d6ad5a04774e5905b2516d73a276c00f0263c614aaf7f5a4",
+      "artifacts/mlx-qualification/reference-encoder-f16-calibration-v1/manifest.json": "9fad5bc8ce5fc9a5dbffbc8b0d9ce84ac7c67e7ccf6845f7c11a8d0a52bf448d",
+      "artifacts/mlx-qualification/reference-encoder-f16-runtime-v1/central-abba/central-manifest.json": "244b2cd766874855174699f8568dbb09ae664380a98b272bf6588293f44a36b5",
+      "artifacts/mlx-qualification/reference-encoder-f16-runtime-v1/central-counter-order-v2/central-manifest.json": "244b2cd766874855174699f8568dbb09ae664380a98b272bf6588293f44a36b5",
+      "artifacts/mlx-qualification/reference-encoder-f16-runtime-v1/prospective12/manifest.json": "948e351b934214c9c66b5f16daed002c688e31c2c4733c0c4c4eb1e8cc3bf29c",
+      "artifacts/mlx-qualification/reference-encoder-f16-runtime-v1/prospective12/selection.json": "450206901dda51aacbab6da84cbaa5296d7c6b3389b9075de261278b3bc2d90b",
+      "artifacts/mlx-qualification/reference-encoder-f16-runtime-v1/quality100/manifest.json": "df432b44c48a39ebe290c6bd20d9ba8b800fd2211cdd898c86a9b22a54edf030",
+      "artifacts/mlx-qualification/reference-encoder-prospective-v1/manifest.json": "8714638ddf3a67469770eb546fd49f728a76e31ea983e03992b42212016cac73",
+      "artifacts/mlx-qualification/reference-encoder-prospective-v1/selection.json": "271771e65d44fee226f56c5679078f2f2993bd5b735d672fbd344a7fc64b053b",
+      "artifacts/mlx-qualification/reference-encoder-remainder-v2/cases/reference-manifest.json": "0063b745c4e8a4751d6d9cec07d2dc5a09344586fc01fadb0afd29a1b92cc963",
+      "tests/fixtures/corpus/acceptance-reference-parameters-v1.json": "aacbe6cc61d9077966b91dbd3fafcafd2357dc53373ca7b3a9829e85677fbde3",
+      "tests/fixtures/corpus/acceptance-reference-parameters-v2.json": "9b045db30e32bc7dfaa8775fba598ca93c7553b6f4b93c26af3dd6180b39f0f7",
+      "tests/fixtures/corpus/acceptance-v1.json": "7d7a25695ab77d9d4affe04b0bbc1ce5f8bc4b38a59b40763fd26884d090c67d",
+      "tests/fixtures/corpus/calibration-v2.json": "514befba28e7ea14882cd13a71f971e5fb6c6131f914491b697741a027611a49",
+      "tests/fixtures/corpus/central-reference-v1.json": "244b2cd766874855174699f8568dbb09ae664380a98b272bf6588293f44a36b5",
+      "tests/fixtures/corpus/deadline-wait-parameters-v1.json": "bf804936f54f83a7d1bca30b29e7f72ff7d2fe4f8feb98c947f725d50ddfeb83",
+      "tests/fixtures/corpus/deadline-wait-run-v1.json": "5a0056fce51828609ba15776ac7633bfd07d300f1dbb6a620ca9c7a64564ee11",
+      "tests/fixtures/corpus/long-clip-context-parameters-v1.json": "7d57e997a5ea5a1aa8d4a44b9b1c1a55cb18b3be59b55a9d6dac6e8af5094794",
+      "tests/fixtures/corpus/long-control-parameters-v1.json": "9b9b7cdd881c3fdac26039ff1b41dfa6f05b398309d42247fc9145e765c2646f",
+      "tests/fixtures/corpus/manifest.json": "734199a55fe70bd0cf0dbc7df2fb3ea7afc7de14ed4daf20aa3d0a5672f0c60b",
+      "tests/fixtures/corpus/model-init-manifest-v1.json": "039d796bd4c028f9c06cbc3058b328687b427d5ce8c53e631d8502c9299f8363",
+      "tests/fixtures/corpus/model-init-parameters-v1.json": "3443cead56d4751cdc4e7edcc605bd4d2653e64aca174b60df6a05ece3b7343c",
+      "tests/fixtures/corpus/native-runtime-restart-run-v1.json": "6fcb68fa2865c10a46060a4f00a90e1f573b502705e2a340f0461d6e86d996e7",
+      "tests/fixtures/corpus/native-timestamps-acceptance-parameters-v1.json": "e072b406f5fb076f1d68f696437d9ab1b57511b406ea74e5c85ac45be3f22a50",
+      "tests/fixtures/corpus/native-timestamps-calibration-parameters-v1.json": "8fb1d67754f96456b6988b5c86c8395bf8bb7b64a7eec3dbe4b37754453098b8",
+      "tests/fixtures/corpus/native-timestamps-parameters-v1.json": "8e964b8e396732516d0dcca165e6780aa633768850be519c6d61f90de8a16a67",
+      "tests/fixtures/corpus/native-timestamps-supplement-parameters-v1.json": "eaad954651b022a3325550f78b239bfcdef9f0746ac5a16ea0976b9665db54b8",
+      "tests/fixtures/corpus/native-timestamps-supplement-v1.json": "67f5ea1c457d4ec230b4ffc3bb032284badf0ee29f4721492a25b597140e34f0",
+      "tests/fixtures/corpus/observed-long-parameters-v1.json": "dcaffa790a142ee5248a18b426231af896b486a9bb3aed7f1be044eb7e1b62e0",
+      "tests/fixtures/corpus/observed-short-parameters-v1.json": "bd6b12d418539ed5a4161597d4756a439826dc01925e1649dc2a8d104d946187",
+      "tests/fixtures/corpus/observed-short-parameters-v2.json": "b6176c4bc6cf869047c98236d31e558ba2539dcaf5799eed31a47cb2565967d6",
+      "tests/fixtures/corpus/observed-short-parameters-v3.json": "a916d7ee5a43926b39cbaa2a95bef2c897ac77972cb0489e56f8eb28e13efc71",
+      "tests/fixtures/corpus/p06-context-quality-manifest-v1.json": "df432b44c48a39ebe290c6bd20d9ba8b800fd2211cdd898c86a9b22a54edf030",
+      "tests/fixtures/corpus/p06-context-quality-run-v1.json": "1d09ed37d089d96275601b7eef54b8737d8b60f1f5b56178476902943cb44ba0",
+      "tests/fixtures/corpus/p06-context-quality-selection-v1.json": "864332ed3e11c4924066f920ff8c98e2c2c98f6040ddf0bff53ceff3b40551a9",
+      "tests/fixtures/corpus/p06-corpus-context-candidate-parameters-v1.json": "eac33d770fd9b91d17dd0f0b15be4d4532064fc3b0094096592d87756eadaf4e",
+      "tests/fixtures/corpus/p06-corpus-context-reference-parameters-v1.json": "02e2bbcbc0a880505b5840e617fed23076882dfe3186b57504b5a7224bb0cd7d",
+      "tests/fixtures/corpus/p06-corpus-flash-candidate-parameters-v1.json": "0d6ca36302b4573fa71844c72e38a5bd7d8166b80a7cdf2a07bbfd905b6519eb",
+      "tests/fixtures/corpus/p06-corpus-flash-reference-parameters-v1.json": "1fc68ae22a3d7920b63c349b7651a5fb214b39dbd4e22257db1b391996ef41fe",
+      "tests/fixtures/corpus/p06-flash-attention-quality-run-v1.json": "ccfd5a9bc29ebc5e2bc3591e25c7be52770cb2b82ec5e1e27ae64dedd0de3e82",
+      "tests/fixtures/corpus/p06-pretrans-screening-candidate-parameters-v1.json": "59623e8b6238dfa6e3018865c6af97dd3c0ef092a0bf5d039827963d3e554992",
+      "tests/fixtures/corpus/p06-pretrans-screening-reference-parameters-v1.json": "edb52ecc05e7f7e3c71b4c4dd014c560e6fc8ea389cbdba02c6ce7a1870df0f0",
+      "tests/fixtures/corpus/p06-pretranscription-continuation-adoption-v1.json": "9901494de4b86d0339aab410e593078163d36da80080ffc024a3fcccc83ca9a6",
+      "tests/fixtures/corpus/p06-pretranscription-continuation-epoch-v1.json": "85256933ccaee19aea5a7b282a4d27e605b8f3a038e7e30c74c15e50e2e760f8",
+      "tests/fixtures/corpus/p06-pretranscription-continuation-run-v1.json": "fc7638c2f5f1b87c98ae223804959b559a8afd33ddee162544fefc1f59128749",
+      "tests/fixtures/corpus/p06-pretranscription-screening-run-v1.json": "63040c4eb34665305a4479fc69d895232215451713bcb9cc2a024c53cea48274",
+      "tests/fixtures/corpus/p06-pretranscription-screening-run-v2.json": "96e11df8d0f33c0467f184712b4ad21ed0379ac684a0d5242f4f7fe52c580a81",
+      "tests/fixtures/corpus/p06-pretranscription-screening-run-v3.json": "3cf6b479bd86dc1fa3af1928d4e9dfaaaa1fb39f2223011df94ae27e70765ad2",
+      "tests/fixtures/corpus/paced-reference-parameters-v1.json": "31806789ef7b19d46f13b7b3442cab10a12f43e063cc57585c2065bdad057cb1",
+      "tests/fixtures/corpus/paced-remainder-run-v1.json": "b09d4dd6beda9a522862ed73db4a1e334ed1d19e15e2a7b0c288dc1a3473c586",
+      "tests/fixtures/corpus/paced-rtf-parameters-v1.json": "69d87384a2541e9205362929410277bb1587e7ece5c7bca55a5e50649d052f47",
+      "tests/fixtures/corpus/paced-rtf-smoke-run-v1.json": "f5e1c9c8b396031cff149605c3cde9b3e16792da135ee5d8da900abad5641f31",
+      "tests/fixtures/corpus/paced-runtime-tc-parameters-v1.json": "3ff7364edee948401aac6aa86327e65adb632eb8e43305ef5fc02f17aba8a2f5",
+      "tests/fixtures/corpus/paced-runtime-tc-smoke-run-v1.json": "93b62657464f49c180748b77cd34d78d8002d5bb57b063bdcf7418859e89f165",
+      "tests/fixtures/corpus/paced-six-reference-parameters-v1.json": "882314f2b0e13a3dff8b648ec3c549f86f8537364ab7f48b556f4a92944a66ba",
+      "tests/fixtures/corpus/paced-six-reference-parameters-v2.json": "ec18cb5d8291c3481cde54ac77a45b8c7bb584807de427301d4875e5739f0667",
+      "tests/fixtures/corpus/paced-six-reference-parameters-v3.json": "7a391e9a92cff08aba24650208e2625235045b3101e13a48b580c0007676afb1",
+      "tests/fixtures/corpus/paced-six-reference-parameters-v4.json": "2414ecaca4863412faa744d19998c8ec4496cbb5fc0d46c0bdfbe78b5e645fd1",
+      "tests/fixtures/corpus/paced-six-reference-run-v1.json": "1d0b9d0d5339b32b69a5f877d73432bb8559163fc93f3e91f60d9d60a952878f",
+      "tests/fixtures/corpus/paced-six-reference-run-v2.json": "1af5d88d1b2e982e59062784270e43bed5c79eb3c2b583d4546771da54b88c5d",
+      "tests/fixtures/corpus/paced-six-reference-run-v3.json": "e4b3f6ffce802c1439c33e42c7662928e113ca3b8246e86b9cc052e49e05a902",
+      "tests/fixtures/corpus/paced-six-reference-run-v4.json": "0a561a1a19c3909a684c2d55f09bfc9131d2f25a6db474b1afdf05a867af38b1",
+      "tests/fixtures/corpus/pretranscription-quality-denominators-v1.json": "9868ffc7bd44128c7223ac241140de5b80fa98f4421ee104dcf809da3264037a",
+      "tests/fixtures/corpus/publisher-scheduling-parameters-v1.json": "57bc72f78999306ebae42cad7bb69caf4a4e4045a5762306e7a5282730eef2db",
+      "tests/fixtures/corpus/publisher-scheduling-run-v1.json": "f5c939d38452d41c497e26ff59437bb3331f5b50f571c1a084d808838fef4892",
+      "tests/fixtures/corpus/reference-parameters-v1.json": "5acfda8f693809c1b1e660584b219c823b4d68dd4f15281929bb3d4d26ed4478",
+      "tests/fixtures/corpus/reference-parameters-v2.json": "d9eace7686ac2ccc8fbde9ee12410ff178d2b69832dce109122f51126a64f0eb",
+      "tests/fixtures/corpus/reference-parameters-v3.json": "76a5dd60e5c18ed98c144708eb20422752ee70f41f7e6dfd64e577421a5c6882",
+      "tests/fixtures/corpus/reference-parameters-v4.json": "14c36b44254d0c859074e31315b149e54b848d6601cc705ebdc1e91f683271f3",
+      "tests/fixtures/corpus/reference-parameters-v5.json": "633ecf4f2c4b4d95bc306c277862cb47bcdcffd36c7aa4f9acabe12c43556f3a",
+      "tests/fixtures/corpus/remainder-timing-selection-v1.json": "dfb0f38743cd2a67071b327eb0da7251b0655e626edbad90fe04da88b7cd3e2c",
+      "tests/fixtures/corpus/replay-wait-long-parameters-v1.json": "20f7077216054ca45c6b2f1ea58ae6afdc903dfdab54cc06b7bbbe3bc74189a3",
+      "tests/fixtures/corpus/runtime-resource-parameters-v1.json": "1887af1c32eb623500eec73d44fdb614565c349235f0e8ef8403724469d0959f",
+      "tests/fixtures/corpus/runtime-resource-parameters-v2.json": "a53085218fce9937fbc162efe0337c9e3cc6f9bda90a897d11a86893e9e82f3f",
+      "tests/fixtures/corpus/runtime-resource-run-v2.json": "01c4835bdf92c1399508ab782bd548ac2880552880675c471838e0348bf0d1bf",
+      "tests/fixtures/corpus/synthetic-speech-diagnostic-v1.json": "9ece2985b5e2bf46199f0187341ec0ee75d737cbca6f847c1b56f1808db9141b",
+      "tests/fixtures/corpus/synthetic-speech-parameters-v1.json": "6645533c2f5dc7d234c05035ffaa27929ee9d4732966fb84237dd6126bea2818",
+      "tests/fixtures/corpus/thirty-second-v1.json": "93874aa60fcc63e625f3310a7e5602a7aaa057c7586386e803ac4a5205d12dc4",
+      "tests/fixtures/corpus/weak-slice-parameters-v1.json": "9b298b31a5b17ae8bd02d6acb74e29861dd0bbf5b6c160343df6614b14c90dba",
+      "artifacts/corpus/source/de_de-test.tsv": "82fab72c58a347345675c238f2492bb997105a4ab45d69e2a2b34ed29082fa97",
+      "artifacts/corpus/source/en_us-test.tsv": "74c046239374deeb60fa63f258f907388093a32bcaa3140965f70ef05c79f7ca",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/audio/mlx-f16-prospective-de-1713.wav": "793a049ffc5d77a59e0587d00e144df0d4ba899dbfa5731789281c2634af1f10",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/audio/mlx-f16-prospective-de-1713-quiet.wav": "2401d2a18cdec38a075c400ec623ae7936a22e4545f86e69821ceb0246ba6167",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/audio/mlx-f16-prospective-de-1714.wav": "efe2bd656d988370b2b3892d072589cd12300a8e0c6952d6f5c60640a2cf75a8",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/audio/mlx-f16-prospective-de-1714-quiet.wav": "0ccd8e0f4cdc5bcd4b3dfb4daf2d32dd8cb68c1e2d3208e7dcc550898c112b5e",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/audio/mlx-f16-prospective-de-1715.wav": "5180c0c33aec5a4ae26490d35d781cd4280a8f3f89d28726ee6f130354fc94c2",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/audio/mlx-f16-prospective-de-1717.wav": "298c05bd467036fc0a105d088202ff682323035dff7ed7be98a928be3139dc4f",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/audio/mlx-f16-prospective-en-1702.wav": "a22dd526efaf3e23dc0456fae1b96229a062d1fcfac8ca03c67658b66b38b895",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/audio/mlx-f16-prospective-en-1702-quiet.wav": "bb073d3b01bf057ef0e0ce9b8184e4479df14dfd3bc63e678bee5295ac5ecd8a",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/audio/mlx-f16-prospective-en-1703.wav": "3ab031faabde411f6c3d9e8b75afc33901c1093984d9a2a050a336e3c9e1a8bd",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/audio/mlx-f16-prospective-en-1703-quiet.wav": "7a07369dc11829d5ca30d9402c7c82f5645dd5f63228d94ab5fdfe3b61c5b89e",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/audio/mlx-f16-prospective-en-1704.wav": "f4758d7be3317aee631c24290d6dafd0b3b5f8a69986a31120ff0403ca667fbb",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/audio/mlx-f16-prospective-en-1705.wav": "a9a94845f7b92d15842d41fc20279c9ae8dd27144f31403a8fc909301792de3c",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/reference/result.json": "b990162634fe570f6778e72a907793083c89f5dcd6677a2ac180c83a53ec8dd4",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/candidate/result.json": "b990162634fe570f6778e72a907793083c89f5dcd6677a2ac180c83a53ec8dd4",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/run-freeze.json": "2f0b9d2935bfb9f2de4171eaaaf48730f953c37b8ed6f32545d62fd44967d173",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/completion.json": "74ccb0a78e4f2413f257faa2aab4cf185a6871c4e54c7ad4fa09f9e4d9b172fa",
+      "artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/prospective12/comparison.json": "89eaf6e0f15e0c567572533b4f8bdf711d5eed545ddfb12bc563327a5820aa62"
+    }
+  },
+  "limitations": [
+    "Direct fixed file-runtime quality confirmation only; no paced Stop latency, p95, speed, energy, RAM or overall product qualification.",
+    "Eight new source recordings plus four fixed-gain variants, not twelve independent recordings. Freshness means absent from the 94 pinned known earlier input inventories.",
+    "Both arms reproduce the same existing WER errors; equality does not mean error-free transcription.",
+    "Source archive verification and F32-to-PCM16 extraction followed the frozen preparer before ASR; no large archives, models, binaries or kernel blobs rehashed in this independent readback. Model/binary/kernel retention checked against prior accepted quality100 immutable fingerprints.",
+    "Filesystem times support observed ordering and are not a trusted cryptographic timestamp. No claim that a human never saw the source texts.",
+    "256MiB is an installed reusable-cache policy; this run exports no active/cache/RSS samples and proves no 256MiB total-memory ceiling."
+  ]
+}

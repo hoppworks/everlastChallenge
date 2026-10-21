@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "unicodeVersion": "13.0.0",
+  "cases": [
+    {
+      "id": "fleurs-de-test-1736",
+      "split": "acceptance",
+      "language": "de",
+      "class": "clean",
+      "status": "ok",
+      "edits": 1,
+      "refWords": 10,
+      "hypWords": 10,
+      "wer": 0.1,
+      "unwantedText": false
+    },
+    {
+      "id": "fleurs-de-test-1663",
+      "split": "acceptance",
+      "language": "de",
+      "class": "clean",
+      "status": "ok",
+      "edits": 4,
+      "refWords": 21,
+      "hypWords": 22,
+      "wer": 0.19047619047619047,
+      "unwantedText": false
+    },
+    {
+      "id": "fleurs-de-test-1668",
+      "split": "acceptance",
+      "language": "de",
+      "class": "clean",
+      "status": "ok",
+      "edits": 2,
+      "refWords": 24,
+      "hypWords": 23,
+      "wer": 0.08333333333333333,
+      "unwantedText": false
+    },
+    {
+      "id": "fleurs-de-test-1667",
+      "split": "acceptance",
+      "language": "de",
+      "class": "clean",
+      "status": "ok",
+      "edits": 0,
+      "refWords": 32,
+      "hypWords": 32,
+      "wer": 0.0,
+      "unwantedText": false
+    },
+    {
+      "id": "mlx-confirmation-en-1690",
+      "split": "acceptance",
+      "language": "en",
+      "class": "clean",
+      "status": "ok",
+      "edits": 0,
+      "refWords": 34,
+      "hypWords": 34,
+      "wer": 0.0,
+      "unwantedText": false
+    },
+    {
+      "id": "fleurs-de-test-1732-thirty-second-v1",
+      "split": "acceptance",
+      "language": "de",
+      "class": "clean",
+      "status": "ok",
+      "edits": 4,
+      "refWords": 32,
+      "hypWords": 34,
+      "wer": 0.125,
+      "unwantedText": false
+    }
+  ],
+  "groups": [
+    {
+      "split": "acceptance",
+      "language": "de",
+      "class": "clean",
+      "caseCount": 5,
+      "scoredCount": 5,
+      "failedCount": 0,
+      "missingCount": 0,
+      "silenceCount": 0,
+      "silenceFailedCount": 0,
+      "unwantedTextCount": 0,
+      "expectedRefWords": 119,
+      "refWords": 119,
+      "edits": 11,
+      "complete": true,
+      "observedWer": 0.09243697478991597,
+      "wer": 0.09243697478991597
+    },
+    {
+      "split": "acceptance",
+      "language": "en",
+      "class": "clean",
+      "caseCount": 1,
+      "scoredCount": 1,
+      "failedCount": 0,
+      "missingCount": 0,
+      "silenceCount": 0,
+      "silenceFailedCount": 0,
+      "unwantedTextCount": 0,
+      "expectedRefWords": 34,
+      "refWords": 34,
+      "edits": 0,
+      "complete": true,
+      "observedWer": 0.0,
+      "wer": 0.0
+    }
+  ]
+}

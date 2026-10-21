@@ -1,5 +1,7 @@
 #[path = "../shared/context_configuration.rs"]
 mod context_configuration;
+#[path = "../shared/mlx_configuration.rs"]
+mod mlx_configuration;
 // Immutable parameter template tied to the actual compiled measurement sources.
 use crate::input;
 #[path = "full_prefix_configuration.rs"]
@@ -88,6 +90,7 @@ pub fn template() -> Result<Value, serde_json::Error> {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ExecutionMode {
     Baseline,
+    MlxReferenceEncoder,
     TimeConstrained,
     ContextReference,
     ContextReduced,
@@ -137,7 +140,38 @@ pub fn full_prefix_template(candidate: bool) -> Result<Value, serde_json::Error>
         candidate,
     ))
 }
+pub fn mlx_template() -> Result<Value, serde_json::Error> {
+    Ok(mlx_configuration::decorate(
+        scheduling_template()?,
+        "native-mlx-reference-encoder-paced-v1",
+    ))
+}
+
+#[cfg(feature = "mlx")]
+pub fn load_mlx_service(
+    path: std::path::PathBuf,
+    definition: everlast_dictation::model::ModelDefinition,
+) -> Result<
+    everlast_dictation::inference_service::InferenceService,
+    everlast_dictation::inference_service::ServiceError,
+> {
+    mlx_configuration::load_service(path, definition)
+}
+
 impl ExecutionMode {
+    pub fn validate_model(
+        self,
+        definition: everlast_dictation::model::ModelDefinition,
+    ) -> Result<(), String> {
+        let mlx = self == Self::MlxReferenceEncoder;
+        if definition.is_mlx() != mlx
+            || (mlx && (!definition.is_reference_encoder() || !cfg!(feature = "mlx")))
+        {
+            return Err("model backend and frozen execution configuration disagree".into());
+        }
+        Ok(())
+    }
+
     pub fn spawn_runtime(
         self,
         service: everlast_dictation::inference_service::InferenceService,
@@ -176,7 +210,8 @@ impl ExecutionMode {
         match self {
             Self::PretransReference => Some(false),
             Self::PretransCandidate => Some(true),
-            Self::Baseline
+            Self::MlxReferenceEncoder
+            | Self::Baseline
             | Self::TimeConstrained
             | Self::ContextReference
             | Self::ContextReduced
@@ -188,7 +223,8 @@ impl ExecutionMode {
         match self {
             Self::ContextReference => Some(false),
             Self::ContextReduced => Some(true),
-            Self::Baseline
+            Self::MlxReferenceEncoder
+            | Self::Baseline
             | Self::TimeConstrained
             | Self::PretransReference
             | Self::PretransCandidate
@@ -199,7 +235,8 @@ impl ExecutionMode {
     pub fn scheduled(self) -> bool {
         match self {
             Self::Baseline => false,
-            Self::TimeConstrained
+            Self::MlxReferenceEncoder
+            | Self::TimeConstrained
             | Self::ContextReference
             | Self::ContextReduced
             | Self::PretransReference
@@ -212,6 +249,8 @@ impl ExecutionMode {
 pub fn print_template(flag: &str) -> Result<Option<Value>, serde_json::Error> {
     Ok(Some(match flag {
         "--print-parameters" => template()?,
+        #[cfg(feature = "mlx")]
+        "--print-mlx-reference-encoder-parameters" => mlx_template()?,
         "--print-scheduling-parameters" => scheduling_template()?,
         "--print-context-reference-parameters" => context_template(false)?,
         "--print-context-candidate-parameters" => context_template(true)?,
@@ -228,6 +267,10 @@ pub fn select(bytes: &[u8]) -> Result<(Value, ExecutionMode), String> {
     }
     let value: Value = serde_json::from_slice(bytes).map_err(|_| "invalid parameter JSON")?;
     for (template, mode) in [
+        (
+            mlx_template().map_err(|e| e.to_string())?,
+            ExecutionMode::MlxReferenceEncoder,
+        ),
         (
             full_prefix_template(false).map_err(|e| e.to_string())?,
             ExecutionMode::FullPrefixReference,
@@ -322,6 +365,52 @@ fn compiled_sources() -> Value {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "mlx")]
+    #[test]
+    fn mlx_freeze_selects_only_its_verified_model_and_actual_backend()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use everlast_dictation::model::{MLX_REFERENCE_COEFFICIENTS, REFERENCE};
+        let frozen = print_template("--print-mlx-reference-encoder-parameters")?
+            .ok_or("missing MLX configuration")?;
+        let (_, mode) = select(&serde_json::to_vec(&frozen)?)?;
+        mode.validate_model(MLX_REFERENCE_COEFFICIENTS)?;
+        assert!(mode.validate_model(REFERENCE).is_err());
+        assert!(
+            ExecutionMode::TimeConstrained
+                .validate_model(MLX_REFERENCE_COEFFICIENTS)
+                .is_err()
+        );
+        assert_eq!(
+            frozen["runtime"]["backend"],
+            "MLX reference encoder + CPP reference decoder"
+        );
+        assert_eq!(frozen["state"]["warmAsrContexts"], 2);
+        assert_eq!(
+            frozen["runtime"]["timestampPolicy"]["singleWindowMaxPreparedSamples"],
+            480000
+        );
+        assert!(
+            frozen["models"]
+                .as_array()
+                .ok_or("models absent")?
+                .iter()
+                .any(|asset| asset["sha256"] == REFERENCE.sha256())
+        );
+        assert_eq!(frozen["runtime"]["fullParams"]["no_timestamps"], false);
+        assert!(
+            mode.validate_model(everlast_dictation::model::MLX_REFERENCE)
+                .is_err()
+        );
+        assert!(mode.scheduled());
+        assert_eq!(mode.context_reduced(), None);
+        assert_eq!(mode.pretranscription(), None);
+        assert_eq!(mode.full_prefix(), None);
+        let mut changed = frozen;
+        changed["runtime"]["dtype"] = json!("q8");
+        assert!(select(&serde_json::to_vec(&changed)?).is_err());
+        Ok(())
+    }
+
     use super::*;
     #[test]
     fn full_prefix_modes_require_their_exact_own_configuration_and_source_closure()
@@ -461,6 +550,36 @@ mod tests {
         let mut wrong = reduced;
         wrong["audioContextExperiment"]["maximumPreparedFrames"] = json!(320001);
         assert!(select(&serde_json::to_vec(&wrong)?).is_err());
+        Ok(())
+    }
+    #[cfg(feature = "mlx")]
+    #[test]
+    fn mlx_encoder_profile_freezes_the_actual_reference_decoder_and_derived_payload()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let v = mlx_template()?;
+        assert_eq!(v["runtime"]["decoderBackend"], "whisper.cpp-reference");
+        assert_eq!(v["runtime"]["fullParams"]["no_timestamps"], false);
+        #[cfg(feature = "mlx-encoder-f16")]
+        let (expected, other) = ("fp16", "fp32");
+        #[cfg(not(feature = "mlx-encoder-f16"))]
+        let (expected, other) = ("fp32", "fp16");
+        assert_eq!(v["runtime"]["encoderDtype"], expected);
+        assert_eq!(v["runtime"]["encoderCheckpointDtype"], "fp32");
+        assert_eq!(v["runtime"]["encoderFeatureDtype"], "fp32");
+        assert_eq!(
+            v["models"][0]["sha256"],
+            "277a2661c6d85f7e620adad07f7fda78b052a5a66b2c16e9fb6ccb3ac134d042"
+        );
+        assert_eq!(v["models"][0]["bytes"], 3235574296_u64);
+        assert!(v["models"][0]["url"].is_null());
+        assert_eq!(
+            v["models"][5]["sha256"],
+            everlast_dictation::model::REFERENCE.sha256()
+        );
+        assert!(v["mlxSources"]["cppEncoderBridge"]["sha256"].is_string());
+        let mut wrong_precision = v;
+        wrong_precision["runtime"]["encoderDtype"] = json!(other);
+        assert!(select(&serde_json::to_vec(&wrong_precision)?).is_err());
         Ok(())
     }
 }

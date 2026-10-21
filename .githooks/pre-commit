@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+# No model download, microphone access, UI activation or physical keypress.
+npm run check:fast

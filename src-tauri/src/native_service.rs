@@ -132,6 +132,13 @@ pub struct MainRequest {
 }
 impl MainRequest {
     pub fn execute(self) {
+        self.execute_with(dispatch_main);
+    }
+
+    fn execute_with(
+        self,
+        mut dispatch: impl FnMut(Command, Option<&DeliveryToken>) -> Result<Reply, NativeError>,
+    ) {
         let Self {
             command,
             reply,
@@ -143,7 +150,7 @@ impl MainRequest {
             observation_token,
         } = self;
         let result = if permit.load(Ordering::Acquire) {
-            dispatch_main(command, {
+            dispatch(command, {
                 #[cfg(feature = "measurement")]
                 {
                     observation_token.as_ref()
@@ -158,12 +165,20 @@ impl MainRequest {
         };
         // Completion and abandonment share a linearization point. Once a reply
         // is visible the slot is free; otherwise this closure owns cleanup.
+        // A sent lease is owned by the native owner, including its post-event
+        // read window. Neither a late reply nor a deferred cleanup permits an
+        // immediate main-thread restore. Owner::deliver already tracks cleanup
+        // before preparation and retries it on every failed acknowledgment.
+        let native_owner_retains_cleanup =
+            matches!(result, Ok(Reply::Sent | Reply::CleanupDeferred(_)));
         let completed = completion.lock();
-        if (completed.is_err()
+        let abandoned = completed.is_err()
             || !permit.load(Ordering::Acquire)
-            || reply.try_send(result).is_err())
+            || reply.try_send(result).is_err();
+        if abandoned
+            && !native_owner_retains_cleanup
             && let Some(session) = cleanup
-            && let Err(error) = dispatch_main(Command::Cleanup { session }, None)
+            && let Err(error) = dispatch(Command::Cleanup { session }, None)
         {
             eprintln!("Native cleanup after abandoned request failed: {error}");
         }
@@ -194,8 +209,20 @@ impl MainBridge {
         if Instant::now() >= deadline {
             return Err("Die Hauptthread-Anfrage hat ihr Zeitlimit überschritten.".into());
         }
-        if self.occupied.swap(true, Ordering::AcqRel) {
-            return Err("Eine Hauptthread-Anfrage ist noch nicht abgeschlossen.".into());
+        loop {
+            if self
+                .occupied
+                .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+                .is_ok()
+            {
+                break;
+            }
+            if !matches!(command, Command::Cleanup { .. }) || Instant::now() >= deadline {
+                return Err("Eine Hauptthread-Anfrage ist noch nicht abgeschlossen.".into());
+            }
+            // Cleanup owns any outstanding lease even after the original caller
+            // timed out. Wait off-main for its closure to release the slot.
+            thread::sleep(TICK.min(deadline.saturating_duration_since(Instant::now())));
         }
         let (reply, receive) = bounded(1);
         let permit = Arc::new(AtomicBool::new(true));
@@ -337,7 +364,7 @@ impl NativeBackend {
             .call(command, token, Instant::now() + STEP_LIMIT)?
         {
             Reply::Prepared | Reply::Installed | Reply::Sent | Reply::Cleaned(_) => Ok(()),
-            Reply::Environment(_) => {
+            Reply::Environment(_) | Reply::CleanupDeferred(_) => {
                 Err("Die Antwort des Hauptthreads passt nicht zur Anfrage.".into())
             }
         }
@@ -637,7 +664,19 @@ impl Backend for NativeBackend {
         }
     }
     fn cleanup(&mut self, session: NonZeroU64) -> Result<(), NativeError> {
-        self.unit(Command::Cleanup { session }, None)
+        loop {
+            match self.main.call(
+                Command::Cleanup { session },
+                None,
+                Instant::now() + STEP_LIMIT,
+            )? {
+                Reply::Cleaned(_) => return Ok(()),
+                Reply::CleanupDeferred(deadline) => {
+                    wait_for_restore_deadline(deadline, Instant::now, thread::sleep);
+                }
+                _ => return Err("Die Bereinigung wurde vom Hauptthread nicht bestätigt.".into()),
+            }
+        }
     }
     fn shutdown(self) -> Result<(), NativeError> {
         self.target.shutdown().map_err(|error| error.to_string())
@@ -777,7 +816,7 @@ impl<B: Backend> Owner<B> {
         let environment = self.backend.environment(token, deadline)?;
         self.check(token)?;
         if !environment.accessibility_trusted {
-            return Err("Die Freigabe für Bedienungshilfen fehlt. Prüfe vor dem nächsten Diktat Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen → Everlast Dictation.".into());
+            return Err("Die Freigabe für Bedienungshilfen fehlt. Prüfe vor dem nächsten Diktat Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen → Everlast Coding Challenge.".into());
         }
         if environment.secure_input {
             return Err("Eine geschützte Eingabe ist aktiv. Wähle nach deren Abschluss für das nächste Diktat ein normales beschreibbares Textfeld.".into());
@@ -1535,6 +1574,92 @@ mod tests {
             Err(macos_integration::delivery::CommitError::Cancelled)
         ));
         drop(take.recv()?);
+        Ok(())
+    }
+    #[test]
+    fn native_success_and_deferred_cleanup_are_acknowledged()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for deferred in [false, true] {
+            let (queued, take) = bounded(1);
+            let bridge = MainBridge {
+                schedule: Box::new(move |request| {
+                    queued.try_send(request).map_err(|e| e.to_string())
+                }),
+                occupied: Arc::new(AtomicBool::new(false)),
+            };
+            let id = NonZeroU64::new(1).ok_or("invalid id")?;
+            let caller = thread::spawn(move || {
+                bridge.call(
+                    Command::Cleanup { session: id },
+                    None,
+                    Instant::now() + STEP_LIMIT,
+                )
+            });
+            let request = take.recv_timeout(STEP_LIMIT)?;
+            request.execute_with(|_, _| {
+                Ok(if deferred {
+                    Reply::CleanupDeferred(Instant::now() + RESTORE_DELAY)
+                } else {
+                    Reply::Sent
+                })
+            });
+            let result = caller.join().map_err(|_| "caller panicked")??;
+            assert!(matches!(
+                (deferred, result),
+                (true, Reply::CleanupDeferred(_)) | (false, Reply::Sent)
+            ));
+        }
+        Ok(())
+    }
+    #[test]
+    fn timed_out_committed_send_leaves_cleanup_to_native_owner()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let (queued, take) = bounded(1);
+        let bridge = MainBridge {
+            schedule: Box::new(move |request| queued.try_send(request).map_err(|e| e.to_string())),
+            occupied: Arc::new(AtomicBool::new(false)),
+        };
+        let id = NonZeroU64::new(1).ok_or("invalid id")?;
+        let token = DeliveryToken::new(id);
+        let caller_token = token.clone();
+        let caller = thread::spawn(move || {
+            bridge.call(
+                Command::Cleanup { session: id },
+                Some(&caller_token),
+                Instant::now() + Duration::from_millis(50),
+            )
+        });
+        let request = take.recv_timeout(STEP_LIMIT)?;
+        let (committed, commit_seen) = bounded(1);
+        let (release, proceed) = bounded(1);
+        let cleanup_count = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let observed = Arc::clone(&cleanup_count);
+        let main = thread::spawn(move || {
+            let mut first = true;
+            request.execute_with(|_, _| {
+                if first {
+                    first = false;
+                    token.try_commit().map_err(|e| e.to_string())?;
+                    committed.send(()).map_err(|e| e.to_string())?;
+                    proceed
+                        .recv_timeout(STEP_LIMIT)
+                        .map_err(|e| e.to_string())?;
+                    Ok(Reply::Sent)
+                } else {
+                    observed.fetch_add(1, Ordering::AcqRel);
+                    Ok(Reply::Cleaned(None))
+                }
+            });
+        });
+        commit_seen.recv_timeout(STEP_LIMIT)?;
+        assert!(caller.join().map_err(|_| "caller panicked")?.is_err());
+        release.send(())?;
+        main.join().map_err(|_| "main fixture panicked")?;
+        assert_eq!(
+            cleanup_count.load(Ordering::Acquire),
+            0,
+            "unacknowledged send must not restore on the main thread"
+        );
         Ok(())
     }
     #[test]

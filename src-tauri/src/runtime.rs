@@ -1218,6 +1218,7 @@ impl<A: AudioDriver> Actor<A> {
                 .map_err(service_error)?;
             self.execute(actions)?;
         }
+        #[cfg(any(test, feature = "measurement"))]
         let epoch = if self.audio.policy() == crate::pipeline::Policy::FullPrefix {
             self.controller.prefix_available()
         } else {
@@ -1233,6 +1234,8 @@ impl<A: AudioDriver> Actor<A> {
                 None
             }
         };
+        #[cfg(not(any(test, feature = "measurement")))]
+        let epoch: Option<u64> = None;
         if let Some(epoch) = epoch
             && self
                 .inference
@@ -1471,7 +1474,7 @@ mod tests {
         fn new() -> Result<Self, Box<dyn std::error::Error>> {
             Self::with_decoder(FixtureDecoder)
         }
-        fn with_decoder(decoder: impl Decoder) -> Result<Self, Box<dyn std::error::Error>> {
+        fn with_decoder(decoder: impl Decoder + Send) -> Result<Self, Box<dyn std::error::Error>> {
             let (audio, events) = bounded(3);
             let (started, starts) = bounded(4);
             let (stopped, stops) = bounded(4);

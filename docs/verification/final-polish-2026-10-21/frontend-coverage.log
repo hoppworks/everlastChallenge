@@ -1,0 +1,36 @@
+
+ RUN  v5.0.5 /Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge
+      Coverage enabled with v8
+
+
+ Test Files  6 passed (6)
+      Tests  219 passed (219)
+   Start at  11:06:14
+   Duration  2.46s (environment 45%, tests 39%, import 8%, transform 4%, worker 3%)
+
+    Isolate  6 workers spawned · ~383ms startup each (spawn + environment, per file)
+             at least ~765ms faster with isolate: false — reuses workers across files instead of one per file
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   98.18 |    95.58 |   98.91 |   98.97 |                   
+ src               |   98.52 |    89.09 |     100 |     100 |                   
+  App.tsx          |     100 |    90.56 |     100 |     100 | 91,109,125,131    
+  main.tsx         |      75 |       50 |     100 |     100 | 5                 
+ src/features/app  |     100 |    98.23 |     100 |     100 |                   
+  AppView.tsx      |     100 |    98.23 |     100 |     100 | 234-235           
+ ...tures/settings |    98.5 |    93.57 |   96.29 |   98.38 |                   
+  RecoveryView.tsx |     100 |    92.85 |     100 |     100 | 59                
+  SettingsView.tsx |   97.95 |    93.68 |   95.23 |   97.87 | 193               
+ src/ipc           |   97.14 |    97.38 |     100 |   98.52 |                   
+  index.ts         |   97.14 |    97.38 |     100 |   98.52 | 312               
+-------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 98.18% ( 216/220 )
+Branches     : 95.58% ( 411/430 )
+Functions    : 98.91% ( 91/92 )
+Lines        : 98.97% ( 194/196 )
+================================================================================

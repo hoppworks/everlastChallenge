@@ -8,8 +8,15 @@ use std::{
 };
 
 mod cache;
+mod mlx_manifest;
+#[cfg(unix)]
+mod parallel_verification;
+mod reference_conversion;
 mod storage;
 use cache::CacheGuard;
+#[cfg(all(feature = "mlx", feature = "measurement"))]
+pub(crate) use mlx_manifest::MLX_REFERENCE_COEFFICIENTS as COEFFICIENT_CONTROL;
+pub use mlx_manifest::{MLX_REFERENCE, MLX_REFERENCE_COEFFICIENTS};
 use storage::VerifiedFile;
 pub const MODEL_REVISION: &str = "5359861c739e955e79d9a303bcbc70fb988958b1";
 
@@ -62,7 +69,50 @@ impl ModelDefinition {
     pub fn sha256(self) -> &'static str {
         self.sha256
     }
+    pub fn is_mlx(self) -> bool {
+        self.id == MLX_REFERENCE.id || self.is_reference_encoder()
+    }
+    pub fn is_reference_encoder(self) -> bool {
+        self.id == MLX_REFERENCE_COEFFICIENTS.id
+    }
+    /// All verified files needed before readiness, including the unchanged VAD.
+    pub fn installation_assets(self) -> impl Iterator<Item = Self> {
+        let support: &[Self] = if self.is_mlx() {
+            &mlx_manifest::SUPPORT
+        } else {
+            &[]
+        };
+        std::iter::once(if self.is_reference_encoder() {
+            REFERENCE
+        } else {
+            self
+        })
+        .chain(support.iter().copied())
+        .chain((self.id != VAD.id).then_some(VAD))
+        .chain(self.is_reference_encoder().then_some(self))
+    }
+    /// Select the application-owned cache namespace. Explicit probe paths stay
+    /// caller-owned; different MLX payloads must never share weights.safetensors.
+    pub fn cache_directory(self, models: &Path) -> PathBuf {
+        if self.is_mlx() {
+            models.join(self.id())
+        } else {
+            models.to_path_buf()
+        }
+    }
+
+    pub fn installation_bytes(self) -> u64 {
+        self.installation_assets().map(Self::bytes).sum()
+    }
+    /// Empty only for the local derived payload, which download_model converts
+    /// from the verified reference before constructing any network client.
     pub fn url(self) -> String {
+        if self.is_reference_encoder() {
+            return String::new();
+        }
+        if let Some(url) = mlx_manifest::url(self) {
+            return url.into();
+        }
         if self.id == VAD.id {
             return "https://huggingface.co/ggml-org/whisper-vad/resolve/9ffd54a1e1ee413ddf265af9913beaf518d1639b/ggml-silero-v5.1.2.bin".into();
         }
@@ -143,6 +193,9 @@ pub fn download_model(
         return Err(ModelError::Cancelled);
     }
     let _cache = prepare_cache(directory, definition, cancel)?;
+    if definition.is_reference_encoder() {
+        return reference_conversion::convert(directory, cancel, &mut progress);
+    }
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()?;
@@ -283,6 +336,10 @@ fn verify(
     if file.metadata()?.len() != definition.bytes {
         return Err(ModelError::Size);
     }
+    #[cfg(unix)]
+    if let Some(result) = parallel_verification::verify_if_pinned(&file, definition, cancel) {
+        return result;
+    }
     let mut hasher = Sha256::new();
     let mut buffer = [0_u8; 65_536];
     let mut received = 0_u64;
@@ -311,6 +368,56 @@ fn verify(
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn mlx_model_variants_have_separate_cache_namespaces() {
+        let root = Path::new("models");
+        assert_ne!(
+            MLX_REFERENCE.cache_directory(root),
+            MLX_REFERENCE_COEFFICIENTS.cache_directory(root)
+        );
+        assert_eq!(REFERENCE.cache_directory(root), root);
+        assert_eq!(SMALL.cache_directory(root), root);
+    }
+
+    #[test]
+    fn mlx_setup_accounts_for_every_pinned_asset_and_keeps_vad() {
+        let assets = MLX_REFERENCE.installation_assets().collect::<Vec<_>>();
+        assert_eq!(
+            assets
+                .iter()
+                .map(|asset| asset.file_name())
+                .collect::<Vec<_>>(),
+            [
+                "weights.safetensors",
+                "config.json",
+                "tokenizer.json",
+                "tokenizer_config.json",
+                "ggml-silero-v5.1.2.bin"
+            ]
+        );
+        assert_eq!(MLX_REFERENCE.installation_bytes(), 1_617_856_158);
+        assert_eq!(
+            REFERENCE.installation_bytes(),
+            REFERENCE.bytes() + VAD.bytes()
+        );
+        assert!(MLX_REFERENCE.is_mlx());
+        assert!(!REFERENCE.is_mlx());
+        assert!(
+            assets[0]
+                .url()
+                .contains("a4aaeec0636e6fef84abdcbe3544cb2bf7e9f6fb")
+        );
+        assert!(
+            assets[2]
+                .url()
+                .contains("41f01f3fe87f28c78e2fbf8b568835947dd65ed9")
+        );
+        assert_eq!(
+            assets[0].sha256(),
+            "951ed3fc1203e6a62467abb2144a96ce7eafca8fa77e3704fdb8635ff3e7f8a6"
+        );
+    }
+
     #[test]
     fn vad_manifest_is_pinned_independently_without_changing_asr_urls() {
         assert_eq!(VAD.id(), "silero-v5.1.2");
@@ -431,6 +538,75 @@ mod tests {
         assert_eq!(std::fs::read_dir(directory.path())?.count(), 1);
         Ok(())
     }
+    #[test]
+    fn streamed_hash_matches_million_a_vector_and_rejects_same_size_corruption()
+    -> Result<(), Box<dyn std::error::Error>> {
+        // Standard SHA-256 million-'a' vector crosses all streaming buffer boundaries.
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("million-a.bin");
+        let definition = ModelDefinition {
+            id: "million-a",
+            file: "million-a.bin",
+            bytes: 1_000_000,
+            sha256: "cdc76e5c9914fb9281a1c7e284d73e67f1809a48a497200e046d39ccc7112cd0",
+        };
+        let mut bytes = vec![b'a'; 1_000_000];
+        std::fs::write(&path, &bytes)?;
+        verify_file(&path, definition)?;
+        bytes[65_536] = b'b';
+        std::fs::write(&path, &bytes)?;
+        assert!(matches!(
+            verify_file(&path, definition),
+            Err(ModelError::Hash)
+        ));
+        Ok(())
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn parallel_model_verification_checks_every_position_and_exact_length()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("fixture.bin");
+        let definition = ModelDefinition {
+            id: "parallel-integrity-fixture",
+            file: "fixture.bin",
+            bytes: 17,
+            sha256: "918a954ac4dfb54ac39f068d9868227f69ab39bc362e2c9b0083bf6a109d6ad7",
+        };
+        let original = b"abcdefghijklmnopq";
+        fs::write(&path, original)?;
+        verify_file(&path, definition)?;
+        // Includes both sides of every chunk boundary and the partial tail.
+        for index in 0..original.len() {
+            let mut corrupt = *original;
+            corrupt[index] ^= 1;
+            fs::write(&path, corrupt)?;
+            assert!(
+                matches!(verify_file(&path, definition), Err(ModelError::Hash)),
+                "byte {index}"
+            );
+        }
+        for data in [
+            original[..16].to_vec(),
+            [original.as_slice(), b"x"].concat(),
+        ] {
+            fs::write(&path, data)?;
+            assert!(matches!(
+                verify_file(&path, definition),
+                Err(ModelError::Size)
+            ));
+        }
+        fs::write(&path, original)?;
+        let cancel = tokio_util::sync::CancellationToken::new();
+        cancel.cancel();
+        assert!(matches!(
+            verify_file_cancellable(&path, definition, &cancel),
+            Err(ModelError::Cancelled)
+        ));
+        Ok(())
+    }
+
     #[test]
     fn cancelled_hash_verification_does_not_open_the_file() -> Result<(), Box<dyn std::error::Error>>
     {

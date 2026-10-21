@@ -1,0 +1,42 @@
+   Compiling objc2 v0.6.5
+   Compiling bitflags v2.13.2
+   Compiling proc-macro2 v1.0.107
+   Compiling serde_core v1.0.228
+   Compiling core-foundation-sys v0.8.7
+   Compiling serde_json v1.0.149
+   Compiling serde v1.0.228
+   Compiling memchr v2.8.3
+   Compiling raw-window-handle v0.6.2
+   Compiling core-foundation v0.10.1
+   Compiling core-graphics-types v0.2.0
+   Compiling quote v1.0.47
+   Compiling syn v2.0.119
+   Compiling syn v3.0.9
+   Compiling objc2-core-foundation v0.3.2
+   Compiling block2 v0.6.2
+   Compiling objc2-foundation v0.3.2
+   Compiling objc2-core-video v0.3.2
+   Compiling objc2-core-text v0.3.2
+   Compiling objc2-core-graphics v0.3.2
+   Compiling serde_derive v1.0.228
+   Compiling thiserror-impl v2.0.18
+   Compiling foreign-types-macros v0.2.4
+   Compiling thiserror v2.0.18
+   Compiling foreign-types v0.5.0
+   Compiling core-graphics v0.25.0
+   Compiling objc2-quartz-core v0.3.2
+   Compiling objc2-core-image v0.3.2
+   Compiling objc2-core-data v0.3.2
+   Compiling objc2-cloud-kit v0.3.2
+   Compiling objc2-av-foundation v0.3.2
+   Compiling objc2-app-kit v0.3.2
+   Compiling macos-integration v0.1.0 (/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/crates/macos-integration)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 14.44s
+     Running unittests src/lib.rs (/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/debug/deps/macos_integration-35756a2bbc8cbacb)
+
+running 2 tests
+test main_delivery::tests::background_dispatch_cannot_access_appkit_state ... ok
+test main_delivery::tests::sent_read_window_defers_restoration_until_deadline_without_consuming_lease ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 65 filtered out; finished in 0.00s
+

@@ -1,0 +1,89 @@
+   Compiling syn v2.0.119
+   Compiling thiserror-impl v2.0.18
+   Compiling serde_derive v1.0.228
+   Compiling ts-rs-macros v11.1.0
+   Compiling thiserror v2.0.18
+   Compiling ts-rs v11.1.0
+   Compiling serde v1.0.228
+   Compiling dictation-core v0.1.0 (/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/crates/dictation-core)
+   Compiling macos-integration v0.1.0 (/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/crates/macos-integration)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.30s
+     Running unittests src/lib.rs (/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/debug/deps/dictation_core-ece36d136113dd04)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/debug/deps/macos_integration-d0f7656f378c0176)
+
+running 67 tests
+test clipboard::tests::binary_backup_preserves_all_items_types_and_bytes ... ok
+test clipboard::tests::oversized_wire_lengths_are_rejected_before_reading_or_allocating_payloads ... ok
+test clipboard::tests::trailing_data_and_truncated_backups_are_never_accepted ... ok
+test deadline::tests::durations_round_up_to_absolute_ticks_and_reuse_one_timebase ... ok
+test deadline::tests::early_success_waits_again_for_the_same_absolute_deadline ... ok
+test deadline::tests::invalid_timebases_and_query_errors_are_rejected_at_construction ... ok
+test deadline::tests::os_wait_errors_are_preserved_without_fallback_or_retry ... ok
+test deadline::tests::unrepresentable_duration_or_absolute_deadline_never_reaches_wait ... ok
+test deadline::tests::zero_duration_does_not_call_the_wait_backend ... ok
+test delivery::tests::a_fresh_token_with_the_same_session_cannot_revive_cancelled_work ... ok
+test delivery::tests::cancel_before_send_prevents_all_clones_from_committing ... ok
+test delivery::tests::committed_send_is_exactly_once_and_cannot_be_recalled ... ok
+test delivery::tests::racing_cancel_and_commit_choose_exactly_one_irreversible_outcome ... ok
+test devices::tests::any_property_failure_invalidates_the_inventory ... ok
+test devices::tests::input_stream_presence_filters_outputs_and_preserves_duplicate_names ... ok
+test devices::tests::physical_input_count_and_property_sizes_are_bounded ... ok
+test feedback::tests::worker_is_rejected_before_requesting_a_sound ... ok
+test glass_header::tests::rejects_workers_before_touching_native_handles ... ok
+test keyboard::labels::tests::missing_or_invalid_layout_output_never_reuses_a_previous_label ... ok
+test keyboard::labels::tests::physical_position_and_command_layer_are_resolved_without_option_text ... ok
+test keyboard::observer::tests::queued_callback_after_removal_is_inert_and_panic_disables_delivery ... ok
+test keyboard::observer::tests::worker_registration_is_rejected_before_native_registration ... ok
+test main_delivery::tests::background_dispatch_cannot_access_appkit_state ... ok
+test main_delivery::tests::sent_read_window_defers_restoration_until_deadline_without_consuming_lease ... ok
+test power::tests::a_panicking_client_is_disabled_without_unwinding_into_objc ... ok
+test power::tests::disabling_delivery_rejects_already_queued_and_repeated_power_events ... ok
+test power::tests::queued_callback_copies_share_the_same_removal_gate ... ok
+test power::tests::subscribing_from_a_worker_is_rejected_before_observing_the_workspace ... ok
+test process::tests::current_process_and_invalid_identifiers_are_not_declared_absent ... ok
+test process::tests::only_explicit_esrch_from_a_failed_query_proves_absence ... ok
+test process::tests::operating_system_confirms_absence_outside_its_process_identifier_range ... ok
+test qos::tests::drop_and_panic_unwind_each_end_their_owned_token ... ok
+test qos::tests::failed_enter_never_owns_or_ends_a_token ... ok
+test qos::tests::failed_finish_is_explicit_and_does_not_end_the_same_token_twice ... ok
+test qos::tests::unspecified_base_is_preserved_and_explicit_finish_ends_exactly_one_owned_token ... ok
+test realtime::tests::baseline_qos_finishes_before_after_readback_and_both_errors_preserve_output ... ok
+test realtime::tests::callback_unwind_remains_a_join_error_and_releases_the_child_backend ... ok
+test realtime::tests::fixed_durations_convert_to_u32_ticks_with_ceiling_and_reject_invalid_timebases ... ok
+test realtime::tests::native_reply_layout_retains_unsigned_ticks_raw_basic_policy_and_bounded_cpu_times ... ok
+test realtime::tests::rt_post_readback_error_keeps_callback_output_and_the_joined_owner_is_dropped ... ok
+test realtime::tests::rt_setup_and_observation_are_confined_to_the_owned_child_before_callback ... ok
+test realtime::tests::setup_os_errors_and_changed_readback_never_run_the_callback ... ok
+test realtime::tests::stored_rt_parameters_do_not_admit_timeshare_or_unverified_basic_policy ... ok
+test target::post_send_tests::bounded_character_count_allows_text_and_rechecks_actual_value ... ok
+test target::post_send_tests::character_count_preflight_rejects_invalid_values_without_reading_text ... ok
+test target::post_send_tests::exact_utf16_replacement_confirms_only_expected_result ... ok
+test target::post_send_tests::no_op_or_oversized_replacement_cannot_confirm_delivery ... ok
+test target::tests::approvals_reject_old_checks_wrong_sessions_and_reused_process_ids ... ok
+test target::tests::kernel_process_identity_is_stable_and_rejects_invalid_pids ... ok
+test target::tests::only_positive_editability_evidence_allows_supported_fields ... ok
+test target::tests::replacement_capabilities_work_without_enabled_but_never_override_explicit_vetoes ... ok
+test target::tests::resolver_falls_back_in_order_from_absent_and_opaque_to_known_field ... ok
+test target::tests::resolver_never_falls_through_concrete_security_disabled_or_readonly_fields ... ok
+test target::tests::resolver_with_no_field_is_unconfirmed_and_does_not_invent_editability ... ok
+test target::tests::text_area_optional_subrole_absence_is_distinct_from_failed_or_malformed_queries ... ok
+test target::worker::tests::blocked_ax_cannot_make_the_request_queue_unbounded ... ok
+test target::worker::tests::cancellation_discards_an_inflight_capture_and_new_session_receipts_keep_tags ... ok
+test target::worker::tests::cancelled_queued_capture_cannot_be_retried_with_a_fresh_token ... ok
+test target::worker::tests::missing_start_target_never_retries_capture_during_later_approval ... ok
+test target::worker::tests::post_send_requires_exact_committed_capture_and_keeps_approve_pending_only ... ok
+test thread_observation::tests::cpu_fields_are_checked_and_raw_qos_policy_are_preserved ... ok
+test ui_services::tests::completion_is_bounded_and_tolerates_an_abandoned_receiver ... ok
+test ui_services::tests::manual_copy_bounds_utf8_bytes_before_any_native_mutation ... ok
+test ui_services::tests::manual_copy_refuses_worker_threads_without_touching_the_clipboard ... ok
+test ui_services::tests::native_authorization_values_are_explicit_and_unknown_values_fail_closed ... ok
+test ui_services::tests::permission_completion_is_one_shot_even_after_the_first_result_was_consumed ... ok
+test ui_services::tests::prompt_actions_refuse_workers_before_invoking_system_prompts ... ok
+
+test result: ok. 67 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+

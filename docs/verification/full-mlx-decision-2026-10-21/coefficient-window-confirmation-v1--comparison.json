@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "automaticGatePassed": false,
+  "positiveWerDeltaAllowed": 0,
+  "groups": [
+    {
+      "split": "acceptance",
+      "language": "de",
+      "class": "challenging",
+      "baselineEdits": 3,
+      "candidateEdits": 3,
+      "refWords": 35,
+      "passed": true
+    },
+    {
+      "split": "acceptance",
+      "language": "de",
+      "class": "clean",
+      "baselineEdits": 5,
+      "candidateEdits": 5,
+      "refWords": 63,
+      "passed": true
+    },
+    {
+      "split": "acceptance",
+      "language": "en",
+      "class": "challenging",
+      "baselineEdits": 0,
+      "candidateEdits": 0,
+      "refWords": 55,
+      "passed": true
+    },
+    {
+      "split": "acceptance",
+      "language": "en",
+      "class": "clean",
+      "baselineEdits": 3,
+      "candidateEdits": 5,
+      "refWords": 90,
+      "passed": false
+    }
+  ],
+  "reviewsRequired": [
+    {
+      "id": "mlx-confirmation-en-1690",
+      "pairSha256": "a1f6b9e9dcfa7f7da076001383cd3158fa7e0701deb64b2b91ed925a62ec4cb7",
+      "accepted": false
+    },
+    {
+      "id": "mlx-confirmation-en-1691",
+      "pairSha256": "58eecfc2752ebc356b3adec236aea2de234a88b276d1cbcf458b555af9ddc379",
+      "accepted": false
+    },
+    {
+      "id": "mlx-confirmation-en-1692",
+      "pairSha256": "37e4611a973a770ccfd4ca270a91c718580398904bd76d79dc4e09ed95d4ea01",
+      "accepted": false
+    },
+    {
+      "id": "mlx-confirmation-en-1693",
+      "pairSha256": "d8ad90d7bc54f8f0c7bc7083a4145108985ab03ff36a94f5222a17fd249633b4",
+      "accepted": false
+    }
+  ],
+  "semanticReviewComplete": false,
+  "qualified": false
+}

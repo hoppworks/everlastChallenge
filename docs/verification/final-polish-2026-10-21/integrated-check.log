@@ -1,0 +1,11 @@
+
+> everlast-dictation@0.1.0 check
+> cargo fmt --all -- --check && cargo clippy --workspace --all-targets --locked -- -D warnings && npm run check:fast && node scripts/check-contracts.mjs
+
+    Checking macos-integration v0.1.0 (/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/crates/macos-integration)
+   Compiling everlast-dictation v0.1.0 (/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/src-tauri)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.92s
+
+> everlast-dictation@0.1.0 check:fast
+> tsc --noEmit && oxlint --deny-warnings --report-unused-disable-directives-severity error src scripts vite.config.ts vitest.config.ts eslint.config.mjs && eslint src && node scripts/guardrails.mjs && node scripts/architecture.mjs
+

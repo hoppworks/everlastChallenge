@@ -1,0 +1,9 @@
+{
+  "status": "rejected",
+  "profile": "native-fp16-compatibility",
+  "reason": "DE-clean51>46 errors per915 words; new hallucinated tail",
+  "noTimingQualification": "central/remainder experiments not run for rejected quality profile",
+  "baselineFull100Complete": true,
+  "candidateFull100Complete": true,
+  "futureWork": "inspect segment-level fallback/seek evidence before a justified new native profile"
+}

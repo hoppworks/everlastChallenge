@@ -5,6 +5,8 @@ use dictation_core::audio::{EnergyProfile, MAX_SAMPLES, speech_range};
 use std::path::Path;
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
+#[cfg(feature = "mlx")]
+pub mod mlx;
 mod phase;
 mod speech_gate;
 use phase::Phase;
@@ -14,7 +16,7 @@ pub mod profile;
 
 #[cfg(feature = "measurement")]
 pub mod prefix_cache;
-#[cfg(not(feature = "measurement"))]
+#[cfg(all(test, not(feature = "measurement")))]
 pub(crate) mod prefix_cache;
 
 #[cfg(feature = "measurement")]
@@ -87,6 +89,29 @@ pub enum InferenceError {
     Memory,
 }
 
+// Explicit developer instrumentation; ordinary builds never read this flag.
+fn load_stage<T>(
+    name: &str,
+    load: impl FnOnce() -> Result<T, InferenceError>,
+) -> Result<T, InferenceError> {
+    #[cfg(feature = "measurement")]
+    let started = (std::env::var_os("EVERLAST_MLX_LOAD_DIAGNOSTICS").as_deref()
+        == Some(std::ffi::OsStr::new("1")))
+    .then(std::time::Instant::now);
+    let result = load();
+    #[cfg(feature = "measurement")]
+    if let Some(started) = started {
+        eprintln!(
+            "{}",
+            serde_json::json!({"kind":"mlx-load-stage", "stage":name,
+            "elapsedMicros":started.elapsed().as_micros(), "ok":result.is_ok()})
+        );
+    }
+    #[cfg(not(feature = "measurement"))]
+    let _ = name;
+    result
+}
+
 pub struct Engine {
     context: WhisperContext,
     gate: speech_gate::SpeechGate,
@@ -119,19 +144,23 @@ impl Engine {
         definition: ModelDefinition,
         flash_attention: bool,
     ) -> Result<Self, InferenceError> {
-        verify_file(path, definition)?;
+        load_stage("reference-integrity", || {
+            verify_file(path, definition).map_err(Into::into)
+        })?;
         // Neither log_backend nor tracing_backend is enabled. Route backend
         // logging into the safe library hook instead of printing paths/audio.
         whisper_rs::install_logging_hooks();
-        let context = WhisperContext::new_with_params(
-            path.to_str().ok_or(InferenceError::ModelPath)?,
-            WhisperContextParameters {
-                use_gpu: true,
-                flash_attn: flash_attention,
-                ..Default::default()
-            },
-        )
-        .map_err(|_| InferenceError::Context)?;
+        let context = load_stage("reference-context", || {
+            WhisperContext::new_with_params(
+                path.to_str().ok_or(InferenceError::ModelPath)?,
+                WhisperContextParameters {
+                    use_gpu: true,
+                    flash_attn: flash_attention,
+                    ..Default::default()
+                },
+            )
+            .map_err(|_| InferenceError::Context)
+        })?;
         if !context.is_multilingual() {
             return Err(InferenceError::Context);
         }
@@ -139,7 +168,9 @@ impl Engine {
             .parent()
             .ok_or(InferenceError::ModelPath)?
             .join(crate::model::VAD.file_name());
-        let gate = speech_gate::SpeechGate::load(&vad_path)?;
+        let gate = load_stage("reference-gate", || {
+            speech_gate::SpeechGate::load(&vad_path)
+        })?;
         Ok(Self { context, gate })
     }
 
@@ -360,6 +391,24 @@ fn decode_with_audio_ctx<const SUPPRESS_TIMESTAMPS: bool, O: ObservationSink>(
     observation: &mut O,
     audio_ctx: i32,
 ) -> Result<String, InferenceError> {
+    decode_with_features::<SUPPRESS_TIMESTAMPS, _>(
+        context,
+        input,
+        language,
+        observation,
+        audio_ctx,
+        None,
+    )
+}
+
+fn decode_with_features<const SUPPRESS_TIMESTAMPS: bool, O: ObservationSink>(
+    context: &WhisperContext,
+    input: &[f32],
+    language: Language,
+    observation: &mut O,
+    audio_ctx: i32,
+    features: Option<&[f32]>,
+) -> Result<String, InferenceError> {
     observation.phase_start(Phase::StateCreate);
     let state = context.create_state().map_err(|_| InferenceError::Context);
     observation.phase_end(Phase::StateCreate);
@@ -385,9 +434,16 @@ fn decode_with_audio_ctx<const SUPPRESS_TIMESTAMPS: bool, O: ObservationSink>(
         }
         observation.full_started();
         observation.phase_start(Phase::NativeFull);
-        let full = state
-            .full(parameters, input)
-            .map_err(|_| InferenceError::Decode);
+        let full = if let Some(features)=features {
+            state.full_with_encoder(parameters,input,features).map(|usage| {
+                #[cfg(feature="measurement")]
+                if std::env::var_os("EVERLAST_MLX_SEGMENT_DIAGNOSTICS").is_some_and(|flag| flag=="1") {
+                    eprintln!("{}",serde_json::json!({"kind":"mlx-reference-encoder-usage","preparedFrames":input.len(),"externalWindows":usage.external_windows,"nativeWindows":usage.native_windows}));
+                }
+                #[cfg(not(feature="measurement"))]
+                let _ = usage;
+            })
+        } else {state.full(parameters,input)}.map_err(|_|InferenceError::Decode);
         observation.phase_end(Phase::NativeFull);
         full?;
         observation.phase_start(Phase::TextJoin);

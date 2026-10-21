@@ -5962,3 +5962,11 @@ const _: () = {
 pub struct ggml_backend_buffer {
     pub _address: u8,
 }
+
+// Local isolated encoder bridge; keep consistent with whisper.h.
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct whisper_encoder_usage { pub external_windows: ::std::os::raw::c_int, pub native_windows: ::std::os::raw::c_int }
+unsafe extern "C" {
+ pub fn whisper_full_with_state_and_encoder(ctx: *mut whisper_context, state: *mut whisper_state, params: whisper_full_params, samples: *const f32, n_samples: ::std::os::raw::c_int, features: *const f32, n_features: ::std::os::raw::c_int, usage: *mut whisper_encoder_usage) -> ::std::os::raw::c_int;
+}

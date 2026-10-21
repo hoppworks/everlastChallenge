@@ -1,0 +1,2146 @@
+{
+  "schemaVersion": 1,
+  "kind": "MLX additive dependency notice inventory",
+  "metadataSha256": "15b2ea00b607396be1a1134f1c9481ceb7a50738f06c4e79445d82af6bd52a7e",
+  "historicalInventory": "components.json",
+  "components": [
+    {
+      "name": "ahash",
+      "version": "0.8.12",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/0444c6991eead6822f7b9102e654448d51624431119546492e8b231db42c48bb.txt",
+          "sha256": "0444c6991eead6822f7b9102e654448d51624431119546492e8b231db42c48bb",
+          "bytes": 1057,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "autocfg",
+      "version": "1.5.1",
+      "license": "Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac.txt",
+          "sha256": "27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac",
+          "bytes": 1054,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "base64",
+      "version": "0.13.1",
+      "license": "MIT/Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/0dd882e53de11566d50f8e8e2d5a651bcf3fabee4987d70f306233cf39094ba7.txt",
+          "sha256": "0dd882e53de11566d50f8e8e2d5a651bcf3fabee4987d70f306233cf39094ba7",
+          "bytes": 1076,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "bindgen",
+      "version": "0.72.1",
+      "license": "BSD-3-Clause",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c23953d9deb0a3312dbeaf6c128a657f3591acee45067612fa68405eaa4525db.txt",
+          "sha256": "c23953d9deb0a3312dbeaf6c128a657f3591acee45067612fa68405eaa4525db",
+          "bytes": 1512,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "borsh",
+      "version": "1.8.1",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/7b724c8fa4a82af733caccabdaa21e2bf8bcb0822fe62d5cf03f99d458438705.txt",
+          "sha256": "7b724c8fa4a82af733caccabdaa21e2bf8bcb0822fe62d5cf03f99d458438705",
+          "bytes": 11334,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "cargo_toml",
+      "version": "1.0.1",
+      "license": "Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/ee874098519e956c23a3c5c7e20581f8e9b1d70aa05eb178f983be9775090a2f.txt",
+          "sha256": "ee874098519e956c23a3c5c7e20581f8e9b1d70aa05eb178f983be9775090a2f",
+          "bytes": 11193,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "castaway",
+      "version": "0.2.4",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/f98e09091d5ae02b2f2ec1ead4f7f28c4c44d1cb98b078739ba67091637e170c.txt",
+          "sha256": "f98e09091d5ae02b2f2ec1ead4f7f28c4c44d1cb98b078739ba67091637e170c",
+          "bytes": 1075,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "cc",
+      "version": "1.8.0",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397.txt",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "bytes": 1057,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "cexpr",
+      "version": "0.6.0",
+      "license": "Apache-2.0/MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/d9771b8c6cf4426d3846de54c1febe20907f1eeadf7adfb5ade89a83bd9ea77f.txt",
+          "sha256": "d9771b8c6cf4426d3846de54c1febe20907f1eeadf7adfb5ade89a83bd9ea77f",
+          "bytes": 1061,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "cfg_aliases",
+      "version": "0.2.2",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/31b94860253d8ec7b4529f51901044d3b459d6292d996504a36b1bae3a36a812.txt",
+          "sha256": "31b94860253d8ec7b4529f51901044d3b459d6292d996504a36b1bae3a36a812",
+          "bytes": 1076,
+          "originalPath": "LICENSE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/1e2b7ade3fb228130408b9990cae6a7618eb314c75aa0b164bfe485d9d9756ee.txt",
+          "sha256": "1e2b7ade3fb228130408b9990cae6a7618eb314c75aa0b164bfe485d9d9756ee",
+          "bytes": 1472,
+          "originalPath": "NOTICES.md"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "clang-sys",
+      "version": "1.9.1",
+      "license": "Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "bytes": 11358,
+          "originalPath": "LICENSE.txt"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "cmake",
+      "version": "0.1.58",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397.txt",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "bytes": 1057,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "compact_str",
+      "version": "0.9.1",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/0d52feec79589df30138dad3800323fe5686b764b73347330a2dfef8ac83efe8.txt",
+          "sha256": "0d52feec79589df30138dad3800323fe5686b764b73347330a2dfef8ac83efe8",
+          "bytes": 1073,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "convert_case",
+      "version": "0.10.0",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/aed7b1758e35afa0cd0fde059d61950747ca11cd0e5e169cb21c11608daed772.txt",
+          "sha256": "aed7b1758e35afa0cd0fde059d61950747ca11cd0e5e169cb21c11608daed772",
+          "bytes": 1062,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "crossbeam-deque",
+      "version": "0.8.8",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/5734ed989dfca1f625b40281ee9f4530f91b2411ec01cb748223e7eb87e201ab.txt",
+          "sha256": "5734ed989dfca1f625b40281ee9f4530f91b2411ec01cb748223e7eb87e201ab",
+          "bytes": 1099,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "crossbeam-epoch",
+      "version": "0.9.21",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/5734ed989dfca1f625b40281ee9f4530f91b2411ec01cb748223e7eb87e201ab.txt",
+          "sha256": "5734ed989dfca1f625b40281ee9f4530f91b2411ec01cb748223e7eb87e201ab",
+          "bytes": 1099,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "daachorse",
+      "version": "3.0.3",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a.txt",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "darling",
+      "version": "0.20.11",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/8ea93490d74a5a1b1af3ff71d786271b3f1e5f0bea79ac16e02ec533cef040d6.txt",
+          "sha256": "8ea93490d74a5a1b1af3ff71d786271b3f1e5f0bea79ac16e02ec533cef040d6",
+          "bytes": 1067,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "darling_core",
+      "version": "0.20.11",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/8ea93490d74a5a1b1af3ff71d786271b3f1e5f0bea79ac16e02ec533cef040d6.txt",
+          "sha256": "8ea93490d74a5a1b1af3ff71d786271b3f1e5f0bea79ac16e02ec533cef040d6",
+          "bytes": 1067,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "darling_macro",
+      "version": "0.20.11",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/8ea93490d74a5a1b1af3ff71d786271b3f1e5f0bea79ac16e02ec533cef040d6.txt",
+          "sha256": "8ea93490d74a5a1b1af3ff71d786271b3f1e5f0bea79ac16e02ec533cef040d6",
+          "bytes": 1067,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "dary_heap",
+      "version": "0.3.9",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a.txt",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "derive_builder",
+      "version": "0.20.2",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08.txt",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/8c9612877aacfa1b42f5e80b679e6c3c93a7ba2bb99dfaf6e87e200dca4b4e6c.txt",
+          "sha256": "8c9612877aacfa1b42f5e80b679e6c3c93a7ba2bb99dfaf6e87e200dca4b4e6c",
+          "bytes": 1099,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "derive_builder_core",
+      "version": "0.20.2",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08.txt",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/8c9612877aacfa1b42f5e80b679e6c3c93a7ba2bb99dfaf6e87e200dca4b4e6c.txt",
+          "sha256": "8c9612877aacfa1b42f5e80b679e6c3c93a7ba2bb99dfaf6e87e200dca4b4e6c",
+          "bytes": 1099,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "derive_builder_macro",
+      "version": "0.20.2",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08.txt",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/8c9612877aacfa1b42f5e80b679e6c3c93a7ba2bb99dfaf6e87e200dca4b4e6c.txt",
+          "sha256": "8c9612877aacfa1b42f5e80b679e6c3c93a7ba2bb99dfaf6e87e200dca4b4e6c",
+          "bytes": 1099,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "either",
+      "version": "1.19.0",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/7576269ea71f767b99297934c0b2367532690f8c4badc695edf8e04ab6a1e545.txt",
+          "sha256": "7576269ea71f767b99297934c0b2367532690f8c4badc695edf8e04ab6a1e545",
+          "bytes": 1043,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "embed-resource",
+      "version": "3.0.12",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/1abdbbd4e3f95e56c79d4a8af190254c23ddb14db34aadadfafef9c3af041113.txt",
+          "sha256": "1abdbbd4e3f95e56c79d4a8af190254c23ddb14db34aadadfafef9c3af041113",
+          "bytes": 1081,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "errno",
+      "version": "0.3.14",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/8764a597675778ddfd4e25f81b08a05dbcf089ac05662df7613fe67f150e3aa2.txt",
+          "sha256": "8764a597675778ddfd4e25f81b08a05dbcf089ac05662df7613fe67f150e3aa2",
+          "bytes": 1054,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "esaxx-rs",
+      "version": "0.1.10",
+      "license": "Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4.txt",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "bytes": 11357,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "extended",
+      "version": "0.1.0",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/25a0874d15e7c834a47c3adc80901edb2219759254992023ef1010c3065413d5.txt",
+          "sha256": "25a0874d15e7c834a47c3adc80901edb2219759254992023ef1010c3065413d5",
+          "bytes": 1052,
+          "originalPath": "LICENSE.txt"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "find-msvc-tools",
+      "version": "0.1.14",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397.txt",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "bytes": 1057,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "fs_extra",
+      "version": "1.3.0",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/251ea8ccb1205ce5fa847d6e264d6b6753af62de2cecf2fd9abc0eb02c7c83fc.txt",
+          "sha256": "251ea8ccb1205ce5fa847d6e264d6b6753af62de2cecf2fd9abc0eb02c7c83fc",
+          "bytes": 1072,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "half",
+      "version": "2.7.1",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9.txt",
+          "sha256": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9",
+          "bytes": 10173,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1.txt",
+          "sha256": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1",
+          "bytes": 1036,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "hound",
+      "version": "3.5.1",
+      "license": "Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "bytes": 11358,
+          "originalPath": "license"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "itertools",
+      "version": "0.13.0",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/7576269ea71f767b99297934c0b2367532690f8c4badc695edf8e04ab6a1e545.txt",
+          "sha256": "7576269ea71f767b99297934c0b2367532690f8c4badc695edf8e04ab6a1e545",
+          "bytes": 1043,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "itertools",
+      "version": "0.14.0",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/7576269ea71f767b99297934c0b2367532690f8c4badc695edf8e04ab6a1e545.txt",
+          "sha256": "7576269ea71f767b99297934c0b2367532690f8c4badc695edf8e04ab6a1e545",
+          "bytes": 1043,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "jobserver",
+      "version": "0.1.35",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397.txt",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "bytes": 1057,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "lazy_static",
+      "version": "1.5.1",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "libloading",
+      "version": "0.8.9",
+      "license": "ISC",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/b29f8b01452350c20dd1af16ef83b598fea3053578ccc1c7a0ef40e57be2620f.txt",
+          "sha256": "b29f8b01452350c20dd1af16ef83b598fea3053578ccc1c7a0ef40e57be2620f",
+          "bytes": 736,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "link-section",
+      "version": "0.19.3",
+      "license": "Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a8ad31b1c3f40dca5a84119351b8fa8ddc868edd77fad8a8ebf6d8f2d16fa4ae.txt",
+          "sha256": "a8ad31b1c3f40dca5a84119351b8fa8ddc868edd77fad8a8ebf6d8f2d16fa4ae",
+          "bytes": 11324,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/bccaa8b6c09f94e81f06696e179dbe058464bbdfbc823b6d49cada1d71e84ac3.txt",
+          "sha256": "bccaa8b6c09f94e81f06696e179dbe058464bbdfbc823b6d49cada1d71e84ac3",
+          "bytes": 1022,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "linktime-proc-macro",
+      "version": "0.2.3",
+      "license": "Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a8ad31b1c3f40dca5a84119351b8fa8ddc868edd77fad8a8ebf6d8f2d16fa4ae.txt",
+          "sha256": "a8ad31b1c3f40dca5a84119351b8fa8ddc868edd77fad8a8ebf6d8f2d16fa4ae",
+          "bytes": 11324,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/bccaa8b6c09f94e81f06696e179dbe058464bbdfbc823b6d49cada1d71e84ac3.txt",
+          "sha256": "bccaa8b6c09f94e81f06696e179dbe058464bbdfbc823b6d49cada1d71e84ac3",
+          "bytes": 1022,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "macro_rules_attribute",
+      "version": "0.2.3",
+      "license": "Apache-2.0 OR MIT OR Zlib",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/388e98b08de12ba8a9d4575883c8b0386c747cea188ed459380fc58d60da15c9.txt",
+          "sha256": "388e98b08de12ba8a9d4575883c8b0386c747cea188ed459380fc58d60da15c9",
+          "bytes": 11385,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/603fb27ef3266ea516872eefd9ae587746b8c34614a35c0fb24e4e9e0c17e137.txt",
+          "sha256": "603fb27ef3266ea516872eefd9ae587746b8c34614a35c0fb24e4e9e0c17e137",
+          "bytes": 1112,
+          "originalPath": "LICENSE-MIT"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/1c41c0e19caa2c20b0adfeb8219b606b21b7c63914aa3ae74ae3e091d7ce09ca.txt",
+          "sha256": "1c41c0e19caa2c20b0adfeb8219b606b21b7c63914aa3ae74ae3e091d7ce09ca",
+          "bytes": 899,
+          "originalPath": "LICENSE-ZLIB"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "macro_rules_attribute-proc_macro",
+      "version": "0.2.3",
+      "license": "Apache-2.0 OR MIT OR Zlib",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/388e98b08de12ba8a9d4575883c8b0386c747cea188ed459380fc58d60da15c9.txt",
+          "sha256": "388e98b08de12ba8a9d4575883c8b0386c747cea188ed459380fc58d60da15c9",
+          "bytes": 11385,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/603fb27ef3266ea516872eefd9ae587746b8c34614a35c0fb24e4e9e0c17e137.txt",
+          "sha256": "603fb27ef3266ea516872eefd9ae587746b8c34614a35c0fb24e4e9e0c17e137",
+          "bytes": 1112,
+          "originalPath": "LICENSE-MIT"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/1c41c0e19caa2c20b0adfeb8219b606b21b7c63914aa3ae74ae3e091d7ce09ca.txt",
+          "sha256": "1c41c0e19caa2c20b0adfeb8219b606b21b7c63914aa3ae74ae3e091d7ce09ca",
+          "bytes": 899,
+          "originalPath": "LICENSE-ZLIB"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "memo-map",
+      "version": "0.3.4",
+      "license": "Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "minijinja",
+      "version": "2.24.0",
+      "license": "Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4.txt",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "bytes": 11357,
+          "originalPath": "src/vendor/self_cell/LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "minijinja-contrib",
+      "version": "2.24.0",
+      "license": "Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "minimal-lexical",
+      "version": "0.2.1",
+      "license": "MIT/Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/8173d5c29b4f956d532781d2b86e4e30f83e6b7878dce18c919451d6ba707c90.txt",
+          "sha256": "8173d5c29b4f956d532781d2b86e4e30f83e6b7878dce18c919451d6ba707c90",
+          "bytes": 10850,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "originalPath": "LICENSE-MIT"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/dbe1fff0fb1314b6af94f161511406275cf01c5a32441fbf24528a57a051d599.txt",
+          "sha256": "dbe1fff0fb1314b6af94f161511406275cf01c5a32441fbf24528a57a051d599",
+          "bytes": 2003,
+          "originalPath": "LICENSE.md"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "mlxrs",
+      "version": "0.2.0",
+      "license": "MIT OR Apache-2.0",
+      "source": "local dependency patch with provenance",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0.txt",
+          "sha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+          "bytes": 1071,
+          "unaltered": true,
+          "originalPath": "LICENSE-MIT",
+          "sourceUrl": "https://raw.githubusercontent.com/findit-studio/mlxrs/38744eb0dc1b91750991b12de0e24b1d0e475a6f/LICENSE-MIT",
+          "evidenceKind": "complete upstream original license"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "unaltered": true,
+          "originalPath": "LICENSE-APACHE",
+          "sourceUrl": "https://raw.githubusercontent.com/findit-studio/mlxrs/38744eb0dc1b91750991b12de0e24b1d0e475a6f/LICENSE-APACHE",
+          "evidenceKind": "complete upstream original license"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "mlxrs-sys",
+      "version": "0.2.0",
+      "license": "MIT OR Apache-2.0",
+      "source": "local dependency patch with provenance",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/7cce16d2bf2e2ce6a7d70b5ecd5fb43c6409a97aa0750ff75c11823e6e8c9d05.txt",
+          "sha256": "7cce16d2bf2e2ce6a7d70b5ecd5fb43c6409a97aa0750ff75c11823e6e8c9d05",
+          "bytes": 1072,
+          "originalPath": "vendor/gguflib/LICENSE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/ccfab7ccb2ea306f71531c8ca77bb55507606cd90768b1e32b8b52ab5b48cf01.txt",
+          "sha256": "ccfab7ccb2ea306f71531c8ca77bb55507606cd90768b1e32b8b52ab5b48cf01",
+          "bytes": 1066,
+          "originalPath": "vendor/mlx/LICENSE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/44326a4ea062241ae6fc26ee2ec90bdc81af7eb7b9d3966181b733fa69d42057.txt",
+          "sha256": "44326a4ea062241ae6fc26ee2ec90bdc81af7eb7b9d3966181b733fa69d42057",
+          "bytes": 1067,
+          "originalPath": "vendor/mlx-c/LICENSE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0.txt",
+          "sha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+          "bytes": 1071,
+          "unaltered": true,
+          "originalPath": "LICENSE-MIT",
+          "sourceUrl": "https://raw.githubusercontent.com/findit-studio/mlxrs/38744eb0dc1b91750991b12de0e24b1d0e475a6f/LICENSE-MIT",
+          "evidenceKind": "complete unchanged workspace-root upstream license; mlxrs-sys Cargo.toml.orig inherits workspace license"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "unaltered": true,
+          "originalPath": "LICENSE-APACHE",
+          "sourceUrl": "https://raw.githubusercontent.com/findit-studio/mlxrs/38744eb0dc1b91750991b12de0e24b1d0e475a6f/LICENSE-APACHE",
+          "evidenceKind": "complete unchanged workspace-root upstream license; mlxrs-sys Cargo.toml.orig inherits workspace license"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure",
+      "localPatchProvenance": {
+        "sourceKind": "local path dependency patched from the published crate",
+        "path": "vendor/mlxrs-sys",
+        "manifest": {
+          "path": "vendor/mlxrs-sys/EVERLAST-PATCH.json",
+          "sha256": "e92e68bde1a47e6b221d6e995a61d8c092dc4e19a32856ec3cb59a827569e084",
+          "bytes": 689
+        },
+        "upstreamRevision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
+        "upstreamRegistryChecksum": "ace6d5383b15cade95fbf8b7a10dfa5c4a84b3dcfa57abe012a5020208570f25",
+        "upstreamReleasedFilesTreeSha256": "39a0c953995ff1d54a55467671b024c7ac96fefce957cc9989a1d60c5d4288e2",
+        "effectiveReleasedFilesTreeSha256": "71faebc7011bca40a86e928a398a07be4a36572124c1ad2e0c7237b79b9695e3",
+        "releasedFileCount": 1100,
+        "changedReleasedFiles": [
+          "vendor/mlx/CMakeLists.txt"
+        ],
+        "excludedAddedFiles": [
+          "EVERLAST-PATCH.json",
+          "EVERLAST-PATCH.md"
+        ],
+        "hashDefinition": "SHA256 of UTF-8 compact JSON (sort_keys=True,ensure_ascii=False,separators comma/colon), regular archive files as objects path/sha256; list sorted by full relative path string (Unicode lexical); excludes Cargo cache marker and added application receipts; no fetched outputs",
+        "buildInputs": {
+          "path": "config/mlx-build-inputs.json",
+          "sha256": "1e0ca899d09e49d35e8515a2853eb785bffa17914bec4e30639f015a30b2a320",
+          "bytes": 2347
+        },
+        "verificationScope": "Local file/archive hash comparison only; no build, download or new advisory scan in this refresh."
+      }
+    },
+    {
+      "name": "monostate",
+      "version": "0.1.18",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a.txt",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "monostate-impl",
+      "version": "0.1.18",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a.txt",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "nom",
+      "version": "7.1.3",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/4dbda04344456f09a7a588140455413a9ac59b6b26a1ef7cdf9c800c012d87f0.txt",
+          "sha256": "4dbda04344456f09a7a588140455413a9ac59b6b26a1ef7cdf9c800c012d87f0",
+          "bytes": 1065,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "objc2-core-ml",
+      "version": "0.3.2",
+      "license": "Zlib OR Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "bytes": 1339,
+          "unaltered": true,
+          "originalPath": "LICENSE.md",
+          "sourceUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "evidenceKind": "upstream declaration only"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "objc2-image-io",
+      "version": "0.3.2",
+      "license": "Zlib OR Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "bytes": 1339,
+          "unaltered": true,
+          "originalPath": "LICENSE.md",
+          "sourceUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "evidenceKind": "upstream declaration only"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "objc2-metal",
+      "version": "0.3.2",
+      "license": "Zlib OR Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54.txt",
+          "sha256": "7f976f7e9cb2d87df7230606feb932c3f21ac0e664045a775b600046ff850c54",
+          "bytes": 1339,
+          "unaltered": true,
+          "originalPath": "LICENSE.md",
+          "sourceUrl": "https://raw.githubusercontent.com/madsmtm/objc2/7b1abfd750a2cacaea71d6a56ecfb83cb7de560b/LICENSE.md",
+          "evidenceKind": "upstream declaration only"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "onig",
+      "version": "6.5.3",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/e9c1238c5beb73c6cc130160418968058b21d486a7a445f0ceff27d51fbfdc44.txt",
+          "sha256": "e9c1238c5beb73c6cc130160418968058b21d486a7a445f0ceff27d51fbfdc44",
+          "bytes": 1456,
+          "originalPath": "LICENSE.md"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "onig_sys",
+      "version": "69.9.3",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/71f321038b088358004bee991635ac09e4c703bec467d3c30c06992c0595f189.txt",
+          "sha256": "71f321038b088358004bee991635ac09e4c703bec467d3c30c06992c0595f189",
+          "bytes": 1511,
+          "originalPath": "LICENSE.md"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/70ba5469ea0bab6e18a32d7009068f996503168d27be57747e08da34337ff26f.txt",
+          "sha256": "70ba5469ea0bab6e18a32d7009068f996503168d27be57747e08da34337ff26f",
+          "bytes": 1340,
+          "originalPath": "oniguruma/COPYING"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "pastey",
+      "version": "0.2.3",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a.txt",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "phf_codegen",
+      "version": "0.13.1",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/0ab4d106b6faac07fb6a051815fd1b4d862d730895e2d7d7358c2f13565e7a38.txt",
+          "sha256": "0ab4d106b6faac07fb6a051815fd1b4d862d730895e2d7d7358c2f13565e7a38",
+          "bytes": 1099,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "pkg-config",
+      "version": "0.3.34",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397.txt",
+          "sha256": "378f5840b258e2779c39418f3f2d7b2ba96f1c7917dd6be0713f88305dbda397",
+          "bytes": 1057,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "ppv-lite86",
+      "version": "0.2.21",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/0218327e7a480793ffdd4eb792379a9709e5c135c7ba267f709d6f6d4d70af0a.txt",
+          "sha256": "0218327e7a480793ffdd4eb792379a9709e5c135c7ba267f709d6f6d4d70af0a",
+          "bytes": 10854,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/4cada0bd02ea3692eee6f16400d86c6508bbd3bafb2b65fed0419f36d4f83e8f.txt",
+          "sha256": "4cada0bd02ea3692eee6f16400d86c6508bbd3bafb2b65fed0419f36d4f83e8f",
+          "bytes": 1076,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "prettyplease",
+      "version": "0.2.37",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a.txt",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "rand",
+      "version": "0.9.5",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5.txt",
+          "sha256": "90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5",
+          "bytes": 569,
+          "originalPath": "COPYRIGHT"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/35242e7a83f69875e6edeff02291e688c97caafe2f8902e4e19b49d3e78b4cab.txt",
+          "sha256": "35242e7a83f69875e6edeff02291e688c97caafe2f8902e4e19b49d3e78b4cab",
+          "bytes": 9724,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/209fbbe0ad52d9235e37badf9cadfe4dbdc87203179c0899e738b39ade42177b.txt",
+          "sha256": "209fbbe0ad52d9235e37badf9cadfe4dbdc87203179c0899e738b39ade42177b",
+          "bytes": 1117,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "rand_chacha",
+      "version": "0.9.0",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5.txt",
+          "sha256": "90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5",
+          "bytes": 569,
+          "originalPath": "COPYRIGHT"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/35242e7a83f69875e6edeff02291e688c97caafe2f8902e4e19b49d3e78b4cab.txt",
+          "sha256": "35242e7a83f69875e6edeff02291e688c97caafe2f8902e4e19b49d3e78b4cab",
+          "bytes": 9724,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/209fbbe0ad52d9235e37badf9cadfe4dbdc87203179c0899e738b39ade42177b.txt",
+          "sha256": "209fbbe0ad52d9235e37badf9cadfe4dbdc87203179c0899e738b39ade42177b",
+          "bytes": 1117,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "rand_core",
+      "version": "0.9.5",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5.txt",
+          "sha256": "90eb64f0279b0d9432accfa6023ff803bc4965212383697eee27a0f426d5f8d5",
+          "bytes": 569,
+          "originalPath": "COPYRIGHT"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/6df43f6f4b5d4587f3d8d71e45532c688fd168afa5fe89d571cb32fa09c4ef51.txt",
+          "sha256": "6df43f6f4b5d4587f3d8d71e45532c688fd168afa5fe89d571cb32fa09c4ef51",
+          "bytes": 10282,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/209fbbe0ad52d9235e37badf9cadfe4dbdc87203179c0899e738b39ade42177b.txt",
+          "sha256": "209fbbe0ad52d9235e37badf9cadfe4dbdc87203179c0899e738b39ade42177b",
+          "bytes": 1117,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "rayon",
+      "version": "1.12.0",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/0621878e61f0d0fda054bcbe02df75192c28bde1ecc8289cbd86aeba2dd72720.txt",
+          "sha256": "0621878e61f0d0fda054bcbe02df75192c28bde1ecc8289cbd86aeba2dd72720",
+          "bytes": 1071,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "rayon-cond",
+      "version": "0.4.0",
+      "license": "Apache-2.0/MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac.txt",
+          "sha256": "27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac",
+          "bytes": 1054,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "rayon-core",
+      "version": "1.13.0",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/0621878e61f0d0fda054bcbe02df75192c28bde1ecc8289cbd86aeba2dd72720.txt",
+          "sha256": "0621878e61f0d0fda054bcbe02df75192c28bde1ecc8289cbd86aeba2dd72720",
+          "bytes": 1071,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "regex-lite",
+      "version": "0.1.9",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb.txt",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb",
+          "bytes": 1071,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "rustc_version",
+      "version": "0.4.1",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/c9a75f18b9ab2927829a208fc6aa2cf4e63b8420887ba29cdb265d6619ae82d5.txt",
+          "sha256": "c9a75f18b9ab2927829a208fc6aa2cf4e63b8420887ba29cdb265d6619ae82d5",
+          "bytes": 1071,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "rustix",
+      "version": "1.1.5",
+      "license": "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/377c2e7c53250cc5905c0b0532d35973392af16ffb9596a41d99d202cf3617c9.txt",
+          "sha256": "377c2e7c53250cc5905c0b0532d35973392af16ffb9596a41d99d202cf3617c9",
+          "bytes": 853,
+          "originalPath": "COPYRIGHT"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5.txt",
+          "sha256": "268872b9816f90fd8e85db5a28d33f8150ebb8dd016653fb39ef1f94f2686bc5",
+          "bytes": 12243,
+          "originalPath": "LICENSE-Apache-2.0_WITH_LLVM-exception"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "rustversion",
+      "version": "1.0.23",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a.txt",
+          "sha256": "62c7a1e35f56406896d7aa7ca52d0cc0d272ac022b5d2796e7d6905db8a3636a",
+          "bytes": 9723,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "shlex",
+      "version": "1.3.0",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/553fffcd9b1cb158bc3e9edc35da85ca5c3b3d7d2e61c883ebcfa8a65814b583.txt",
+          "sha256": "553fffcd9b1cb158bc3e9edc35da85ca5c3b3d7d2e61c883ebcfa8a65814b583",
+          "bytes": 566,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/4455bf75a91154108304cb283e0fea9948c14f13e20d60887cf2552449dea3b1.txt",
+          "sha256": "4455bf75a91154108304cb283e0fea9948c14f13e20d60887cf2552449dea3b1",
+          "bytes": 1092,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "shlex",
+      "version": "2.0.1",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/553fffcd9b1cb158bc3e9edc35da85ca5c3b3d7d2e61c883ebcfa8a65814b583.txt",
+          "sha256": "553fffcd9b1cb158bc3e9edc35da85ca5c3b3d7d2e61c883ebcfa8a65814b583",
+          "bytes": 566,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/4455bf75a91154108304cb283e0fea9948c14f13e20d60887cf2552449dea3b1.txt",
+          "sha256": "4455bf75a91154108304cb283e0fea9948c14f13e20d60887cf2552449dea3b1",
+          "bytes": 1092,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "smol_str",
+      "version": "0.3.6",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3.txt",
+          "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+          "bytes": 1023,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "spm_precompiled",
+      "version": "0.1.4",
+      "license": "Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4.txt",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "bytes": 11357,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "static_assertions",
+      "version": "1.1.0",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "bytes": 11358,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/ea084a2373ebc1f0902c09266e7bf25a05ab3814c1805bb017ffa7308f90c061.txt",
+          "sha256": "ea084a2373ebc1f0902c09266e7bf25a05ab3814c1805bb017ffa7308f90c061",
+          "bytes": 1072,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "static_vcruntime",
+      "version": "3.0.0",
+      "license": "MIT OR Apache-2.0 OR Zlib",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/b9290e9d37bc53272ff4f3fb392c1762169fc0a8b797d164803049c81eacb48c.txt",
+          "sha256": "b9290e9d37bc53272ff4f3fb392c1762169fc0a8b797d164803049c81eacb48c",
+          "bytes": 26,
+          "originalPath": "LICENSE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/e3ba223bb1423f0aad8c3dfce0fe3148db48926d41e6fbc3afbbf5ff9e1c89cb.txt",
+          "sha256": "e3ba223bb1423f0aad8c3dfce0fe3148db48926d41e6fbc3afbbf5ff9e1c89cb",
+          "bytes": 10398,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/748c208045a6f00734dbc85a1c0e401c9a25e1f83fc756e99916750dbd2469a7.txt",
+          "sha256": "748c208045a6f00734dbc85a1c0e401c9a25e1f83fc756e99916750dbd2469a7",
+          "bytes": 1101,
+          "originalPath": "LICENSE-MIT"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/c1ff532091cac33bdecedf7268ff4f9bc3ddcffba494249fb723033e9e782f1a.txt",
+          "sha256": "c1ff532091cac33bdecedf7268ff4f9bc3ddcffba494249fb723033e9e782f1a",
+          "bytes": 842,
+          "originalPath": "LICENSE-ZLIB"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "string_cache_codegen",
+      "version": "0.6.1",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3.txt",
+          "sha256": "62065228e42caebca7e7d7db1204cbb867033de5982ca4009928915e4095f3a3",
+          "bytes": 1067,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "symphonia",
+      "version": "0.6.1",
+      "license": "MPL-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30.txt",
+          "sha256": "c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30",
+          "bytes": 16725,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "symphonia-bundle-flac",
+      "version": "0.6.1",
+      "license": "MPL-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30.txt",
+          "sha256": "c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30",
+          "bytes": 16725,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "symphonia-bundle-mp3",
+      "version": "0.6.1",
+      "license": "MPL-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30.txt",
+          "sha256": "c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30",
+          "bytes": 16725,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "symphonia-codec-pcm",
+      "version": "0.6.1",
+      "license": "MPL-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30.txt",
+          "sha256": "c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30",
+          "bytes": 16725,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "symphonia-codec-vorbis",
+      "version": "0.6.1",
+      "license": "MPL-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30.txt",
+          "sha256": "c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30",
+          "bytes": 16725,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "symphonia-common",
+      "version": "0.6.1",
+      "license": "MPL-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30.txt",
+          "sha256": "c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30",
+          "bytes": 16725,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "symphonia-core",
+      "version": "0.6.1",
+      "license": "MPL-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30.txt",
+          "sha256": "c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30",
+          "bytes": 16725,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "symphonia-format-ogg",
+      "version": "0.6.1",
+      "license": "MPL-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30.txt",
+          "sha256": "c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30",
+          "bytes": 16725,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "symphonia-format-riff",
+      "version": "0.6.1",
+      "license": "MPL-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30.txt",
+          "sha256": "c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30",
+          "bytes": 16725,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "symphonia-metadata",
+      "version": "0.6.1",
+      "license": "MPL-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30.txt",
+          "sha256": "c76f740d1521b9bed9ca7a04ad526c310493c62621b1341d623b431736533b30",
+          "bytes": 16725,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "tauri-build",
+      "version": "2.7.3",
+      "license": "Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594.txt",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "bytes": 10174,
+          "originalPath": "LICENSE-APACHE-2.0"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/9dd42ea92cff2ede5cd477cbfcce051b2d0115c0ac7f368ee88cb545055dff1d.txt",
+          "sha256": "9dd42ea92cff2ede5cd477cbfcce051b2d0115c0ac7f368ee88cb545055dff1d",
+          "bytes": 1090,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "tauri-plugin",
+      "version": "2.7.2",
+      "license": "Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/9dd42ea92cff2ede5cd477cbfcce051b2d0115c0ac7f368ee88cb545055dff1d.txt",
+          "sha256": "9dd42ea92cff2ede5cd477cbfcce051b2d0115c0ac7f368ee88cb545055dff1d",
+          "bytes": 1090,
+          "unaltered": true,
+          "originalPath": "LICENSE-MIT",
+          "sourceUrl": "https://raw.githubusercontent.com/tauri-apps/tauri/59b63ab500da9859f12d8888c3298bc29bba0b92/LICENSE-MIT",
+          "evidenceKind": "complete upstream original license"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594.txt",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+          "bytes": 10174,
+          "unaltered": true,
+          "originalPath": "LICENSE-APACHE-2.0",
+          "sourceUrl": "https://raw.githubusercontent.com/tauri-apps/tauri/59b63ab500da9859f12d8888c3298bc29bba0b92/LICENSE-APACHE-2.0",
+          "evidenceKind": "complete upstream original license"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "tauri-winres",
+      "version": "0.3.6",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/d9fa6b0e6fed50d4961b9c931587af6bd127df13e9473418d3e324f427db4f06.txt",
+          "sha256": "d9fa6b0e6fed50d4961b9c931587af6bd127df13e9473418d3e324f427db4f06",
+          "bytes": 1129,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "tempfile",
+      "version": "3.27.0",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/8b427f5bc501764575e52ba4f9d95673cf8f6d80a86d0d06599852e1a9a20a36.txt",
+          "sha256": "8b427f5bc501764575e52ba4f9d95673cf8f6d80a86d0d06599852e1a9a20a36",
+          "bytes": 1056,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "tokenizers",
+      "version": "0.23.2",
+      "license": "Apache-2.0",
+      "source": "local dependency patch with provenance",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4.txt",
+          "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+          "bytes": 11357,
+          "originalPath": "LICENSE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "unicode-normalization",
+      "version": "0.1.26",
+      "license": "(MIT OR Apache-2.0) AND Unicode-3.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/23860c2a7b5d96b21569afedf033469bab9fe14a1b24a35068b8641c578ce24d.txt",
+          "sha256": "23860c2a7b5d96b21569afedf033469bab9fe14a1b24a35068b8641c578ce24d",
+          "bytes": 321,
+          "originalPath": "COPYRIGHT"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0.txt",
+          "sha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+          "bytes": 1071,
+          "originalPath": "LICENSE-MIT"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/f7db81051789b729fea528a63ec4c938fdcb93d9d61d97dc8cc2e9df6d47f2a1.txt",
+          "sha256": "f7db81051789b729fea528a63ec4c938fdcb93d9d61d97dc8cc2e9df6d47f2a1",
+          "bytes": 1995,
+          "originalPath": "LICENSE-UNICODE"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "unicode-normalization-alignments",
+      "version": "0.1.12",
+      "license": "MIT/Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/23860c2a7b5d96b21569afedf033469bab9fe14a1b24a35068b8641c578ce24d.txt",
+          "sha256": "23860c2a7b5d96b21569afedf033469bab9fe14a1b24a35068b8641c578ce24d",
+          "bytes": 321,
+          "originalPath": "COPYRIGHT"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0.txt",
+          "sha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+          "bytes": 1071,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "unicode-xid",
+      "version": "0.2.6",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/23860c2a7b5d96b21569afedf033469bab9fe14a1b24a35068b8641c578ce24d.txt",
+          "sha256": "23860c2a7b5d96b21569afedf033469bab9fe14a1b24a35068b8641c578ce24d",
+          "bytes": 321,
+          "originalPath": "COPYRIGHT"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0.txt",
+          "sha256": "7b63ecd5f1902af1b63729947373683c32745c16a10e8e6292e2e2dcd7e90ae0",
+          "bytes": 1071,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "unicode_categories",
+      "version": "0.1.1",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08.txt",
+          "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+          "bytes": 11358,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/98a817e7b85e5fe4e79d165c656a4a139793b8b643d0f3d9cbcc3538ef82ec82.txt",
+          "sha256": "98a817e7b85e5fe4e79d165c656a4a139793b8b643d0f3d9cbcc3538ef82ec82",
+          "bytes": 1077,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "version_check",
+      "version": "0.9.5",
+      "license": "MIT/Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/b7e650f3fce5c53249d1cdc608b54df156a97edd636cf9d23498d0cfe7aec63e.txt",
+          "sha256": "b7e650f3fce5c53249d1cdc608b54df156a97edd636cf9d23498d0cfe7aec63e",
+          "bytes": 1085,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "xattr",
+      "version": "1.6.1",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2",
+          "bytes": 10847,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/8b427f5bc501764575e52ba4f9d95673cf8f6d80a86d0d06599852e1a9a20a36.txt",
+          "sha256": "8b427f5bc501764575e52ba4f9d95673cf8f6d80a86d0d06599852e1a9a20a36",
+          "bytes": 1056,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "zerocopy",
+      "version": "0.8.63",
+      "license": "BSD-2-Clause OR Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/9d185ac6703c4b0453974c0d85e9eee43e6941009296bb1f5eb0b54e2329e9f3.txt",
+          "sha256": "9d185ac6703c4b0453974c0d85e9eee43e6941009296bb1f5eb0b54e2329e9f3",
+          "bytes": 11350,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/83c1763356e822adde0a2cae748d938a73fdc263849ccff6b27776dff213bd32.txt",
+          "sha256": "83c1763356e822adde0a2cae748d938a73fdc263849ccff6b27776dff213bd32",
+          "bytes": 1275,
+          "originalPath": "LICENSE-BSD"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/1a2f5c12ddc934d58956aa5dbdd3255fe55fd957633ab7d0d39e4f0daa73f7df.txt",
+          "sha256": "1a2f5c12ddc934d58956aa5dbdd3255fe55fd957633ab7d0d39e4f0daa73f7df",
+          "bytes": 1060,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    },
+    {
+      "name": "zerocopy-derive",
+      "version": "0.8.63",
+      "license": "BSD-2-Clause OR Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "texts": [
+        {
+          "path": "docs/licenses/third-party/texts/9d185ac6703c4b0453974c0d85e9eee43e6941009296bb1f5eb0b54e2329e9f3.txt",
+          "sha256": "9d185ac6703c4b0453974c0d85e9eee43e6941009296bb1f5eb0b54e2329e9f3",
+          "bytes": 11350,
+          "originalPath": "LICENSE-APACHE"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/83c1763356e822adde0a2cae748d938a73fdc263849ccff6b27776dff213bd32.txt",
+          "sha256": "83c1763356e822adde0a2cae748d938a73fdc263849ccff6b27776dff213bd32",
+          "bytes": 1275,
+          "originalPath": "LICENSE-BSD"
+        },
+        {
+          "path": "docs/licenses/third-party/texts/1a2f5c12ddc934d58956aa5dbdd3255fe55fd957633ab7d0d39e4f0daa73f7df.txt",
+          "sha256": "1a2f5c12ddc934d58956aa5dbdd3255fe55fd957633ab7d0d39e4f0daa73f7df",
+          "bytes": 1060,
+          "originalPath": "LICENSE-MIT"
+        }
+      ],
+      "scope": "conservative entire resolved macOS graph including build/dev/proc-macro candidates; not exact final link closure"
+    }
+  ],
+  "finalLinkedClosureVerified": false,
+  "licenseLegalApprovalClaimed": false,
+  "nativeProvenance": "mlx-native-provenance.json",
+  "openEvidenceLimits": [
+    "The three objc2 components supply an original license declaration, not full bundled variant license texts.",
+    "Vendored gguflib/fp16.c attributes code to Maratyszcza/FP16 under MIT but does not pin the original FP16 source revision or include that upstream license text. Its exact vendored provenance comment is preserved; original FP16 attribution chain remains unresolved.",
+    "The Apple metal-cpp versioned URL is not a Git-immutable URL. The released upstream CMake was unpinned; the effective local mlxrs-sys patch now enforces the recorded archive SHA-256, and JSON also has URL_HASH while fmt uses its full recorded commit. This refresh verifies source bytes and receipts only; it does not establish a fresh build, offline operation or reproducible binaries.",
+    "Source-level native notices are conservatively preserved. Final linked or shipped closure and legal approval are not established."
+  ],
+  "metadataSnapshot": {
+    "path": "artifacts/implementation/mlx-cargo-metadata.json",
+    "sha256": "15b2ea00b607396be1a1134f1c9481ceb7a50738f06c4e79445d82af6bd52a7e",
+    "status": "historical filtered macOS metadata snapshot captured before the mlxrs-sys local path patch; not regenerated by this refresh",
+    "scope": "101 additive components remain inventoried; current versions and mlxrs-sys source binding checked against Cargo.lock and Cargo.toml without re-resolving the platform graph"
+  },
+  "sourceResolutionRefresh": {
+    "date": "2026-10-19",
+    "cargoManifest": {
+      "path": "Cargo.toml",
+      "sha256": "5a31f2200f6faff99a7233fdc03b6e30b281ea01626764890c1aebe6c4f18952",
+      "bytes": 1227
+    },
+    "cargoLock": {
+      "path": "Cargo.lock",
+      "sha256": "fb9f49bed7bb9fd6b49ed15271d48467112794dee5057e362650c74c303acb20",
+      "bytes": 146961
+    },
+    "inventoriedComponents": 101,
+    "inventoriedVersionsPresentInCurrentLock": true,
+    "currentLocalPatches": [
+      "mlxrs 0.2.0",
+      "mlxrs-sys 0.2.0",
+      "tokenizers 0.23.2"
+    ],
+    "metadataRegenerated": false,
+    "nativeLocalPatch": {
+      "sourceKind": "local path dependency patched from the published crate",
+      "path": "vendor/mlxrs-sys",
+      "manifest": {
+        "path": "vendor/mlxrs-sys/EVERLAST-PATCH.json",
+        "sha256": "e92e68bde1a47e6b221d6e995a61d8c092dc4e19a32856ec3cb59a827569e084",
+        "bytes": 689
+      },
+      "upstreamRevision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
+      "upstreamRegistryChecksum": "ace6d5383b15cade95fbf8b7a10dfa5c4a84b3dcfa57abe012a5020208570f25",
+      "upstreamReleasedFilesTreeSha256": "39a0c953995ff1d54a55467671b024c7ac96fefce957cc9989a1d60c5d4288e2",
+      "effectiveReleasedFilesTreeSha256": "71faebc7011bca40a86e928a398a07be4a36572124c1ad2e0c7237b79b9695e3",
+      "releasedFileCount": 1100,
+      "changedReleasedFiles": [
+        "vendor/mlx/CMakeLists.txt"
+      ],
+      "excludedAddedFiles": [
+        "EVERLAST-PATCH.json",
+        "EVERLAST-PATCH.md"
+      ],
+      "hashDefinition": "SHA256 of UTF-8 compact JSON (sort_keys=True,ensure_ascii=False,separators comma/colon), regular archive files as objects path/sha256; list sorted by full relative path string (Unicode lexical); excludes Cargo cache marker and added application receipts; no fetched outputs",
+      "buildInputs": {
+        "path": "config/mlx-build-inputs.json",
+        "sha256": "1e0ca899d09e49d35e8515a2853eb785bffa17914bec4e30639f015a30b2a320",
+        "bytes": 2347
+      },
+      "verificationScope": "Local file/archive hash comparison only; no build, download or new advisory scan in this refresh."
+    }
+  }
+}

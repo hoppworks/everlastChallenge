@@ -104,7 +104,7 @@ fn shape(manifest: &input::Manifest) -> Result<(), Error> {
     if !matches!(manifest.cases.len(), 2 | 4) {
         return Err("manifest requires one or two consecutive prefix/whole pairs".into());
     }
-    for pair in manifest.cases.chunks_exact(2) {
+    for pair in manifest.cases.as_chunks::<2>().0 {
         if pair[0].language != pair[1].language || pair[0].audio.frames > pair[1].audio.frames {
             return Err("declared prefix/whole language or frame relation differs".into());
         }
@@ -125,7 +125,7 @@ fn main() -> Result<(), Error> {
     // Validate every actual input relation before initializing any model.
     let mut pairs = Vec::with_capacity(manifest.cases.len() / 2);
     let mut inputs = Vec::with_capacity(manifest.cases.len());
-    for cases in manifest.cases.chunks_exact(2) {
+    for cases in manifest.cases.as_chunks::<2>().0 {
         let prefix = input::load_audio(root, &cases[0].audio)?;
         let whole = input::load_audio(root, &cases[1].audio)?;
         contract::validate_pair(&cases[0].language, &cases[1].language, &prefix, &whole)?;

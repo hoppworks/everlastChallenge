@@ -132,8 +132,8 @@ This local fork must be re-audited before any upstream crate/submodule update.
 
 ## Required source-switch build hygiene
 
-The unchanged upstream `build.rs` (around lines 103–116) watches `wrapper.h`
-and copies `whisper.cpp` into `OUT_DIR` only when that directory does not already
+At the historical SOT/VAD stage the upstream `build.rs` (around lines 103–116) watched `wrapper.h`
+and copied `whisper.cpp` into `OUT_DIR` only when that directory did not already
 exist. Editing the vendored C++ source alone can therefore leave a previously
 copied implementation in use, even if Cargo subsequently builds an example.
 Before **each** temporary original/patched C++ switch in a Red/Green regression,
@@ -155,7 +155,7 @@ identical. No tolerance was relaxed and no P05 qualification is claimed.
 
 ## Additional VAD failure-status patch (2026-10-17)
 
-Current combined C++ SHA256: `fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e`.
+Combined C++ SHA256 at the VAD-only stage: `fc7f40c5d5022f45920164bfe8261de110d98a4fb88fd1ee97ef526ab00e682e`.
 The SOT-only hash above remains the immutable v3 measurement source, not the
 current combined file. In `whisper_vad_detect_speech`, compute failure now
 propagates false after common scheduler cleanup and clears partial/stale
@@ -166,6 +166,70 @@ already reset it.
 
 See [vad-failure-fix.md](../../docs/verification/vad-failure-fix.md) for actual-
 function fault-injection RED/GREEN, unchanged 42-case score vectors per variant,
-build-source hashes and limits. Only the same C++ file differs from the original
+build-source hashes and limits. At that VAD-only stage only the same C++ file differed from the original
 published package; original license/source files are still untouched. Neither
 this patch nor the developer VAD experiment enables a product gate.
+
+## Isolated MLX encoder bridge (2026-10-19)
+
+The optional additive `whisper_full_with_state_and_encoder` entry consumes a
+borrowed finite contiguous F32 [1500,1280] array for the first `seek==0` only,
+with bounded original PCM and explicit de/en/no-context/greedy policy. The caller
+binds features to the same actual prepared PCM and pinned model; the native API
+validates dimensions and options, not a cryptographic feature/audio identity.
+Subsequent seeks use the native encoder. The original Full controller, decoder,
+filters, sampling, no-speech, timestamps and temperature fallback are shared.
+Existing public structs retain their layouts. The default Full entry passes no
+features. This does not claim universal numerical equivalence of MLX/CPP encoding.
+
+The bridge uses the existing external-encoder graph/input form. Its borrowed
+features remain alive throughout synchronous full processing and are not stored
+after the call. Build.rs now explicitly watches and synchronizes the two modified
+C++/header inputs into its existing OUT_DIR tree before CMake. Existing historical
+source-switch evidence above remains valid for that historical build. Actual
+release copies were checked byte-for-byte against both current vendor files.
+Pregenerated bindings carry the same new declaration for builds without Bindgen.
+
+Current exact local changes relative to this task's frozen c35fd595 base are
+recorded in [EVERLAST-ENCODER-PATCH.json](EVERLAST-ENCODER-PATCH.json), alongside
+the preserved earlier SOT/VAD patches. No original license text was changed.
+Public native contract: expected one external window first failed at runtime
+(0/0 receipt); the implemented path passes two repeated calls and invalid policy
+rejection. Evidence is in `artifacts/mlx-qualification/encoder-bridge-contract-v1`.
+The initial throwaway compute-skip prototype failed its second-call scheduler
+assertion; it is retained only under artifacts and is not this implementation.
+Quality/latency/resource qualification is recorded separately and is not implied
+by the native contract.
+
+
+## 2026-10-20: bounded startup and residency shutdown
+
+The macOS application build sets `GGML_METAL_TENSOR=OFF`; other direct CMake
+consumers keep the upstream default. On the qualified M5 / SDK27 host the
+original 8x8 capability shader fails compilation and already selects the SIMD
+path. Avoiding that unsuccessful optional probe preserves this host's effective
+CPP computation path. It does not disable the independent MLX GPU encoder.
+This is a measured application policy, not a claim that all Metal hardware or
+compiler revisions have identical capability results.
+
+The residency collection keeps its existing 500ms heartbeat interval. Its wait
+is now a dispatch semaphore with a timeout, signalled on destruction before the
+existing dispatch-group join. Destruction still waits for the worker and releases
+both synchronization objects afterwards. A native lifecycle fixture exercises
+this actual public init/free boundary: `scripts/native-tests/residency-shutdown.m`.
+The old library waited 480ms in that fixture; the modified library returned in
+about 0.02ms. GPU synchronization and resource ownership are unchanged.
+
+`build.rs` now synchronizes and watches the modified Metal source and its CMake
+file as well as the existing bridge files. Otherwise an incremental build could
+silently compile stale copies from `OUT_DIR`.
+
+
+## Enforced incremental inputs (21 October 2026)
+
+`native-inputs.txt` is the common source for rerun tracking and synchronization
+into an existing OUT_DIR. The architecture check compares all native files with
+the SHA-256 inventory derived from the pinned original crates.io archive. A
+changed or added native source outside this list fails the check; unsupported
+removals also fail. Historical manual-clean advice above describes earlier
+builds and is not the current incremental-build contract.

@@ -8,9 +8,30 @@ use ts_rs::TS;
 
 pub const SUPPORTED_LANGUAGES: &[SettingsLanguage] = &[SettingsLanguage::German];
 
+/// Only qualified product engines are selectable. None preserves a legacy choice.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "snake_case")]
+pub enum PreferenceModel {
+    Reference,
+    MlxReferenceEncoder,
+}
+impl PreferenceModel {
+    pub fn from_settings(settings: &Settings) -> Option<Self> {
+        match settings.model {
+            crate::settings::ModelChoice::Reference => Some(Self::Reference),
+            #[cfg(feature = "mlx")]
+            crate::settings::ModelChoice::MlxReferenceEncoder => Some(Self::MlxReferenceEncoder),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(deny_unknown_fields)]
 pub struct SettingsDraft {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub model: Option<PreferenceModel>,
     pub device: Option<String>,
     pub language: SettingsLanguage,
     pub hotkey: Hotkey,
@@ -20,7 +41,20 @@ impl SettingsDraft {
         if !SUPPORTED_LANGUAGES.contains(&self.language) {
             return Err(PreferencesError::LanguageUnavailable);
         }
+        let model = match self.model {
+            None => current.model,
+            Some(PreferenceModel::Reference) => crate::settings::ModelChoice::Reference,
+            #[cfg(feature = "mlx")]
+            Some(PreferenceModel::MlxReferenceEncoder) => {
+                crate::settings::ModelChoice::MlxReferenceEncoder
+            }
+            #[cfg(not(feature = "mlx"))]
+            Some(PreferenceModel::MlxReferenceEncoder) => {
+                return Err(PreferencesError::ModelUnavailable);
+            }
+        };
         let next = Settings {
+            model,
             device: self.device,
             language: self.language,
             hotkey: self.hotkey,
@@ -33,6 +67,8 @@ impl SettingsDraft {
 
 #[derive(Debug, thiserror::Error)]
 pub enum PreferencesError {
+    #[error("This engine is unavailable in this build")]
+    ModelUnavailable,
     #[error("This language has not completed acceptance testing")]
     LanguageUnavailable,
     #[error("Preferences could not be read safely")]
@@ -285,6 +321,7 @@ mod tests {
     }
     fn draft(current: &Settings) -> SettingsDraft {
         SettingsDraft {
+            model: None,
             device: Some("Studio".into()),
             language: SettingsLanguage::German,
             hotkey: current.hotkey.clone(),
@@ -464,7 +501,7 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn renderer_cannot_supply_model_schema_or_unknown_shortcut_fields()
+    fn renderer_rejects_unqualified_model_schema_or_unknown_shortcut_fields()
     -> Result<(), Box<dyn std::error::Error>> {
         let current = Settings::default();
         let plain = serde_json::to_value(draft(&current))?;
@@ -588,6 +625,7 @@ mod tests {
             ..Settings::default()
         };
         let mut draft = SettingsDraft {
+            model: None,
             device: None,
             language: SettingsLanguage::English,
             hotkey: current.hotkey.clone(),
@@ -600,6 +638,70 @@ mod tests {
         let next = draft.apply_to(&current)?;
         assert_eq!(next.model, current.model);
         assert_eq!(next.schema_version, current.schema_version);
+        Ok(())
+    }
+    #[cfg(feature = "mlx")]
+    #[test]
+    fn explicit_model_migration_preserves_preferences_and_persists_only_on_commit()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let current = Settings {
+            model: crate::settings::ModelChoice::Reference,
+            device: Some("Studio".into()),
+            ..Settings::default()
+        };
+        let store = PreferencesStore::new(directory.path());
+        store.store.save(&current)?;
+        let mut requested = draft(&current);
+        requested.model = Some(PreferenceModel::MlxReferenceEncoder);
+        let candidate = requested.clone().apply_to(&current)?;
+        assert_eq!(
+            candidate.model,
+            crate::settings::ModelChoice::MlxReferenceEncoder
+        );
+        assert_eq!(candidate.device, current.device);
+        assert_eq!(candidate.hotkey, current.hotkey);
+        assert_eq!(store.store.load()?, Some(current.clone()));
+        let mut binder = Binding {
+            value: Some(current.hotkey.clone()),
+            reject: false,
+        };
+        let next = store.commit(&current, requested, &mut binder)?;
+        assert_eq!(store.store.load()?, Some(next));
+        Ok(())
+    }
+    #[cfg(feature = "mlx")]
+    #[test]
+    fn failed_model_migration_restores_exact_preferences_bytes()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let current = Settings {
+            model: crate::settings::ModelChoice::Reference,
+            ..Settings::default()
+        };
+        let real = PreferencesStore::new(directory.path());
+        real.store.save(&current)?;
+        let before = std::fs::read(directory.path().join("settings.json"))?;
+        let storage = FailingSave {
+            real,
+            after_rename: true,
+            fail_restore: false,
+        };
+        let mut requested = draft(&current);
+        requested.model = Some(PreferenceModel::MlxReferenceEncoder);
+        let mut binder = Binding {
+            value: Some(current.hotkey.clone()),
+            reject: false,
+        };
+        assert!(matches!(
+            commit(&storage, &current, requested, &mut binder),
+            Err(PreferencesError::Storage)
+        ));
+        assert_eq!(
+            std::fs::read(directory.path().join("settings.json"))?,
+            before
+        );
+        assert_eq!(binder.binding(), Some(current.hotkey));
         Ok(())
     }
 }

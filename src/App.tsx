@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { AppView } from "./features/app/AppView";
-import { command, connect, sessionCommand, saveSettings } from "./ipc";
+import {
+  command,
+  connect,
+  sessionCommand,
+  saveSettings,
+  clearTranscript,
+} from "./ipc";
 import { SettingsView } from "./features/settings/SettingsView";
 import { RecoveryView } from "./features/settings/RecoveryView";
 import type { Snapshot } from "./ipc";
@@ -51,7 +57,7 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
   if (!snapshot)
     return (
       <main className="dictation-app">
-        {!nativeHeader && <h1>Everlast Dictation</h1>}
+        {!nativeHeader && <h1>Everlast Coding Challenge</h1>}
         <p role="status" aria-live="polite">
           Anwendung wird gestartet …
         </p>
@@ -108,7 +114,7 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
           onStop={() => sessionAction("recording_stop")}
           onCancel={() => sessionAction("recording_cancel")}
           onCopy={() => run(() => command("transcript_copy"))}
-          onClear={() => run(() => command("transcript_clear"))}
+          onClear={() => run(() => clearTranscript(snapshot.session.text))}
           onSettings={() => setSettingsOpen(true)}
         />
       )}

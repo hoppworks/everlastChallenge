@@ -318,7 +318,7 @@ impl<D> Drop for HeldRestartDecoder<D> {
 }
 
 fn held_old_decode_then_short_restart(
-    decoder: impl Decoder,
+    decoder: impl Decoder + Send,
     long: Vec<f32>,
     short: Vec<f32>,
     expected: &str,

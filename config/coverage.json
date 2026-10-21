@@ -6,10 +6,13 @@
     "functions": 80,
     "lines": 80
   },
-  "exclusions": [
-    {
-      "path": "src/main.tsx",
-      "reason": "Inert startup text and CSS only; visible controls are native AppKit. Retained TypeScript modules are measured separately."
-    }
-  ]
+  "exclusions": [],
+  "hostMinimum": {
+    "native_service.rs": 70,
+    "controller.rs": 95,
+    "runtime.rs": 89,
+    "setup.rs": 78,
+    "desktop.rs": 59
+  },
+  "hostScope": "Initial measured module-file line coverage, including inline test code; regression floors, not production-only branch coverage or safety proof."
 }

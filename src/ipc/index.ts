@@ -43,7 +43,22 @@ function deviceName(value: unknown): value is string {
   );
 }
 function draft(value: unknown): value is SettingsDraft {
-  if (!object(value, ["device", "language", "hotkey"])) return false;
+  if (
+    !object(value, [
+      "device",
+      "language",
+      "hotkey",
+      ...(typeof value === "object" && value !== null && "model" in value
+        ? ["model"]
+        : []),
+    ])
+  )
+    return false;
+  if (
+    "model" in value &&
+    !oneOf(value.model, ["reference", "mlx_reference_encoder"])
+  )
+    return false;
   const hotkey = value.hotkey;
   return (
     (value.device === null || deviceName(value.device)) &&
@@ -269,7 +284,6 @@ export function command(
     | "model_download"
     | "model_cancel"
     | "recording_start"
-    | "transcript_clear"
     | "transcript_copy"
     | "microphone_request"
     | "accessibility_request"
@@ -291,4 +305,10 @@ export function saveSettings(settings: SettingsDraft): Promise<void> {
   if (!draft(settings))
     return Promise.reject(new Error("Ungültige Einstellungen"));
   return invoke("settings_save", { settings });
+}
+
+export function clearTranscript(expectedText: string): Promise<void> {
+  if (!text(expectedText, 262144))
+    return Promise.reject(new Error("Ungültiger Text"));
+  return invoke("transcript_clear", { expectedText });
 }

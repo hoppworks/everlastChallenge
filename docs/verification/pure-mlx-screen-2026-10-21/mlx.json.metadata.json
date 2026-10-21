@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "processId": 84837,
+  "referenceKind": "file-backend-only",
+  "corpusFileSha256": "ca4e882dc4f0d01cf4157ea2de13ffc27dc05fbb8434f2752f97f8c012160c5a",
+  "sourceRevision": null,
+  "model": {
+    "id": "large-v3-turbo-mlx-fp16",
+    "sha256": "951ed3fc1203e6a62467abb2144a96ce7eafca8fa77e3704fdb8635ff3e7f8a6"
+  },
+  "loadMillis": 666,
+  "loadError": null,
+  "serviceError": null,
+  "cleanupMillis": 1,
+  "cleanupError": null,
+  "observationTimeoutMillis": 120000,
+  "timeoutIsHardAbort": false,
+  "nativeTimestampDiagnostic": {
+    "enabled": false,
+    "modelInitializationOwner": "serial-inference-worker",
+    "candidateInitializationDifference": false,
+    "boundedAcceptedSegmentObservationAllocatedPerJob": false,
+    "sharedInferenceServiceJobLifecycle": true,
+    "resourceQualified": false,
+    "realTimeLatencyProtocolExecuted": false
+  },
+  "engine": {
+    "backend": "mlxrs-0.2.0",
+    "dtype": "fp16",
+    "audioContext": 1500,
+    "melWindow": "periodic Hann400; hop160; reflect center",
+    "beamSize": null,
+    "samplingStrategy": "greedy with temperature fallback",
+    "bestOf": null,
+    "temperatures": [
+      0.0,
+      0.2,
+      0.4,
+      0.6,
+      0.8,
+      1.0
+    ],
+    "compressionRatioThreshold": 2.4,
+    "logprobThreshold": -1.0,
+    "noSpeechThreshold": 0.6,
+    "conditionOnPreviousText": false,
+    "optionalNonSpeechSuppression": false,
+    "languageTokenSuppression": "all checkpoint languages; matches whisper.cpp",
+    "timestampPolicy": {
+      "mode": "text-only for a single prepared Whisper window; native timestamps for multiple windows",
+      "singleWindowMaxPreparedSamples": 480000,
+      "onMissingEndOfText": "retry entire same mel with native timestamps and fresh caches"
+    },
+    "profile": "single-window-text",
+    "wordTimestamps": false,
+    "translate": false,
+    "detectLanguage": false,
+    "modelOwner": "serial-inference-worker",
+    "freshDecoderCachePerJob": true,
+    "completeGpuSynchronizationBeforeResult": true,
+    "speechGate": {
+      "modelId": "silero-v5.1.2",
+      "modelSha256": "29940d98d42b91fbd05ce489f3ecf7c72f0a42f027e4875919a28fb4c04ea2cf",
+      "modelBytes": 885098,
+      "useGpu": false,
+      "threads": 1,
+      "windowSamples": 512,
+      "mode": "whole-recording-admission; ASR PCM unchanged",
+      "peakTarget": 0.95,
+      "zeroPeakGain": 1.0,
+      "positiveThreshold": 0.5,
+      "aggregation": "any finite window >= threshold; all windows validated first",
+      "maximumScratchSamples": 4800000,
+      "failurePolicy": "error; never silence"
+    },
+    "fallbackDifference": "zlib text compression ratio is not whisper.cpp token entropy"
+  },
+  "audioContextParameters": null,
+  "flashAttentionParameters": null,
+  "contextCleanup": null,
+  "flashAttentionExperiment": {
+    "selected": null,
+    "newContextBothVariants": false,
+    "noContextMutation": true,
+    "gpuCoverageProven": false,
+    "resourceQualified": false,
+    "realTimeLatencyProtocolExecuted": false,
+    "executionEvidence": "per-row receipt decodeAttempted; selected flag alone does not prove native execution"
+  },
+  "cases": [
+    {
+      "id": "fleurs-de-test-1736",
+      "status": "ok",
+      "jobMillis": 371,
+      "error": null,
+      "audioContext": null,
+      "executionStatus": "ok"
+    },
+    {
+      "id": "fleurs-de-test-1663",
+      "status": "ok",
+      "jobMillis": 347,
+      "error": null,
+      "audioContext": null,
+      "executionStatus": "ok"
+    },
+    {
+      "id": "fleurs-de-test-1668",
+      "status": "ok",
+      "jobMillis": 361,
+      "error": null,
+      "audioContext": null,
+      "executionStatus": "ok"
+    },
+    {
+      "id": "fleurs-de-test-1667",
+      "status": "ok",
+      "jobMillis": 400,
+      "error": null,
+      "audioContext": null,
+      "executionStatus": "ok"
+    },
+    {
+      "id": "mlx-confirmation-en-1690",
+      "status": "ok",
+      "jobMillis": 336,
+      "error": null,
+      "audioContext": null,
+      "executionStatus": "ok"
+    },
+    {
+      "id": "fleurs-de-test-1732-thirty-second-v1",
+      "status": "ok",
+      "jobMillis": 430,
+      "error": null,
+      "audioContext": null,
+      "executionStatus": "ok"
+    }
+  ]
+}

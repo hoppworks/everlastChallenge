@@ -116,6 +116,19 @@ fn main() {
         });
     }
 
+    // Keep the bounded local native extension in sync with its compiled tree.
+    // The upstream build copies the tree only once per OUT_DIR.
+    println!("cargo:rerun-if-changed=native-inputs.txt");
+    for relative in include_str!("native-inputs.txt").lines().filter(|line| !line.is_empty()) {
+        let source = PathBuf::from("whisper.cpp").join(relative);
+        println!("cargo:rerun-if-changed={}", source.display());
+        let destination = whisper_root.join(relative);
+        if let Some(parent) = destination.parent() {
+            std::fs::create_dir_all(parent).expect("create local native input directory");
+        }
+        std::fs::copy(&source, destination).expect("sync local native input");
+    }
+
     if env::var("WHISPER_DONT_GENERATE_BINDINGS").is_ok() {
         let _: u64 = std::fs::copy("src/bindings.rs", out.join("bindings.rs"))
             .expect("Failed to copy bindings.rs");
@@ -258,6 +271,9 @@ fn main() {
     if cfg!(feature = "metal") {
         config.define("GGML_METAL", "ON");
         config.define("GGML_METAL_NDEBUG", "ON");
+        // Keep the already-qualified SIMD path in the CPP decoder. MLX has its
+        // own independent GPU backend; this does not disable its acceleration.
+        config.define("GGML_METAL_TENSOR", "OFF");
         config.define("GGML_METAL_EMBED_LIBRARY", "ON");
     } else {
         // Metal is enabled by default, so we need to explicitly disable it

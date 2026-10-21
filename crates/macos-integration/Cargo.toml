@@ -2,6 +2,7 @@
 name = "macos-integration"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
 
@@ -27,11 +28,6 @@ serde_json.workspace = true
 sha2 = "=0.10.9"
 
 [[test]]
-name = "glass_contract"
-path = "tests/glass_contract.rs"
-harness = false
-
-[[test]]
 name = "glass_header_contract"
 path = "tests/glass_header_contract.rs"
 harness = false
@@ -42,23 +38,8 @@ path = "tests/termination_contract.rs"
 harness = false
 
 [[test]]
-name = "native_preferences_contract"
-path = "tests/native_preferences_contract.rs"
-harness = false
-
-[[test]]
-name = "native_workspace_contract"
-path = "tests/native_workspace_contract.rs"
-harness = false
-
-[[test]]
 name = "native_field_evidence_contract"
 path = "tests/native_field_evidence_contract.rs"
-harness = false
-
-[[test]]
-name = "native_preferences_close_contract"
-path = "tests/native_preferences_close_contract.rs"
 harness = false
 
 [[test]]

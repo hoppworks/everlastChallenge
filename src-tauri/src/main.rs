@@ -7,8 +7,6 @@ use everlast_dictation::{
 use macos_integration::{
     glass_header::GlassHeader,
     keyboard::LayoutObserver,
-    native_preferences::NativePreferences,
-    native_workspace::NativeWorkspace,
     power::{PowerEvent, PowerObserver},
     termination::TerminationHook,
 };
@@ -34,7 +32,7 @@ impl NativeTray {
             .set_text(state.text.replace('&', "&&"))
             .map_err(|error| error.to_string())?;
         self.tray
-            .set_tooltip(Some(format!("Everlast Dictation · {}", state.text)))
+            .set_tooltip(Some(format!("Everlast Coding Challenge · {}", state.text)))
             .map_err(|error| error.to_string())?;
         self.tray
             .set_title(Some(state.title))
@@ -113,10 +111,7 @@ impl test_control::Handler for Desktop {
 struct NativeUi {
     header: GlassHeader<tauri::WebviewWindow>,
     header_revision: Option<u64>,
-    workspace: NativeWorkspace<tauri::WebviewWindow>,
-    workspace_revision: Option<u64>,
-    preferences: NativePreferences,
-    preferences_revision: Option<u64>,
+    window: tauri::WebviewWindow,
     settings_request: u32,
     wakeup: Option<NativeWakeup>,
     run_observer: Option<run_observer::Observer>,
@@ -135,20 +130,11 @@ impl NativeUi {
         let window = app
             .get_webview_window("main")
             .ok_or("The main dictation window is unavailable")?;
-        // AppKit owns the visible content and controls. The retained Wry root
-        // remains hidden until explicit native cleanup restores its ownership.
+        // React owns the product surface; native services remain independent.
         let native_desktop = app.state::<Desktop>().inner().clone();
         let actions = native_desktop.clone();
         let mut header = GlassHeader::attach(window.clone(), move |action| {
             actions.native_action(action);
-        })?;
-        let workspace_actions = native_desktop.clone();
-        let workspace = NativeWorkspace::attach(window.clone(), move |action| {
-            workspace_actions.native_workspace_action(action);
-        })?;
-        let preference_actions = native_desktop.clone();
-        let preferences = NativePreferences::new(move |action| {
-            preference_actions.native_preferences_action(action);
         })?;
         let mut header_revision = None;
         let native_tray = app.state::<NativeTray>().inner().clone();
@@ -204,10 +190,7 @@ impl NativeUi {
         Ok(Self {
             header,
             header_revision,
-            workspace,
-            workspace_revision: None,
-            preferences,
-            preferences_revision: None,
+            window,
             settings_request: 0,
             wakeup: Some(wakeup),
             run_observer,
@@ -227,30 +210,13 @@ impl NativeUi {
         if let Some(control) = &mut self.test_control {
             control.poll(&self.desktop);
         }
-        if let Some((revision, state)) = self
-            .desktop
-            .native_workspace_after(self.workspace_revision)?
-        {
-            self.workspace
-                .update(state)
-                .map_err(|error| error.to_string())?;
-            self.workspace_revision = Some(revision);
-        }
-        if let Some((revision, state)) = self
-            .desktop
-            .native_preferences_after(self.preferences_revision)?
-        {
-            self.preferences
-                .update(state)
-                .map_err(|error| error.to_string())?;
-            self.preferences_revision = Some(revision);
-        }
-        let (request, recovering) = self.desktop.native_settings_request()?;
+        let request = self.desktop.settings_request()?;
         if request != self.settings_request {
             self.settings_request = request;
-            if !recovering {
-                self.preferences.show().map_err(|error| error.to_string())?;
-            }
+            self.window
+                .show()
+                .and_then(|()| self.window.set_focus())
+                .map_err(|error| error.to_string())?;
         }
         if let Some((revision, state)) = self.desktop.native_header_after(self.header_revision)? {
             self.header
@@ -285,12 +251,6 @@ impl NativeUi {
             control.close(&self.desktop);
         }
         drop(self.wakeup.take());
-        if let Err(error) = self.preferences.detach() {
-            eprintln!("Native preferences cleanup failed: {error}");
-        }
-        if let Err(error) = self.workspace.detach() {
-            eprintln!("Native workspace cleanup failed: {error}");
-        }
         self.layout.remove();
         self.power.remove();
         if let Err(error) = self.header.detach() {
@@ -316,7 +276,7 @@ fn application_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     let quit = MenuItem::with_id(
         app,
         "application-quit",
-        "Everlast Dictation beenden",
+        "Everlast Coding Challenge beenden",
         true,
         Some("CmdOrCtrl+Q"),
     )?;
@@ -329,10 +289,10 @@ fn application_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     )?;
     let application = Submenu::with_items(
         app,
-        "Everlast Dictation",
+        "Everlast Coding Challenge",
         true,
         &[
-            &PredefinedMenuItem::about(app, Some("Über Everlast Dictation"), None)?,
+            &PredefinedMenuItem::about(app, Some("Über Everlast Coding Challenge"), None)?,
             &PredefinedMenuItem::separator(app)?,
             &settings,
             &PredefinedMenuItem::separator(app)?,
@@ -395,8 +355,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             #[cfg(not(feature = "measurement"))]
             let desktop = Desktop::spawn(app.handle().clone()).map_err(std::io::Error::other)?;
             app.manage(desktop);
-            let open =
-                MenuItem::with_id(app, "open", "Everlast Dictation öffnen", true, None::<&str>)?;
+            let open = MenuItem::with_id(
+                app,
+                "open",
+                "Everlast Coding Challenge öffnen",
+                true,
+                None::<&str>,
+            )?;
             let quit = MenuItem::with_id(app, "quit", "Beenden", true, None::<&str>)?;
             let status =
                 MenuItem::with_id(app, "status", "Status wird geladen", false, None::<&str>)?;
@@ -404,7 +369,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 MenuItem::with_id(app, "settings", "Einstellungen …", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&status, &open, &settings, &quit])?;
             let mut tray = TrayIconBuilder::new()
-                .tooltip("Everlast Dictation")
+                .tooltip("Everlast Coding Challenge")
                 .menu(&menu)
                 .show_menu_on_left_click(true)
                 .on_menu_event(|app, event| match event.id().as_ref() {
