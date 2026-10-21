@@ -1,0 +1,16 @@
+{
+  "diagnostic_source": "e4ea631beb737adc82148ce051e5c7df99d40181",
+  "log_sha256": "e162bce33ea728a03248a0f3c50c88fa5f4acebcef5d82c86a9aad52b015a697",
+  "observed_sequence": [
+    "toggle pressed, accepted, queued, callback",
+    "toggle pressed, accepted, queued, callback",
+    "toggle pressed, accepted, queued, callback",
+    "cancel pressed, accepted, queued, callback",
+    "cancel released, unregistered"
+  ],
+  "incomplete_marker": false,
+  "ui_after_physical_escape": "Diktat abgebrochen",
+  "user_confirmed": "Option+D starts and stops",
+  "meaning": "Escape cancels without inserting; no defect established for this sequence",
+  "scope_limit": "No independent inspection of Notes contents"
+}

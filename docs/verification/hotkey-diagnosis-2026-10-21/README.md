@@ -66,3 +66,23 @@ was cancelled; the installed app was left idle with diagnostics enabled.
 Detailed local receipts and the initial trace are retained under
 `artifacts/hotkey-diagnosis-2026-10-21/`. The earlier delivery ZIP remains the
 previous release candidate and has not been relabeled as a hotkey-fixed release.
+
+## Physical result and removal
+
+The user subsequently confirmed that Option+D still starts/stops. The physical
+trace contains both complete toggle callbacks and a complete Escape press,
+acceptance and callback, followed by release and unregistration. There is no
+`incomplete` marker. The live UI read-back showed **Diktat abgebrochen**. The user
+reported that Escape did not insert into Notes. That is the specified cancellation
+behavior, not evidence of a failure: the second Option+D ends a recording for
+transcription/insertion; Escape discards the current recording.
+
+The initial report was misinterpreted as Escape failing to cancel. This observed
+sequence establishes that global delivery and cancellation worked. It does not
+establish every possible shortcut scenario or independently inspect Notes.
+The structured result and log hash are in `physical-result.json`; the private raw
+technical trace is retained in the ignored local artifact directory.
+
+The opt-in marker and temporary instrumentation have now been removed. The
+runtime code is restored to its pre-diagnosis version. The diagnostic commits and
+this result remain in history rather than being squashed or rewritten.

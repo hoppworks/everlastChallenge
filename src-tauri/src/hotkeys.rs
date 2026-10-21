@@ -5,7 +5,6 @@
 //! The local global-hotkey 0.8.0 patch preserves numeric Carbon OSStatus and retains native
 //! ownership after failed removal. Controlled tests do not establish actual OS-error recovery;
 //! installed-app acceptance remains required.
-use crate::hotkey_diagnostics::{Diagnostics, Key, Stage};
 use crate::settings::{Hotkey, PhysicalKey};
 use macos_integration::{
     main_delivery::{self, Command, Reply},
@@ -15,7 +14,6 @@ use std::sync::{
     Arc, Mutex,
     atomic::{AtomicBool, Ordering},
 };
-use tauri::Manager;
 use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
 
 /// Zero-sized without measurement; timestamped before host gate/dispatch otherwise.
@@ -56,14 +54,6 @@ pub enum HotkeyError {
 enum Kind {
     Toggle,
     Cancel(u64),
-}
-impl Kind {
-    fn diagnostic_key(self) -> Key {
-        match self {
-            Self::Toggle => Key::Toggle,
-            Self::Cancel(_) => Key::Cancel,
-        }
-    }
 }
 #[derive(Default)]
 struct Gate {
@@ -111,7 +101,7 @@ trait Registry: Send {
     fn register(&mut self, key: Shortcut, handler: Handler) -> Result<(), String>;
     fn unregister(&mut self, key: Shortcut) -> Result<(), String>;
 }
-struct NativeRegistry(tauri::AppHandle, bool, Diagnostics);
+struct NativeRegistry(tauri::AppHandle, bool);
 impl Registry for NativeRegistry {
     fn escape_pressed(&self) -> bool {
         macos_integration::keyboard::escape_key_pressed()
@@ -130,25 +120,10 @@ impl Registry for NativeRegistry {
             .map_err(|error| error.to_string())
     }
     fn unregister(&mut self, key: Shortcut) -> Result<(), String> {
-        let result = self
-            .0
+        self.0
             .global_shortcut()
             .unregister(key)
-            .map_err(|error| error.to_string());
-        let kind = if key.key == Code::Escape {
-            Key::Cancel
-        } else {
-            Key::Toggle
-        };
-        self.2.record(
-            kind,
-            if result.is_ok() {
-                Stage::Unregistered
-            } else {
-                Stage::UnregisterFailed
-            },
-        );
-        result
+            .map_err(|error| error.to_string())
     }
 }
 struct Binding {
@@ -166,7 +141,6 @@ pub struct Hotkeys {
     errors: Arc<Mutex<Option<String>>>,
     cancel_pressed: Arc<Mutex<bool>>,
     closed: bool,
-    diagnostics: Diagnostics,
 }
 impl Hotkeys {
     /// Call off the GUI thread, after installing the global-shortcut plugin.
@@ -196,46 +170,24 @@ impl Hotkeys {
         observe: bool,
     ) -> Result<Self, HotkeyError> {
         let errors = Arc::new(Mutex::new(None));
-        let diagnostics = match app
-            .path()
-            .app_data_dir()
-            .map_err(|error| error.to_string())
-            .and_then(|directory| Diagnostics::open(&directory).map_err(|error| error.to_string()))
-        {
-            Ok(diagnostics) => diagnostics,
-            Err(_) => {
-                record_error(
-                    &errors,
-                    "Lokale Hotkey-Diagnose konnte nicht geöffnet werden".into(),
-                );
-                Diagnostics::default()
-            }
-        };
-        let trace = diagnostics.clone();
         let failures = Arc::clone(&errors);
         let callback = Arc::new(callback);
         let dispatcher = app.clone();
         let dispatch: Dispatch = Arc::new(move |kind, gate, _origin| {
-            let key = kind.diagnostic_key();
             let Some(pending) = gate.reserve() else {
-                trace.record(key, Stage::Busy);
                 record_error(
                     &failures,
                     "Hotkey main-thread request still outstanding".into(),
                 );
                 return;
             };
-            trace.record(key, Stage::Queued);
-            let trace_main = trace.clone();
             let callback = Arc::clone(&callback);
             let failures_main = Arc::clone(&failures);
             if let Err(error) = dispatcher.run_on_main_thread(move || {
                 let _pending = pending;
                 if !gate.enabled.load(Ordering::Acquire) {
-                    trace_main.record(key, Stage::Revoked);
                     return;
                 }
-                trace_main.record(key, Stage::Callback);
                 match kind {
                     Kind::Toggle => {
                         let process = match main_delivery::dispatch(Command::Environment) {
@@ -260,33 +212,21 @@ impl Hotkeys {
                     Kind::Cancel(session) => callback(Event::Cancel { session }),
                 }
             }) {
-                trace.record(key, Stage::DispatchFailed);
                 record_error(&failures, error.to_string());
             }
         });
-        Self::with_registry_diagnostics(
-            Box::new(NativeRegistry(app, observe, diagnostics.clone())),
+        Self::with_registry(
+            Box::new(NativeRegistry(app, observe)),
             key,
             dispatch,
             errors,
-            diagnostics,
         )
     }
-    #[cfg(test)]
     fn with_registry(
         registry: Box<dyn Registry>,
         key: Hotkey,
         dispatch: Dispatch,
         errors: Arc<Mutex<Option<String>>>,
-    ) -> Result<Self, HotkeyError> {
-        Self::with_registry_diagnostics(registry, key, dispatch, errors, Diagnostics::default())
-    }
-    fn with_registry_diagnostics(
-        registry: Box<dyn Registry>,
-        key: Hotkey,
-        dispatch: Dispatch,
-        errors: Arc<Mutex<Option<String>>>,
-        diagnostics: Diagnostics,
     ) -> Result<Self, HotkeyError> {
         let mut owner = Self {
             registry,
@@ -298,7 +238,6 @@ impl Hotkeys {
             errors,
             cancel_pressed: Arc::new(Mutex::new(false)),
             closed: false,
-            diagnostics,
         };
         let binding = owner.register(shortcut(&key)?, Kind::Toggle)?;
         binding.gate.enabled.store(true, Ordering::Release);
@@ -318,39 +257,16 @@ impl Hotkeys {
         });
         let event_gate = Arc::clone(&gate);
         let dispatch = Arc::clone(&self.dispatch);
-        let diagnostics = self.diagnostics.clone();
-        let diagnostic_key = kind.diagnostic_key();
         self.registry
             .register(
                 key,
                 Arc::new(move |state, origin| {
-                    diagnostics.record(
-                        diagnostic_key,
-                        match state {
-                            ShortcutState::Pressed => Stage::NativePressed,
-                            ShortcutState::Released => Stage::NativeReleased,
-                        },
-                    );
-                    let accepted = event_gate.accept(state);
-                    diagnostics.record(
-                        diagnostic_key,
-                        if accepted {
-                            Stage::Accepted
-                        } else {
-                            Stage::Ignored
-                        },
-                    );
-                    if accepted {
+                    if event_gate.accept(state) {
                         dispatch(kind, Arc::clone(&event_gate), origin);
                     }
                 }),
             )
-            .map_err(|error| {
-                self.diagnostics
-                    .record(diagnostic_key, Stage::RegisterFailed);
-                HotkeyError::Registry(error)
-            })?;
-        self.diagnostics.record(diagnostic_key, Stage::Registered);
+            .map_err(HotkeyError::Registry)?;
         Ok(Binding { key, gate, kind })
     }
     /// Last successfully registered configuration, only while its owned toggle
@@ -369,12 +285,6 @@ impl Hotkeys {
     }
     /// Capture infrastructure errors without delivering callbacks from a non-main thread.
     pub fn take_error(&self) -> Result<Option<String>, HotkeyError> {
-        if self.diagnostics.flush().is_err() {
-            record_error(
-                &self.errors,
-                "Lokale Hotkey-Diagnose konnte nicht geschrieben werden".into(),
-            );
-        }
         self.errors
             .lock()
             .map(|mut error| error.take())
@@ -421,10 +331,6 @@ impl Hotkeys {
                 .lock()
                 .map_err(|_| HotkeyError::Registry("Escape latch poisoned".into()))?;
             *pressed = self.registry.escape_pressed();
-            self.diagnostics.record(
-                Key::Cancel,
-                if *pressed { Stage::Held } else { Stage::Armed },
-            );
             gate.enabled.store(true, Ordering::Release);
         }
         Ok(())
@@ -481,9 +387,6 @@ impl Hotkeys {
                     Err(error) => errors.push(error),
                 }
             }
-        }
-        if self.diagnostics.flush().is_err() {
-            errors.push("Lokale Hotkey-Diagnose konnte nicht abgeschlossen werden".into());
         }
         if errors.is_empty() {
             Ok(())
