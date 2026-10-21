@@ -261,6 +261,21 @@ fn toggle_window_recording(app: &tauri::AppHandle) {
     }
 }
 
+fn cancel_window_recording(app: &tauri::AppHandle) {
+    use macos_integration::glass_header::HeaderAction;
+    if let Some(desktop) = app.try_state::<Desktop>() {
+        match desktop.native_header_after(None) {
+            Ok(Some((_, state))) => {
+                if let Some(session) = state.cancel {
+                    desktop.native_action(HeaderAction::Cancel(session));
+                }
+            }
+            Ok(None) => {}
+            Err(error) => eprintln!("Window cancellation shortcut failed: {error}"),
+        }
+    }
+}
+
 fn application_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     let menu = Menu::default(app)?;
     // The pinned Tauri macOS default puts the application submenu first.
@@ -306,7 +321,14 @@ fn application_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
         true,
         Some("CmdOrCtrl+R"),
     )?;
-    let dictation = Submenu::with_items(app, "Diktat", true, &[&recording])?;
+    let cancel = MenuItem::with_id(
+        app,
+        "window-cancel",
+        "Aufnahme verwerfen",
+        true,
+        Some("Escape"),
+    )?;
+    let dictation = Submenu::with_items(app, "Diktat", true, &[&recording, &cancel])?;
     menu.append(&dictation)?;
     Ok(menu)
 }
@@ -330,6 +352,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             "application-quit" => app.exit(0),
             "application-settings" => request_native_settings(app),
             "window-recording" => toggle_window_recording(app),
+            "window-cancel" => cancel_window_recording(app),
             _ => {}
         })
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())

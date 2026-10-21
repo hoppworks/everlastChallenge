@@ -164,7 +164,6 @@ export function AppView(props: AppViewProps) {
   return (
     <main className="dictation-app" aria-label="Everlast Coding Challenge">
       <header className="app-header">
-        <h1 aria-label="Everlast Coding Challenge">Everlast</h1>
         <button
           type="button"
           className="settings-button"

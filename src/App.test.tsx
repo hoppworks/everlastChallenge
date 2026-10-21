@@ -132,7 +132,7 @@ test("native settings requests survive initial delivery and only reopen for a hi
   permission.focus();
   view.publish({ ...initial, revision: 2, settingsRequest: 8 });
   expect(document.activeElement).toBe(permission);
-  fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+  fireEvent.click(screen.getByRole("button", { name: "Zurück zum Diktat" }));
   view.publish({ ...initial, revision: 3, settingsRequest: 8 });
   view.publish({ ...initial, revision: 4, settingsRequest: 6 });
   expect(screen.queryByRole("region", { name: "Einstellungen" })).toBeNull();
@@ -141,7 +141,7 @@ test("native settings requests survive initial delivery and only reopen for a hi
     view.publish({ ...initial, revision: 6, settingsRequest: 8 });
   });
   expect(screen.getByRole("region", { name: "Einstellungen" })).toBeDefined();
-  fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+  fireEvent.click(screen.getByRole("button", { name: "Zurück zum Diktat" }));
   view.publish({ ...initial, revision: 7, settingsRequest: 9 });
   expect(screen.queryByRole("region", { name: "Einstellungen" })).toBeNull();
   expect(ipc.command).not.toHaveBeenCalled();
@@ -356,7 +356,7 @@ test("permission panel forwards user requests, respects busy, and can be closed"
       (screen.getByRole("button", { name }) as HTMLButtonElement).disabled,
     ).toBe(true);
   }
-  fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+  fireEvent.click(screen.getByRole("button", { name: "Zurück zum Diktat" }));
   expect(screen.queryByRole("region", { name: "Einstellungen" })).toBeNull();
 });
 
@@ -457,7 +457,7 @@ test.each(["session", "setup"])(
     connected(value);
     await screen.findByRole("region", { name: "Einstellungen" });
     expect(screen.getByLabelText("Mikrofon").matches(":disabled")).toBe(true);
-    fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+    fireEvent.click(screen.getByRole("button", { name: "Zurück zum Diktat" }));
     expect(screen.queryByRole("region", { name: "Einstellungen" })).toBeNull();
   },
 );
@@ -507,7 +507,7 @@ test("invalid startup settings expose only explicit recovery and wait for native
   );
   expect(screen.queryByRole("button", { name: "Aufnehmen" })).toBeNull();
   view.publish(snapshot());
-  fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+  fireEvent.click(screen.getByRole("button", { name: "Zurück zum Diktat" }));
   expect(screen.getByRole("button", { name: "Aufnehmen" })).toBeDefined();
 });
 
@@ -606,7 +606,7 @@ test("settings replace the dictation screen and restore the retained transcript 
   fireEvent.click(await screen.findByRole("button", { name: "Einstellungen" }));
   expect(screen.queryByRole("textbox", { name: "Letzter Text" })).toBeNull();
   expect(screen.getByRole("heading", { name: "Einstellungen" })).toBeDefined();
-  fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+  fireEvent.click(screen.getByRole("button", { name: "Zurück zum Diktat" }));
   expect(
     (
       screen.getByRole("textbox", {

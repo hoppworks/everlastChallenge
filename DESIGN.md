@@ -66,7 +66,7 @@ components:
 ## Overview
 
 The approved direction is a small dictation palette: microphone level, current
-status and main action form the primary row. Transcript, recording details and
+status and main action form a vertically centered primary row. Transcript, recording details and
 advanced settings appear when needed. Preserve the existing macOS system font.
 This records the implementation in `src/features/app/styles.css`, `AppView.tsx`,
 `LevelVisual.tsx` and `src/features/settings/styles.css`; it is not a claim of
@@ -91,7 +91,11 @@ numerals. Do not introduce display fonts or decorative headings.
 ## Layout
 
 The app fills its native content area, with internal scrolling and main padding
-(12px 20px 16px). The primary row uses a 16px gap and a fixed 44px level indicator.
+(12px 20px 16px). The primary row uses a 16px gap and a fixed 44px level indicator;
+status and actions are vertically centered against the indicator, including
+single-line outcomes such as cancellation. Status titles have no outer margin.
+The OS titlebar provides the app name; the content header contains only the
+settings control, without a duplicate Everlast label.
 At widths up to 460px, the row wraps and actions move below the status; side
 padding becomes 16px. The transcript expands below a divider. Settings use a
 separate scrolling content area, a persistent header/navigation and 24px padding
@@ -122,6 +126,8 @@ divider sections flat instead of wrapping every section in a card.
   and Delete. New text opens the section; telemetry does not reopen it.
 - **Settings:** navigation buttons reveal focused settings sections. Selects and
   modifier inputs use native controls; advanced details remain disclosed on demand.
+  A back arrow at the top left precedes the Einstellungen title and returns to
+  dictation; there is no separate right-hand Close button.
 - **Feedback:** permission notices and errors remain visible when needed.
   Focus outlines use 3px with a 3px offset; errors use the source's paired warm
   background and text colors. State labels distinguish sending a paste command

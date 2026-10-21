@@ -214,7 +214,7 @@ test.each(["busy", "refreshing", "restart"] as const)(
     expect(screen.queryByText(/Bitte starte die App neu/) !== null).toBe(
       reason === "restart",
     );
-    fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+    fireEvent.click(screen.getByRole("button", { name: "Zurück zum Diktat" }));
     expect(p.onClose).toHaveBeenCalledOnce();
   },
 );
@@ -391,7 +391,7 @@ test("navigation and closing remain available while editing is unsafe", () => {
   expect(screen.getByText("large-v3-turbo-q5_0")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Berechtigungen" }));
   expect(screen.getByText("Bedienungshilfen (Accessibility)")).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "Schließen" }));
+  fireEvent.click(screen.getByRole("button", { name: "Zurück zum Diktat" }));
   expect(p.onClose).toHaveBeenCalledOnce();
 });
 

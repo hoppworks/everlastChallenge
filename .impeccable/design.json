@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-21T15:14:28.978007+00:00",
+  "generatedAt": "2026-10-21T15:21:14.259486+00:00",
   "title": "Design System: Everlast Coding Challenge",
   "extensions": {
     "breakpoints": [
@@ -67,15 +67,23 @@
       "description": "Static example of seven bars shaped from one RMS input, not a spectrum.",
       "html": "<div class=\"ds-level\" aria-label=\"Mikrofonpegel: Beispiel\"><div class=\"ds-bars\" aria-hidden=\"true\"><i style=\"height:7.6000000000000005px\"></i><i style=\"height:11.049999999999999px\"></i><i style=\"height:13.35px\"></i><i style=\"height:14.5px\"></i><i style=\"height:12.200000000000001px\"></i><i style=\"height:9.899999999999999px\"></i><i style=\"height:7.0249999999999995px\"></i></div></div>",
       "css": ".ds-level{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;background:var(--soft);color:var(--signal)}.ds-bars{width:26px;height:26px;display:flex;gap:2px;align-items:center}.ds-bars i{display:block;flex:0 0 2px;border-radius:1px;background:currentColor}"
+    },
+    {
+      "name": "Settings back",
+      "kind": "button",
+      "description": "Top-left back arrow precedes Einstellungen and returns to dictation; replaces the separate right-hand Close button.",
+      "html": "<button class=\"ds-settings-back\" type=\"button\" aria-label=\"Zurück zum Diktat\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><path d=\"m14 6-6 6 6 6\" /></svg></button>",
+      "css": ".ds-settings-back{font:inherit;color:inherit;min-height:34px;line-height:1.35;border:0;border-radius:7px;background:transparent;padding:6px;display:grid;place-items:center;cursor:pointer}.ds-settings-back:hover:not(:disabled){background:var(--soft)}.ds-settings-back:focus-visible{outline:3px solid var(--signal);outline-offset:3px}"
     }
   ],
   "narrative": {
     "northStar": "Compact dictation palette",
-    "overview": "The approved direction is a small dictation palette: microphone level, current status and main action form the primary row. Transcript, recording details and advanced settings appear when needed. Preserve the existing macOS system font.",
+    "overview": "The approved direction is a small dictation palette: microphone level, current status and main action form a vertically centered primary row. Transcript, recording details and advanced settings appear when needed. Preserve the existing macOS system font.",
     "keyCharacteristics": [
-      "Compact primary row",
+      "Compact, vertically centered primary row",
       "Progressive disclosure",
-      "System light and dark appearance"
+      "System light and dark appearance",
+      "OS titlebar names the app; content header contains only settings"
     ],
     "rules": [],
     "dos": [

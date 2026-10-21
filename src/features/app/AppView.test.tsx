@@ -32,7 +32,7 @@ function fixture(): AppViewProps {
 test("names the dictation utility and provides settings", () => {
   render(<AppView {...fixture()} />);
   expect(
-    screen.getByRole("heading", { name: "Everlast Coding Challenge" }),
+    screen.getByRole("main", { name: "Everlast Coding Challenge" }),
   ).toBeDefined();
   expect(screen.getByRole("button", { name: "Einstellungen" })).toBeDefined();
 });

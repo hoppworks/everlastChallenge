@@ -105,12 +105,27 @@ export function SettingsView(props: SettingsViewProps) {
   return (
     <section className="settings-view" aria-labelledby="settings-heading">
       <header className="settings-header">
+        <button
+          className="settings-back"
+          type="button"
+          aria-label="Zurück zum Diktat"
+          onClick={props.onClose}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            aria-hidden="true"
+          >
+            <path d="m14 6-6 6 6 6" />
+          </svg>
+        </button>
         <h2 id="settings-heading" ref={heading} tabIndex={-1}>
           Einstellungen
         </h2>
-        <button type="button" onClick={props.onClose}>
-          Schließen
-        </button>
       </header>
       <nav className="settings-navigation" aria-label="Einstellungsbereiche">
         {(["Aufnahme", "Berechtigungen", "Modell"] as const).map((name) => (
