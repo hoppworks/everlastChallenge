@@ -168,6 +168,24 @@ class ProcessTests(unittest.TestCase):
             self.assertTrue(report["terminationConfirmed"])
             self.assertTrue(runner.process.group_ended(report["wrapperPid"]))
 
+    def test_denied_signal_preserves_assertion_and_still_cleans_foreign_fixture(self):
+        from unittest.mock import Mock, patch
+        foreign = Mock()
+        foreign.poll.return_value = None
+        report = {"watchdogExpired": True, "terminationConfirmed": False, "wrapperPid": 12345}
+        case = ProcessTests("test_real_owned_group_timeout_is_reaped_without_touching_foreign_fixture")
+        result = unittest.TestResult()
+        with patch("subprocess.Popen", return_value=foreign), \
+             patch.object(runner, "run_owned", return_value=report), \
+             patch("os.killpg", side_effect=PermissionError("controlled denied signal")), \
+             patch.object(runner.process, "stop_owned") as cleanup:
+            case.run(result)
+        cleanup.assert_called_once_with(foreign)
+        self.assertEqual(len(result.failures), 1)
+        self.assertIn("AssertionError", result.failures[0][1])
+        self.assertEqual(len(result.errors), 1)
+        self.assertIn("controlled denied signal", result.errors[0][1])
+
     def test_real_owned_group_timeout_is_reaped_without_touching_foreign_fixture(self):
         import os
         import subprocess
@@ -176,19 +194,21 @@ class ProcessTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)
             foreign=subprocess.Popen([sys.executable,"-c","import time;time.sleep(20)"],start_new_session=True)
-            report=None
-            try:
-                command=[sys.executable,"-c","import signal,subprocess,sys,time;signal.signal(signal.SIGCHLD,signal.SIG_IGN);subprocess.Popen([sys.executable,'-c','import time;time.sleep(20)']);time.sleep(20)"]
-                report=runner.run_owned(dict(root=root,sourceRevision="f"*40),command,root/"owned.log",watchdog=.15)
-                self.assertTrue(report["watchdogExpired"])
-                self.assertTrue(report["terminationConfirmed"])
-                self.assertTrue(runner.process.group_ended(report["wrapperPid"]))
-                self.assertIsNone(foreign.poll())
-            finally:
-                if report is not None and not report["terminationConfirmed"]:
+            # Register independently: unittest runs every cleanup even if another
+            # cleanup raises, and retains the original assertion separately.
+            self.addCleanup(runner.process.stop_owned, foreign)
+            command=[sys.executable,"-c","import signal,subprocess,sys,time;signal.signal(signal.SIGCHLD,signal.SIG_IGN);subprocess.Popen([sys.executable,'-c','import time;time.sleep(20)']);time.sleep(20)"]
+            report=runner.run_owned(dict(root=root,sourceRevision="f"*40),command,root/"owned.log",watchdog=.15)
+            def cleanup_owned():
+                if not report["terminationConfirmed"]:
                     try:os.killpg(report["wrapperPid"],9)
                     except ProcessLookupError:pass
-                runner.process.stop_owned(foreign)
+            self.addCleanup(cleanup_owned)
+            self.assertTrue(report["watchdogExpired"])
+            self.assertTrue(report["terminationConfirmed"])
+            self.assertTrue(runner.process.group_ended(report["wrapperPid"]))
+            self.assertIsNone(foreign.poll())
+
 
 
 class ExecutionTests(unittest.TestCase):
