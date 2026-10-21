@@ -126,6 +126,6 @@ Belege: [native Buildpins](../config/mlx-build-inputs.json),
 [native Herkunfts-/Attributionsgrenzen](licenses/third-party/mlx-native-provenance.json).
 Die unabhängigen, begrenzten Reviews und die tatsächlichen RED/GREEN-/Build-/
 Korpusbelege liegen unter `artifacts/implementation/` beziehungsweise
-`artifacts/mlx-qualification/`. Die aktuellen Qualitäts-, Zeit- und Ressourcenbelege des F16-/Cache256-Kandidaten
-sind in der README verknüpft; sie ersetzen keine universelle Sicherheits- oder
-Rechtsfreigabe.
+`artifacts/mlx-qualification/`. Die verfügbaren Messungen und ihr jeweiliger Geltungsbereich sind unter
+[Leistung und Grenzen](performance.md) beschrieben; sie ersetzen keine
+universelle Sicherheits- oder Rechtsfreigabe.
