@@ -10,6 +10,9 @@ whisper.cpp-Decoder. Lange Eingaben und spätere Whisper-Fenster behalten den
 qualifizierten CPP-Pfad. Reines MLX wurde untersucht, nach Qualitätsabweichungen
 aber nicht als Produktstandard übernommen.
 
+[Öffentliches Repository](https://github.com/hoppworks/everlastChallenge) ·
+[CI-Läufe](https://github.com/hoppworks/everlastChallenge/actions)
+
 ## In wenigen Minuten durch das Repository
 
 ## Fertige App starten
