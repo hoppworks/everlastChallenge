@@ -1,0 +1,4 @@
+src/whisper.cpp
+include/whisper.h
+ggml/src/ggml-metal/ggml-metal-device.m
+ggml/src/ggml-metal/CMakeLists.txt

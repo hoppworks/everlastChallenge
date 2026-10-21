@@ -118,15 +118,15 @@ fn main() {
 
     // Keep the bounded local native extension in sync with its compiled tree.
     // The upstream build copies the tree only once per OUT_DIR.
-    for relative in [
-        "src/whisper.cpp",
-        "include/whisper.h",
-        "ggml/src/ggml-metal/ggml-metal-device.m",
-        "ggml/src/ggml-metal/CMakeLists.txt",
-    ] {
+    println!("cargo:rerun-if-changed=native-inputs.txt");
+    for relative in include_str!("native-inputs.txt").lines().filter(|line| !line.is_empty()) {
         let source = PathBuf::from("whisper.cpp").join(relative);
         println!("cargo:rerun-if-changed={}", source.display());
-        std::fs::copy(&source, whisper_root.join(relative)).expect("sync local encoder bridge source");
+        let destination = whisper_root.join(relative);
+        if let Some(parent) = destination.parent() {
+            std::fs::create_dir_all(parent).expect("create local native input directory");
+        }
+        std::fs::copy(&source, destination).expect("sync local native input");
     }
 
     if env::var("WHISPER_DONT_GENERATE_BINDINGS").is_ok() {

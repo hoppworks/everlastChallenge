@@ -70,7 +70,7 @@ export function inspectSource(file, source) {
   for (const attribute of source.matchAll(
     /#!?\[\s*(?:allow|expect)\s*\(([\s\S]*?)\)\s*\]/gu,
   )) {
-    if (!/reason\s*=\s*"[^"\n]+"/u.test(attribute[1])) {
+    if (file.endsWith(".rs") && !/reason\s*=\s*"[^"\n]+"/u.test(attribute[1])) {
       errors.push(`${file}: Rust lint exception needs a reason`);
     }
   }
@@ -88,9 +88,11 @@ function filesIn(directory, root) {
 }
 
 export function inspectProject(root = ".") {
-  return ["src", "src-tauri", "crates"]
+  return ["src", "src-tauri", "crates", "scripts"]
     .flatMap((directory) => filesIn(directory, root))
-    .filter((file) => /\.(?:rs|tsx?|mjs)$/u.test(file))
+    .filter(
+      (file) => /\.(?:rs|tsx?|mjs)$/u.test(file) && !file.endsWith(".test.mjs"),
+    )
     .flatMap((file) =>
       inspectSource(file, fs.readFileSync(path.join(root, file), "utf8")),
     );

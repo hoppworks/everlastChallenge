@@ -159,12 +159,12 @@ impl ReadyPaste {
 
 impl SentPaste {
     /// The recipient read window starts after the actual event posts, not their acknowledgment.
-    pub fn restore_after(&self) -> Instant {
+    pub(crate) fn restore_after(&self) -> Instant {
         self.restore_after
     }
 
     /// Schedule outside the send step; neither delay nor restore proves receipt.
-    pub fn restore(self, main: MainThreadMarker) -> Result<RestoreOutcome, ClipboardError> {
+    pub(crate) fn restore(self, main: MainThreadMarker) -> Result<RestoreOutcome, ClipboardError> {
         self.clipboard.restore(main)
     }
 }

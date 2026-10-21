@@ -17,6 +17,7 @@ function run(command, args, options = {}) {
   return execFileSync(command, args, {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "inherit"],
+    maxBuffer: 64 * 1024 * 1024,
     ...options,
   });
 }
@@ -35,7 +36,13 @@ export function resolveRustCoverageTools(compiler = run) {
   };
 }
 
-export function measureRust({ manifest, directory, sourceRoot }) {
+export function measureRust({
+  manifest,
+  directory,
+  sourceRoot,
+  cargoArgs = ["--tests"],
+  selectFiles,
+}) {
   const tools = resolveRustCoverageTools();
   for (const tool of Object.values(tools))
     if (!fs.existsSync(tool))
@@ -45,14 +52,35 @@ export function measureRust({ manifest, directory, sourceRoot }) {
   fs.mkdirSync(output, { recursive: true });
   const environment = {
     ...process.env,
-    RUSTFLAGS: "-C instrument-coverage -C link-dead-code",
+    // Instrumentation includes coverage mappings; retaining all dead code also
+    // links unused Swift FFI from Tauri's host build helpers on macOS.
+    RUSTFLAGS: "-C instrument-coverage",
     LLVM_PROFILE_FILE: `${output}/run-%p-%m.profraw`,
   };
-  const messages = run(
-    "cargo",
-    ["test", "--locked", "--manifest-path", manifest, "--tests", "--message-format=json"],
-    { env: environment },
-  );
+  let messages;
+  try {
+    messages = run(
+      "cargo",
+      [
+        "test",
+        "--locked",
+        "--manifest-path",
+        manifest,
+        "--message-format=json",
+        ...cargoArgs,
+      ],
+      { env: environment },
+    );
+  } catch (error) {
+    for (const line of String(error.stdout ?? "").split("\n")) {
+      if (!line.startsWith("{")) continue;
+      const message = JSON.parse(line);
+      if (message.reason === "compiler-message")
+        console.error(message.message.rendered);
+    }
+    throw error;
+  }
+  fs.writeFileSync(path.join(output, "cargo-output.jsonl"), messages);
   const objects = messages
     .split("\n")
     .filter((line) => line.startsWith("{"))
@@ -71,13 +99,7 @@ export function measureRust({ manifest, directory, sourceRoot }) {
   if (!objects.length || !profiles.length)
     throw new Error("No instrumented Rust test artifacts");
   const merged = path.join(output, "merged.profdata");
-  run(tools.profdata, [
-    "merge",
-    "-sparse",
-    ...profiles,
-    "-o",
-    merged,
-  ]);
+  run(tools.profdata, ["merge", "-sparse", ...profiles, "-o", merged]);
   const report = JSON.parse(
     run(tools.cov, [
       "export",
@@ -94,7 +116,32 @@ export function measureRust({ manifest, directory, sourceRoot }) {
         .resolve(file.filename)
         .startsWith(path.resolve(sourceRoot) + path.sep),
     );
-  if (!files.length) throw new Error("No core source measured");
+  if (!files.length) throw new Error("No requested source measured");
+  if (selectFiles) {
+    const summaries = Object.fromEntries(
+      selectFiles.map((name) => {
+        const match = files.find(
+          (file) =>
+            path.resolve(file.filename) === path.resolve(sourceRoot, name),
+        );
+        if (!match || !match.summary.lines.count)
+          throw new Error(`No coverage for ${name}`);
+        return [
+          name,
+          {
+            lines: match.summary.lines.percent,
+            count: match.summary.lines.count,
+            covered: match.summary.lines.covered,
+          },
+        ];
+      }),
+    );
+    fs.writeFileSync(
+      path.join(output, "selected-summary.json"),
+      JSON.stringify(summaries, null, 2) + "\n",
+    );
+    return summaries;
+  }
   const totals = files.reduce(
     (sum, file) => ({
       count: sum.count + file.summary.lines.count,
