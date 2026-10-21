@@ -284,7 +284,6 @@ export function command(
     | "model_download"
     | "model_cancel"
     | "recording_start"
-    | "transcript_copy"
     | "microphone_request"
     | "accessibility_request"
     | "devices_refresh"
@@ -311,4 +310,13 @@ export function clearTranscript(expectedText: string): Promise<void> {
   if (!text(expectedText, 262144))
     return Promise.reject(new Error("Ungültiger Text"));
   return invoke("transcript_clear", { expectedText });
+}
+
+/** Copy the displayed snapshot, never a later runtime result. */
+export function copyTranscript(value: string): Promise<void> {
+  if (!text(value, 262144) || value.length === 0)
+    return Promise.reject(
+      new Error("Der Text ist leer oder zu lang zum Kopieren."),
+    );
+  return invoke("transcript_copy", { text: value });
 }

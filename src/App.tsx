@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { AppView } from "./features/app/AppView";
+import { StoppedView } from "./features/app/StoppedView";
 import {
   command,
   connect,
   sessionCommand,
   saveSettings,
   clearTranscript,
+  copyTranscript,
 } from "./ipc";
 import { SettingsView } from "./features/settings/SettingsView";
 import { RecoveryView } from "./features/settings/RecoveryView";
@@ -64,6 +66,16 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
         {error && <p role="alert">{error}</p>}
       </main>
     );
+  if (!snapshot.running)
+    return (
+      <StoppedView
+        text={snapshot.session.text}
+        cause={snapshot.error}
+        actionError={error}
+        pending={pending > 0}
+        onCopy={() => run(() => copyTranscript(snapshot.session.text))}
+      />
+    );
   if (snapshot.preferences.recoveryRequired)
     return (
       <RecoveryView
@@ -113,7 +125,7 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
           onStart={() => run(() => command("recording_start"))}
           onStop={() => sessionAction("recording_stop")}
           onCancel={() => sessionAction("recording_cancel")}
-          onCopy={() => run(() => command("transcript_copy"))}
+          onCopy={() => run(() => copyTranscript(snapshot.session.text))}
           onClear={() => run(() => clearTranscript(snapshot.session.text))}
           onSettings={() => setSettingsOpen(true)}
         />

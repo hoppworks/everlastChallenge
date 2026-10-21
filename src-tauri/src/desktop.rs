@@ -624,14 +624,6 @@ impl Desktop {
             .await
             .map_err(|_| "Textanfrage beendet")?
     }
-    pub fn text(&self) -> Result<String, String> {
-        self.runtime()?
-            .snapshot()
-            .map_err(|error| error.to_string())?
-            .session
-            .text
-            .ok_or_else(|| "Kein Text zum Kopieren vorhanden".into())
-    }
     fn hotkey(&self, event: hotkeys::Event) {
         match event {
             hotkeys::Event::Cancel { session } => {
@@ -1159,7 +1151,12 @@ impl Desktop {
                 let runtime = match client.runtime() {
                     Ok(runtime) => runtime,
                     Err(_) if self.0.closing.load(Ordering::Acquire) => break,
-                    Err(error) => return Err(error.to_string()),
+                    Err(error) => {
+                        return Err(application
+                            .error
+                            .clone()
+                            .unwrap_or_else(|| error.to_string()));
+                    }
                 };
                 if suspended.suspended
                     && let Some(runtime) = &runtime
@@ -1253,7 +1250,7 @@ impl Desktop {
             Some(supervisor) => supervisor.join().map_err(|error| error.to_string()),
             None => Ok(()),
         };
-        let result = result.and(hotkey_cleanup).and(cleaned);
+        let result = finish_services(result, hotkey_cleanup, cleaned);
         if let Ok(mut shared) = self.0.shared.lock() {
             shared.client = None;
             shared.view.running = false;
@@ -1556,6 +1553,29 @@ fn native_start_state(s: &crate::runtime::RuntimeSnapshot) -> start_observer::St
     }
 }
 
+/// Preserve the initiating failure and distinct cleanup causes. A generic Closed
+/// observation must not erase the owner failure discovered while joining it.
+fn finish_services(
+    result: Result<(), String>,
+    hotkeys: Result<(), String>,
+    application: Result<(), String>,
+) -> Result<(), String> {
+    let mut errors = Vec::new();
+    for error in [result, hotkeys, application]
+        .into_iter()
+        .filter_map(Result::err)
+    {
+        if !errors.contains(&error) {
+            errors.push(error);
+        }
+    }
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors.join("; "))
+    }
+}
+
 struct Finish(Arc<Inner>);
 impl Drop for Finish {
     fn drop(&mut self) {
@@ -1598,6 +1618,21 @@ mod tests {
             native_starts_lost: AtomicBool::new(false),
         }))
     }
+    #[test]
+    fn service_completion_preserves_owner_failure_after_generic_closed() {
+        let error = finish_services(
+            Err("Die Anwendung wird beendet".into()),
+            Err("Hotkey cleanup failed".into()),
+            Err("Native delivery worker panicked".into()),
+        );
+        assert_eq!(error, Err("Die Anwendung wird beendet; Hotkey cleanup failed; Native delivery worker panicked".into()));
+        assert_eq!(finish_services(Ok(()), Ok(()), Ok(())), Ok(()));
+        assert_eq!(
+            finish_services(Err("same".into()), Ok(()), Err("same".into())),
+            Err("same".into())
+        );
+    }
+
     #[test]
     fn initial_model_disclosure_counts_the_complete_installation() {
         let view = initial();

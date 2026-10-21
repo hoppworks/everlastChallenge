@@ -1,6 +1,7 @@
 import { beforeEach, expect, test, vi } from "vitest";
 import {
   clearTranscript,
+  copyTranscript,
   command,
   connect,
   decodeSnapshot,
@@ -327,7 +328,6 @@ test.each([
   "model_download",
   "model_cancel",
   "recording_start",
-  "transcript_copy",
   "microphone_request",
   "accessibility_request",
 ] as const)("forwards explicit command %s", async (name) => {
@@ -601,3 +601,20 @@ test("snapshot decoding accepts the saved qualified hybrid model without widenin
   value.setup.model.sourceUrl = "https://untrusted.test/model";
   expect(() => decodeSnapshot(value)).toThrow("Ungültiger Anwendungsstatus");
 });
+
+test("copy sends exactly the displayed text without fetching a later snapshot", async () => {
+  native.invoke.mockResolvedValue(undefined);
+  await copyTranscript("Angezeigter Text A");
+  expect(native.invoke).toHaveBeenCalledExactlyOnceWith("transcript_copy", {
+    text: "Angezeigter Text A",
+  });
+});
+test.each(["", "ä".repeat(131073)])(
+  "copy rejects empty or oversized UTF-8 text",
+  async (value) => {
+    await expect(copyTranscript(value)).rejects.toThrow(
+      "Der Text ist leer oder zu lang",
+    );
+    expect(native.invoke).not.toHaveBeenCalled();
+  },
+);

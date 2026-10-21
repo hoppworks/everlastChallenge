@@ -110,12 +110,15 @@ pub async fn transcript_clear(
 #[tauri::command]
 pub async fn transcript_copy(
     window: WebviewWindow,
+    text: String,
     app: AppHandle,
     desktop: State<'_, Desktop>,
 ) -> Result<(), String> {
     authorize(&window)?;
     let admission = std::sync::Arc::new(desktop.ui_permit()?);
-    let text = desktop.text()?;
+    if text.is_empty() || text.len() > ui_services::MAX_COPY_BYTES {
+        return Err("Der Text ist leer oder zu lang zum Kopieren.".into());
+    }
     main_call(app, admission, move || {
         ui_services::manual_copy(&text).map_err(|error| {
             match error {

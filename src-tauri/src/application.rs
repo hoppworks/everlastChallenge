@@ -60,7 +60,12 @@ impl Client {
             .lock()
             .map_err(|_| ApplicationError::Synchronization)?;
         if state.snapshot.closing || !state.snapshot.running {
-            return Err(ApplicationError::Closed);
+            return Err(state
+                .snapshot
+                .error
+                .clone()
+                .map(ApplicationError::Worker)
+                .unwrap_or(ApplicationError::Closed));
         }
         Ok(state.runtime.clone())
     }
@@ -379,6 +384,26 @@ mod tests {
             Err(ApplicationError::Closed)
         ));
         client.shutdown()?;
+        Ok(())
+    }
+
+    #[test]
+    fn closed_runtime_access_retains_the_specific_service_cause()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let supervisor = AppSupervisor::spawn(directory.path().join("models"), REFERENCE, |_| {
+            Err("No native service needed".into())
+        })?;
+        let client = supervisor.client();
+        client.shutdown()?;
+        {
+            let mut state = client.state.lock().map_err(|_| "state poisoned")?;
+            state.snapshot.error = Some("Native delivery worker failed".into());
+        }
+        assert!(
+            matches!(client.runtime(), Err(ApplicationError::Worker(message)) if message == "Native delivery worker failed")
+        );
+        supervisor.join()?;
         Ok(())
     }
 

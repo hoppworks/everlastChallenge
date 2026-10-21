@@ -11,6 +11,7 @@ import { App } from "./App";
 import type { Snapshot } from "./ipc";
 
 const ipc = vi.hoisted(() => ({
+  copyTranscript: vi.fn<(text: string) => Promise<void>>(),
   clearTranscript: vi.fn<typeof import("./ipc").clearTranscript>(),
   connect: vi.fn<typeof import("./ipc").connect>(),
   command: vi.fn<typeof import("./ipc").command>(),
@@ -82,6 +83,7 @@ function snapshot(): Snapshot {
 beforeEach(() => {
   vi.resetAllMocks();
   ipc.command.mockResolvedValue(undefined);
+  ipc.copyTranscript.mockResolvedValue(undefined);
   ipc.clearTranscript.mockResolvedValue(undefined);
   ipc.sessionCommand.mockResolvedValue(undefined);
   ipc.saveSettings.mockResolvedValue(undefined);
@@ -265,7 +267,7 @@ test.each([false, true])(
     const view = connected(value, nativeHeader);
     fireEvent.click(await screen.findByRole("button", { name: "Kopieren" }));
     await waitFor(() =>
-      expect(ipc.command).toHaveBeenCalledWith("transcript_copy"),
+      expect(ipc.copyTranscript).toHaveBeenCalledWith("Der gespeicherte Text."),
     );
     await waitFor(() =>
       expect(
@@ -376,7 +378,9 @@ test("native outcome and error remain visible and a failed command supplies a re
   expect(screen.getByRole("status").textContent).toBe(
     "Text wurde zurückgehalten",
   );
-  ipc.command.mockRejectedValueOnce(new Error("Kopieren fehlgeschlagen"));
+  ipc.copyTranscript.mockRejectedValueOnce(
+    new Error("Kopieren fehlgeschlagen"),
+  );
   fireEvent.click(screen.getByRole("button", { name: "Kopieren" }));
   await waitFor(() =>
     expect(screen.getByRole("alert").textContent).toContain(
@@ -626,4 +630,55 @@ test("settings navigation stays available while the model is loading", async () 
   expect((button as HTMLButtonElement).disabled).toBe(false);
   fireEvent.click(button);
   expect(screen.getByRole("region", { name: "Einstellungen" })).toBeDefined();
+});
+
+test.each(["Idle", "Recording"] as const)(
+  "a stopped service preserves text and copy but offers no dead actions after %s",
+  async (phase) => {
+    const value = snapshot();
+    value.running = false;
+    value.setup.phase = "Failed";
+    value.session = {
+      ...value.session,
+      phase,
+      text: "Letzter sichtbarer Text",
+      id: phase === "Recording" ? 42 : null,
+    };
+    value.preferences.recoveryRequired = true;
+    value.settingsRequest = 1;
+    value.error = "Der Übergabedienst wurde beendet";
+    connected(value);
+    expect(
+      await screen.findByText("Bitte beende die App und öffne sie erneut."),
+    ).toBeDefined();
+    expect(screen.getByRole("alert").textContent).toContain(
+      "Der Übergabedienst wurde beendet",
+    );
+    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
+      "Letzter sichtbarer Text",
+    );
+    expect(
+      screen.getAllByRole("button").map((button) => button.textContent),
+    ).toEqual(["Kopieren"]);
+    fireEvent.click(screen.getByRole("button", { name: "Kopieren" }));
+    await waitFor(() =>
+      expect(ipc.copyTranscript).toHaveBeenCalledWith(
+        "Letzter sichtbarer Text",
+      ),
+    );
+    expect(ipc.command).not.toHaveBeenCalled();
+    expect(ipc.sessionCommand).not.toHaveBeenCalled();
+  },
+);
+
+test("a running service retains retry for a recoverable model download failure", async () => {
+  const value = snapshot();
+  value.setup.phase = "Failed";
+  connected(value);
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Erneut versuchen" }),
+  );
+  await waitFor(() =>
+    expect(ipc.command).toHaveBeenCalledWith("model_download"),
+  );
 });
