@@ -37,3 +37,12 @@ Main-Historie. `npm run check:fast` und die Quell-/Historien-Geheimnisscans sind
 erfolgreich. Die installierte App wurde nicht ersetzt.
 
 ## Verbleibende Grenze
+
+## Ergänzende Herkunftsprüfung
+
+Die [Quellenkette vom 21.10.2026](fp16-source-chain-2026-10-21.json) belegt:
+Die implementierenden Tokens des vendorten FP16-Codes stimmen nach Entfernung
+von Kommentaren und Whitespace mit dem ersten gguf-Import vom 27.12.2023 überein.
+Der vollständige FP16-Lizenztext im letzten Upstreamstand vor diesem Import ist
+bytegleich zum bereits beigefügten Text. Das präzisiert die Herkunft; der konkrete
+übernommene FP16-Commit bleibt unbekannt.

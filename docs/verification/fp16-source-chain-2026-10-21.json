@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-21",
+  "scope": "Source-chain evidence; not a new runtime test or legal approval.",
+  "ggufImport": {
+    "revision": "bd4ecbda94c5108712a238e276252819b384f4cb",
+    "url": "https://raw.githubusercontent.com/antirez/gguf-tools/bd4ecbda94c5108712a238e276252819b384f4cb/fp16.c",
+    "sha256": "d1ed85fa3bdcdccc47c8ed7b264e9110d616411a19acd2d3ed396f0bf6499c16",
+    "commitDate": "2023-12-27T14:13:42Z"
+  },
+  "vendored": {
+    "path": "vendor/mlxrs-sys/vendor/gguflib/fp16.c",
+    "sha256": "1b6d77bfe247359443de115c8554f2b83d98f1b248ba621825e303e41a1cf588"
+  },
+  "implementationEqualAfterRemovingCommentsAndWhitespace": true,
+  "contemporaneousFp16Revision": "0a92994d729ff76a58f692d3028ca1b64b145d91",
+  "contemporaneousLicenseUrl": "https://raw.githubusercontent.com/Maratyszcza/FP16/0a92994d729ff76a58f692d3028ca1b64b145d91/LICENSE",
+  "contemporaneousLicenseSha256": "17e4f539024be2749ee729d1e2f01d24cef12ece8c9bf18e91a4349be29c80bf",
+  "licenseAlreadyBundledByteIdentically": true,
+  "limit": "The contemporaneous FP16 revision is a time-bounded reference, not proof that gguf-tools copied that exact revision."
+}
