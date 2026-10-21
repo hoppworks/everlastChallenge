@@ -7,6 +7,7 @@ pub mod control;
 pub mod controller;
 pub mod desktop;
 pub mod header;
+mod hotkey_diagnostics;
 pub mod hotkeys;
 pub mod inference_service;
 pub mod ipc;
