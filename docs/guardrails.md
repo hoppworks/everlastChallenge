@@ -54,3 +54,30 @@ Die zusätzliche typinformierte Prüfung nutzt ausschließlich als Entwicklungst
 `eslint` 9.39.5 und `typescript-eslint` 8.72.0, mit aufgelösten Versionen im
 `package-lock.json`. Sie ersetzt weder den TypeScript-Compiler noch die bestehenden
 Oxlint-Regeln. Die Compiler-Version der App bleibt unverändert.
+
+## Zusätzliche Abschlussregeln
+
+`npm run check:format` prüft jetzt Prettier mit gepinnter Version; generierte
+Rust/TypeScript-Verträge bleiben beim Generatorformat und werden durch den
+Vertragsvergleich geprüft. `npm run check:dependencies` verwendet gepinntes Knip
+für ungenutzte Dateien, Exporte und npm-Abhängigkeiten. `gitleaks` ist dort als
+extern installiertes Prüfwerkzeug ausgewiesen, nicht als npm-Paket versteckt.
+`npm run check:dependencies:rust` verwendet cargo-machete 0.9.2 ausschließlich auf
+den drei eigenen Crates; vendorte Upstream-Manifeste werden nicht umgeschrieben.
+Setup und CI installieren diese Version explizit.
+
+Leere TypeScript-Catchblöcke, fokussierte/übersprungene Frontendtests, unkommentierte
+ESLint-Ausnahmen und Format-/Typunterdrückungen werden abgelehnt. Hooks- und
+ARIA-Regeln ergänzen die vorhandenen typinformierten Promiseprüfungen. Eine
+bewusste Ausnahme ist `jsx-a11y/prefer-tag-over-role`: ein expliziter Statusbereich
+bleibt `role="status"`, statt jede allgemeine Statusmeldung in ein HTML-`output`
+umzuformen. Die ARIA-Rollen-/Attributprüfung bleibt aktiv.
+
+Der genaue, revisionsgebundene Vergleich mit Florians Vorlagen und die bewusst
+abweichenden Regeln stehen in [guardrail-crosswalk.md](guardrail-crosswalk.md).
+
+Der Secret-Check erzeugt einen temporären Snapshot aller versionierten und
+nicht ignorierten neuen Dateien. Er scannt damit auch neue Quelltexte vor dem
+Commit, aber keine ignorierten lokalen Builds, Modelle oder privaten Sicherungen.
+Versionierte Dateien bleiben selbst bei passender Ignore-Regel eingeschlossen.
+Dies ist ein Repository-Quellscan, kein Scan sämtlicher lokaler Daten.

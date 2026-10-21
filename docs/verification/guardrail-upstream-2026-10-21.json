@@ -1,0 +1,118 @@
+{
+  "repository": "florianbuetow/ai-guardrails",
+  "commit": "e15f537328a320092e53a674ac1dbff464c3a259",
+  "files": [
+    {
+      "path": "blueprints/react-vite-typescript-base/template/.dependency-cruiser.cjs",
+      "sha256": "c082765738a6546666755db476aec29401cdf195f4811f3f9f7865d364440383"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/.oxlintrc.json",
+      "sha256": "1e4d9ff6ef199caea65001723d472073dc225add6c9492483d02cf48f7a199c1"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/.prettierignore",
+      "sha256": "43392311f4e36bc398a155694f139590c5005f8e30531ee3694a009c17b05e31"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/.prettierrc",
+      "sha256": "02c3552291b98bde1f75b63c79b2ce0b9cb209b7558a981d1d3c316e4a2336d5"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/AGENTS.md.template",
+      "sha256": "1e2d732bd19f4b34af616bffca01515c44843f936bf0964eb3a93e508bfce1eb"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/config/oxlint/security.oxlintrc.json",
+      "sha256": "47f7bf2c9943d505008e011f192580065ffd6e4153831230a9fa1ff9661e0d88"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/config/semgrep/no-default-values.yml",
+      "sha256": "1b8cf9214f3e76ae7c9a18664aed61e7a503cbe0f511a52d812ba39b944d7d35"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/config/semgrep/no-shellcheck-disable.yml",
+      "sha256": "d2a7b3a489bc56eb7f9ed8fd9ad357be8f477827b909d7a4998f9d44e007fe6e"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/config/semgrep/no-skip-tests.yml",
+      "sha256": "203869463de5e381a174d4485f68f57f457179b79e68ee65c039f9f15d2b6499"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/config/semgrep/no-sneaky-fallbacks.yml",
+      "sha256": "42846a911edf46e2e0e9b1121d28f9efdc50bed02259fd192ba75d896510ef41"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/config/semgrep/no-suppression.yml",
+      "sha256": "725ba82fea291e41c5b9d87ec0a12af5396501622926ea9c22a2349c596909f4"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/config/semgrep/security-predictable-random.yml",
+      "sha256": "7db6bb4399fddbe4ade2ea7820c11fa0f286dbbaf9d877f97d864b819556c9c8"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/justfile.template",
+      "sha256": "8d3fe2cf10a1671dc69266010ac98a9b362e4dfe16107069a33af26d34b2620d"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/knip.json",
+      "sha256": "b7865af04cb2f6bb0d8bacc6a44a076d0df3b4f1b3a5f6fa1655f88864dd12ad"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/playwright.config.ts",
+      "sha256": "93abbe17e68930ba5c760df2695940a4866f04646ff9ebd63480b3ec28d7da4d"
+    },
+    {
+      "path": "blueprints/react-vite-typescript-base/template/tsconfig.e2e.json",
+      "sha256": "e374e3a3d8cd8e5b14a8cf0d80e257c4b3adc3223b840e1eb4559ec6c368b2b7"
+    },
+    {
+      "path": "blueprints/rust-cli-base/template/AGENTS.md.template",
+      "sha256": "0c03ec72d1900f333dfd167a8ca5f0526a59524eb700980df0bdefdedfe1bd0b"
+    },
+    {
+      "path": "blueprints/rust-cli-base/template/Cargo.toml.template",
+      "sha256": "f3f9bc3de64e693eb4bd7bc571cd34dc9262052980087dcf1f32ef69e4fda2c0"
+    },
+    {
+      "path": "blueprints/rust-cli-base/template/config/semgrep/no-allow-attributes.yml",
+      "sha256": "2ad5b95aacf89ee741d232bf0a888f5c59748f5b91ca299aec61d95244e0b514"
+    },
+    {
+      "path": "blueprints/rust-cli-base/template/config/semgrep/no-cfg-attr-allow.yml",
+      "sha256": "669ab5dd93b4139785483e9864a035215323cdf5b56186f4f12e09e5aa9da5b7"
+    },
+    {
+      "path": "blueprints/rust-cli-base/template/config/semgrep/no-default-fallbacks.yml",
+      "sha256": "8d0268e71f670073c4930695a895edfeccc2f2eac1f04581e6fbdade9016b721"
+    },
+    {
+      "path": "blueprints/rust-cli-base/template/config/semgrep/no-expect-without-context.yml",
+      "sha256": "4a9b991c0c642208ea7604e382c3e884ce99d55b8a2149ed7972f6763bdf144f"
+    },
+    {
+      "path": "blueprints/rust-cli-base/template/config/semgrep/no-shellcheck-disable.yml",
+      "sha256": "d2a7b3a489bc56eb7f9ed8fd9ad357be8f477827b909d7a4998f9d44e007fe6e"
+    },
+    {
+      "path": "blueprints/rust-cli-base/template/config/semgrep/no-silent-error-discard.yml",
+      "sha256": "5f836b62e2f9473c23c137cf8deb8a398370a0b978671af29fce3d5aa7e713e1"
+    },
+    {
+      "path": "blueprints/rust-cli-base/template/config/semgrep/no-skip-tests.yml",
+      "sha256": "70dd3ba344a64e12dcf42450f655b94ef4ca39fc8171a1f3e2222ab8243b2277"
+    },
+    {
+      "path": "blueprints/rust-cli-base/template/config/semgrep/no-unsafe-code.yml",
+      "sha256": "fcc52532fe544210f3d1a332cd2806fa0a28d377b10ab0f25627c630eaaad347"
+    },
+    {
+      "path": "blueprints/rust-cli-base/template/config/semgrep/no-unwrap.yml",
+      "sha256": "4c4d7d7d9bbd37558a5e3a1d6fbca73d77a048ad85358fe4bf13e69eca77e656"
+    },
+    {
+      "path": "blueprints/rust-cli-base/template/justfile.template",
+      "sha256": "d84303b15a6169aba2ed045101cc0569e33bb6da1ab91a5b13b83c69f3bad421"
+    }
+  ]
+}
