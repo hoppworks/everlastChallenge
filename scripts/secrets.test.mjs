@@ -164,3 +164,54 @@ test("the historical public corpus sentence is not a credential", () => {
     1,
   );
 });
+
+test("history mode finds a credential deleted from the current tree", () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "everlast-history-"));
+  try {
+    const git = (...args) => {
+      const result = spawnSync(
+        "git",
+        [
+          "-c",
+          "user.name=Public Fixture",
+          "-c",
+          "user.email=fixture@example.invalid",
+          ...args,
+        ],
+        { cwd: directory, encoding: "utf8" },
+      );
+      assert.equal(result.status, 0, result.stderr);
+    };
+    git("init", "--quiet");
+    fs.copyFileSync(config, path.join(directory, ".gitleaks.toml"));
+    fs.writeFileSync(
+      path.join(directory, "example.txt"),
+      `API_KEY = "${nonChecksum}";`,
+    );
+    git("add", ".");
+    git("commit", "--quiet", "-m", "fixture credential");
+    fs.unlinkSync(path.join(directory, "example.txt"));
+    git("add", "-u");
+    git("commit", "--quiet", "-m", "remove current copy");
+    const run = (...args) =>
+      spawnSync(
+        process.execPath,
+        [path.resolve("scripts/secrets.mjs"), ...args],
+        { cwd: directory, encoding: "utf8" },
+      );
+    const source = run();
+    assert.equal(source.status, 0, source.stderr);
+    const history = run("--history");
+    assert.equal(
+      history.status,
+      1,
+      "deleted credentials must still fail history scans",
+    );
+    assert.ok(
+      !history.stderr.includes(nonChecksum),
+      "findings must stay redacted",
+    );
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});

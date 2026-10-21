@@ -2,7 +2,7 @@
 
 **Alle begrenzten unabhängigen Prüfungen bestanden.**94 vollständige Fälle mit je einem Warmup und10 Messungen: 1034 tatsächlich geprüfte Ausgaben und940 Messwerte. Alle11 vollständigen94er Qualitätsrunden bestehen; kanonische84 und Supplement10 zusätzlich separat geprüft. Gesamtprodukt weiterhin `qualified=false`.
 
-[Prüfcode](cache-runtime-remainder-readback.py) · [Berechnungen und vollständige Bindungen](cache-runtime-remainder-readback.json)
+Prüfcode (historischer oder lokaler Beleg, nicht mitgeliefert) · [Berechnungen und vollständige Bindungen](cache-runtime-remainder-readback.json)
 
 Jede tatsächliche Text-/Statusausgabe wurde gegen das gebundene ursprüngliche CPP-Referenzobjekt geprüft. Abweichungen benötigen das bereits exakt genehmigte SHA-Paar mit vollständigem Originalfall, Baseline und Kandidat. Fall-ID, neutraler WER oder eine bloße Passedflag ersetzen keine semantische Freigabe. Alle Originalobjekte/Fehlerzustände bleiben erhalten; keine Messung verworfen und kein Fall erneut gestartet.
 

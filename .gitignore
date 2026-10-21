@@ -8,3 +8,6 @@
 /artifacts/
 /tests/guardrails/.generated/
 /.everlast-signing.json
+
+# Local planning scratch must not become publication content.
+/.scratch/

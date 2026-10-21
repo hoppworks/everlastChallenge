@@ -2,7 +2,7 @@
 
 **Der integrierte RAM-Effekt ist belegt.** Gegenüber der FP16-Baseline v3 sinkt an den 13 gleichen warmen Checkpoints der mediane RSS von 1413857280 auf 860913664 Bytes: **552943616 Bytes bzw. rund 39,1 % weniger**. Der mediane wiederverwendbare MLX-Cache sinkt um 1070603348 Bytes. Aktive MLX-Allokationen und der warme Peak aktiver Bytes bleiben gleich.
 
-Alle **198 Ablauf-, Bindungs- und Messprüfungen** sind grün. Es gibt ein konkretes **Dokumentations-Finding**: der historische Diagnosetext behauptet weiterhin keine Cacheänderung. Deshalb ist `allExecutionAndMemoryChecksPassed=true` und `ramEvidenceSufficient=true`, aber `allChecksPassed=false`. `qualified=false`, `fullSpeedQualified=false`, `fullQualityQualified=false` und `fullProductQualified=false` bleiben bestehen. Die [vollständige JSON-Rechnung](/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/implementation/ram-budget-v1/cache-runtime-readback.json) enthält alle gleichphasigen Vergleiche und Einzelprüfungen.
+Alle **198 Ablauf-, Bindungs- und Messprüfungen** sind grün. Es gibt ein konkretes **Dokumentations-Finding**: der historische Diagnosetext behauptet weiterhin keine Cacheänderung. Deshalb ist `allExecutionAndMemoryChecksPassed=true` und `ramEvidenceSufficient=true`, aber `allChecksPassed=false`. `qualified=false`, `fullSpeedQualified=false`, `fullQualityQualified=false` und `fullProductQualified=false` bleiben bestehen. Die vollständige JSON-Rechnung (lokaler historischer Verweis) enthält alle gleichphasigen Vergleiche und Einzelprüfungen.
 
 ## Gleicher Ablauf, getrennte Speichergrößen
 
@@ -57,7 +57,7 @@ Die konkrete Schlussfolgerung ist weniger warm gehaltene und nach Join gecachte 
 
 ## Text-, Cancel- und Ownerbelege
 
-Die gespeicherte Referenz ist SHA `d36dec2ebe1f1082ce1e143a85ab83793d413ddc8ff1e96aac1c635278050fbf`, identisch in beiden Profilen und zum vollständigen ursprünglichen CPP-Objekt für DE5. Der unveränderte [Workloadhelfer](/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/cache-runtime-ram-v1/source/src-tauri/examples/runtime_resource_probe/runner.rs) vergleicht den **vollständigen veröffentlichten Stop-Text** direkt mit diesen Referenzbytes. Alle acht StopComplete-Receipts je Profil haben `referenceMatch=true`, `Local`, vorhandenen Text und keine Fehler.
+Die gespeicherte Referenz ist SHA `d36dec2ebe1f1082ce1e143a85ab83793d413ddc8ff1e96aac1c635278050fbf`, identisch in beiden Profilen und zum vollständigen ursprünglichen CPP-Objekt für DE5. Der unveränderte Workloadhelfer (lokaler historischer Verweis) vergleicht den **vollständigen veröffentlichten Stop-Text** direkt mit diesen Referenzbytes. Alle acht StopComplete-Receipts je Profil haben `referenceMatch=true`, `Local`, vorhandenen Text und keine Fehler.
 
 Eine wichtige Beweisgrenze: Diese RAM-Probe exportiert **keine rohen Volltranskripte**. Die unabhängige Prüfung kann die in gebundenem Code tatsächlich ausgeführte Volltextgleichheit anhand ihrer Receipts und der Referenz prüfen, aber keinen zweiten Vergleich exportierter Transkriptobjekte vornehmen. Die vier CancelDecoderEntry-Aufrufe liefern bewusst keinen veröffentlichten Text. `decoderCompared=12` bedeutet vollständiger PCM-Eingangsvergleich vor dem Decode, **nicht zwölf Textvergleiche**.
 

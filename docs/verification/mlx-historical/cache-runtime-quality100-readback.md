@@ -2,7 +2,7 @@
 
 **Der feste 100er-Qualitätslauf ist bestanden.** Alle **332 unabhängigen Prüfungen** sind grün. Alle 100 vollständigen Ausgabeobjekte sind exakt identisch zum zuvor akzeptierten FP16-Lauf. Gegenüber der unveränderten ursprünglichen CPP-Referenz sind 98 Objekte identisch; ausschließlich die zwei bereits früher akzeptierten vollständigen Änderungspaare bleiben übrig. Keine neue semantische Freigabe und keine Modellwiederholung wurden vorgenommen.
 
-Die [Acceptance-Datei](/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/mlx-qualification/reference-encoder-f16-cache256-v2/quality100/acceptance-readback.json) ist exklusiv erstellt. Sie setzt `quality100Passed=true`, `allExecutionChecksPassed=true`, `allQualityGroupsPassed=true` und `semanticReviewComplete=true`. Der [unabhängige JSON-Report](/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/implementation/ram-budget-v1/cache-runtime-quality100-readback.json) setzt `allIndependentChecksPassed=true` und ist per SHA in der Acceptance gebunden. Alle Produkt-/Pace-Freigaben bleiben false.
+Die Acceptance-Datei (lokaler historischer Verweis) ist exklusiv erstellt. Sie setzt `quality100Passed=true`, `allExecutionChecksPassed=true`, `allQualityGroupsPassed=true` und `semanticReviewComplete=true`. Der unabhängige JSON-Report (lokaler historischer Verweis) setzt `allIndependentChecksPassed=true` und ist per SHA in der Acceptance gebunden. Alle Produkt-/Pace-Freigaben bleiben false.
 
 ## Vollständigkeit und tatsächliche Ausführung
 

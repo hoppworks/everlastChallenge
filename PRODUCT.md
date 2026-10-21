@@ -8,10 +8,13 @@ web
 
 ## Users
 
+Menschen, die auf macOS kurze Texte diktieren und in anderen Anwendungen verwenden.
+Die Oberfläche dient der kompakten Bedienung der nativen Coding-Challenge-App.
+
 ## Product Purpose
 
 Ein kleines Diktierwerkzeug, das nach dem Start in den Hintergrund treten kann.
-Der Nutzer hat am 21.10.2026 kompakte Bedienung und Progressive Disclosure bestätigt.
+Kompakte Bedienung und Progressive Disclosure begrenzen die sichtbare Komplexität.
 
 ## Operating Context
 
@@ -22,14 +25,14 @@ Browser-Entwürfe; es ist keine Freigabe für eine browserbasierte Audio-Pipelin
 ## Capabilities and Constraints
 
 Rust besitzt Mikrofon, Stilleerkennung, lokale Transkription, globale Tastenkürzel
-und Einfügen. Die native Übernahme der Palette ist freigegeben und wird umgesetzt.
-Browser-Vorschauen bleiben Simulationen; native Aufnahme, Build und Integration
-müssen am Implementierungskandidaten gesondert verifiziert werden.
+und Einfügen. Die freigegebene Palette ist nativ umgesetzt und geprüft. Browser-Vorschauen
+bleiben Simulationen. Der tatsächliche Prüfstand und seine Grenzen stehen in
+[Palette-Verifikation](docs/verification/palette-2026-10-21.md).
 
 ## Brand Commitments
 
 Produktname: Everlast Coding Challenge. Sehr simple Hauptansicht; Einstellungen,
-Modelldetails und Diagnose werden erst bei Bedarf offengelegt. Palette ist die vom Nutzer freigegebene Richtung für die native Umsetzung, mit
+Modelldetails und Diagnose werden erst bei Bedarf offengelegt. Die native Palette verwendet
 Hell-/Dunkelmodus nach Systemeinstellung und bestehender macOS-Systemschrift.
 Diese Freigabe ersetzt keine technische Abnahme des Implementierungskandidaten.
 

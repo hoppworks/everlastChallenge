@@ -2,7 +2,7 @@
 
 **Alle unabhängigen aktuellen Pace-Prüfungen bestanden.** Beide Paarreihenfolgen sind vollständig; keine offenen Findings in diesem Readback. `allIndependentChecksPassed`, `allChecksPassed` und `bothPairOrdersComplete` gelten für den unten beschriebenen begrenzten Prüfbereich. `qualified` bleibt **false** für das Gesamtprodukt. Keine neuen Modelle, GPU-Jobs, Builds oder Messungen.
 
-[Vollständige Berechnungen, Rohwertlisten und Bindungen](cache-runtime-paced-readback.json) · [ausgeführter unabhängiger Prüfcode](cache-runtime-paced-readback.py)
+[Vollständige Berechnungen, Rohwertlisten und Bindungen](cache-runtime-paced-readback.json) · ausgeführter unabhängiger Prüfcode (historischer oder lokaler Beleg, nicht mitgeliefert)
 
 Der neue feste Lauf ist CPP → Cache256 → altes unbounded FP16 → altes unbounded FP16 → Cache256 → CPP. Alle sechs Arme enthalten exakt181 vollständige Slots (ein markierter Warmup plus30 Messungen je sechs Fällen). Keine Teilmenge, kein Messfehler und kein langsameres Cache-Ergebnis wurde entfernt. Dies ist der neue sechsarmige Nachweis; frühere fehlgeschlagene Arme werden nicht umetikettiert oder repariert.
 

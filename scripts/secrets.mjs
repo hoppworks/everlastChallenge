@@ -39,12 +39,39 @@ export function stageSource(root, destination) {
   }
 }
 
-export function scanSource(root) {
+function verifyScanner() {
   const version = execFileSync("gitleaks", ["version"], {
     encoding: "utf8",
   }).trim();
   if (version !== "8.30.1")
     throw new Error(`Expected pinned gitleaks 8.30.1, got ${version}`);
+}
+
+export function scanHistory(root) {
+  verifyScanner();
+  // Scan every commit reachable from this checkout, not unrelated local branches.
+  execFileSync("git", ["rev-parse", "--verify", "HEAD"], {
+    cwd: root,
+    stdio: "pipe",
+  });
+  execFileSync(
+    "gitleaks",
+    [
+      "git",
+      "--no-banner",
+      "--redact",
+      "--ignore-gitleaks-allow",
+      "--config",
+      path.join(root, ".gitleaks.toml"),
+      "--log-opts=HEAD",
+      root,
+    ],
+    { stdio: "inherit" },
+  );
+}
+
+export function scanSource(root) {
+  verifyScanner();
   const directory = fs.mkdtempSync(
     path.join(os.tmpdir(), "everlast-publishable-source-"),
   );
@@ -68,5 +95,10 @@ export function scanSource(root) {
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url))
-  scanSource(process.cwd());
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  const args = process.argv.slice(2);
+  if (args.length === 0) scanSource(process.cwd());
+  else if (args.length === 1 && args[0] === "--history")
+    scanHistory(process.cwd());
+  else throw new Error("Usage: node scripts/secrets.mjs [--history]");
+}

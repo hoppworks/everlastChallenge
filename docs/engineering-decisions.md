@@ -26,7 +26,6 @@ Versand, nicht erst zur Bestätigung an den wartenden Worker. Frühes Cleanup
 behält den Besitzer bis zur Frist; das Warten erfolgt außerhalb des Hauptthreads.
 Der Regressionstest ordnet Versand, Timeout und Cleanup kontrolliert. Die 500 ms
 sind eine Policy, keine Empfangsgarantie jeder fremden Anwendung.
-[Review-Auflösung und Grenzen](review-resolution-2026-10-21.md).
 
 ## Ein bewusst verworfener Weg
 
@@ -45,4 +44,4 @@ Verträge; die physische Hotkey-Prüfung beweist den beobachteten realen Ablauf.
 Beides ersetzt weder alle macOS-Anwendungen noch alle denkbaren Audios.
 Die [Leistungsübersicht](performance.md) benennt deshalb jeweils Bezugssystem,
 Messstrecke und Grenzen. Diese Nachweise sollen technische Entscheidungen
-prüfbar machen, nicht pauschale technical itäts- oder Produktreifeetiketten ersetzen.
+prüfbar machen, nicht pauschale Produktreifeetiketten ersetzen.

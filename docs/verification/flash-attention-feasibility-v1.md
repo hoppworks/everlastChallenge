@@ -98,7 +98,7 @@ Flash-/Neural-Accelerator-Garantie.
 
 ## Erst ein eigener prospektiver Vergleich könnte qualifizieren
 
-[Plan§8/§13](../../IMPLEMENTATION_PLAN.md#models) erlaubt eingefrorene
+Plan§8/§13 (historischer oder lokaler Beleg, nicht mitgeliefert) erlaubt eingefrorene
 Backendparameter, verbietet hier aber CoreML-/MLX-Wechsel. Vor einem Lauf:
 genau diese Flagvariante, vollständige Kontext-/FullParams, Binary, Buildfeatures,
 Quellen, Modelle,100 unveränderte Qualitätsfälle und neue Ausgabeziele einfrieren.

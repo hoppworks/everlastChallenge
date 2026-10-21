@@ -6,7 +6,7 @@ Recherche: 17.10.2026. Untersucht wurden Primärquellen und kleine Metadatendate
 
 **FLEURS ist als Basis für gelesene deutsche und englische Sätze geeignet.** Seine Referenztexte existieren unabhängig von unserem ASR-Modell. Es ersetzt weder natürliche Kurzäußerungen von 0,2–1 s noch einen geprüften fünfminütigen Fall ohne sichere Pause. Die kleinste unkomplizierte Beschaffung sind einzelne Sprach-/Splitarchive, nicht das gesamte Dataset. Für kurze deutsche und englische Ziffern ist Heidelberg Digits ein Kandidat; für einen sehr kleinen englischen Download bietet FSDD einzelne gepinnte WAV-Dateien. Englische Namen und „no“ bietet Speech Commands. Eine vollständig belegte kleine Quelle für **deutsche kurze Namen und Negationen** wurde hier nicht gefunden.
 
-Die Korpusanforderungen bleiben [IMPLEMENTATION_PLAN.md, §13](../../IMPLEMENTATION_PLAN.md#measurement): mindestens 30 DE-/20 EN-Fälle und zusammen 1500 Referenzwörter, getrennte Kalibrierungs-/Abnahmemengen, Anker, Stille und schwierige Fälle. Die geplante Auswahl von 40 DE-/30 EN-Abnahmefällen plus je zehn Kalibrierungsfällen ist vor Inferenz festzuschreiben; Fallzahlen allein beweisen weder Wortzahl noch Klassenabdeckung.
+Die Korpusanforderungen bleiben IMPLEMENTATION_PLAN.md, §13 (historischer oder lokaler Beleg, nicht mitgeliefert): mindestens 30 DE-/20 EN-Fälle und zusammen 1500 Referenzwörter, getrennte Kalibrierungs-/Abnahmemengen, Anker, Stille und schwierige Fälle. Die geplante Auswahl von 40 DE-/30 EN-Abnahmefällen plus je zehn Kalibrierungsfällen ist vor Inferenz festzuschreiben; Fallzahlen allein beweisen weder Wortzahl noch Klassenabdeckung.
 
 ## Google FLEURS: Version, Dateien und Referenzen
 

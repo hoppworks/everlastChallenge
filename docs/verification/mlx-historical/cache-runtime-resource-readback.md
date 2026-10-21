@@ -2,7 +2,7 @@
 
 **Alle begrenzten unabhängigen Ausführungsprüfungen bestanden.** Ein tatsächlicher Lauf,105 vollständige Operationen (5 Warmup +100 gemessen),72 Decoder-Aufrufe mit72 vollständigen PCM-Vergleichen,101 gültige OS-Checkpoints. Keine Modelle/Builds/Tests/Messungen gestartet, keine Rohdaten verändert. `qualified=false` und `resourceQualified=false` bleiben erhalten.
 
-[Prüfcode](cache-runtime-resource-readback.py) · [vollständiger JSON-Readback](cache-runtime-resource-readback.json)
+Prüfcode (historischer oder lokaler Beleg, nicht mitgeliefert) · [vollständiger JSON-Readback](cache-runtime-resource-readback.json)
 
 Die feste native Reihenfolge ergibt39 StopComplete,33 CancelCapture und33 CancelDecoderEntry. Alle IDs/Sessions/Statusobjekte, exakten Eingangs-/Abschlusszähler, Terminale, Feed-Framezahlen/Publikationssummen/Timingbudgets und Eigentümerübergaben wurden einzeln aus den105 Rohzeilen geprüft. Alle39 Stops bestätigen den unveränderten UTF8-Referenztext intern exakt; alle66 Cancels veröffentlichen keinen Text. DecoderEntry-Cancel lässt die tatsächliche Inferenz unter einer kontrollierten Eintrittsbarriere fertiglaufen und verwirft deren Ergebnis. Keine Aussage über native Kernelunterbrechung oder strikte Cancel-Latenz.
 

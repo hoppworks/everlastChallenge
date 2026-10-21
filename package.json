@@ -37,7 +37,8 @@
     "check:format": "prettier --check src scripts config *.json *.ts *.mjs index.html",
     "check:dependencies": "knip --no-progress",
     "check:dependencies:rust": "cargo machete crates/dictation-core crates/macos-integration src-tauri",
-    "doctor": "node scripts/doctor.mjs"
+    "doctor": "node scripts/doctor.mjs",
+    "check:secrets": "node scripts/secrets.mjs && node scripts/secrets.mjs --history"
   },
   "dependencies": {
     "@tauri-apps/api": "2.12.4",

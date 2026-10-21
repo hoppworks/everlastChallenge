@@ -1,3 +1,5 @@
+# Code-Wegweiser
+
 ## Ein Diktat durch den Code verfolgen
 
 ```mermaid
@@ -73,46 +75,16 @@ historische Belege ihrer dort gebundenen Capture-/Settings-Verträge.
   belegt echte Aufnahme und manuelles Kopieren/Einfügen in ein eigenes Testziel,
   keine automatische Zielerfassung oder automatische Übergabe. Der
   [native Lifecycle-Test](verification/native-lifecycle-2026-10-19.md) belegt
-  Beenden während Aufnahme und 100 Start-/Cancel-Zyklen. Sleep/Wake,
-  Bluetooth-Wechsel und Notes bleiben eigenständige offene Abnahmen.
+  Beenden während Aufnahme und 100 Start-/Cancel-Zyklen. Der spätere
+  [technische Kurztest](verification/release-fixes-2026-10-21.md) ergänzt echten Empfang
+  in Notes; der [Palette-Test](verification/palette-2026-10-21.md) die aktuelle UI.
+  Eine vollständige Sleep/Wake- oder Bluetooth-Wechselmatrix wird nicht behauptet.
 - [Qualität](verification/acceptance-reference-v1.md),
   [Inferenz-Lifecycle](verification/inference-lifecycle.md),
   [Runtime-Ressourcen](verification/runtime-resource.md) und
   [Echtzeitprotokoll](verification/paced-reference-protocol.md) enthalten die
   jeweiligen Laufbelege und Grenzen. Die private Audiodatei wird nicht als
   unabhängige Goldreferenz ausgegeben.
-
-## Historische Prüfstände und Nachträge
-
-Der [historische Quellenaudit](verification/personal-review-v3-05413c2-delta.json)
-trennt die test-only Runtime-Modulregistrierung von den neuen ausführbaren
-Entwickler-/Signierwerkzeugen. Alle 107 ursprünglichen Anker bleiben gegenüber
-`2abf495` auf gleicher Zeile; E1/E2/O1/O2 bleiben erhalten. Die installierte
-lokal signierte B-App 0.1.1 stammt aus `40e7eaf`, nicht aus den späteren
-Helper-Commits. [A/B-Signaturvergleich](verification/local-signing-2026-10-19.md)
-und [eigener Beobachter](verification/native-recipient-observer-2026-10-19.md)
-sind technische Teilbelege; erste OS-Freigabe und realer A/B-Rechteerhalt bleiben offen.
-
-Für den aktuellen Inferenzpfad zusätzlich `Engine::transcribe` bis
-`decode::<false, _>` verfolgen: Der produktive Decoder erlaubt interne
-Timestamp-Tokens; die historischen Beobachtungsläufe mit unterdrückten
-Timestamp-Tokens bleiben getrennte Vergleichsbelege. Das ist keine nachträgliche
-Textdeduplizierung. Im Messpfad besitzt `MeasuredStopHandle` nur Client,
-Sitzungs-ID und Trace, keinen Runtimeowner. Sein Zeitstempel entsteht vor den
-Locks; ein noch gehaltener Stophandle darf das Runtimejoin nicht verhindern.
-Die [zentrale TC-Messung](verification/paced-six-reference-v4.md) dokumentiert
-auch die verfehlte absolute Latenzgrenze. Ein gültiger Einspeisetakt ersetzt
-weder Textqualität noch reale Mikrofon-, Hotkey- oder Empfängerabnahmen.
-
-## Ergänzung 19.10.2026: installierter Prüfstand nach Rechtevergleich
-
-Aktualisierung: Installiert ist inzwischen Entwicklerbuild `f592fcd` mit
-lokalem Testzugang; der eigene Empfänger entspricht `6e3b009`. Der
-[Test-Control-Nachtrag](personal-review-sample-v3-test-control-addendum.md)
-bindet diese Quellen und bewahrt alle bisherigen menschlichen Prüffragen.
-Der erste vollständige autonome Einfügedurchlauf ist weiterhin offen.
-
-## Autonome Softwareprüfung v2
 
 ## Palette und progressive Offenlegung
 

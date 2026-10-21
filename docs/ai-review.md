@@ -1,3 +1,7 @@
-# Historical document
+# KI-Nutzung und technische Prüfung
 
-This historical document is omitted from the public history. Consult the current README and technical documentation.
+## Konkrete Beispiele
+
+## Was tatsächlich menschlich beobachtet wurde
+
+## Was die Prüfungen nicht ersetzen
