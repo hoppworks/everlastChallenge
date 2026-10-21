@@ -22,6 +22,7 @@ use std::{
 const CLOSED: usize = 1 << (usize::BITS - 1);
 
 mod full_prefix;
+mod input_config;
 #[cfg(feature = "measurement")]
 pub mod pretranscription;
 #[cfg(feature = "measurement")]
@@ -43,7 +44,9 @@ pub enum CaptureError {
     Drain,
     #[error("Microphone device unavailable or ambiguous")]
     DeviceUnavailable,
-    #[error("The microphone format is not supported")]
+    #[error(
+        "Kein unterstütztes Mikrofonformat verfügbar (8/16/24/32/44,1/48 kHz, 1–8 Kanäle). Bitte in Audio-MIDI-Setup ein kompatibles Format wählen."
+    )]
     UnsupportedSampleFormat,
     #[error("Microphone operation failed: {0}")]
     Native(String),
@@ -780,9 +783,16 @@ fn record(
         return Ok(Vec::new());
     }
     let device = selected_device(device_name)?;
-    let config = device
-        .default_input_config()
-        .map_err(|error| CaptureError::Native(error.to_string()))?;
+    let config = input_config::negotiate(
+        device
+            .default_input_config()
+            .map_err(|error| error.to_string()),
+        || {
+            device
+                .supported_input_configs()
+                .map_err(|error| error.to_string())
+        },
+    )?;
     let format = AudioFormat {
         sample_rate: config.sample_rate().0,
         channels: config.channels(),
