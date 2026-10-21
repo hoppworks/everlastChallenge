@@ -1,0 +1,892 @@
+TAP version 13
+# Subtest: frontend refuses reverse dependencies, indirect native imports and cycles
+ok 1 - frontend refuses reverse dependencies, indirect native imports and cycles
+  ---
+  duration_ms: 2.842916
+  type: 'test'
+  ...
+# Subtest: core cannot acquire OS or inference dependencies, including build-time ones
+ok 2 - core cannot acquire OS or inference dependencies, including build-time ones
+  ---
+  duration_ms: 0.143292
+  type: 'test'
+  ...
+# Subtest: native edits, additions and deletions cannot bypass incremental build coverage
+ok 3 - native edits, additions and deletions cannot bypass incremental build coverage
+  ---
+  duration_ms: 0.07775
+  type: 'test'
+  ...
+# Subtest: production features cannot hide controls behind aliases or cycles
+ok 4 - production features cannot hide controls behind aliases or cycles
+  ---
+  duration_ms: 0.162334
+  type: 'test'
+  ...
+# Subtest: dependency feature requests and native defaults cannot enable test controls
+ok 5 - dependency feature requests and native defaults cannot enable test controls
+  ---
+  duration_ms: 0.073167
+  type: 'test'
+  ...
+# Subtest: incoming dependency feature aliases are followed across crate boundaries
+ok 6 - incoming dependency feature aliases are followed across crate boundaries
+  ---
+  duration_ms: 0.048
+  type: 'test'
+  ...
+# Subtest: unhandled and void-discarded promises fail; explicit catch passes
+ok 7 - unhandled and void-discarded promises fail; explicit catch passes
+  ---
+  duration_ms: 878.02975
+  type: 'test'
+  ...
+# Subtest: async callbacks cannot silently enter void event interfaces
+ok 8 - async callbacks cannot silently enter void event interfaces
+  ---
+  duration_ms: 7.994708
+  type: 'test'
+  ...
+# Subtest: explicit any cannot bypass a checked interface
+ok 9 - explicit any cannot bypass a checked interface
+  ---
+  duration_ms: 4.022458
+  type: 'test'
+  ...
+# Subtest: focused-window checks cannot block the development command
+ok 10 - focused-window checks cannot block the development command
+  ---
+  duration_ms: 1.480792
+  type: 'test'
+  ...
+# Subtest: development plan has no recipient or installed-app precondition
+ok 11 - development plan has no recipient or installed-app precondition
+  ---
+  duration_ms: 1.264708
+  type: 'test'
+  ...
+# Subtest: independent checks run concurrently without overlapping a shared resource
+ok 12 - independent checks run concurrently without overlapping a shared resource
+  ---
+  duration_ms: 410.201042
+  type: 'test'
+  ...
+# Subtest: a failing child stops the run and preserves the failure report
+ok 13 - a failing child stops the run and preserves the failure report
+  ---
+  duration_ms: 40.892875
+  type: 'test'
+  ...
+# Subtest: parallel failure drains running checks and leaves unstarted work skipped
+ok 14 - parallel failure drains running checks and leaves unstarted work skipped
+  ---
+  duration_ms: 231.82775
+  type: 'test'
+  ...
+# Subtest: zero matching cargo tests is a failure even when the child exits zero
+ok 15 - zero matching cargo tests is a failure even when the child exits zero
+  ---
+  duration_ms: 27.4435
+  type: 'test'
+  ...
+# Subtest: fresh own-window evidence permits readiness but never proves delivery
+ok 16 - fresh own-window evidence permits readiness but never proves delivery
+  ---
+  duration_ms: 0.391416
+  type: 'test'
+  ...
+# Subtest: active key window without own frontmost identity is not ready
+ok 17 - active key window without own frontmost identity is not ready
+  ---
+  duration_ms: 0.123
+  type: 'test'
+  ...
+# Subtest: a successful run records actual child results and refuses to overwrite evidence
+ok 18 - a successful run records actual child results and refuses to overwrite evidence
+  ---
+  duration_ms: 27.782666
+  type: 'test'
+  ...
+# Subtest: timeout reaps a descendant that ignores SIGTERM after its parent exits
+ok 19 - timeout reaps a descendant that ignores SIGTERM after its parent exits
+  ---
+  duration_ms: 936.043833
+  type: 'test'
+  ...
+# Subtest: SIGTERM of the runner cleans its child group before returning failure
+ok 20 - SIGTERM of the runner cleans its child group before returning failure
+  ---
+  duration_ms: 613.677375
+  type: 'test'
+  ...
+# Subtest: bundle takes Metal kernels only from the MLX sys build selected by Cargo
+ok 21 - bundle takes Metal kernels only from the MLX sys build selected by Cargo
+  ---
+  duration_ms: 0.495916
+  type: 'test'
+  ...
+# Subtest: missing and ambiguous selected native builds cannot produce a bundle
+ok 22 - missing and ambiguous selected native builds cannot produce a bundle
+  ---
+  duration_ms: 0.330542
+  type: 'test'
+  ...
+# Subtest: one controlled start plays only the pinned public fixture, stops owned SID and confirms fresh recipient
+ok 23 - one controlled start plays only the pinned public fixture, stops owned SID and confirms fresh recipient
+  ---
+  duration_ms: 2.735041
+  type: 'test'
+  ...
+# Subtest: unknown start reply never retries, adopts a SID or cancels an unacknowledged session
+ok 24 - unknown start reply never retries, adopts a SID or cancels an unacknowledged session
+  ---
+  duration_ms: 0.290291
+  type: 'test'
+  ...
+# Subtest: waits boundedly for actual Recording and terminal Idle; playback failure cancels only its known session
+ok 25 - waits boundedly for actual Recording and terminal Idle; playback failure cancels only its known session
+  ---
+  duration_ms: 1.385125
+  type: 'test'
+  ...
+# Subtest: stale endpoint, wrong public fixture and stale/nonempty recipient block before any start
+ok 26 - stale endpoint, wrong public fixture and stale/nonempty recipient block before any start
+  ---
+  duration_ms: 0.197792
+  type: 'test'
+  ...
+# Subtest: never cancels a changed foreign SID and never confirms stale recipient success
+ok 27 - never cancels a changed foreign SID and never confirms stale recipient success
+  ---
+  duration_ms: 0.685833
+  type: 'test'
+  ...
+# Subtest: file entry rejects unpinned audio and unknown CLI options before any native action
+ok 28 - file entry rejects unpinned audio and unknown CLI options before any native action
+  ---
+  duration_ms: 21.856959
+  type: 'test'
+  ...
+# Subtest: terminal timeout and interruption both end boundedly and cancel only the acknowledged SID
+ok 29 - terminal timeout and interruption both end boundedly and cancel only the acknowledged SID
+  ---
+  duration_ms: 24.948375
+  type: 'test'
+  ...
+# Subtest: coverage fails below a threshold or for missing metrics
+ok 30 - coverage fails below a threshold or for missing metrics
+  ---
+  duration_ms: 1.135208
+  type: 'test'
+  ...
+# Subtest: coverage uses LLVM tools from the selected compiler, including spaced paths
+ok 31 - coverage uses LLVM tools from the selected compiler, including spaced paths
+  ---
+  duration_ms: 0.373
+  type: 'test'
+  ...
+# Subtest: coverage refuses an unknown compiler host instead of using Xcode tools
+ok 32 - coverage refuses an unknown compiler host instead of using Xcode tools
+  ---
+  duration_ms: 0.52025
+  type: 'test'
+  ...
+# Subtest: project scanning includes the host build script
+ok 33 - project scanning includes the host build script
+  ---
+  duration_ms: 7.5125
+  type: 'test'
+  ...
+# Subtest: native boundary handles dynamic templates, escaped imports and computed paths
+ok 34 - native boundary handles dynamic templates, escaped imports and computed paths
+  ---
+  duration_ms: 7.538916
+  type: 'test'
+  ...
+# Subtest: frontend native imports are confined to the IPC boundary
+ok 35 - frontend native imports are confined to the IPC boundary
+  ---
+  duration_ms: 0.414333
+  type: 'test'
+  ...
+# Subtest: unsafe Rust stays in the native crate; src-tauri is included
+ok 36 - unsafe Rust stays in the native crate; src-tauri is included
+  ---
+  duration_ms: 0.434333
+  type: 'test'
+  ...
+# Subtest: production panic shortcuts are rejected in every application Rust path
+ok 37 - production panic shortcuts are rejected in every application Rust path
+  ---
+  duration_ms: 0.134459
+  type: 'test'
+  ...
+# Subtest: coverage ignores are rejected even with a reason; lint exceptions need a reason
+ok 38 - coverage ignores are rejected even with a reason; lint exceptions need a reason
+  ---
+  duration_ms: 0.763459
+  type: 'test'
+  ...
+# Subtest: one warmup plus 180 owned starts retain six fixed future-input cases without audio
+ok 39 - one warmup plus 180 owned starts retain six fixed future-input cases without audio
+  ---
+  duration_ms: 28.979417
+  type: 'test'
+  ...
+# Subtest: missing or foreign measurement fails without borrowing endpoint ownership
+ok 40 - missing or foreign measurement fails without borrowing endpoint ownership
+  ---
+  duration_ms: 0.571625
+  type: 'test'
+  ...
+# Subtest: pre-existing developer session is never cancelled by a campaign rejected at preflight
+ok 41 - pre-existing developer session is never cancelled by a campaign rejected at preflight
+  ---
+  duration_ms: 1.186916
+  type: 'test'
+  ...
+# Subtest: unknown start reply is not retried and cannot authorize later endpoint ownership
+ok 42 - unknown start reply is not retried and cannot authorize later endpoint ownership
+  ---
+  duration_ms: 0.2865
+  type: 'test'
+  ...
+# Subtest: all valid observations are retained when a case median exceeds 250ms
+ok 43 - all valid observations are retained when a case median exceeds 250ms
+  ---
+  duration_ms: 27.852833
+  type: 'test'
+  ...
+# Subtest: even median averages middle pair and excludes the single slow warmup
+ok 44 - even median averages middle pair and excludes the single slow warmup
+  ---
+  duration_ms: 22.224625
+  type: 'test'
+  ...
+# Subtest: false final cleanup forces failure even after all measured medians passed
+ok 45 - false final cleanup forces failure even after all measured medians passed
+  ---
+  duration_ms: 20.231167
+  type: 'test'
+  ...
+# Subtest: rejected or unknown start never cancels another caller's later controlled SID
+ok 46 - rejected or unknown start never cancels another caller's later controlled SID
+  ---
+  duration_ms: 0.602709
+  type: 'test'
+  ...
+# Subtest: successful ACK with a failed own record cannot adopt another caller's recording
+ok 47 - successful ACK with a failed own record cannot adopt another caller's recording
+  ---
+  duration_ms: 0.611208
+  type: 'test'
+  ...
+# Subtest: cleanup keeps frozen validated SID and never adopts a later replacement
+ok 48 - cleanup keeps frozen validated SID and never adopts a later replacement
+  ---
+  duration_ms: 0.621
+  type: 'test'
+  ...
+# Subtest: executes declared argv with closed stdin and persists command, hashes and logs
+ok 49 - executes declared argv with closed stdin and persists command, hashes and logs
+  ---
+  duration_ms: 245.135041
+  type: 'test'
+  ...
+# Subtest: resumes only unchanged inputs and existing matching outputs, preserving older attempts
+ok 50 - resumes only unchanged inputs and existing matching outputs, preserving older attempts
+  ---
+  duration_ms: 457.446709
+  type: 'test'
+  ...
+# Subtest: failure blocks only descendants, independent jobs run, unchanged failures are never blindly retried
+ok 51 - failure blocks only descendants, independent jobs run, unchanged failures are never blindly retried
+  ---
+  duration_ms: 298.096333
+  type: 'test'
+  ...
+# Subtest: timeout cleans its process group and lets the next independent job finish
+ok 52 - timeout cleans its process group and lets the next independent job finish
+  ---
+  duration_ms: 352.316833
+  type: 'test'
+  ...
+# Subtest: expired deadline starts no commands and produces an explicit incomplete journal
+ok 53 - expired deadline starts no commands and produces an explicit incomplete journal
+  ---
+  duration_ms: 27.6225
+  type: 'test'
+  ...
+# Subtest: rejects unsafe or ambiguous plans before executing any command
+ok 54 - rejects unsafe or ambiguous plans before executing any command
+  ---
+  duration_ms: 253.003916
+  type: 'test'
+  ...
+# Subtest: missing input blocks only that job and records an immutable manifest
+ok 55 - missing input blocks only that job and records an immutable manifest
+  ---
+  duration_ms: 162.494709
+  type: 'test'
+  ...
+# Subtest: never restarts an unknown prior start, while independent work continues
+ok 56 - never restarts an unknown prior start, while independent work continues
+  ---
+  duration_ms: 310.085875
+  type: 'test'
+  ...
+# Subtest: exclusive state ownership refuses concurrent or stale runners rather than stealing their jobs
+ok 57 - exclusive state ownership refuses concurrent or stale runners rather than stealing their jobs
+  ---
+  duration_ms: 112.68975
+  type: 'test'
+  ...
+# Subtest: SIGTERM persists cleanup and prevents later jobs from starting
+ok 58 - SIGTERM persists cleanup and prevents later jobs from starting
+  ---
+  duration_ms: 83.013583
+  type: 'test'
+  ...
+# Subtest: deadline admission preserves completed receipts and never reexecutes unchanged work
+ok 59 - deadline admission preserves completed receipts and never reexecutes unchanged work
+  ---
+  duration_ms: 297.509084
+  type: 'test'
+  ...
+# Subtest: file entry point binds actor completion and fresh receiver observation
+ok 60 - file entry point binds actor completion and fresh receiver observation
+  ---
+  duration_ms: 4.834125
+  type: 'test'
+  ...
+# Subtest: actor completion does not reject the previous recipient tick
+ok 61 - actor completion does not reject the previous recipient tick
+  ---
+  duration_ms: 0.733041
+  type: 'test'
+  ...
+# Subtest: old success cannot confirm a new delivery
+ok 62 - old success cannot confirm a new delivery
+  ---
+  duration_ms: 0.154625
+  type: 'test'
+  ...
+# Subtest: wrong text, duplicates and shortcut characters never confirm
+ok 63 - wrong text, duplicates and shortcut characters never confirm
+  ---
+  duration_ms: 1.273167
+  type: 'test'
+  ...
+# Subtest: changed recipient, stopped owner and read failure cannot confirm
+ok 64 - changed recipient, stopped owner and read failure cannot confirm
+  ---
+  duration_ms: 0.417583
+  type: 'test'
+  ...
+# Subtest: prepared but not installed proof must fail without signalling or running
+ok 65 - prepared but not installed proof must fail without signalling or running
+  ---
+  duration_ms: 5.299459
+  type: 'test'
+  ...
+# Subtest: preflight performs only read-only verification and never creates run adapters
+ok 66 - preflight performs only read-only verification and never creates run adapters
+  ---
+  duration_ms: 1.983
+  type: 'test'
+  ...
+# Subtest: explicit run wires playback, watchdog cleanup and runner only through controlled test seams
+ok 67 - explicit run wires playback, watchdog cleanup and runner only through controlled test seams
+  ---
+  duration_ms: 1.2255
+  type: 'test'
+  ...
+# Subtest: arguments, unknown config fields and non-installed executable path are rejected
+ok 68 - arguments, unknown config fields and non-installed executable path are rejected
+  ---
+  duration_ms: 1.34525
+  type: 'test'
+  ...
+# Subtest: old proof, wrong PID and open main window cannot authorize a signal
+ok 69 - old proof, wrong PID and open main window cannot authorize a signal
+  ---
+  duration_ms: 5.359959
+  type: 'test'
+  ...
+# Subtest: default feature fingerprint and exact evidence hashes are mandatory
+ok 70 - default feature fingerprint and exact evidence hashes are mandatory
+  ---
+  duration_ms: 2.903208
+  type: 'test'
+  ...
+# Subtest: configuration must be private and cannot be a symlink
+ok 71 - configuration must be private and cannot be a symlink
+  ---
+  duration_ms: 1.016709
+  type: 'test'
+  ...
+# Subtest: signature, Info bundle identity, microphone entitlement and absent LSEnvironment are verified without launching
+ok 72 - signature, Info bundle identity, microphone entitlement and absent LSEnvironment are verified without launching
+  ---
+  duration_ms: 0.772333
+  type: 'test'
+  ...
+# Subtest: failed readiness or an expired preparation assertion cannot enter run factories
+ok 73 - failed readiness or an expired preparation assertion cannot enter run factories
+  ---
+  duration_ms: 3.1645
+  type: 'test'
+  ...
+# Subtest: isolated generated public Cargo checksums do not count as credentials
+ok 74 - isolated generated public Cargo checksums do not count as credentials
+  ---
+  duration_ms: 73.598625
+  type: 'test'
+  ...
+# Subtest: the same checksum-shaped value in application source remains detectable
+ok 75 - the same checksum-shaped value in application source remains detectable
+  ---
+  duration_ms: 26.633833
+  type: 'test'
+  ...
+# Subtest: checksum metadata outside the exact public dependency archive remains detectable
+ok 76 - checksum metadata outside the exact public dependency archive remains detectable
+  ---
+  duration_ms: 33.147
+  type: 'test'
+  ...
+# Subtest: a non-checksum credential shape in that archive remains detectable
+ok 77 - a non-checksum credential shape in that archive remains detectable
+  ---
+  duration_ms: 32.872334
+  type: 'test'
+  ...
+# Subtest: the two verified public source bindings are accepted in their exact reports
+ok 78 - the two verified public source bindings are accepted in their exact reports
+  ---
+  duration_ms: 59.930959
+  type: 'test'
+  ...
+# Subtest: other credential values in those exact reports remain detectable
+ok 79 - other credential values in those exact reports remain detectable
+  ---
+  duration_ms: 127.021333
+  type: 'test'
+  ...
+# Subtest: the same public source digests in application source remain detectable
+ok 80 - the same public source digests in application source remain detectable
+  ---
+  duration_ms: 41.303208
+  type: 'test'
+  ...
+# Subtest: invalid machine identity is rejected before any command or bundle mutation
+ok 81 - invalid machine identity is rejected before any command or bundle mutation
+  ---
+  duration_ms: 2.447958
+  type: 'test'
+  ...
+# Subtest: only the selected main app is signed; strict verification surrounds signing
+ok 82 - only the selected main app is signed; strict verification surrounds signing
+  ---
+  duration_ms: 6.246541
+  type: 'test'
+  ...
+# Subtest: foreign identity and nested executable bundles are rejected before codesign
+ok 83 - foreign identity and nested executable bundles are rejected before codesign
+  ---
+  duration_ms: 6.828167
+  type: 'test'
+  ...
+# Subtest: app-only build normalizes target path and does not pass account credential variables
+ok 84 - app-only build normalizes target path and does not pass account credential variables
+  ---
+  duration_ms: 4.606333
+  type: 'test'
+  ...
+# Subtest: experimental bundle identity is read from this checkout before signing
+ok 85 - experimental bundle identity is read from this checkout before signing
+  ---
+  duration_ms: 57.494833
+  type: 'test'
+  ...
+# Subtest: local MLX release builds through the kernel packaging helper
+ok 86 - local MLX release builds through the kernel packaging helper
+  ---
+  duration_ms: 4.416833
+  type: 'test'
+  ...
+# Subtest: synthetic PCM parser checks known literal bytes without authenticating public speech
+ok 87 - synthetic PCM parser checks known literal bytes without authenticating public speech
+  ---
+  duration_ms: 1.901166
+  type: 'test'
+  ...
+# Subtest: actual public fixture has pinned bytes, PCM format and 300-second sample count
+ok 88 - actual public fixture has pinned bytes, PCM format and 300-second sample count # SKIP ignored public speech fixture unavailable; structural and lifecycle regressions remain active
+  ---
+  duration_ms: 0.220209
+  type: 'test'
+  ...
+# Subtest: wrong sample count is rejected as duration before public hash checking
+ok 89 - wrong sample count is rejected as duration before public hash checking
+  ---
+  duration_ms: 1.920958
+  type: 'test'
+  ...
+# Subtest: production validator rejects synthetic 300-second audio despite valid PCM shape
+ok 90 - production validator rejects synthetic 300-second audio despite valid PCM shape
+  ---
+  duration_ms: 8.30475
+  type: 'test'
+  ...
+# Subtest: start returns after owned spawn, and successful completion makes stop idempotent
+ok 91 - start returns after owned spawn, and successful completion makes stop idempotent
+  ---
+  duration_ms: 1.824333
+  type: 'test'
+  ...
+# Subtest: codec, channel, rate and RIFF/chunk bounds are rejected independently of fixture availability
+ok 92 - codec, channel, rate and RIFF/chunk bounds are rejected independently of fixture availability
+  ---
+  duration_ms: 4.812125
+  type: 'test'
+  ...
+# Subtest: symlink and oversized fixture are rejected before player admission
+ok 93 - symlink and oversized fixture are rejected before player admission
+  ---
+  duration_ms: 1.665208
+  type: 'test'
+  ...
+# Subtest: spawn failure, nonzero exit and early exit zero remain failures at stop
+ok 94 - spawn failure, nonzero exit and early exit zero remain failures at stop
+  ---
+  duration_ms: 1.95875
+  type: 'test'
+  ...
+# Subtest: early stop terminates only owned child, escalates boundedly, and cannot pass
+ok 95 - early stop terminates only owned child, escalates boundedly, and cannot pass
+  ---
+  duration_ms: 0.894792
+  type: 'test'
+  ...
+# Subtest: unconfirmed termination never reports successful cleanup
+ok 96 - unconfirmed termination never reports successful cleanup
+  ---
+  duration_ms: 2.3655
+  type: 'test'
+  ...
+# Subtest: frozen mismatch and repeated start never spawn a second child
+ok 97 - frozen mismatch and repeated start never spawn a second child
+  ---
+  duration_ms: 1.533042
+  type: 'test'
+  ...
+# Subtest: benign owned Node child is actually terminated and reaped; afplay is never launched
+ok 98 - benign owned Node child is actually terminated and reaped; afplay is never launched
+  ---
+  duration_ms: 42.448375
+  type: 'test'
+  ...
+# Subtest: gesture consumption survives a new ledger adapter and different run directory
+ok 99 - gesture consumption survives a new ledger adapter and different run directory
+  ---
+  duration_ms: 56.031958
+  type: 'test'
+  ...
+# Subtest: one gesture runs real observed start before audio and requires warning/autostop/exact receipt
+ok 100 - one gesture runs real observed start before audio and requires warning/autostop/exact receipt
+  ---
+  duration_ms: 6.278917
+  type: 'test'
+  ...
+# Subtest: preflight focus or frozen-identity failure never consumes or prompts
+ok 101 - preflight focus or frozen-identity failure never consumes or prompts
+  ---
+  duration_ms: 1.231833
+  type: 'test'
+  ...
+# Subtest: stale, switched identity, bad warning, duplicate receipt and shortcut characters fail and clean only through injected ownership
+ok 102 - stale, switched identity, bad warning, duplicate receipt and shortcut characters fail and clean only through injected ownership
+  ---
+  duration_ms: 14.285542
+  type: 'test'
+  ...
+# Subtest: recording and result watchdogs never ask for a second gesture
+ok 103 - recording and result watchdogs never ask for a second gesture
+  ---
+  duration_ms: 11.723875
+  type: 'test'
+  ...
+# Subtest: terminal product snapshot waits for newer matching recipient readback
+ok 104 - terminal product snapshot waits for newer matching recipient readback
+  ---
+  duration_ms: 2.171417
+  type: 'test'
+  ...
+# Subtest: real Accessibility focus and signal acknowledgement precede audio
+ok 105 - real Accessibility focus and signal acknowledgement precede audio
+  ---
+  duration_ms: 0.185875
+  type: 'test'
+  ...
+# Subtest: signal-file adapter replaces only its own inode and exposes no arbitrary prompt text
+ok 106 - signal-file adapter replaces only its own inode and exposes no arbitrary prompt text
+  ---
+  duration_ms: 26.889834
+  type: 'test'
+  ...
+# Subtest: private report reader rejects symlinks, wrong permissions, oversize and invalid UTF8
+ok 107 - private report reader rejects symlinks, wrong permissions, oversize and invalid UTF8
+  ---
+  duration_ms: 2.441
+  type: 'test'
+  ...
+# Subtest: prompt failure permanently retains consumed gesture across process restart
+ok 108 - prompt failure permanently retains consumed gesture across process restart
+  ---
+  duration_ms: 13.194667
+  type: 'test'
+  ...
+# Subtest: ready acknowledgement may arrive after first Recording snapshot without starting audio early
+ok 109 - ready acknowledgement may arrive after first Recording snapshot without starting audio early
+  ---
+  duration_ms: 4.271334
+  type: 'test'
+  ...
+# Subtest: a terminal transcript mutation during readback cannot pass
+ok 110 - a terminal transcript mutation during readback cannot pass
+  ---
+  duration_ms: 2.108041
+  type: 'test'
+  ...
+# Subtest: cleanup failure prevents a passed verdict even after exact receipt
+ok 111 - cleanup failure prevents a passed verdict even after exact receipt
+  ---
+  duration_ms: 3.182125
+  type: 'test'
+  ...
+# Subtest: throwing cleanup leaves the independent safety guard armed
+ok 112 - throwing cleanup leaves the independent safety guard armed
+  ---
+  duration_ms: 2.611833
+  type: 'test'
+  ...
+# Subtest: observers near their lifetime limit cannot consume the sole gesture
+ok 113 - observers near their lifetime limit cannot consume the sole gesture
+  ---
+  duration_ms: 0.346084
+  type: 'test'
+  ...
+# Subtest: read-only preflight shares readiness gates without consuming, signalling or arming
+ok 114 - read-only preflight shares readiness gates without consuming, signalling or arming
+  ---
+  duration_ms: 0.186834
+  type: 'test'
+  ...
+# Subtest: transient focus loss while Idle waits without another consumed gesture
+ok 115 - transient focus loss while Idle waits without another consumed gesture
+  ---
+  duration_ms: 3.984875
+  type: 'test'
+  ...
+# Subtest: start observed without focus fails before audio and aborts even an Idle-clean product
+ok 116 - start observed without focus fails before audio and aborts even an Idle-clean product
+  ---
+  duration_ms: 0.3505
+  type: 'test'
+  ...
+# Subtest: unfocused Idle waiting retains the original deadline and rejects stale identity
+ok 117 - unfocused Idle waiting retains the original deadline and rejects stale identity
+  ---
+  duration_ms: 3.121209
+  type: 'test'
+  ...
+# Subtest: failed final signal after the prompt still aborts the bound product
+ok 118 - failed final signal after the prompt still aborts the bound product
+  ---
+  duration_ms: 3.782459
+  type: 'test'
+  ...
+# Subtest: disarm failure revokes a published success and requests bound abort
+ok 119 - disarm failure revokes a published success and requests bound abort
+  ---
+  duration_ms: 1.471417
+  type: 'test'
+  ...
+# Subtest: preflight and arm bind actual configuration and independent spawn before disarm
+ok 120 - preflight and arm bind actual configuration and independent spawn before disarm
+  ---
+  duration_ms: 24.272542
+  type: 'test'
+  ...
+# Subtest: unknown terminal reason cannot prove cleanup
+ok 121 - unknown terminal reason cannot prove cleanup
+  ---
+  duration_ms: 11.930625
+  type: 'test'
+  ...
+# Subtest: preflight rejects helper hash mismatch, stale product and wrong product identity without spawning
+ok 122 - preflight rejects helper hash mismatch, stale product and wrong product identity without spawning
+  ---
+  duration_ms: 4.573792
+  type: 'test'
+  ...
+# Subtest: non-idle cleanup requests abort and requires confirmed terminal exit
+ok 123 - non-idle cleanup requests abort and requires confirmed terminal exit
+  ---
+  duration_ms: 23.949916
+  type: 'test'
+  ...
+# Subtest: reported failed cleanup and helper loss never become clean
+ok 124 - reported failed cleanup and helper loss never become clean
+  ---
+  duration_ms: 82.981875
+  type: 'test'
+  ...
+# Subtest: disarm refuses a live recording and missing acknowledgement is bounded
+ok 125 - disarm refuses a live recording and missing acknowledgement is bounded
+  ---
+  duration_ms: 59.677833
+  type: 'test'
+  ...
+# Subtest: wrong watchdog process identity cannot supply a terminal cleanup proof
+ok 126 - wrong watchdog process identity cannot supply a terminal cleanup proof
+  ---
+  duration_ms: 11.921583
+  type: 'test'
+  ...
+# Subtest: existing output directory or foreign owner marker cannot be reused
+ok 127 - existing output directory or foreign owner marker cannot be reused
+  ---
+  duration_ms: 2.235084
+  type: 'test'
+  ...
+# Subtest: opt-in real native helper arms and disarms around an owned benign Node process
+ok 128 - opt-in real native helper arms and disarms around an owned benign Node process # SKIP
+  ---
+  duration_ms: 0.459125
+  type: 'test'
+  ...
+# Subtest: explicit abort terminates the bound product even when it is Idle
+ok 129 - explicit abort terminates the bound product even when it is Idle
+  ---
+  duration_ms: 11.538542
+  type: 'test'
+  ...
+# Subtest: inspect accepts only bounded own-field metadata, without text or session authority
+ok 130 - inspect accepts only bounded own-field metadata, without text or session authority
+  ---
+  duration_ms: 15.951875
+  type: 'test'
+  ...
+# Subtest: one bounded request preserves operation/session and accepts fragmented sanitized reply
+ok 131 - one bounded request preserves operation/session and accepts fragmented sanitized reply
+  ---
+  duration_ms: 10.895625
+  type: 'test'
+  ...
+# Subtest: malformed, mismatched and extra-field replies fail without echoing payload
+ok 132 - malformed, mismatched and extra-field replies fail without echoing payload
+  ---
+  duration_ms: 26.979042
+  type: 'test'
+  ...
+# Subtest: oversized reply, multiple records and unfinished record are rejected
+ok 133 - oversized reply, multiple records and unfinished record are rejected
+  ---
+  duration_ms: 21.203292
+  type: 'test'
+  ...
+# Subtest: timeout and early close reject, close owned client and never retry command
+ok 134 - timeout and early close reject, close owned client and never retry command
+  ---
+  duration_ms: 47.470667
+  type: 'test'
+  ...
+# Subtest: operation/session errors and nonprivate directories are rejected before connection
+ok 135 - operation/session errors and nonprivate directories are rejected before connection
+  ---
+  duration_ms: 0.701167
+  type: 'test'
+  ...
+# Subtest: server rejection returns only a generic error and no untrusted error text
+ok 136 - server rejection returns only a generic error and no untrusted error text
+  ---
+  duration_ms: 0.679333
+  type: 'test'
+  ...
+# Subtest: CLI parser uses only explicit env/flag directory and keeps owned session fields
+ok 137 - CLI parser uses only explicit env/flag directory and keeps owned session fields
+  ---
+  duration_ms: 0.743167
+  type: 'test'
+  ...
+# Subtest: untrusted socket mode is rejected before sending a command
+ok 138 - untrusted socket mode is rejected before sending a command
+  ---
+  duration_ms: 0.528625
+  type: 'test'
+  ...
+# Subtest: host start keeps exact status and passive observation excludes arbitrary payloads
+ok 139 - host start keeps exact status and passive observation excludes arbitrary payloads
+  ---
+  duration_ms: 13.242542
+  type: 'test'
+  ...
+# Subtest: handoff observation remains bounded passive metadata with no text or target authority
+ok 140 - handoff observation remains bounded passive metadata with no text or target authority
+  ---
+  duration_ms: 10.84025
+  type: 'test'
+  ...
+# Subtest: usage text alone cannot authorize hardened-runtime audio input
+ok 141 - usage text alone cannot authorize hardened-runtime audio input
+  ---
+  duration_ms: 0.52525
+  type: 'test'
+  ...
+# Subtest: a signed audio entitlement cannot replace the usage explanation
+ok 142 - a signed audio entitlement cannot replace the usage explanation
+  ---
+  duration_ms: 0.055625
+  type: 'test'
+  ...
+# Subtest: different code under an identical verified requirement is only eligible for a live permission retest
+ok 143 - different code under an identical verified requirement is only eligible for a live permission retest
+  ---
+  duration_ms: 1.431958
+  type: 'test'
+  ...
+# Subtest: a changed certificate anchor cannot pass continuity
+ok 144 - a changed certificate anchor cannot pass continuity
+  ---
+  duration_ms: 0.142875
+  type: 'test'
+  ...
+# Subtest: ad hoc, missing, unverified or identical code cannot masquerade as an update proof
+ok 145 - ad hoc, missing, unverified or identical code cannot masquerade as an update proof
+  ---
+  duration_ms: 0.602458
+  type: 'test'
+  ...
+# Subtest: metadata parsing alone does not claim cryptographic verification
+ok 146 - metadata parsing alone does not claim cryptographic verification
+  ---
+  duration_ms: 0.095333
+  type: 'test'
+  ...
+# Subtest: option-shaped input is rejected as a bundle path before invoking codesign
+ok 147 - option-shaped input is rejected as a bundle path before invoking codesign
+  ---
+  duration_ms: 0.142417
+  type: 'test'
+  ...
+1..147
+# tests 147
+# suites 0
+# pass 145
+# fail 0
+# cancelled 0
+# skipped 2
+# todo 0
+# duration_ms 2649.7425

@@ -1,0 +1,23 @@
+   Compiling whisper-rs-sys v0.15.0 (/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/vendor/whisper-rs-sys)
+   Compiling macos-integration v0.1.0 (/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/crates/macos-integration)
+   Compiling whisper-rs v0.16.0 (/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/vendor/whisper-rs)
+   Compiling everlast-dictation v0.1.0 (/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.36s
+     Running unittests src/lib.rs (/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/debug/deps/everlast_dictation-1c5a802f858b4399)
+
+running 12 tests
+test native_service::tests::abandoned_main_request_releases_slot_when_scheduler_drops_it ... ok
+test native_service::tests::abandoned_request_revokes_the_real_send_token ... ok
+test native_service::tests::cancel_during_backup_never_installs_and_service_accepts_next_capture ... ok
+test native_service::tests::cancel_while_waiting_for_previous_restore_does_not_stop_service ... ok
+test native_service::tests::delivery_uses_three_fresh_checks_and_cleans_once_on_shutdown ... ok
+test native_service::tests::held_modifiers_time_out_without_reading_or_changing_clipboard ... ok
+test native_service::tests::missing_start_target_cannot_be_replaced_by_a_retry_or_fresh_token ... ok
+test native_service::tests::native_success_and_deferred_cleanup_are_acknowledged ... ok
+test native_service::tests::restore_wait_honors_future_deadline_and_skips_precommit_due_time ... ok
+test native_service::tests::successful_send_commit_is_not_mistaken_for_cancel_before_reply ... ok
+test native_service::tests::timed_out_committed_send_leaves_cleanup_to_native_owner ... ok
+test native_service::tests::timed_out_main_request_remains_bounded_until_its_closure_is_released ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 235 filtered out; finished in 2.19s
+

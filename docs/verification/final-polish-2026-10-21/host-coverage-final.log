@@ -1,0 +1,30 @@
+   Compiling everlast-dictation v0.1.0 (/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.64s
+     Running unittests src/lib.rs (/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/debug/deps/everlast_dictation-28c34c90af89a711)
+{
+  "native_service.rs": {
+    "lines": 70.13081395348837,
+    "count": 1376,
+    "covered": 965
+  },
+  "controller.rs": {
+    "lines": 95.21988527724665,
+    "count": 523,
+    "covered": 498
+  },
+  "runtime.rs": {
+    "lines": 89.20863309352518,
+    "count": 2224,
+    "covered": 1984
+  },
+  "setup.rs": {
+    "lines": 78.44905320108205,
+    "count": 1109,
+    "covered": 870
+  },
+  "desktop.rs": {
+    "lines": 59.990507831039395,
+    "count": 2107,
+    "covered": 1264
+  }
+}

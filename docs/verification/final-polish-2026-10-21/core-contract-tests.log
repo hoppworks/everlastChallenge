@@ -1,0 +1,69 @@
+   Compiling dictation-core v0.1.0 (/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/crates/dictation-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.44s
+     Running tests/audio.rs (/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/debug/deps/audio-9f0c2554e0e4076f)
+
+running 3 tests
+test quiet_pcm16_signal_is_not_discarded_before_inference ... ok
+test silence_is_empty_but_a_short_quiet_utterance_retains_its_edges ... ok
+test flush_preserves_a_short_stereo_utterance_at_device_rate ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/audio_properties.rs (/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/debug/deps/audio_properties-53984e7e3a98f55c)
+
+running 5 tests
+test invalid_formats_and_samples_fail_without_manufactured_audio ... ok
+test isolated_impulses_preserve_time_polarity_and_downmix_gain ... ok
+test filtering_rejects_downsample_aliases_and_upsample_images ... ok
+test supported_rates_preserve_duration_passband_and_chunk_continuity ... ok
+test journal_has_a_hard_five_minute_boundary ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/confirmed_pauses.rs (/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/debug/deps/confirmed_pauses-12611518254fddc1)
+
+running 5 tests
+test voice_hysteresis_and_partial_window_survive_callback_and_seal_boundaries ... ok
+test confirmation_is_500ms_with_tail_and_no_repeated_silence_jobs ... ok
+test unstable_or_already_sealed_ranges_are_rejected_without_losing_audio ... ok
+test sealed_44100_output_and_final_flush_equal_the_unsegmented_dsp_exactly ... ok
+test uninterrupted_300_seconds_have_no_safe_cut_and_exact_final_pcm ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running tests/recording_limits.rs (/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/debug/deps/recording_limits-cb9fdebfc6236268)
+
+running 3 tests
+test exact_deadline_or_delayed_first_poll_stops_permanently ... ok
+test frame_capacity_stops_early_and_a_fresh_session_resets_both_limits ... ok
+test warning_occurs_once_at_exactly_270_seconds ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/session.rs (/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/debug/deps/session-c17fd08eb5f3dce2)
+
+running 6 tests
+test failures_wait_for_release_and_allow_a_new_session_after_cleanup ... ok
+test cancel_waits_only_for_microphone_release_and_never_delivers_stale_text ... ok
+test clearing_retained_text_does_not_cancel_a_new_recording ... ok
+test stop_during_start_and_duplicate_worker_facts_complete_only_once ... ok
+test recording_finalizes_after_release_and_keeps_the_window_result ... ok
+test held_feedback_survives_clear_and_restart_without_deduplicating_equal_text ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/session_invariants.rs (/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/debug/deps/session_invariants-7d5efd7c459f71a1)
+
+running 9 tests
+test empty_failed_and_cancelled_sessions_keep_the_previous_text_until_replaced ... ok
+test current_audio_cleanup_failure_after_cancel_stays_visible_without_new_work ... ok
+test cancellation_after_audio_release_does_not_wait_for_inference_or_delivery ... ok
+test all_active_phases_reject_new_starts_without_consuming_identity ... ok
+test every_delivery_outcome_preserves_text_and_ignores_a_second_completion ... ok
+test cancellation_before_release_ignores_work_results_and_requires_the_audio_barrier ... ok
+test stop_is_idempotent_in_every_phase_and_starting_remembers_it_once ... ok
+test obsolete_controls_and_all_worker_fact_types_are_inert_in_every_phase ... ok
+test repeated_cancel_restart_sequences_never_adopt_old_work ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

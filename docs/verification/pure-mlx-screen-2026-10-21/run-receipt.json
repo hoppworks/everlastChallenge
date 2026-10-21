@@ -1,0 +1,36 @@
+[
+  {
+    "name": "hybrid",
+    "args": [
+      "/usr/bin/time",
+      "-l",
+      "/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/release/examples/corpus_probe",
+      "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/models/mlx-q5-coefficients-f32/weights.safetensors",
+      "mlx-fp16",
+      "/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/artifacts/pure-mlx-screen/manifest.json",
+      "/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/artifacts/pure-mlx-screen/hybrid.json",
+      "--mlx-reference-encoder"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "processSeconds": 4.053284459,
+    "maxResidentBytes": 1343356928
+  },
+  {
+    "name": "mlx",
+    "args": [
+      "/usr/bin/time",
+      "-l",
+      "/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/release/examples/corpus_probe",
+      "/Users/hoppworks/projects/everlastChallenge-mlx/artifacts/models/mlx-turbo-fp16/weights.safetensors",
+      "mlx-fp16",
+      "/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/artifacts/pure-mlx-screen/manifest.json",
+      "/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/artifacts/pure-mlx-screen/mlx.json",
+      "--mlx-single-window-text"
+    ],
+    "exitCode": 0,
+    "timedOut": false,
+    "processSeconds": 2.9559954170000005,
+    "maxResidentBytes": 1736900608
+  }
+]

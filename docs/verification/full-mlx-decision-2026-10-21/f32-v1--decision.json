@@ -1,0 +1,1 @@
+{"status":"rejected","reason":"FP32 DE-clean51/915 exceeds reference46/915; higher arithmetic precision did not remove the regression"}

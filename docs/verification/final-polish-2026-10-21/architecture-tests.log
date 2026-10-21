@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: frontend refuses reverse dependencies, indirect native imports and cycles
+ok 1 - frontend refuses reverse dependencies, indirect native imports and cycles
+  ---
+  duration_ms: 2.572625
+  type: 'test'
+  ...
+# Subtest: core cannot acquire OS or inference dependencies, including build-time ones
+ok 2 - core cannot acquire OS or inference dependencies, including build-time ones
+  ---
+  duration_ms: 0.131291
+  type: 'test'
+  ...
+# Subtest: native edits, additions and deletions cannot bypass incremental build coverage
+ok 3 - native edits, additions and deletions cannot bypass incremental build coverage
+  ---
+  duration_ms: 0.068083
+  type: 'test'
+  ...
+# Subtest: production features cannot hide controls behind aliases or cycles
+ok 4 - production features cannot hide controls behind aliases or cycles
+  ---
+  duration_ms: 0.163833
+  type: 'test'
+  ...
+# Subtest: dependency feature requests and native defaults cannot enable test controls
+ok 5 - dependency feature requests and native defaults cannot enable test controls
+  ---
+  duration_ms: 0.054125
+  type: 'test'
+  ...
+# Subtest: incoming dependency feature aliases are followed across crate boundaries
+ok 6 - incoming dependency feature aliases are followed across crate boundaries
+  ---
+  duration_ms: 0.036083
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 170.862958

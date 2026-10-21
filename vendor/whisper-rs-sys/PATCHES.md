@@ -223,3 +223,13 @@ about 0.02ms. GPU synchronization and resource ownership are unchanged.
 `build.rs` now synchronizes and watches the modified Metal source and its CMake
 file as well as the existing bridge files. Otherwise an incremental build could
 silently compile stale copies from `OUT_DIR`.
+
+
+## Enforced incremental inputs (21 October 2026)
+
+`native-inputs.txt` is the common source for rerun tracking and synchronization
+into an existing OUT_DIR. The architecture check compares all native files with
+the SHA-256 inventory derived from the pinned original crates.io archive. A
+changed or added native source outside this list fails the check; unsupported
+removals also fail. Historical manual-clean advice above describes earlier
+builds and is not the current incremental-build contract.

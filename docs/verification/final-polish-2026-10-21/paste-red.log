@@ -1,0 +1,24 @@
+   Compiling everlast-dictation v0.1.0 (/Users/hoppworks/.codex/worktrees/mlx-typescript-integration/everlastChallenge/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.06s
+     Running unittests src/lib.rs (/Users/hoppworks/projects/everlastChallenge-mlx-plan/.scratch/main-integration/execution/cargo-target/debug/deps/everlast_dictation-1c5a802f858b4399)
+
+running 1 test
+test native_service::tests::timed_out_committed_send_leaves_cleanup_to_native_owner ... FAILED
+
+failures:
+
+---- native_service::tests::timed_out_committed_send_leaves_cleanup_to_native_owner stdout ----
+
+thread 'native_service::tests::timed_out_committed_send_leaves_cleanup_to_native_owner' (17697375) panicked at src-tauri/src/native_service.rs:1582:9:
+assertion `left == right` failed: unacknowledged send must not restore on the main thread
+  left: 1
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    native_service::tests::timed_out_committed_send_leaves_cleanup_to_native_owner
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 245 filtered out; finished in 0.05s
+
+error: test failed, to rerun pass `-p everlast-dictation --lib`
