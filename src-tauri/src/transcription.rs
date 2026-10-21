@@ -16,7 +16,7 @@ pub mod profile;
 
 #[cfg(feature = "measurement")]
 pub mod prefix_cache;
-#[cfg(not(feature = "measurement"))]
+#[cfg(all(test, not(feature = "measurement")))]
 pub(crate) mod prefix_cache;
 
 #[cfg(feature = "measurement")]

@@ -81,6 +81,7 @@ impl DecodeContext {
         self.token.is_valid()
     }
 
+    #[cfg(any(test, feature = "measurement"))]
     pub(crate) fn same_epoch(&self, other: &Self) -> bool {
         self.session == other.session
             && self.generation == other.generation
@@ -218,6 +219,7 @@ impl InferenceService {
             crate::pipeline::Policy::Reference => {
                 Self::with_initializer(move || Engine::load(&path, definition))
             }
+            #[cfg(any(test, feature = "measurement"))]
             crate::pipeline::Policy::FullPrefix => Self::with_initializer(move || {
                 crate::transcription::prefix_cache::PrefixCacheDecoder::load(&path, definition)
             }),

@@ -1218,6 +1218,7 @@ impl<A: AudioDriver> Actor<A> {
                 .map_err(service_error)?;
             self.execute(actions)?;
         }
+        #[cfg(any(test, feature = "measurement"))]
         let epoch = if self.audio.policy() == crate::pipeline::Policy::FullPrefix {
             self.controller.prefix_available()
         } else {
@@ -1233,6 +1234,8 @@ impl<A: AudioDriver> Actor<A> {
                 None
             }
         };
+        #[cfg(not(any(test, feature = "measurement")))]
+        let epoch: Option<u64> = None;
         if let Some(epoch) = epoch
             && self
                 .inference
