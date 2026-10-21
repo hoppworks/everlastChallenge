@@ -28,9 +28,12 @@ diesen Nachtrag. Fremde Copyrightangaben werden nicht umgeschrieben.
 
 Die Quelltexte und Abhängigkeitsversionen der Anwendung bleiben unverändert.
 Der neue lokale Paketstand unter `artifacts/delivery-licenses-2026-10-21/`
-enthält die ergänzten Lizenzressourcen und wird neu lokal signiert. Die
+enthält die ergänzten Lizenzressourcen und wurde neu lokal signiert. Die
 ursprünglichen Runtimebelege gelten weiter für unveränderten Code; es wird
-kein neuer Mikrofon-/Transkriptionslauf behauptet. Das Paketprotokoll prüft
-Lizenzhashes, Signatur, ZIP-Rückextraktion und die vollständige Main-Historie.
+kein neuer Mikrofon-/Transkriptionslauf behauptet. Das Paketprotokoll bestätigt Lizenzhashes, Signatur und ZIP-Rückextraktion.
+Nach Entfernung der Signatur sind die alten und neuen Executable-Dateien bytegleich;
+die MLX-Metallib ist unverändert. Das Bundle enthält die vollständige bereinigte
+Main-Historie. `npm run check:fast` und die Quell-/Historien-Geheimnisscans sind
+erfolgreich. Die installierte App wurde nicht ersetzt.
 
 ## Verbleibende Grenze
