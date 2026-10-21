@@ -43,3 +43,26 @@ app build are required before installation. No ASR corpus, timing campaign or
 model comparison needs repeating because of these diagnostic-only changes.
 A new trace and a known physical keypress are still needed to identify the
 reported global failure.
+
+## Installed candidate and initial observation
+
+Diagnostic source commit: `e4ea631beb737adc82148ce051e5c7df99d40181`.
+Installed executable SHA-256:
+`f8e27c8f7b825c4aed2e90d5e94cbbd817cc58e9bd48df6c9291ec7693d2c1d7`.
+The prior installed bundle is retained at
+`artifacts/hotkey-diagnosis-2026-10-21/before-diagnostics.app`.
+The signed bundle passed strict signature verification. The diagnostic unit test,
+`check:fast`, and release-target library Clippy with `-D warnings` passed.
+Independent review found no remaining blocking issue after its corrections.
+
+The initial installed trace records successful toggle registration, followed by
+Escape registration and arming during a UI-started recording, then removal after
+an in-app Escape cancellation. The synthetic Option+D and Escape actions did
+not generate `native_pressed` records, and the trace has no `incomplete` marker.
+This confirms that this automation route does not exercise the global shortcut
+callback. It does **not** prove how a physical keypress behaves. The test recording
+was cancelled; the installed app was left idle with diagnostics enabled.
+
+Detailed local receipts and the initial trace are retained under
+`artifacts/hotkey-diagnosis-2026-10-21/`. The earlier delivery ZIP remains the
+previous release candidate and has not been relabeled as a hotkey-fixed release.
