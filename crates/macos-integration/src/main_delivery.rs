@@ -11,7 +11,7 @@ use crate::{
 };
 use objc2::MainThreadMarker;
 use objc2_app_kit::NSPasteboard;
-use std::{cell::RefCell, num::NonZeroU64};
+use std::{cell::RefCell, num::NonZeroU64, time::Instant};
 
 pub enum Command {
     Environment,
@@ -49,6 +49,8 @@ pub enum Reply {
     Installed,
     Sent,
     Cleaned(Option<RestoreOutcome>),
+    /// The caller must wait off the main thread and retry; the native lease is retained.
+    CleanupDeferred(Instant),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -84,6 +86,19 @@ struct Entry {
 }
 thread_local! {
     static CURRENT: RefCell<Option<Entry>> = const { RefCell::new(None) };
+}
+
+fn after_read_window(
+    restore_after: Option<Instant>,
+    now: Instant,
+    restore: impl FnOnce() -> Result<Reply, MainError>,
+) -> Result<Reply, MainError> {
+    if let Some(deadline) = restore_after
+        && now < deadline
+    {
+        return Ok(Reply::CleanupDeferred(deadline));
+    }
+    restore()
 }
 
 /// Call from an application-main-thread closure. No AppKit owner leaves this function.
@@ -147,13 +162,19 @@ pub fn dispatch(command: Command) -> Result<Reply, MainError> {
                 if current.as_ref().is_none_or(|entry| entry.session != session) {
                     return Ok(Reply::Cleaned(None));
                 }
-                let entry = current.take().ok_or(MainError::Stale)?;
-                let restored = match entry.stage {
-                    Stage::Prepared { .. } => None,
-                    Stage::Installed(ready) => Some(ready.discard(main)?),
-                    Stage::Sent(sent) => Some(sent.restore(main)?),
+                let restore_after = match current.as_ref().map(|entry| &entry.stage) {
+                    Some(Stage::Sent(sent)) => Some(sent.restore_after()),
+                    _ => None,
                 };
-                Ok(Reply::Cleaned(restored))
+                after_read_window(restore_after, Instant::now(), || {
+                    let entry = current.take().ok_or(MainError::Stale)?;
+                    let restored = match entry.stage {
+                        Stage::Prepared { .. } => None,
+                        Stage::Installed(ready) => Some(ready.discard(main)?),
+                        Stage::Sent(sent) => Some(sent.restore(main)?),
+                    };
+                    Ok(Reply::Cleaned(restored))
+                })
             }
         }
     })
@@ -162,6 +183,35 @@ pub fn dispatch(command: Command) -> Result<Reply, MainError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn sent_read_window_defers_restoration_until_deadline_without_consuming_lease()
+    -> Result<(), MainError> {
+        let posted = Instant::now();
+        let deadline = posted + std::time::Duration::from_millis(500);
+        let consumed = std::cell::Cell::new(false);
+        for now in [posted, deadline - std::time::Duration::from_nanos(1)] {
+            let reply = after_read_window(Some(deadline), now, || {
+                consumed.set(true);
+                Ok(Reply::Cleaned(None))
+            })?;
+            assert!(matches!(reply, Reply::CleanupDeferred(value) if value == deadline));
+            assert!(!consumed.get());
+        }
+        assert!(matches!(
+            after_read_window(Some(deadline), deadline, || {
+                consumed.set(true);
+                Ok(Reply::Cleaned(None))
+            })?,
+            Reply::Cleaned(_)
+        ));
+        assert!(consumed.get());
+        assert!(matches!(
+            after_read_window(None, posted, || Ok(Reply::Cleaned(None)))?,
+            Reply::Cleaned(_)
+        ));
+        Ok(())
+    }
 
     #[test]
     fn background_dispatch_cannot_access_appkit_state() -> Result<(), Box<dyn std::error::Error>> {
