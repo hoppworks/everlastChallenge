@@ -32,8 +32,8 @@ export function RecoveryView({
         Einstellungen können nicht geladen werden
       </h1>
       <p>
-        Die gespeicherten Einstellungen können nicht verwendet werden. Aufnahme und
-        Modelleinrichtung bleiben gesperrt, bis du die Einstellungen
+        Die gespeicherten Einstellungen können nicht verwendet werden. Aufnahme
+        und Modelleinrichtung bleiben gesperrt, bis du die Einstellungen
         zurücksetzt.
       </p>
       {reason && <p>{reason}</p>}

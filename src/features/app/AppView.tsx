@@ -1,6 +1,6 @@
 import "./styles.css";
 
-export type SetupPhase =
+type SetupPhase =
   | "Missing"
   | "Checking"
   | "Downloading"
@@ -9,20 +9,20 @@ export type SetupPhase =
   | "Cancelled"
   | "Ready"
   | "Failed";
-export type SessionPhase =
+type SessionPhase =
   | "Idle"
   | "Starting"
   | "Recording"
   | "Finalizing"
   | "Delivering"
   | "Cancelling";
-export type PermissionStatus =
+type PermissionStatus =
   | "granted"
   | "denied"
   | "notDetermined"
   | "restricted"
   | "unavailable";
-export type SessionOutcome =
+type SessionOutcome =
   | { kind: "local" | "empty" | "sent" | "cancelled" }
   | { kind: "held" | "failed"; message: string };
 

@@ -39,3 +39,10 @@ condition = "AND"
 targetRules = ["generic-api-key"]
 paths = ['''(^|/)artifacts/implementation/mlx-f16-central-three-arm-readback\.json$''']
 regexes = ['''^e663ac0710ad8355d9fea276a710089773f843c416cc9bd182a3178da10f5262$''']
+
+[[allowlists]]
+description = "Historical public corpus prose after Hypothesentokens, not a credential; exact value and document only."
+condition = "AND"
+targetRules = ["generic-api-key"]
+paths = ['''(^|/)docs/execution-log\.md$''']
+regexes = ['''^beideDE1662Aussagen$''']

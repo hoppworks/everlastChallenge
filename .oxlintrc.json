@@ -1,10 +1,23 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "react", "vitest", "import"],
-  "categories": { "correctness": "error" },
+  "plugins": ["typescript", "react", "vitest", "import", "jsx-a11y"],
+  "categories": {
+    "correctness": "error"
+  },
   "rules": {
     "typescript/ban-ts-comment": "error",
-    "vitest/no-disabled-tests": "error"
+    "vitest/no-disabled-tests": "error",
+    "no-eval": "error",
+    "no-var": "error",
+    "react/rules-of-hooks": "error",
+    "vitest/no-focused-tests": "error",
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/aria-props": "error",
+    "jsx-a11y/aria-proptypes": "error",
+    "jsx-a11y/aria-role": "error",
+    "jsx-a11y/aria-unsupported-elements": "error",
+    "jsx-a11y/label-has-associated-control": "error",
+    "jsx-a11y/prefer-tag-over-role": "off"
   },
   "ignorePatterns": ["dist", "coverage", "src-tauri/gen", "tests/guardrails"]
 }

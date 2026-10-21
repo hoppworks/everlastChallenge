@@ -20,7 +20,8 @@ test("coverage uses LLVM tools from the selected compiler, including spaced path
     assert.fail("Unexpected compiler query");
   };
   assert.deepEqual(resolveRustCoverageTools(compiler), {
-    profdata: "/compiler with spaces/lib/rustlib/aarch64-apple-darwin/bin/llvm-profdata",
+    profdata:
+      "/compiler with spaces/lib/rustlib/aarch64-apple-darwin/bin/llvm-profdata",
     cov: "/compiler with spaces/lib/rustlib/aarch64-apple-darwin/bin/llvm-cov",
   });
 });

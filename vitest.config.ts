@@ -11,7 +11,7 @@ export default defineConfig({
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
       exclude: [
-        ...policy.exclusions.map((item) => item.path),
+        ...policy.exclusions.map((item: { path: string }) => item.path),
         "src/**/*.test.{ts,tsx}",
       ],
       reporter: ["text", "json-summary"],

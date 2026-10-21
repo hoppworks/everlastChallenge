@@ -31,10 +31,7 @@
     "sha256": "e92e68bde1a47e6b221d6e995a61d8c092dc4e19a32856ec3cb59a827569e084",
     "effectiveReleasedFilesTreeSha256": "71faebc7011bca40a86e928a398a07be4a36572124c1ad2e0c7237b79b9695e3",
     "fileCount": 1100,
-    "excludedAddedFiles": [
-      "EVERLAST-PATCH.json",
-      "EVERLAST-PATCH.md"
-    ],
+    "excludedAddedFiles": ["EVERLAST-PATCH.json", "EVERLAST-PATCH.md"],
     "definition": "SHA256 of UTF-8 compact JSON (sort_keys=True,ensure_ascii=False,separators comma/colon), regular archive files as objects path/sha256; list sorted by full relative path string (Unicode lexical); excludes Cargo cache marker and added application receipts; no fetched outputs"
   }
 }

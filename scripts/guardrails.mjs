@@ -44,6 +44,32 @@ export function inspectSource(file, source) {
     };
     visit(tree);
   }
+  if (/\.tsx?$/u.test(file)) {
+    const tree = ts.createSourceFile(
+      file,
+      source,
+      ts.ScriptTarget.Latest,
+      true,
+    );
+    const visit = (node) => {
+      if (ts.isCatchClause(node) && node.block.statements.length === 0)
+        errors.push(`${file}: empty catch discards a failure`);
+      if (ts.isCallExpression(node)) {
+        const callee = node.expression.getText(tree);
+        if (
+          /^(?:test|it|describe)\.(?:only|skip)(?:\.|$)/u.test(callee) ||
+          /^(?:xit|xdescribe|xtest)$/u.test(callee)
+        )
+          errors.push(`${file}: focused or skipped test is forbidden`);
+        if (!/\.test\.tsx?$/u.test(file) && callee === "Math.random")
+          errors.push(`${file}: use crypto randomness for identifiers`);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(tree);
+    if (/prettier-ignore|@ts-(?:ignore|expect-error|nocheck)/u.test(source))
+      errors.push(`${file}: formatting/type suppression is forbidden`);
+  }
   if (
     file.endsWith(".rs") &&
     !file.startsWith("crates/macos-integration/") &&
@@ -63,7 +89,7 @@ export function inspectSource(file, source) {
     );
   }
   for (const line of source.split("\n")) {
-    if (/\boxlint-disable/u.test(line) && !/--\s*\S.+/u.test(line)) {
+    if (/\b(?:oxlint|eslint)-disable/u.test(line) && !/--\s*\S.+/u.test(line)) {
       errors.push(`${file}: lint exception needs a reason after --`);
     }
   }

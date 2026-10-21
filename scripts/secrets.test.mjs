@@ -100,3 +100,67 @@ test("the same public source digests in application source remain detectable", (
   for (const { digest } of sourceBindings)
     assert.equal(scan("src/credentials.rs", `const API_KEY = "${digest}";`), 1);
 });
+
+test("publication snapshot excludes ignored artifacts but includes tracked and new source", async () => {
+  const { stageSource } = await import("./secrets.mjs");
+  const directory = fs.mkdtempSync(
+    path.join(os.tmpdir(), "everlast-publishable-"),
+  );
+  const output = fs.mkdtempSync(path.join(os.tmpdir(), "everlast-staged-"));
+  try {
+    const git = (...args) => {
+      const result = spawnSync("git", args, {
+        cwd: directory,
+        encoding: "utf8",
+      });
+      assert.equal(result.status, 0, result.stderr);
+    };
+    git("init", "--quiet");
+    fs.writeFileSync(
+      path.join(directory, ".gitignore"),
+      "artifacts/\ntracked.txt\n",
+    );
+    fs.mkdirSync(path.join(directory, "artifacts"));
+    fs.writeFileSync(
+      path.join(directory, "artifacts", "private-backup.txt"),
+      "not publishable",
+    );
+    fs.writeFileSync(path.join(directory, "tracked.txt"), "tracked data");
+    fs.writeFileSync(path.join(directory, "new source.txt"), "new source");
+    git("add", "--force", "tracked.txt");
+    stageSource(directory, output);
+    assert.equal(
+      fs.readFileSync(path.join(output, "tracked.txt"), "utf8"),
+      "tracked data",
+    );
+    assert.equal(
+      fs.readFileSync(path.join(output, "new source.txt"), "utf8"),
+      "new source",
+    );
+    assert.equal(fs.existsSync(path.join(output, "artifacts")), false);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+    fs.rmSync(output, { recursive: true, force: true });
+  }
+});
+
+test("the historical public corpus sentence is not a credential", () => {
+  assert.equal(
+    scan(
+      "docs/execution-log.md",
+      "335Hypothesentokens,\nbeideDE1662Aussagen fehlen weiterhin.",
+    ),
+    0,
+  );
+  assert.equal(
+    scan("docs/execution-log.md", `const API_KEY = "${nonChecksum}";`),
+    1,
+  );
+  assert.equal(
+    scan(
+      "src/credentials.ts",
+      "335Hypothesentokens,\nbeideDE1662Aussagen fehlen weiterhin.",
+    ),
+    1,
+  );
+});

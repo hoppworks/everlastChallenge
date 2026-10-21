@@ -130,3 +130,36 @@ test("coverage ignores are rejected even with a reason; lint exceptions need a r
     [],
   );
 });
+
+test("TypeScript review escapes and silent error handling are rejected", () => {
+  for (const source of [
+    "try { work(); } catch {}",
+    "// eslint-disable-next-line no-eval",
+    "// prettier-ignore",
+    "// @ts-expect-error hidden type failure",
+    "const token = Math.random();",
+  ]) {
+    assert.notDeepEqual(inspectSource("src/example.ts", source), [], source);
+  }
+  assert.deepEqual(
+    inspectSource(
+      "src/example.ts",
+      "try { work(); } catch (error) { report(error); }",
+    ),
+    [],
+  );
+});
+
+test("focused frontend tests are rejected so a subset cannot masquerade as the suite", () => {
+  for (const source of [
+    'test.only("case", () => {});',
+    'describe.only("group", () => {});',
+    'it.skip("case", () => {});',
+  ]) {
+    assert.notDeepEqual(
+      inspectSource("src/example.test.ts", source),
+      [],
+      source,
+    );
+  }
+});
