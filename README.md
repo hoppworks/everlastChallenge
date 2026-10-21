@@ -12,6 +12,15 @@ aber nicht als Produktstandard übernommen.
 
 ## In wenigen Minuten durch das Repository
 
+## Fertige App starten
+
+Den separat bereitgestellten macOS-ZIP entpacken und die `.app` nach Programme
+kopieren. Aktuell gibt es noch keinen veröffentlichten Downloadlink. Das lokale
+Release-Paket enthält Prüfsummen und eine Übergabeanleitung. Es ist für Apple Silicon,
+lokal signiert und nicht Apple-notarisiert; ein macOS-Hinweis zur Herkunft kann
+deshalb auftreten. Der Paketbau lädt keine Modelle mit herunter. Für deren
+einmaligen Download wird Internet benötigt; anschließend erfolgt die Erkennung offline.
+
 ## Benutzen
 
 1. App öffnen und die Modelle über die Einrichtung laden. Dateien werden auf
@@ -132,13 +141,16 @@ konfiguriert; eine Workflowdatei allein belegt keinen erfolgreichen Remote-Lauf.
 
 Die [Leistungsübersicht](docs/performance.md) beschreibt die erhaltenen
 Messstrecken und deren Grenzen. Historische Messwerte sind keine garantierte
-Latenz der aktuellen sichtbaren App.
+Latenz der aktuellen sichtbaren App. Im [historischen Voicely-Helfervergleich](docs/comparison.md)
+waren die Prozessmediane 36,4–39,1 % kürzer. Das umfasst Modellladen und
+Prozessende, aber weder Aufnahme noch Einfügen; der aktuelle FP16-Release wurde
+damit nicht neu gemessen.
 
 Bibliotheken, Modelle und lokale Patches sind unter
 [Abhängigkeiten](docs/dependencies.md) und [Lizenzen](docs/licenses/third-party/README.md)
 zugeordnet. Die Git-Historie bewahrt die Commitfolge der Implementierung einschließlich
 der nachträglich atomar versionierten MLX-Arbeit. Nicht öffentliche Dokumente
-und Metadaten werden vor Veröffentlichung bereinigt; die Commitfolge wird nicht
+und Metadaten wurden vor Veröffentlichung bereinigt; die Commitfolge wird nicht
 gesquasht. Details stehen in der Veröffentlichungsprüfung.
 
 ### Kompakte Palette

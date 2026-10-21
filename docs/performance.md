@@ -3,7 +3,14 @@
 Der ausgelieferte Pfad nutzt einen MLX-Encoder mit vollständigem whisper.cpp-Decoder.
 Die Verarbeitung erfolgt lokal. Eine universelle Latenzgarantie wird nicht gegeben.
 
-## Reproduzierbare Messstrecken
+## Vergleich mit Voicely
+
+Der [separate Vergleichsbericht](comparison.md) erläutert den historischen
+Datei-/CLI-Vergleich: 36,4–39,1 % kürzere Prozessmediane auf drei deutschen
+Aufnahmen, einschließlich Laden und Aufräumen. Er enthält die 30 Messzeilen,
+Nachrechnung und Grenzen. Das ist kein End-to-End-Vergleich der aktuellen Apps.
+
+## Weitere Messstrecken
 
 - [Getakteter Sechs-Fälle-Lauf](verification/paced-six-reference-v4.json)
   und [Qualitätsauswertung](verification/paced-six-reference-v4-quality.md).
@@ -18,5 +25,5 @@ Start eines neuen Prozesses, Modellbereitschaft, warme Transkription und
 Ende-zu-Ende-Zeit bis zum sichtbaren Text sind verschiedene Größen.
 
 Die jüngste UI-Änderung wurde durch [native Bedienungstests](verification/palette-2026-10-21.md)
-verifiziert. Dafür wurde keine neue ASR-Leistungskampagne behauptet. Entfernte
-interne Vergleichsunterlagen dienen nicht als Beleg öffentlich behaupteter Zahlen.
+verifiziert. Dafür wurde keine neue ASR-Leistungskampagne behauptet. Der öffentliche Vergleich enthält einen bewusst begrenzten, nachvollziehbaren
+Datenauszug. Interne Analyseunterlagen bleiben ausgeschlossen.
