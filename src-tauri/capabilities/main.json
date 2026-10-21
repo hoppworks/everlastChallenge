@@ -3,11 +3,12 @@
   "identifier": "main",
   "description": "Only the local main window may use the explicitly listed application commands.",
   "local": true,
-  "windows": [
-    "main"
-  ],
+  "windows": ["main"],
   "permissions": [
     "core:event:allow-listen",
+    "core:window:allow-inner-size",
+    "core:window:allow-scale-factor",
+    "core:window:allow-set-size",
     "core:event:allow-unlisten",
     "allow-app-snapshot",
     "allow-model-download",

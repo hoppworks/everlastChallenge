@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-21T15:14:28.978007+00:00",
+  "title": "Design System: Everlast Coding Challenge",
+  "extensions": {
+    "breakpoints": [
+      {
+        "name": "palette-wrap",
+        "value": "460px"
+      },
+      {
+        "name": "settings-compact",
+        "value": "400px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Native palette action.",
+      "html": "<button class=\"ds-button ds-primary\">Aufnehmen</button>",
+      "css": ".ds-button{font:inherit;min-height:34px;border:1px solid var(--control-line);border-radius:7px;padding:7px 12px;line-height:1.35;cursor:pointer}.ds-button:focus-visible{outline:3px solid var(--signal);outline-offset:3px}.ds-button:disabled{color:var(--muted);opacity:.65;cursor:default}.ds-primary{background:var(--accent);color:var(--accent-text);font-weight:600;border-color:transparent;}.ds-primary:hover:not(:disabled){filter:brightness(.94)}.ds-primary:active:not(:disabled){filter:brightness(.88)}"
+    },
+    {
+      "name": "Secondary action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Native palette action.",
+      "html": "<button class=\"ds-button ds-secondary\">Kopieren</button>",
+      "css": ".ds-button{font:inherit;min-height:34px;border:1px solid var(--control-line);border-radius:7px;padding:7px 12px;line-height:1.35;cursor:pointer}.ds-button:focus-visible{outline:3px solid var(--signal);outline-offset:3px}.ds-button:disabled{color:var(--muted);opacity:.65;cursor:default}.ds-secondary{background:var(--surface);color:inherit;}.ds-secondary:hover:not(:disabled){filter:brightness(.94)}.ds-secondary:active:not(:disabled){filter:brightness(.88)}"
+    },
+    {
+      "name": "Recording stop",
+      "kind": "button",
+      "refersTo": "button-stop",
+      "description": "Native palette action.",
+      "html": "<button class=\"ds-button ds-stop\">Stoppen</button>",
+      "css": ".ds-button{font:inherit;min-height:34px;border:1px solid var(--control-line);border-radius:7px;padding:7px 12px;line-height:1.35;cursor:pointer}.ds-button:focus-visible{outline:3px solid var(--signal);outline-offset:3px}.ds-button:disabled{color:var(--muted);opacity:.65;cursor:default}.ds-stop{background:var(--danger);color:var(--danger-text);font-weight:600;border-color:transparent;}.ds-stop:hover:not(:disabled){filter:brightness(.94)}.ds-stop:active:not(:disabled){filter:brightness(.88)}"
+    },
+    {
+      "name": "Transcript field",
+      "kind": "input",
+      "description": "Read-only selectable latest transcript.",
+      "html": "<textarea class=\"ds-transcript\" readonly aria-label=\"Letzter Text\">Der letzte diktierte Text.</textarea>",
+      "css": ".ds-transcript{font:inherit;width:100%;height:150px;min-height:90px;max-height:40vh;resize:vertical;overflow-y:auto;border:1px solid var(--line);border-radius:8px;padding:12px;font-size:14px;line-height:1.65;color:inherit;background:var(--surface);caret-color:var(--signal)}.ds-transcript:focus-visible{outline:3px solid var(--signal);outline-offset:3px}"
+    },
+    {
+      "name": "Settings select",
+      "kind": "input",
+      "description": "Native selection control.",
+      "html": "<select class=\"ds-select\" aria-label=\"Mikrofon\"><option>Systemstandard</option></select>",
+      "css": ".ds-select{font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:6px;min-height:34px;padding:7px 10px;width:100%}.ds-select:focus-visible{outline:3px solid var(--accent);outline-offset:3px}.ds-select:disabled{color:var(--muted);opacity:.65}"
+    },
+    {
+      "name": "Settings navigation",
+      "kind": "nav",
+      "description": "Persistent navigation above scrolling settings content.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Einstellungen\"><button class=\"ds-button\" aria-current=\"page\">Allgemein</button><button class=\"ds-button\">Erweitert</button></nav>",
+      "css": ".ds-button{font:inherit;min-height:34px;border:1px solid var(--control-line);border-radius:7px;padding:7px 12px;line-height:1.35;cursor:pointer}.ds-button:focus-visible{outline:3px solid var(--signal);outline-offset:3px}.ds-button:disabled{color:var(--muted);opacity:.65;cursor:default}.ds-nav{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--line);padding-bottom:12px}.ds-nav .ds-button{flex:1 1 auto;color:inherit;background:var(--surface)}.ds-nav .ds-button:hover{background:var(--soft)}.ds-nav [aria-current=page]{font-weight:600;outline:1px solid var(--line);outline-offset:-1px}.ds-nav .ds-button:focus-visible{outline:3px solid var(--signal);outline-offset:3px}"
+    },
+    {
+      "name": "Microphone level",
+      "kind": "custom",
+      "refersTo": "level",
+      "description": "Static example of seven bars shaped from one RMS input, not a spectrum.",
+      "html": "<div class=\"ds-level\" aria-label=\"Mikrofonpegel: Beispiel\"><div class=\"ds-bars\" aria-hidden=\"true\"><i style=\"height:7.6000000000000005px\"></i><i style=\"height:11.049999999999999px\"></i><i style=\"height:13.35px\"></i><i style=\"height:14.5px\"></i><i style=\"height:12.200000000000001px\"></i><i style=\"height:9.899999999999999px\"></i><i style=\"height:7.0249999999999995px\"></i></div></div>",
+      "css": ".ds-level{width:44px;height:44px;border-radius:11px;display:grid;place-items:center;background:var(--soft);color:var(--signal)}.ds-bars{width:26px;height:26px;display:flex;gap:2px;align-items:center}.ds-bars i{display:block;flex:0 0 2px;border-radius:1px;background:currentColor}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Compact dictation palette",
+    "overview": "The approved direction is a small dictation palette: microphone level, current status and main action form the primary row. Transcript, recording details and advanced settings appear when needed. Preserve the existing macOS system font.",
+    "keyCharacteristics": [
+      "Compact primary row",
+      "Progressive disclosure",
+      "System light and dark appearance"
+    ],
+    "rules": [],
+    "dos": [
+      "Do keep dictation primary and reveal supporting detail progressively.",
+      "Do preserve light/dark pairs and honor system contrast preferences.",
+      "Do keep errors, permission needs and keyboard focus visible."
+    ],
+    "donts": [
+      "Don't present RMS bars as spectral analysis or animate invented telemetry.",
+      "Don't treat browser fixtures or screenshots as proof of native behavior."
+    ]
+  }
+}

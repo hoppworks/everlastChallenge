@@ -9,6 +9,7 @@ import {
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { App } from "./App";
 import type { Snapshot } from "./ipc";
+import { resizeWindow } from "./ipc/window";
 
 const ipc = vi.hoisted(() => ({
   copyTranscript: vi.fn<(text: string) => Promise<void>>(),
@@ -19,6 +20,11 @@ const ipc = vi.hoisted(() => ({
   saveSettings: vi.fn<typeof import("./ipc").saveSettings>(),
 }));
 vi.mock("./ipc", () => ipc);
+vi.mock("./ipc/window", () => ({
+  resizeWindow: vi
+    .fn<typeof import("./ipc/window").resizeWindow>()
+    .mockResolvedValue(undefined),
+}));
 
 function snapshot(): Snapshot {
   return {
@@ -82,6 +88,7 @@ function snapshot(): Snapshot {
 
 beforeEach(() => {
   vi.resetAllMocks();
+  vi.mocked(resizeWindow).mockResolvedValue(undefined);
   ipc.command.mockResolvedValue(undefined);
   ipc.copyTranscript.mockResolvedValue(undefined);
   ipc.clearTranscript.mockResolvedValue(undefined);
@@ -90,7 +97,7 @@ beforeEach(() => {
 });
 afterEach(cleanup);
 
-function connected(value = snapshot(), nativeHeader = false) {
+function connected(value = snapshot()) {
   let receive: ((snapshot: Snapshot) => void) | undefined;
   const unsubscribe = vi.fn<() => void>();
   ipc.connect.mockImplementation(
@@ -100,7 +107,7 @@ function connected(value = snapshot(), nativeHeader = false) {
       return unsubscribe;
     },
   );
-  const view = render(<App nativeHeader={nativeHeader} />);
+  const view = render(<App />);
   return {
     ...view,
     unsubscribe,
@@ -110,7 +117,7 @@ function connected(value = snapshot(), nativeHeader = false) {
 
 test("native settings requests survive initial delivery and only reopen for a higher counter", async () => {
   const initial = { ...snapshot(), settingsRequest: 7 };
-  const view = connected(initial, true);
+  const view = connected(initial);
   expect(
     await screen.findByRole("region", { name: "Einstellungen" }),
   ).toBeDefined();
@@ -259,63 +266,51 @@ test("missing session identifiers never issue a targeted native action", async (
   expect(ipc.sessionCommand).not.toHaveBeenCalled();
 });
 
-test.each([false, true])(
-  "copy and clear preserve displayed text until the native snapshot changes (native header %s)",
-  async (nativeHeader) => {
-    const value = snapshot();
-    value.session.text = "Der gespeicherte Text.";
-    const view = connected(value, nativeHeader);
-    fireEvent.click(await screen.findByRole("button", { name: "Kopieren" }));
-    await waitFor(() =>
-      expect(ipc.copyTranscript).toHaveBeenCalledWith("Der gespeicherte Text."),
-    );
-    await waitFor(() =>
-      expect(
-        (screen.getByRole("button", { name: "Löschen" }) as HTMLButtonElement)
-          .disabled,
-      ).toBe(false),
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Löschen" }));
-    await waitFor(() =>
-      expect(ipc.clearTranscript).toHaveBeenCalledWith(
-        "Der gespeicherte Text.",
-      ),
-    );
-    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
-      "Der gespeicherte Text.",
-    );
-    view.publish(snapshot());
-    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("");
-  },
-);
+test("copy and clear preserve displayed text until the native snapshot changes", async () => {
+  const value = snapshot();
+  value.session.text = "Der gespeicherte Text.";
+  const view = connected(value);
+  fireEvent.click(await screen.findByRole("button", { name: "Kopieren" }));
+  await waitFor(() =>
+    expect(ipc.copyTranscript).toHaveBeenCalledWith("Der gespeicherte Text."),
+  );
+  await waitFor(() =>
+    expect(
+      (screen.getByRole("button", { name: "Löschen" }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(false),
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Löschen" }));
+  await waitFor(() =>
+    expect(ipc.clearTranscript).toHaveBeenCalledWith("Der gespeicherte Text."),
+  );
+  expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
+    "Der gespeicherte Text.",
+  );
+  view.publish(snapshot());
+  expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe("");
+});
 
-test.each([false, true])(
-  "download and cancellation forward explicit model commands (native header %s)",
-  async (nativeHeader) => {
-    const value = snapshot();
-    value.setup.phase = "Missing";
-    const view = connected(value, nativeHeader);
-    fireEvent.click(
-      await screen.findByRole("button", { name: "Modell laden" }),
-    );
-    await waitFor(() =>
-      expect(ipc.command).toHaveBeenCalledWith("model_download"),
-    );
-    value.setup = {
-      ...value.setup,
-      phase: "Downloading",
-      downloadedBytes: 123000000,
-      canCancel: true,
-    };
-    view.publish({ ...value, revision: 2 });
-    fireEvent.click(
-      screen.getByRole("button", { name: "Einrichtung abbrechen" }),
-    );
-    await waitFor(() =>
-      expect(ipc.command).toHaveBeenCalledWith("model_cancel"),
-    );
-  },
-);
+test("download and cancellation forward explicit model commands", async () => {
+  const value = snapshot();
+  value.setup.phase = "Missing";
+  const view = connected(value);
+  fireEvent.click(await screen.findByRole("button", { name: "Modell laden" }));
+  await waitFor(() =>
+    expect(ipc.command).toHaveBeenCalledWith("model_download"),
+  );
+  value.setup = {
+    ...value.setup,
+    phase: "Downloading",
+    downloadedBytes: 123000000,
+    canCancel: true,
+  };
+  view.publish({ ...value, revision: 2 });
+  fireEvent.click(
+    screen.getByRole("button", { name: "Einrichtung abbrechen" }),
+  );
+  await waitFor(() => expect(ipc.command).toHaveBeenCalledWith("model_cancel"));
+});
 
 test("permission panel forwards user requests, respects busy, and can be closed", async () => {
   const initial = snapshot();
@@ -555,7 +550,7 @@ test("renders the authoritative maximum-stop fact without dispatching another ac
   value.session.maximumReached = true;
   value.session.lastHeldSession = 7;
   value.session.outcome = { kind: "sent" };
-  connected(value, true);
+  connected(value);
   expect(
     await screen.findByText(
       "Die Aufnahme wurde an der 5-Minuten-Grenze beendet.",

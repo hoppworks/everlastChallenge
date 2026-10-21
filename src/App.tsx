@@ -12,12 +12,32 @@ import {
 import { SettingsView } from "./features/settings/SettingsView";
 import { RecoveryView } from "./features/settings/RecoveryView";
 import type { Snapshot } from "./ipc";
-export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
+import { resizeWindow, type WindowLayout } from "./ipc/window";
+export function App() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [error, setError] = useState<string>();
   const [pending, setPending] = useState(0);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsRequest = useRef(0);
+  const [transcriptExpanded, setTranscriptExpanded] = useState(false);
+  const layout: WindowLayout =
+    settingsOpen || snapshot?.preferences.recoveryRequired
+      ? "settings"
+      : transcriptExpanded ||
+          (snapshot &&
+            (snapshot.setup.phase !== "Ready" ||
+              !snapshot.running ||
+              snapshot.permissions.microphone !== "granted" ||
+              snapshot.permissions.accessibility !== "granted" ||
+              snapshot.error)) ||
+          error
+        ? "expanded"
+        : "compact";
+  useEffect(() => {
+    resizeWindow(layout).catch((reason: unknown) =>
+      setError(`Fenstergröße konnte nicht angepasst werden: ${String(reason)}`),
+    );
+  }, [layout]);
   useEffect(() => {
     let disposed = false;
     let disconnect: (() => void) | undefined;
@@ -59,7 +79,7 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
   if (!snapshot)
     return (
       <main className="dictation-app">
-        {!nativeHeader && <h1>Everlast Coding Challenge</h1>}
+        <h1>Everlast Coding Challenge</h1>
         <p role="status" aria-live="polite">
           Anwendung wird gestartet …
         </p>
@@ -93,7 +113,7 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
     <>
       {!settingsOpen && (
         <AppView
-          nativeHeader={nativeHeader}
+          onDisclosureChange={setTranscriptExpanded}
           setup={{
             phase: snapshot.setup.phase,
             model: snapshot.setup.model,
@@ -103,6 +123,7 @@ export function App({ nativeHeader = false }: { nativeHeader?: boolean }) {
             ...(snapshot.setup.error ? { error: snapshot.setup.error } : {}),
           }}
           session={{
+            id: snapshot.session.id,
             phase: snapshot.session.phase,
             text: snapshot.session.text,
             maximumWarning: snapshot.session.maximumWarning,

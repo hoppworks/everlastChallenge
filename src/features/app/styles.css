@@ -2,23 +2,21 @@
   color-scheme: light dark;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 14px;
-  color: light-dark(#202126, #f1f1f3);
-  background: light-dark(#f6f6f8, #202022);
-  --surface: light-dark(#fff, #29292d);
-  --muted: light-dark(#60636c, #b9bbc4);
-  --line: light-dark(#d9dbe1, #4b4d56);
-  --control-line: light-dark(#8b909b, #8d909e);
-  --accent: Highlight;
-  --accent-text: HighlightText;
+  color: light-dark(#252824, #f3f7f1);
+  background: light-dark(#fbfcfa, #252d29);
+  --surface: light-dark(#ffffff, #354038);
+  --muted: light-dark(#62685f, #bac6bc);
+  --line: light-dark(#dee2d9, #505c53);
+  --control-line: light-dark(#a8b2a2, #74836e);
+  --accent: light-dark(#293d2e, #d5ebd8);
+  --accent-text: light-dark(#ffffff, #1f3b28);
+  --soft: light-dark(#e8eee5, #37463b);
+  --signal: light-dark(#3b6346, #b6d9bb);
+  --danger: light-dark(#ad3c30, #f6c6bf);
+  --danger-text: light-dark(#ffffff, #712e24);
   --space-tight: 8px;
   --space-group: 16px;
   --space-section: 24px;
-}
-@supports (color: AccentColor) {
-  :root {
-    --accent: AccentColor;
-    --accent-text: AccentColorText;
-  }
 }
 * {
   box-sizing: border-box;
@@ -31,29 +29,27 @@ body,
 }
 body {
   margin: 0;
-  min-width: 260px;
+  min-width: 280px;
   overflow: hidden;
 }
 button,
 textarea,
-select {
+select,
+input {
   font: inherit;
 }
 button {
   color: inherit;
   background: var(--surface);
   border: 1px solid var(--control-line);
-  border-radius: 8px;
-  padding: 7px 13px;
-  min-height: 36px;
+  border-radius: 7px;
+  padding: 7px 12px;
+  min-height: 34px;
   cursor: pointer;
   line-height: 1.35;
 }
 button:hover:not(:disabled) {
-  background: light-dark(#e9ebef, #3c3d44);
-}
-button:active:not(:disabled) {
-  background: light-dark(#dfe1e7, #494b55);
+  background: var(--soft);
 }
 button:disabled {
   color: var(--muted);
@@ -63,12 +59,13 @@ button:disabled {
 button:focus-visible,
 a:focus-visible,
 textarea:focus-visible,
-summary:focus-visible {
-  outline: 3px solid var(--accent);
+summary:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--signal);
   outline-offset: 3px;
 }
 a {
-  color: LinkText;
+  color: light-dark(#345f40, #b6d9bb);
   text-underline-offset: 3px;
 }
 ::selection {
@@ -76,14 +73,11 @@ a {
   background: var(--accent);
 }
 .dictation-app {
-  display: flex;
-  flex-direction: column;
   width: 100%;
   height: 100dvh;
   min-height: 0;
-  max-width: 800px;
   margin: 0 auto;
-  padding: 28px 32px 20px;
+  padding: 12px 20px 16px;
   overflow: auto;
 }
 .app-header,
@@ -92,146 +86,177 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;
-  flex: 0 0 auto;
 }
 .app-header {
-  margin-bottom: var(--space-section);
+  margin-bottom: 14px;
 }
 h1 {
-  font-size: 1.15rem;
+  font-size: 12px;
   line-height: 1.4;
   font-weight: 600;
+  color: var(--muted);
   margin: 0;
 }
 h2 {
-  font-size: 1.65rem;
-  line-height: 1.25;
-  font-weight: 650;
-  margin: 0 0 8px;
-  letter-spacing: -0.015em;
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 600;
+  margin: 0 0 5px;
+  letter-spacing: -0.02em;
 }
 p {
-  line-height: 1.5;
+  line-height: 1.55;
   margin: 8px 0;
   overflow-wrap: anywhere;
 }
-.dictation-status {
-  flex: 0 0 auto;
-  margin: 0 0 var(--space-group);
+.palette-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 4px 0 18px;
 }
-.dictation-status > p,
-.setup-summary {
+.dictation-status {
+  min-width: 0;
+  flex: 1;
+}
+.dictation-status p {
+  font-size: 12px;
   color: var(--muted);
+  margin: 5px 0;
+}
+.level-visual {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: var(--soft);
+  color: var(--signal);
+  position: relative;
+}
+.level-visual svg {
+  width: 22px;
+  height: 22px;
+}
+.level-bars {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+.level-bars i {
+  display: block;
+  flex: 0 0 2px;
+  height: var(--bar-height);
+  border-radius: 1px;
+  background: currentColor;
+}
+.accessible-meter {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
 }
 .app-actions {
   display: flex;
-  gap: var(--space-tight);
+  gap: 8px;
   flex-wrap: wrap;
   margin-top: 12px;
 }
 .app-actions:empty {
   display: none;
 }
+.palette-actions {
+  flex: 0 0 auto;
+  max-width: 155px;
+  margin: 0;
+  justify-content: flex-end;
+}
 .primary-action {
   color: var(--accent-text);
   background: var(--accent);
   border-color: transparent;
+  font-weight: 600;
 }
 .primary-action:hover:not(:disabled) {
   background: var(--accent);
   filter: brightness(0.94);
 }
 .primary-action:active:not(:disabled) {
-  background: var(--accent);
   filter: brightness(0.88);
 }
 .primary-action:disabled {
-  background: light-dark(#e0e0e5, #3a3a40);
+  background: var(--soft);
   color: var(--muted);
-  border-color: var(--line);
   opacity: 1;
+}
+.palette-actions .primary-action.is-recording {
+  background: var(--danger);
+  color: var(--danger-text);
 }
 .recording-readout {
   display: flex;
-  gap: 16px;
   align-items: center;
   flex-wrap: wrap;
-  margin: 12px 0;
+  gap: 8px;
+  margin-top: 4px;
 }
 .recording-readout output {
   font-variant-numeric: tabular-nums;
-  font-size: 1.6rem;
+  font-size: 12px;
+  color: var(--muted);
 }
 .recording-readout p {
   flex-basis: 100%;
-  margin: 0;
 }
-meter,
 progress {
   width: 100%;
-  max-width: 340px;
-  height: 12px;
-  accent-color: var(--accent);
-}
-.recording-readout meter {
-  flex: 1 1 140px;
+  height: 10px;
+  accent-color: var(--signal);
 }
 .download-progress p {
   font-variant-numeric: tabular-nums;
-  color: var(--muted);
-  font-size: 0.9rem;
 }
 .model-disclosure {
-  margin-top: 12px;
-  font-size: 0.9rem;
+  font-size: 12px;
   color: var(--muted);
+  margin-top: 12px;
 }
-.model-disclosure summary {
+summary {
   cursor: pointer;
-  width: fit-content;
-  min-height: 28px;
-  line-height: 28px;
-}
-.model-disclosure p {
-  max-width: 65ch;
+  min-height: 30px;
+  line-height: 30px;
 }
 .permissions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  flex: 0 0 auto;
-  padding: 14px 16px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  margin-bottom: var(--space-group);
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  margin-bottom: 10px;
 }
 .permissions p {
+  font-size: 12px;
   margin: 0;
-  font-size: 0.92rem;
-}
-.permissions button {
-  flex: 0 0 auto;
 }
 .permission-secondary {
   color: var(--muted);
-  margin-top: 4px !important;
 }
 .session-preferences {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 8px 24px;
-  flex: 0 0 auto;
-  margin: 0 0 var(--space-section);
-  font-size: 0.88rem;
+  display: grid;
+  gap: 10px;
+  font-size: 12px;
+  margin: 10px 0;
 }
 .session-preferences div {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  min-width: 0;
 }
 dt,
 dd {
@@ -246,18 +271,29 @@ dd {
 }
 kbd {
   font: inherit;
-  font-weight: 600;
+  padding: 2px 5px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 4px;
 }
 .transcript-section {
+  border-top: 1px solid var(--line);
+}
+.transcript-toggle {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 120px;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  padding: 10px 0;
+  font-size: 12px;
 }
 .transcript-header h2 {
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: normal;
+  font-size: 13px;
+  letter-spacing: 0;
   margin: 0;
 }
 .transcript-header .app-actions {
@@ -266,67 +302,65 @@ kbd {
 .transcript-header button {
   min-height: 30px;
   padding: 4px 10px;
-  font-size: 0.9rem;
+  font-size: 12px;
 }
 .transcript-section textarea {
-  flex: 1 1 auto;
-  margin-top: 12px;
   width: 100%;
-  min-height: 84px;
-  resize: none;
+  height: 150px;
+  min-height: 90px;
+  max-height: 40vh;
+  resize: vertical;
   overflow-y: auto;
+  margin: 12px 0;
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 18px;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
   line-height: 1.65;
-  font-size: 1.05rem;
   color: inherit;
   background: var(--surface);
-  caret-color: var(--accent);
+  caret-color: var(--signal);
 }
 textarea::placeholder {
   color: var(--muted);
   opacity: 1;
 }
-footer {
-  flex: 0 0 auto;
-  margin-top: 12px;
+.context-disclosure {
+  font-size: 12px;
   color: var(--muted);
-  font-size: 0.85rem;
+  border-top: 1px solid var(--line);
+}
+footer {
+  color: var(--muted);
+  font-size: 12px;
   line-height: 1.4;
+  margin-top: 10px;
 }
-@media (max-width: 600px) {
+.status-detail[role="alert"],
+.dictation-app > [role="alert"] {
+  padding: 10px;
+  background: light-dark(#fbede9, #543830);
+  color: light-dark(#84342b, #ffe5df);
+  border-radius: 7px;
+}
+@media (max-width: 460px) {
   .dictation-app {
-    padding: 20px;
+    padding: 12px 16px;
   }
-  .session-preferences {
-    gap: 6px 16px;
-    margin-bottom: 16px;
-  }
-  .permissions {
+  .palette-main {
+    flex-wrap: wrap;
     gap: 12px;
-    align-items: flex-start;
-    flex-direction: column;
   }
-  h2 {
-    font-size: 1.45rem;
-  }
-}
-@media (max-height: 540px) {
-  .dictation-app {
-    padding-block: 16px;
-  }
-  .session-preferences {
-    margin-bottom: 12px;
-  }
-  .permissions {
-    padding-block: 10px;
+  .palette-actions {
+    margin-left: 56px;
+    max-width: none;
+    justify-content: flex-start;
   }
 }
 @media (prefers-contrast: more) {
   :root {
-    --muted: light-dark(#34363e, #e3e3e9);
-    --line: light-dark(#60636c, #c2c2cc);
+    --muted: light-dark(#343d33, #e3eee1);
+    --line: light-dark(#626e5c, #c2d0bd);
   }
   button {
     border-width: 2px;
@@ -339,9 +373,20 @@ footer {
     scroll-behavior: auto !important;
   }
 }
-@media (prefers-reduced-transparency: reduce) {
-  .dictation-app,
-  .settings-view {
-    background: light-dark(#f6f6f8, #202022);
-  }
+
+.settings-button {
+  border: 0;
+  background: transparent;
+  padding: 6px;
+  min-height: 30px;
+  display: grid;
+  place-items: center;
+}
+.cancel-action {
+  border: 0;
+  background: transparent;
+  padding: 2px 6px;
+  min-height: 26px;
+  font-size: 12px;
+  color: var(--muted);
 }

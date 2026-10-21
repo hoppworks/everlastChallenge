@@ -5,7 +5,6 @@ use everlast_dictation::{
     ipc,
 };
 use macos_integration::{
-    glass_header::GlassHeader,
     keyboard::LayoutObserver,
     power::{PowerEvent, PowerObserver},
     termination::TerminationHook,
@@ -109,8 +108,6 @@ impl test_control::Handler for Desktop {
 }
 
 struct NativeUi {
-    header: GlassHeader<tauri::WebviewWindow>,
-    header_revision: Option<u64>,
     window: tauri::WebviewWindow,
     settings_request: u32,
     wakeup: Option<NativeWakeup>,
@@ -132,19 +129,10 @@ impl NativeUi {
             .ok_or("The main dictation window is unavailable")?;
         // React owns the product surface; native services remain independent.
         let native_desktop = app.state::<Desktop>().inner().clone();
-        let actions = native_desktop.clone();
-        let mut header = GlassHeader::attach(window.clone(), move |action| {
-            actions.native_action(action);
-        })?;
-        let mut header_revision = None;
         let native_tray = app.state::<NativeTray>().inner().clone();
         let feedback = Feedback::default();
         let feedback_revision = None;
         let feedback_state: Option<FeedbackState> = None;
-        if let Some((revision, state)) = native_desktop.native_header_after(None)? {
-            header.update(state)?;
-            header_revision = Some(revision);
-        }
         // Tauri run exits the process directly. Remove native observers explicitly
         // on Exit, before its cleanup, rather than relying on a stack destructor.
         let power_desktop = app.state::<Desktop>().inner().clone();
@@ -188,8 +176,6 @@ impl NativeUi {
                 }
             };
         Ok(Self {
-            header,
-            header_revision,
             window,
             settings_request: 0,
             wakeup: Some(wakeup),
@@ -217,12 +203,6 @@ impl NativeUi {
                 .show()
                 .and_then(|()| self.window.set_focus())
                 .map_err(|error| error.to_string())?;
-        }
-        if let Some((revision, state)) = self.desktop.native_header_after(self.header_revision)? {
-            self.header
-                .update(state)
-                .map_err(|error| error.to_string())?;
-            self.header_revision = Some(revision);
         }
         if let Some((revision, state)) =
             self.desktop.native_feedback_after(self.feedback_revision)?
@@ -253,9 +233,6 @@ impl NativeUi {
         drop(self.wakeup.take());
         self.layout.remove();
         self.power.remove();
-        if let Err(error) = self.header.detach() {
-            eprintln!("Native window cleanup failed: {error}");
-        }
     }
 }
 
@@ -264,6 +241,23 @@ fn request_native_settings(app: &tauri::AppHandle) {
         && let Err(error) = desktop.request_settings()
     {
         eprintln!("Native preferences request failed: {error}");
+    }
+}
+
+fn toggle_window_recording(app: &tauri::AppHandle) {
+    use macos_integration::glass_header::{HeaderAction, HeaderPrimary};
+    if let Some(desktop) = app.try_state::<Desktop>() {
+        match desktop.native_header_after(None) {
+            Ok(Some((_, state))) => match state.primary {
+                Some(HeaderPrimary::Start) => desktop.native_action(HeaderAction::Start),
+                Some(HeaderPrimary::Stop(session)) => {
+                    desktop.native_action(HeaderAction::Stop(session))
+                }
+                None => {}
+            },
+            Ok(None) => {}
+            Err(error) => eprintln!("Window recording shortcut failed: {error}"),
+        }
     }
 }
 
@@ -305,6 +299,15 @@ fn application_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
         ],
     )?;
     menu.insert(&application, 0)?;
+    let recording = MenuItem::with_id(
+        app,
+        "window-recording",
+        "Aufnahme starten / stoppen",
+        true,
+        Some("CmdOrCtrl+R"),
+    )?;
+    let dictation = Submenu::with_items(app, "Diktat", true, &[&recording])?;
+    menu.append(&dictation)?;
     Ok(menu)
 }
 
@@ -326,6 +329,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         .on_menu_event(|app, event| match event.id().as_ref() {
             "application-quit" => app.exit(0),
             "application-settings" => request_native_settings(app),
+            "window-recording" => toggle_window_recording(app),
             _ => {}
         })
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())

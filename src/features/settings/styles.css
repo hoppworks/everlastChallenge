@@ -153,3 +153,9 @@
     gap: 16px;
   }
 }
+
+.settings-header h2:focus {
+  outline: 2px solid var(--signal);
+  outline-offset: 4px;
+  border-radius: 2px;
+}

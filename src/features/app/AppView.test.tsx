@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, test } from "vitest";
 import { AppView, type AppViewProps } from "./AppView";
 
@@ -37,56 +37,40 @@ test("names the dictation utility and provides settings", () => {
   expect(screen.getByRole("button", { name: "Einstellungen" })).toBeDefined();
 });
 
-test("native header owns session controls while body keeps transcript and orientation", () => {
+test("keeps the last text behind a disclosure and opens a newly received result", () => {
   const props = fixture();
-  const view = render(<AppView {...props} nativeHeader />);
-  expect(
-    screen.queryByRole("heading", { name: "Everlast Coding Challenge" }),
-  ).toBeNull();
-  expect(screen.queryByRole("button", { name: "Einstellungen" })).toBeNull();
-  expect(screen.queryByRole("button", { name: "Aufnehmen" })).toBeNull();
-  expect(screen.getByRole("status").getAttribute("aria-live")).toBe("polite");
-  for (const phase of [
-    "Starting",
-    "Recording",
-    "Finalizing",
-    "Delivering",
-    "Cancelling",
-  ] as const) {
-    view.rerender(
-      <AppView
-        {...props}
-        nativeHeader
-        session={{ phase, text: "Bleibt sichtbar" }}
-      />,
-    );
-    expect(screen.queryByRole("button", { name: "Stoppen" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Abbrechen" })).toBeNull();
-    expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
-      "Bleibt sichtbar",
-    );
-    expect(screen.getByText("Standardmikrofon")).toBeDefined();
-    expect(screen.getByRole("button", { name: "Kopieren" })).toBeDefined();
-    expect(screen.getByRole("button", { name: "Löschen" })).toBeDefined();
-  }
+  const view = render(<AppView {...props} />);
+  const disclosure = screen.getByRole("button", { name: "Letzter Text" });
+  expect(disclosure.getAttribute("aria-expanded")).toBe("false");
+  expect(screen.queryByRole("textbox")).toBeNull();
+  fireEvent.click(disclosure);
+  expect(screen.getByRole("textbox")).toBeDefined();
+  fireEvent.click(disclosure);
   view.rerender(
     <AppView
       {...props}
-      nativeHeader
-      setup={{ ...props.setup, phase: "Missing" }}
+      session={{
+        phase: "Idle",
+        text: "Neues Diktat",
+        outcome: { kind: "local" },
+      }}
     />,
   );
-  expect(screen.getByRole("button", { name: "Modell laden" })).toBeDefined();
+  expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
+    "Neues Diktat",
+  );
+  fireEvent.click(disclosure);
   view.rerender(
     <AppView
       {...props}
-      nativeHeader
-      setup={{ ...props.setup, phase: "Downloading", canCancel: true }}
+      session={{ phase: "Recording", text: "Neues Diktat", level: 0.6 }}
     />,
   );
-  expect(
-    screen.getByRole("button", { name: "Einrichtung abbrechen" }),
-  ).toBeDefined();
+  expect(disclosure.getAttribute("aria-expanded")).toBe("false");
+  fireEvent.click(disclosure);
+  expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
+    "Neues Diktat",
+  );
 });
 
 test("clicking start waits for native state and does not pretend recording", () => {
@@ -453,7 +437,6 @@ test("maximum-stop notice survives processing and a sent result without claiming
   view.rerender(
     <AppView
       {...props}
-      nativeHeader
       session={{
         phase: "Idle",
         text: "Fertig",
@@ -466,7 +449,7 @@ test("maximum-stop notice survives processing and a sent result without claiming
     screen
       .getByText("Die Aufnahme wurde an der 5-Minuten-Grenze beendet.")
       .getAttribute("aria-live"),
-  ).toBe("off");
+  ).toBe("polite");
   expect(
     screen.getByRole("heading", { name: "Einfügebefehl gesendet" }),
   ).toBeDefined();
@@ -479,4 +462,55 @@ test("maximum-stop notice survives processing and a sent result without claiming
   expect(
     screen.queryByText("Die Aufnahme wurde an der 5-Minuten-Grenze beendet."),
   ).toBeNull();
+});
+
+test("a completed session reopens an identical result without reopening on telemetry", () => {
+  const props = fixture();
+  const view = render(
+    <AppView
+      {...props}
+      session={{
+        phase: "Idle",
+        id: 1,
+        text: "Danke",
+        outcome: { kind: "local" },
+      }}
+    />,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Letzter Text" }));
+  view.rerender(
+    <AppView
+      {...props}
+      session={{ phase: "Recording", id: 2, text: "Danke", level: 0.4 }}
+    />,
+  );
+  expect(screen.queryByRole("textbox")).toBeNull();
+  view.rerender(
+    <AppView
+      {...props}
+      session={{
+        phase: "Idle",
+        id: 2,
+        text: "Danke",
+        outcome: { kind: "local" },
+      }}
+    />,
+  );
+  expect((screen.getByRole("textbox") as HTMLTextAreaElement).value).toBe(
+    "Danke",
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Letzter Text" }));
+  view.rerender(
+    <AppView
+      {...props}
+      session={{
+        phase: "Idle",
+        id: 2,
+        text: "Danke",
+        outcome: { kind: "local" },
+        level: 0,
+      }}
+    />,
+  );
+  expect(screen.queryByRole("textbox")).toBeNull();
 });

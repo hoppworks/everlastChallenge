@@ -30,7 +30,7 @@ sofortigen Abbruch eines bereits laufenden nativen Decoders.
 | Modellbereitstellung | [setup.rs](../src-tauri/src/setup.rs), [model.rs](../src-tauri/src/model.rs) und [Cache](../src-tauri/src/model/cache.rs)/[Speicher](../src-tauri/src/model/storage.rs) | Größen-/Hashprüfung, Transportfehler, Cancel, Cachebesitz, eigene Teildateien und erfolgreicher Übergang zur geladenen Runtime |
 | Ziel und Versand | [native_service.rs](../src-tauri/src/native_service.rs) → [Targetworker](../crates/macos-integration/src/target/worker.rs), [target.rs](../crates/macos-integration/src/target.rs), [main_delivery.rs](../crates/macos-integration/src/main_delivery.rs) | Main Thread gegenüber AX-Owner, Prozess-/Feldidentität, Rechte/Secure Input, Commitpunkt und Zurückhalten statt unsicherem Versand |
 | Clipboard und Ereignis | [clipboard.rs](../crates/macos-integration/src/clipboard.rs), [delivery.rs](../crates/macos-integration/src/delivery.rs), [paste.rs](../crates/macos-integration/src/paste.rs) | begrenzter Snapshot/Helper, Eigentumswechsel, Restore, Cancel gegen Commit, Ereignisversand gegenüber tatsächlichem Empfang |
-| Hotkey, Glas und System | [hotkeys.rs](../src-tauri/src/hotkeys.rs), [keyboard.rs](../crates/macos-integration/src/keyboard.rs), [glass_header.rs](../crates/macos-integration/src/glass_header.rs), [power.rs](../crates/macos-integration/src/power.rs) | Registrierungsbesitz und Fehler, physische Taste/Layout, Main-Thread-/View-Lebensdauer, Observer entfernen, FFI-Sicherheitsargumente |
+| Hotkey und System | [hotkeys.rs](../src-tauri/src/hotkeys.rs), [keyboard.rs](../crates/macos-integration/src/keyboard.rs), [glass_header.rs](../crates/macos-integration/src/glass_header.rs), [power.rs](../crates/macos-integration/src/power.rs) | Registrierungsbesitz und Fehler, physische Taste/Layout, Main-Thread-/View-Lebensdauer (Glasadapter bleibt isoliert, nicht mehr angehängt), Observer entfernen, FFI-Sicherheitsargumente |
 | Aktive Layoutbeschriftung | [Layouttabelle](../crates/macos-integration/src/keyboard/labels.rs), [TIS-Observer](../crates/macos-integration/src/keyboard/observer.rs), [Hostprojektion](../src-tauri/src/hotkey_labels.rs) | aktuelles Layout gegenüber physischer Registrierung, Plain-/Command-Ebene, atomare Tabelle, Fallback, Hauptthread und explizites Entfernen |
 | Menüleisten-Rückmeldung | [Feedbackprojektion](../src-tauri/src/feedback.rs), [Desktop](../src-tauri/src/desktop.rs), [nativer Ton](../crates/macos-integration/src/feedback.rs) | begrenzte zuletzt zurückgehaltene Sitzungs-ID statt Textdeduplizierung, Status vor Ton, Aufnahmezulassung während Tonanforderung sperren, kein Fenster/Fokus; Aufruf ist keine Hör- oder Playback-Endquittung |
 | Entwickler-Messwerkzeug | [Replay-Runner](../src-tauri/examples/paced_runtime_probe/runner.rs), [Parameterbindung](../src-tauri/examples/paced_runtime_probe/parameters.rs), [TC-Publisher](../crates/macos-integration/src/realtime.rs), [historischer QoS-Pfad](../crates/macos-integration/src/qos.rs), [serieller Executor](../scripts/run-paced-remainder.py) | feste Zeitgrenzen und identische Samples, Policy nur im eigenen neuen Thread, Admission vor Aufnahme, diskrete Policy-/CPU-Beobachtungen, Publisher- und Runtimejoin; keine kontinuierliche Echtzeitgarantie |
@@ -113,3 +113,14 @@ bindet diese Quellen und bewahrt alle bisherigen menschlichen Prüffragen.
 Der erste vollständige autonome Einfügedurchlauf ist weiterhin offen.
 
 ## Autonome Softwareprüfung v2
+
+## Palette und progressive Offenlegung
+
+`AppView` zeigt Status, echte RMS-Pegelvisualisierung und Aufnahmeaktionen. Neue
+abgeschlossene Sitzungs-IDs öffnen den letzten Text; gleiche Textinhalte gelten
+nicht als gleiche Sitzung. Die Offenlegung von Text/Aufnahmedetails verändert nur
+das Layout. `App` fordert über `src/ipc/window.ts` kompakte, erweiterte oder
+Einstellungsgröße an; dabei bleibt die logische Nutzerbreite erhalten. Überholte
+Größenabfragen werden verworfen, Größenfehler bleiben sichtbar. Tauri erlaubt nur
+dem lokalen Hauptfenster die erforderlichen Größenabfragen/-änderung.
+`DESIGN.md` beschreibt die bestätigte Oberfläche einschließlich Systemthemes.
