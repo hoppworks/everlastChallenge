@@ -1,6 +1,13 @@
-# Drittbestandteile: vorbereitete Lizenztexte
+# Drittbestandteile: Lizenztexte und Herkunft
 
-Aktueller Zusatz für beschleunigte, weiterhin vollständige Modell-Hashes:
+Aktueller Lizenznachtrag: [Originaltexte und Quellenbindung](license-completion.json)
+mit vollständigem FP16-MIT-Text, den drei vom objc2-Maintainer ergänzten
+Lizenztexten und den unveränderten realfft-Lizenz-/Autorenangaben. Die
+[Prüfung vom 21.10.2026](../../verification/license-completion-2026-10-21.md)
+benennt die verbleibenden Herkunftsgrenzen. Historische Aussagen weiter unten
+beschreiben den damaligen Inventarstand.
+
+Zusatz für beschleunigte, weiterhin vollständige Modell-Hashes:
 [`sha2-asm` 0.6.4, MIT](sha256-acceleration.json), einschließlich unverändertem
 Original-Lizenztext. Die folgenden Inventarangaben bleiben ihre historische Basis.
 

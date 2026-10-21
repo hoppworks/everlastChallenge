@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "scope": "Supplement to the historical dependency inventories, unchanged runtime sources and dependency versions.",
+  "licenseLegalApprovalClaimed": false,
+  "texts": [
+    {
+      "name": "objc2 LICENSE-MIT.txt",
+      "path": "docs/licenses/third-party/texts/f6a2e783669a0dd7a2c3b8a4f76db40ae49033e66e1bdc30f3aa25fe5577b070.txt",
+      "sha256": "f6a2e783669a0dd7a2c3b8a4f76db40ae49033e66e1bdc30f3aa25fe5577b070",
+      "bytes": 1053,
+      "sourceUrl": "https://raw.githubusercontent.com/madsmtm/objc2/ee9a7ada2131f5944b8750428e265c15632f2a19/LICENSE-MIT.txt",
+      "scope": "Unmodified upstream supplement added after the pinned crate source revisions; preserves original declarations and their Apple SDK caveat. Select only a license declared by each crate. Not a claim that all historical contributors are named."
+    },
+    {
+      "name": "objc2 LICENSE-APACHE.txt",
+      "path": "docs/licenses/third-party/texts/0c9a5f6fe28e27015e12506ffe58c9e007cead169af9670ec15c1df0d14e4f2a.txt",
+      "sha256": "0c9a5f6fe28e27015e12506ffe58c9e007cead169af9670ec15c1df0d14e4f2a",
+      "bytes": 10204,
+      "sourceUrl": "https://raw.githubusercontent.com/madsmtm/objc2/ee9a7ada2131f5944b8750428e265c15632f2a19/LICENSE-APACHE.txt",
+      "scope": "Unmodified upstream supplement added after the pinned crate source revisions; preserves original declarations and their Apple SDK caveat. Select only a license declared by each crate. Not a claim that all historical contributors are named."
+    },
+    {
+      "name": "objc2 LICENSE-ZLIB.txt",
+      "path": "docs/licenses/third-party/texts/fced3e7fedc235fa83ed0108b0df74d86b435d06436356f46917a903cbadd80a.txt",
+      "sha256": "fced3e7fedc235fa83ed0108b0df74d86b435d06436356f46917a903cbadd80a",
+      "bytes": 838,
+      "sourceUrl": "https://raw.githubusercontent.com/madsmtm/objc2/ee9a7ada2131f5944b8750428e265c15632f2a19/LICENSE-ZLIB.txt",
+      "scope": "Unmodified upstream supplement added after the pinned crate source revisions; preserves original declarations and their Apple SDK caveat. Select only a license declared by each crate. Not a claim that all historical contributors are named."
+    },
+    {
+      "name": "FP16 MIT",
+      "path": "docs/licenses/third-party/texts/17e4f539024be2749ee729d1e2f01d24cef12ece8c9bf18e91a4349be29c80bf.txt",
+      "sha256": "17e4f539024be2749ee729d1e2f01d24cef12ece8c9bf18e91a4349be29c80bf",
+      "bytes": 1157,
+      "sourceUrl": "https://raw.githubusercontent.com/Maratyszcza/FP16/782eea126dc5c755827be751a099eb01826175cf/LICENSE",
+      "scope": "Upstream license for the FP16 project explicitly attributed by vendor/mlxrs-sys/vendor/gguflib/fp16.c. Exact copied source revision remains unspecified by gguflib."
+    },
+    {
+      "name": "realfft pinned README",
+      "path": "docs/licenses/third-party/texts/1e92c54e7fa08298d2a34ea9aa63b85626c47519873a91cd1028f234e1221608.txt",
+      "sha256": "1e92c54e7fa08298d2a34ea9aa63b85626c47519873a91cd1028f234e1221608",
+      "bytes": 6576,
+      "sourceUrl": "https://raw.githubusercontent.com/HEnquist/realfft/d0d4eee0525fd27c96c8a046d6d107acd5ed84a6/README.md",
+      "scope": "Original MIT declaration; upstream pinned tree contains no separate full license or copyright notice. Included with existing standardized permission/disclaimer; no copyright owner or year inferred."
+    },
+    {
+      "name": "realfft pinned package metadata",
+      "path": "docs/licenses/third-party/texts/d72ddbadf9bb55ed21ae973ac97f0bb4e8df2064af628c54b802b2c7d764c8de.txt",
+      "sha256": "d72ddbadf9bb55ed21ae973ac97f0bb4e8df2064af628c54b802b2c7d764c8de",
+      "bytes": 990,
+      "sourceUrl": "https://raw.githubusercontent.com/HEnquist/realfft/d0d4eee0525fd27c96c8a046d6d107acd5ed84a6/Cargo.toml",
+      "scope": "Original authors and MIT package metadata, not a substitute copyright notice."
+    }
+  ],
+  "remainingLimits": [
+    "realfft 3.5.0 upstream does not provide a full original MIT/copyright file; the original declaration and authors metadata are included without inventing a notice.",
+    "objc2 full texts were added after the pinned versions. Existing declaration and Apple SDK caveat retained; upstream does not guarantee complete historical contributor notices.",
+    "gguflib attributes FP16 but does not identify the exact source revision. Upstream license included; exact provenance not newly proven."
+  ]
+}

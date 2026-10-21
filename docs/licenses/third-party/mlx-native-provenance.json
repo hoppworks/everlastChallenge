@@ -16,10 +16,7 @@
       },
       "crateVcsInfoSha256": "abd8594e4398e4d8de92dcb246b4d13956f66d00c809cc3edcea7d44aa4c3923",
       "cachedCrateArchiveSha256": "dd72771402de14a1134490089ddeb6b744920291d07e7c238e1eaaee2db2400f",
-      "evidenceIds": [
-        "mlxrs-mit",
-        "mlxrs-apache"
-      ],
+      "evidenceIds": ["mlxrs-mit", "mlxrs-apache"],
       "originalCompleteLicenseBodyRecovered": true
     },
     {
@@ -42,13 +39,8 @@
         "upstreamReleasedFilesTreeSha256": "39a0c953995ff1d54a55467671b024c7ac96fefce957cc9989a1d60c5d4288e2",
         "effectiveReleasedFilesTreeSha256": "71faebc7011bca40a86e928a398a07be4a36572124c1ad2e0c7237b79b9695e3",
         "releasedFileCount": 1100,
-        "changedReleasedFiles": [
-          "vendor/mlx/CMakeLists.txt"
-        ],
-        "excludedAddedFiles": [
-          "EVERLAST-PATCH.json",
-          "EVERLAST-PATCH.md"
-        ],
+        "changedReleasedFiles": ["vendor/mlx/CMakeLists.txt"],
+        "excludedAddedFiles": ["EVERLAST-PATCH.json", "EVERLAST-PATCH.md"],
         "hashDefinition": "SHA256 of UTF-8 compact JSON (sort_keys=True,ensure_ascii=False,separators comma/colon), regular archive files as objects path/sha256; list sorted by full relative path string (Unicode lexical); excludes Cargo cache marker and added application receipts; no fetched outputs",
         "buildInputs": {
           "path": "config/mlx-build-inputs.json",
@@ -57,13 +49,7 @@
         },
         "verificationScope": "Local file/archive hash comparison only; no build, download or new advisory scan in this refresh."
       },
-      "evidenceIds": [
-        "mlxrs-mit",
-        "mlxrs-apache",
-        "mlx",
-        "mlx-c",
-        "gguflib"
-      ],
+      "evidenceIds": ["mlxrs-mit", "mlxrs-apache", "mlx", "mlx-c", "gguflib"],
       "originalCompleteLicenseBodyRecovered": true,
       "licenseScope": "Rust wrapper license inherited from workspace root; native subcomponent original licenses and embedded notices remain distinct evidence"
     },
@@ -80,9 +66,7 @@
       },
       "crateVcsInfoSha256": "1d4bce9850105140920a0f6b8936a29910d2c2afae6452a58bf46a3cc22359b6",
       "cachedCrateArchiveSha256": "201b055e6acfa0f9f15568255d3f03ce2b54bc86d1814442dc69138e36813e18",
-      "evidenceIds": [
-        "objc2-declaration"
-      ],
+      "evidenceIds": ["objc2-declaration"],
       "originalCompleteLicenseBodyRecovered": false,
       "limitation": "Exact upstream root LICENSE.md is a license declaration and SDK provenance note, linking external license terms; the repository at this revision does not carry complete MIT/Zlib/Apache text files. No copyright holder or license body has been invented."
     },
@@ -99,9 +83,7 @@
       },
       "crateVcsInfoSha256": "583b666cbc15ad0671d5b1d819af352ac817f6e5293d019df09e45ad31dde6a7",
       "cachedCrateArchiveSha256": "32b0446e98cf4a784cc7a0177715ff317eeaa8463841c616cfc78aa4f953c4ea",
-      "evidenceIds": [
-        "objc2-declaration"
-      ],
+      "evidenceIds": ["objc2-declaration"],
       "originalCompleteLicenseBodyRecovered": false,
       "limitation": "Exact upstream root LICENSE.md is a license declaration and SDK provenance note, linking external license terms; the repository at this revision does not carry complete MIT/Zlib/Apache text files. No copyright holder or license body has been invented."
     },
@@ -118,9 +100,7 @@
       },
       "crateVcsInfoSha256": "ea5eaec8d2785ebed65a43cdf097051d8900c7547797cea4bb3c7ba4476e052a",
       "cachedCrateArchiveSha256": "a0125f776a10d00af4152d74616409f0d4a2053a6f57fa5b7d6aa2854ac04794",
-      "evidenceIds": [
-        "objc2-declaration"
-      ],
+      "evidenceIds": ["objc2-declaration"],
       "originalCompleteLicenseBodyRecovered": false,
       "limitation": "Exact upstream root LICENSE.md is a license declaration and SDK provenance note, linking external license terms; the repository at this revision does not carry complete MIT/Zlib/Apache text files. No copyright holder or license body has been invented."
     },
@@ -137,11 +117,7 @@
       },
       "crateVcsInfoSha256": "91a4a696cdb5667e1655da9e50d18cb193bc15bf97d51b53cd8e4f5c52692a9c",
       "cachedCrateArchiveSha256": "67fb21a77e8f94e8beb3325e583102488659365af0a3948b7ea244c5b779c291",
-      "evidenceIds": [
-        "tauri-mit",
-        "tauri-apache",
-        "tauri-spdx"
-      ],
+      "evidenceIds": ["tauri-mit", "tauri-apache", "tauri-spdx"],
       "originalCompleteLicenseBodyRecovered": true
     }
   ],
@@ -689,13 +665,8 @@
       "upstreamReleasedFilesTreeSha256": "39a0c953995ff1d54a55467671b024c7ac96fefce957cc9989a1d60c5d4288e2",
       "effectiveReleasedFilesTreeSha256": "71faebc7011bca40a86e928a398a07be4a36572124c1ad2e0c7237b79b9695e3",
       "releasedFileCount": 1100,
-      "changedReleasedFiles": [
-        "vendor/mlx/CMakeLists.txt"
-      ],
-      "excludedAddedFiles": [
-        "EVERLAST-PATCH.json",
-        "EVERLAST-PATCH.md"
-      ],
+      "changedReleasedFiles": ["vendor/mlx/CMakeLists.txt"],
+      "excludedAddedFiles": ["EVERLAST-PATCH.json", "EVERLAST-PATCH.md"],
       "hashDefinition": "SHA256 of UTF-8 compact JSON (sort_keys=True,ensure_ascii=False,separators comma/colon), regular archive files as objects path/sha256; list sorted by full relative path string (Unicode lexical); excludes Cargo cache marker and added application receipts; no fetched outputs",
       "buildInputs": {
         "path": "config/mlx-build-inputs.json",
@@ -730,5 +701,10 @@
     "licenseTextBytesChanged": false,
     "effectiveNativeSourceNotRegistryCache": true,
     "method": "Static comparison of the cached published .crate, current vendor tree, patch receipt, enforced download pins and all existing license/notice text references."
+  },
+  "licenseCompletionSupplement": {
+    "path": "docs/licenses/third-party/license-completion.json",
+    "date": "2026-10-21",
+    "historicalInventoryPreserved": true
   }
 }

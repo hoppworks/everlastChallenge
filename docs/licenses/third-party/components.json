@@ -11555,5 +11555,10 @@
       "bytes": 15892576,
       "sha256": "45f4e463076c88e36adcc7ae95f810329686b32a69be374e0440d0ed7c0fd4ca"
     }
+  },
+  "licenseCompletionSupplement": {
+    "path": "docs/licenses/third-party/license-completion.json",
+    "date": "2026-10-21",
+    "historicalInventoryPreserved": true
   }
 }
