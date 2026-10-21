@@ -282,7 +282,7 @@ PATCHES.md; Originalarchive und Patchherkunft bleiben getrennt.
 | rustfft | 6.4.1 | MIT OR Apache-2.0 | konservativer nativer Kandidat; provided |
 | rustls | 0.23.46 | Apache-2.0 OR ISC OR MIT | konservativer nativer Kandidat; provided |
 | rustls-pki-types | 1.15.1 | MIT OR Apache-2.0 | konservativer nativer Kandidat; provided |
-| rustls-webpki | 0.103.15 | ISC | konservativer nativer Kandidat; provided |
+| rustls-webpki | 0.103.16 | ISC | konservativer nativer Kandidat; provided |
 | ryu | 1.0.23 | Apache-2.0 OR BSL-1.0 | konservativer nativer Kandidat; provided |
 | same-file | 1.0.6 | Unlicense/MIT | konservativer nativer Kandidat; provided |
 | schemars | 0.8.22 | MIT | konservativer nativer Kandidat; provided |
@@ -371,7 +371,7 @@ PATCHES.md; Originalarchive und Patchherkunft bleiben getrennt.
 | want | 0.3.2 | MIT | konservativer nativer Kandidat; provided |
 | web-time | 1.1.0 | MIT OR Apache-2.0 | konservativer nativer Kandidat; provided |
 | web_atoms | 0.2.6 | MIT OR Apache-2.0 | konservativer nativer Kandidat; provided |
-| webpki-roots | 1.0.9 | CDLA-Permissive-2.0 | konservativer nativer Kandidat; provided |
+| webpki-roots | 1.0.10 | CDLA-Permissive-2.0 | konservativer nativer Kandidat; provided |
 | whisper-rs | 0.16.0 | Unlicense | konservativer nativer Kandidat; provided |
 | whisper-rs-sys | 0.15.0 | Unlicense | konservativer nativer Kandidat; provided |
 | window-vibrancy | 0.8.1 | Apache-2.0 OR MIT | konservativer nativer Kandidat; provided |
