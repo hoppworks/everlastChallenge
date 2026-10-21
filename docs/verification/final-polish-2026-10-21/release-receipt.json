@@ -1,0 +1,17 @@
+{
+  "mainCommit": "9ccb2d28f08c8a04b6f92cd63a746a7e1b550fe2",
+  "runtimeSource": "6599669342ad7892f6a0d3ebb1516bf52760a235",
+  "productName": "Everlast Coding Challenge",
+  "bundleIdentifier": "de.hoppworks.everlast-dictation",
+  "archive": "/Users/hoppworks/projects/everlastChallenge/artifacts/delivery-2026-10-21/Everlast-Coding-Challenge-macOS-arm64.zip",
+  "archiveSha256": "6c36911076af7288d84ef12631276c9d5f55a8252a0ccc8efe5e825990ea9b11",
+  "fileSha256": {
+    "Contents/MacOS/everlast-dictation": "e1a11596ffd8f5f5914eb9a8f2c5179a19619bea34be424411179807c302d07b",
+    "Contents/Info.plist": "0d5046aee0c76addfdf680e352ca8d6d063d5e16c98d02e893e9a3a235f08369",
+    "Contents/MacOS/mlx.metallib": "0f067d79c93fdd840bbe0df4de56f651b86c9ed0f59a04db4dddea7bc0a44d22"
+  },
+  "signatureAndEntitlementsVerified": true,
+  "freshArchiveRoundtripVerified": true,
+  "installed": false,
+  "published": false
+}
