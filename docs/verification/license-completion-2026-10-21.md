@@ -1,3 +1,5 @@
+# Lizenznachtrag — 21.10.2026
+
 ## Änderungen
 
 - **FP16:** vollständiger MIT-Originaltext mit den drei ursprünglichen
