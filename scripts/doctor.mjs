@@ -57,7 +57,7 @@ export function inspectPrerequisites({
     "rustup installieren; danach im Checkout rustup show ausführen.",
   );
   for (const command of ["rustc", "cargo"]) {
-    const version = execute(command, ["--version"]);
+    const version = execute("rustup", ["run", rust, command, "--version"]);
     check(
       command,
       version?.split(" ")[1] === rust,

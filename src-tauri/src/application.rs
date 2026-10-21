@@ -283,10 +283,8 @@ impl AppSupervisor {
                     None => Ok(()),
                 };
                 let setup_cleanup = setup.shutdown().map_err(worker_error);
-                let result = result
-                    .and(runtime_cleanup)
-                    .and(native_cleanup)
-                    .and(setup_cleanup);
+                let result =
+                    finish_application([result, runtime_cleanup, native_cleanup, setup_cleanup]);
                 if let Err(error) = &result
                     && let Ok(mut state) = state.lock()
                 {
@@ -320,6 +318,25 @@ impl AppSupervisor {
 impl Drop for AppSupervisor {
     fn drop(&mut self) {
         if self.client.shutdown().is_err() { /* owner already stopped */ }
+    }
+}
+
+/// Joins have already run independently. Keep their specific failures even if
+/// the polling loop first observed only a generic "worker ended" condition.
+fn finish_application<const N: usize>(
+    results: [Result<(), ApplicationError>; N],
+) -> Result<(), ApplicationError> {
+    let mut errors = Vec::new();
+    for error in results.into_iter().filter_map(Result::err) {
+        let message = error.to_string();
+        if !errors.contains(&message) {
+            errors.push(message);
+        }
+    }
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(ApplicationError::Worker(errors.join("; ")))
     }
 }
 
@@ -385,6 +402,21 @@ mod tests {
         ));
         client.shutdown()?;
         Ok(())
+    }
+
+    #[test]
+    fn failed_native_join_retains_its_cause_after_generic_worker_observation() {
+        let result = finish_application([
+            Err(worker_error(
+                "Der Dienst für die Übergabe wurde unerwartet beendet.",
+            )),
+            Ok(()),
+            Err(worker_error("AX worker disconnected during cleanup")),
+            Ok(()),
+        ]);
+        assert!(
+            matches!(result, Err(ApplicationError::Worker(message)) if message.contains("unerwartet beendet") && message.contains("AX worker disconnected during cleanup"))
+        );
     }
 
     #[test]

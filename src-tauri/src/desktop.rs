@@ -1225,7 +1225,9 @@ impl Desktop {
                             self.0.native_starts_lost.store(true, Ordering::Release);
                             self.start_measurement_interference("native-hotkey-transport-error");
                         }
-                        self.hotkey_error(error);
+                        // Dispatch/backpressure errors are transient; registration errors
+                        // arrive through install_hotkeys/enable_cancel instead.
+                        self.action_error(error);
                     }
                 }
                 let native = self
@@ -1652,6 +1654,40 @@ mod tests {
             native_starts_lost: AtomicBool::new(false),
         }))
     }
+    #[test]
+    fn transport_failures_clear_on_retry_but_registration_faults_remain()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let desktop = unstarted_desktop();
+        desktop.action_error("Hotkey main-thread request still outstanding".into());
+        let retry = desktop.begin_action()?;
+        desktop.finish_action(&retry, Ok(()));
+        assert!(
+            desktop
+                .0
+                .shared
+                .lock()
+                .map_err(|_| "lock")?
+                .action_errors
+                .message()
+                .is_none()
+        );
+        desktop.hotkey_error("Registration unavailable".into());
+        let retry = desktop.begin_action()?;
+        desktop.finish_action(&retry, Ok(()));
+        assert_eq!(
+            desktop
+                .0
+                .shared
+                .lock()
+                .map_err(|_| "lock")?
+                .action_errors
+                .message()
+                .as_deref(),
+            Some("Registration unavailable")
+        );
+        Ok(())
+    }
+
     #[test]
     fn service_completion_preserves_owner_failure_after_generic_closed() {
         let error = finish_services(

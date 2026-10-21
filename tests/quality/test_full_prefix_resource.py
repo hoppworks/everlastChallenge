@@ -186,6 +186,21 @@ class ProcessTests(unittest.TestCase):
         self.assertEqual(len(result.errors), 1)
         self.assertIn("controlled denied signal", result.errors[0][1])
 
+    def test_unconfirmed_foreign_cleanup_is_a_separate_failure(self):
+        from unittest.mock import Mock, patch
+        foreign = Mock()
+        foreign.poll.return_value = None
+        report = {"watchdogExpired": True, "terminationConfirmed": True, "wrapperPid": 12345}
+        case = ProcessTests("test_real_owned_group_timeout_is_reaped_without_touching_foreign_fixture")
+        result = unittest.TestResult()
+        with patch("subprocess.Popen", return_value=foreign), \
+             patch.object(runner, "run_owned", return_value=report), \
+             patch.object(runner.process, "group_ended", return_value=True), \
+             patch.object(runner.process, "stop_owned", return_value=False):
+            case.run(result)
+        self.assertEqual(len(result.failures), 1)
+        self.assertIn("foreign fixture termination unconfirmed", result.failures[0][1])
+
     def test_real_owned_group_timeout_is_reaped_without_touching_foreign_fixture(self):
         import os
         import subprocess
@@ -196,7 +211,9 @@ class ProcessTests(unittest.TestCase):
             foreign=subprocess.Popen([sys.executable,"-c","import time;time.sleep(20)"],start_new_session=True)
             # Register independently: unittest runs every cleanup even if another
             # cleanup raises, and retains the original assertion separately.
-            self.addCleanup(runner.process.stop_owned, foreign)
+            def cleanup_foreign():
+                self.assertTrue(runner.process.stop_owned(foreign), "foreign fixture termination unconfirmed")
+            self.addCleanup(cleanup_foreign)
             command=[sys.executable,"-c","import signal,subprocess,sys,time;signal.signal(signal.SIGCHLD,signal.SIG_IGN);subprocess.Popen([sys.executable,'-c','import time;time.sleep(20)']);time.sleep(20)"]
             report=runner.run_owned(dict(root=root,sourceRevision="f"*40),command,root/"owned.log",watchdog=.15)
             def cleanup_owned():

@@ -17,7 +17,11 @@ function inspect(overrides = {}, options = {}) {
     arch: "arm64",
     node: "22.23.1",
     rust: "1.99.1",
-    execute: (command) => ({ ...versions, ...overrides })[command] ?? null,
+    execute: (command, args) => {
+      const tool =
+        command === "rustup" && args[0] === "run" ? args[2] : command;
+      return { ...versions, ...overrides }[tool] ?? null;
+    },
     ...options,
   });
 }
@@ -54,5 +58,36 @@ test("unsupported host and old Node are not qualified by matching tool versions"
       .filter((row) => !row.ok)
       .map((row) => row.name),
     ["Plattform", "Node.js"],
+  );
+});
+
+test("Rust inspection never calls auto-installing rustup proxies", () => {
+  const calls = [];
+  inspectPrerequisites({
+    platform: "darwin",
+    arch: "arm64",
+    node: "22.23.1",
+    rust: "1.99.1",
+    execute: (command, args) => {
+      calls.push([command, args]);
+      return null;
+    },
+  });
+  assert.deepEqual(
+    calls.filter(
+      ([command, args]) => command === "rustup" && args[0] === "run",
+    ),
+    [
+      ["rustup", ["run", "1.99.1", "rustc", "--version"]],
+      ["rustup", ["run", "1.99.1", "cargo", "--version"]],
+    ],
+  );
+  assert.ok(
+    calls.every(
+      ([command, args]) =>
+        command !== "rustc" &&
+        command !== "cargo" &&
+        !args.includes("--install"),
+    ),
   );
 });
