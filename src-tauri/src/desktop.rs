@@ -34,12 +34,14 @@ mod start_observer;
 #[cfg(feature = "test-control")]
 mod test_control;
 
+mod action_errors;
+
 pub const SNAPSHOT_EVENT: &str = "dictation:snapshot";
 struct Shared {
     view: view::Snapshot,
     client: Option<AppClient>,
     settings: Settings,
-    action_error: Option<String>,
+    action_errors: action_errors::ActionErrors,
     settings_requests: u32,
     key_labels: macos_integration::keyboard::KeyLabels,
     preferences: PreferenceState,
@@ -205,7 +207,7 @@ impl Desktop {
                 view: initial(),
                 client: None,
                 settings: Settings::default(),
-                action_error: None,
+                action_errors: Default::default(),
                 settings_requests: 0,
                 key_labels: Default::default(),
                 preferences: PreferenceState::default(),
@@ -319,35 +321,40 @@ impl Desktop {
     }
     pub fn native_action(&self, action: macos_integration::glass_header::HeaderAction) {
         use macos_integration::glass_header::HeaderAction;
-        if let Ok(mut shared) = self.0.shared.lock() {
-            shared.action_error = None;
-        }
+        let ticket = match self.begin_action() {
+            Ok(ticket) => ticket,
+            Err(error) => {
+                self.action_error(error);
+                return;
+            }
+        };
         let result = (|| {
             match action {
                 HeaderAction::Settings => self.request_settings().map(|_| ()),
                 HeaderAction::Stop(session) => self.stop_recording(session.get()),
                 HeaderAction::Cancel(session) => self.cancel_recording(session.get()),
                 HeaderAction::Start => {
-                    // Bound acknowledgement waiters before spawning any task.
                     let admission = self.ui_permit()?;
                     let reply = self.start_request(None, false, false)?;
                     let owner = self.clone();
+                    let pending = Arc::clone(&ticket);
                     tauri::async_runtime::spawn(async move {
                         let _admission = admission;
-                        if let Err(error) = reply
+                        let result = reply
                             .await
                             .map_err(|_| "Aufnahmeanfrage beendet".to_owned())
-                            .and_then(|result| result)
-                        {
-                            owner.action_error(error);
-                        }
+                            .and_then(|result| result);
+                        owner.finish_action(&pending, result);
                     });
-                    Ok(())
+                    return Ok(true);
                 }
-            }
+            }?;
+            Ok(false)
         })();
-        if let Err(error) = result {
-            self.action_error(error);
+        match result {
+            Ok(true) => {} // The asynchronous acknowledgement owns completion.
+            Ok(false) => self.finish_action(&ticket, Ok(())),
+            Err(error) => self.finish_action(&ticket, Err(error)),
         }
     }
     /// Install one complete native layout snapshot, independent of the selected
@@ -455,14 +462,33 @@ impl Desktop {
     }
     fn action_error(&self, error: String) {
         if let Ok(mut shared) = self.0.shared.lock() {
-            shared.action_error = Some(error);
+            shared.action_errors.report(error);
+        }
+    }
+    fn hotkey_error(&self, error: String) {
+        if let Ok(mut shared) = self.0.shared.lock() {
+            shared.action_errors.persistent(Some(error));
+        }
+    }
+    fn begin_action(&self) -> Result<Arc<()>, String> {
+        Ok(self
+            .0
+            .shared
+            .lock()
+            .map_err(|_| "Desktop lock failed")?
+            .action_errors
+            .begin())
+    }
+    fn finish_action(&self, ticket: &Arc<()>, result: Result<(), String>) {
+        if let Ok(mut shared) = self.0.shared.lock() {
+            shared.action_errors.complete(ticket, result);
         }
     }
     pub fn download(&self) -> Result<(), String> {
         #[cfg(feature = "measurement")]
         self.start_measurement_interference("model-setup");
         if let Ok(mut shared) = self.0.shared.lock() {
-            shared.action_error = None;
+            shared.action_errors.clear_transient();
         }
         self.app_client()?
             .download()
@@ -585,15 +611,16 @@ impl Desktop {
         Ok(forward_start(reply, reservation))
     }
     pub async fn start_recording(&self) -> Result<(), String> {
-        let _admission = self
-            .0
-            .admissions
-            .clone()
-            .try_acquire_owned()
-            .map_err(|_| "Zu viele laufende Anfragen")?;
-        self.start_request(None, false, false)?
-            .await
-            .map_err(|_| "Aufnahmeanfrage beendet")?
+        let ticket = self.begin_action()?;
+        let result = async {
+            let _admission = self.ui_permit()?;
+            self.start_request(None, false, false)?
+                .await
+                .map_err(|_| "Aufnahmeanfrage beendet".to_owned())?
+        }
+        .await;
+        self.finish_action(&ticket, result.clone());
+        result
     }
     pub fn stop_recording(&self, session: u64) -> Result<(), String> {
         #[cfg(feature = "measurement")]
@@ -666,6 +693,7 @@ impl Desktop {
         origin: hotkeys::NativeOrigin,
         owner: StartOwner,
     ) -> Result<(), String> {
+        let action_ticket = self.begin_action()?;
         let measured_ticket = self.start_measurement_begin(origin);
         let permit = self.0.admissions.clone().try_acquire_owned().map_err(|_| {
             self.start_measurement_ack(measured_ticket, false);
@@ -678,14 +706,17 @@ impl Desktop {
         tauri::async_runtime::spawn(async move {
             let _permit = permit;
             match reply.await {
-                Ok(Ok(())) => desktop.start_measurement_ack(measured_ticket, true),
+                Ok(Ok(())) => {
+                    desktop.start_measurement_ack(measured_ticket, true);
+                    desktop.finish_action(&action_ticket, Ok(()));
+                }
                 Ok(Err(error)) => {
                     desktop.start_measurement_ack(measured_ticket, false);
-                    desktop.action_error(error);
+                    desktop.finish_action(&action_ticket, Err(error));
                 }
                 Err(_) => {
                     desktop.start_measurement_ack(measured_ticket, false);
-                    desktop.action_error("Aufnahmeanfrage beendet".into());
+                    desktop.finish_action(&action_ticket, Err("Aufnahmeanfrage beendet".into()));
                 }
             }
         });
@@ -933,7 +964,10 @@ impl Desktop {
                 shared.preferences.needs_restart |= current.model != settings.model;
                 shared.settings = settings;
                 shared.preferences.error = None;
-                shared.action_error = None;
+                shared.action_errors.clear_transient();
+                if binder.binding().is_some() {
+                    shared.action_errors.persistent(None);
+                }
                 Ok(())
             }
             Err(error) => {
@@ -1142,7 +1176,7 @@ impl Desktop {
             }
             match self.install_hotkeys(app.clone(), settings.hotkey) {
                 Ok(owner) => hotkeys = Some(owner),
-                Err(error) => self.action_error(format!("Tastenkürzel nicht verfügbar: {error}")),
+                Err(error) => self.hotkey_error(format!("Tastenkürzel nicht verfügbar: {error}")),
             }
             while !self.0.closing.load(Ordering::Acquire) {
                 let pending = receive.try_recv().ok();
@@ -1183,7 +1217,7 @@ impl Desktop {
                     .and_then(|runtime| runtime.session.session);
                 if let Some(hotkeys) = &mut hotkeys {
                     if let Err(error) = hotkeys.enable_cancel(active) {
-                        self.action_error(error.to_string());
+                        self.hotkey_error(error.to_string());
                     }
                     if let Some(error) = hotkeys.take_error().map_err(|error| error.to_string())? {
                         #[cfg(feature = "measurement")]
@@ -1191,7 +1225,7 @@ impl Desktop {
                             self.0.native_starts_lost.store(true, Ordering::Release);
                             self.start_measurement_interference("native-hotkey-transport-error");
                         }
-                        self.action_error(error);
+                        self.hotkey_error(error);
                     }
                 }
                 let native = self
@@ -1223,7 +1257,7 @@ impl Desktop {
                     languages: crate::preferences::SUPPORTED_LANGUAGES.to_vec(),
                 };
                 next.settings_busy |= changing_settings || shared.preferences.needs_restart;
-                next.error = shared.action_error.clone().or(next.error);
+                next.error = next.error.or_else(|| shared.action_errors.message());
                 next.revision = shared.view.revision;
                 if next != shared.view {
                     next.revision = next
@@ -1597,7 +1631,7 @@ mod tests {
                 view: initial(),
                 client: None,
                 settings: Settings::default(),
-                action_error: None,
+                action_errors: Default::default(),
                 settings_requests: 0,
                 key_labels: Default::default(),
                 preferences: PreferenceState::default(),
