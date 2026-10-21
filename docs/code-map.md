@@ -40,12 +40,22 @@ sofortigen Abbruch eines bereits laufenden nativen Decoders.
 | Lokale Bereitstellungswerkzeuge | [Signierhelper](../scripts/sign-local-bundle.mjs), [Kontinuitätsvergleich](../scripts/verify-signing-continuity.mjs) | Explizite Build-/Signierwirkung, erwartete Bundle-Struktur/Entitlements, echte Signaturprüfung; gleiche Requirement ist noch kein nachgewiesener Rechteerhalt |
 | Übernommenes SDK | [whisper-rs-Patches](../vendor/whisper-rs/PATCHES.md), [sys-/C++-Patches](../vendor/whisper-rs-sys/PATCHES.md), [Hotkey-Patch](../vendor/global-hotkey/PATCHES.md) | echte Herkunft/Lizenzen, unveränderte gegenüber eigenen Teilen, C-/Rust-Grenze, Pointerlebensdauer und Grenze der lokalen Regressionen |
 
-Native Copy-/Clear-Aktionen besitzen den tatsächlich angezeigten Text. Copy
-verwendet dieses Payload; Conditional Clear vergleicht unmittelbar am seriellen
-Runtime-Dequeue und hält inzwischen anderen Text zurück. Der ältere unbedingte
-Clear-Pfad bleibt für seine bisherigen Aufrufer bestehen. Die
-[Offline-Verträge](verification/offline-contracts-2026-10-19.md) dokumentieren
-Assertion-REDs, Fix und Grenzen der neuen Capture-/Settings-Verbundtests.
+Native und React-Copy-Aktionen besitzen den tatsächlich angezeigten Text.
+React überträgt ihn explizit über `copyTranscript` an `transcript_copy`; Rust
+validiert die UTF-8-Größe vor dem nativen Clipboard-Aufruf. Copy benötigt keinen
+laufenden Inferenzdienst. Conditional Clear vergleicht unmittelbar am seriellen
+Runtime-Dequeue und hält inzwischen anderen Text zurück.
+
+`running=false` hat in React Vorrang vor Setup, Sitzung und Einstellungen:
+Neustarthilfe und letzter Text bleiben verfügbar, dienstabhängige Aktionen nicht.
+`desktop/action_errors.rs` bindet transiente Meldungen an die aktuelle Anfrage;
+späte Quittungen ändern keinen neueren Fehler. Dauerhafte Hotkeyfehler werden
+separat geführt. Beim Dienstabschluss bleiben Initiierungs- und Cleanupursachen
+sichtbar. `audio/input_config.rs` wählt nur vom Gerät angebotene und vom DSP
+bereits unterstützte Formate vor dem Streamstart.
+
+Die [Offline-Verträge](verification/offline-contracts-2026-10-19.md) bleiben
+historische Belege ihrer dort gebundenen Capture-/Settings-Verträge.
 
 ## Tests und tatsächliche Beobachtungen zuordnen
 
@@ -72,7 +82,9 @@ Assertion-REDs, Fix und Grenzen der neuen Capture-/Settings-Verbundtests.
   jeweiligen Laufbelege und Grenzen. Die private Audiodatei wird nicht als
   unabhängige Goldreferenz ausgegeben.
 
-Der [aktuelle Quellenaudit](verification/personal-review-v3-05413c2-delta.json)
+## Historische Prüfstände und Nachträge
+
+Der [historische Quellenaudit](verification/personal-review-v3-05413c2-delta.json)
 trennt die test-only Runtime-Modulregistrierung von den neuen ausführbaren
 Entwickler-/Signierwerkzeugen. Alle 107 ursprünglichen Anker bleiben gegenüber
 `2abf495` auf gleicher Zeile; E1/E2/O1/O2 bleiben erhalten. Die installierte

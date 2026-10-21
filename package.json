@@ -36,7 +36,8 @@
     "coverage:host": "node scripts/coverage-host.mjs",
     "check:format": "prettier --check src scripts config *.json *.ts *.mjs index.html",
     "check:dependencies": "knip --no-progress",
-    "check:dependencies:rust": "cargo machete crates/dictation-core crates/macos-integration src-tauri"
+    "check:dependencies:rust": "cargo machete crates/dictation-core crates/macos-integration src-tauri",
+    "doctor": "node scripts/doctor.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "2.12.4",
