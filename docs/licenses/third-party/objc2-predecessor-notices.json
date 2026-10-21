@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-21",
+  "basis": {
+    "sourceUrl": "https://raw.githubusercontent.com/madsmtm/objc2/d7d2fa23ceaa5e6096c923b081040e5d81b3b9df/README.md",
+    "path": "docs/licenses/third-party/texts/84a32b17c487d0c6413b3401ec7ce5db3d2c591852d3987ee426878ca9c5b77f.txt",
+    "sha256": "84a32b17c487d0c6413b3401ec7ce5db3d2c591852d3987ee426878ca9c5b77f",
+    "bytes": 5147,
+    "finding": "Pinned objc2 README explicitly identifies rust-objc and marysaka/dispatch2 among its predecessor projects."
+  },
+  "texts": [
+    {
+      "repository": "SSheldon/rust-objc",
+      "revision": "c8696b0cd1932fdf1b5b22c03af86f32a934f42f",
+      "sourceUrl": "https://raw.githubusercontent.com/SSheldon/rust-objc/c8696b0cd1932fdf1b5b22c03af86f32a934f42f/LICENSE.txt",
+      "path": "docs/licenses/third-party/texts/e353f37b12aefbb9f9b29490e837cfee05d9bda70804b3562839a3285c1df1e5.txt",
+      "bytes": 1066,
+      "sha256": "e353f37b12aefbb9f9b29490e837cfee05d9bda70804b3562839a3285c1df1e5",
+      "status": "Unmodified original notice from an upstream-declared predecessor; preserved conservatively, not a claim that every predecessor file is still linked."
+    },
+    {
+      "repository": "marysaka/dispatch2",
+      "revision": "a7d82e59ea1bc19596c516e4addd6ee116e6339d",
+      "sourceUrl": "https://raw.githubusercontent.com/marysaka/dispatch2/a7d82e59ea1bc19596c516e4addd6ee116e6339d/LICENSE-APACHE",
+      "path": "docs/licenses/third-party/texts/58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd.txt",
+      "bytes": 11357,
+      "sha256": "58d1e17ffe5109a7ae296caafcadfdbe6a7d176f0bc4ab01e12a689b0499d8bd",
+      "status": "Unmodified original notice from an upstream-declared predecessor; preserved conservatively, not a claim that every predecessor file is still linked."
+    },
+    {
+      "repository": "marysaka/dispatch2",
+      "revision": "a7d82e59ea1bc19596c516e4addd6ee116e6339d",
+      "sourceUrl": "https://raw.githubusercontent.com/marysaka/dispatch2/a7d82e59ea1bc19596c516e4addd6ee116e6339d/LICENSE-MIT",
+      "path": "docs/licenses/third-party/texts/30fefc3a7d6a0041541858293bcbea2dde4caa4c0a5802f996a7f7e8c0085652.txt",
+      "bytes": 1022,
+      "sha256": "30fefc3a7d6a0041541858293bcbea2dde4caa4c0a5802f996a7f7e8c0085652",
+      "status": "Unmodified original notice from an upstream-declared predecessor; preserved conservatively, not a claim that every predecessor file is still linked."
+    }
+  ],
+  "scope": "Additional original predecessor notices; current license options remain governed by each pinned crate declaration.",
+  "licenseLegalApprovalClaimed": false
+}

@@ -57,5 +57,6 @@
     "realfft 3.5.0 upstream does not provide a full original MIT/copyright file; the original declaration and authors metadata are included without inventing a notice.",
     "objc2 full texts were added after the pinned versions. Existing declaration and Apple SDK caveat retained; upstream does not guarantee complete historical contributor notices.",
     "gguflib attributes FP16 but does not identify the exact source revision. Upstream license included; exact provenance not newly proven."
-  ]
+  ],
+  "predecessorNoticeSupplement": "docs/licenses/third-party/objc2-predecessor-notices.json"
 }

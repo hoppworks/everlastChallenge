@@ -2,7 +2,7 @@
 
 Aktueller Lizenznachtrag: [Originaltexte und Quellenbindung](license-completion.json)
 mit vollständigem FP16-MIT-Text, den drei vom objc2-Maintainer ergänzten
-Lizenztexten und den unveränderten realfft-Lizenz-/Autorenangaben. Die
+Lizenztexten, zusätzlichen [Originalhinweisen seiner Vorgänger](objc2-predecessor-notices.json) und den unveränderten realfft-Lizenz-/Autorenangaben. Die
 [Prüfung vom 21.10.2026](../../verification/license-completion-2026-10-21.md)
 benennt die verbleibenden Herkunftsgrenzen. Historische Aussagen weiter unten
 beschreiben den damaligen Inventarstand.

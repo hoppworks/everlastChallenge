@@ -46,3 +46,14 @@ von Kommentaren und Whitespace mit dem ersten gguf-Import vom 27.12.2023 überei
 Der vollständige FP16-Lizenztext im letzten Upstreamstand vor diesem Import ist
 bytegleich zum bereits beigefügten Text. Das präzisiert die Herkunft; der konkrete
 übernommene FP16-Commit bleibt unbekannt.
+
+## Recherche der Vorgängerhinweise
+
+Die README der tatsächlich verwendeten objc2-Revision benennt `rust-objc` und
+`marysaka/dispatch2` als Vorgänger. Die Original-Lizenztexte dieser Projekte
+liegen nun zusätzlich unverändert bei, insbesondere die MIT-Notice mit
+`Copyright (c) Steven Sheldon`. Die
+[Quellenzuordnung](../licenses/third-party/objc2-predecessor-notices.json) bindet
+diese Dateien und die ursprüngliche README an Revision und SHA-256. Die Notices
+werden konservativ beibehalten; dies ist keine Behauptung, dass sämtliche Dateien
+der Vorgänger in das Binary gelinkt werden oder sämtliche Mitwirkenden genannt sind.
