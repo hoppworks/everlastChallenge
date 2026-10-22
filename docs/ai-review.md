@@ -28,3 +28,7 @@ Transporttests berichtigt. Gezielte Regressionen, der gemeinsame Softwarelauf
 und die tatsächlich erreichten Abdeckungsgrenzen stehen im
 [technischen Prüfbericht](verification/tooling-and-packages-2026-10-22.md).
 Das Review ersetzt diese ausführbaren Nachweise nicht.
+
+Der [native Prüfbericht 0.2.0](verification/release-0.2.0.md) ergänzt die
+beobachtete Einstellungsübernahme, Aufnahme, Modellproben und Paketprüfung.
+Er grenzt die fehlende neue Hotkey-/Empfangsprüfung ausdrücklich ab.
