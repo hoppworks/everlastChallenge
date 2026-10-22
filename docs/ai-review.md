@@ -315,3 +315,9 @@ before refinement. An unchanged-model file replay reproduced the initial-word
 error without the acoustic playback path; it did not reproduce the hyphenated
 opening. These observations do not establish a general cause or accuracy rate.
 The ZIP roundtrip compares every bundled file, not only the main executable.
+
+Die abschließende unabhängige Review prüfte Bereinigungs-, Worker-, Abbruch-
+und Übergabepfade sowie die veröffentlichten Vergleichszahlen. Die acht
+aktuellen Zeitintervalle und die zugehörigen Transkript-Hashes wurden gegen
+die lokalen Messbelege nachgerechnet. Die Vergleichsgrenzen bleiben bestehen;
+daraus wird kein allgemeiner Geschwindigkeits- oder Qualitätsvorsprung abgeleitet.
