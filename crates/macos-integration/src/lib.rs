@@ -12,6 +12,7 @@ pub mod devices;
 pub mod glass_header;
 pub mod keyboard;
 pub mod main_delivery;
+pub mod memory_pressure;
 pub mod paste;
 pub mod power;
 pub mod process;

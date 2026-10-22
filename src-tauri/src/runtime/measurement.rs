@@ -982,6 +982,10 @@ mod tests {
         let shared = Arc::new(Mutex::new(Shared {
             closing: false,
             suspended: false,
+            memory_pressure: false,
+            refinement_active: None,
+            pressure_hold: None,
+            refinement_unload_requested: false,
             admission_epoch: 0,
             snapshot: RuntimeSnapshot {
                 revision: 1,

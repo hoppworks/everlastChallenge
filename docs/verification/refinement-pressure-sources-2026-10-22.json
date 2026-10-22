@@ -1,0 +1,47 @@
+{
+  "baseCommit": "0e648b329a64b75e5d6fac57234e54c8fd996596",
+  "sourceFiles": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "0654ab85617f46bdce64cbb1bb98780e9d51ec49aec8515ce3a7256c37d806aa"
+    },
+    {
+      "path": "crates/macos-integration/Cargo.toml",
+      "sha256": "31f008117e5dc82ed55608855dee9eb9d3cb294063c35b3fb9aabcb997fe7312"
+    },
+    {
+      "path": "crates/macos-integration/src/lib.rs",
+      "sha256": "c64f31fd340b8c791db38cc29002dee5f1907abe2e4e9a241d25bb092a8abe44"
+    },
+    {
+      "path": "crates/macos-integration/src/memory_pressure.rs",
+      "sha256": "a4fcc4a05dea55ce2e881eb08e29e8fbd5623a8450d0d8dc9f6b63d0703a5c84"
+    },
+    {
+      "path": "src-tauri/src/desktop.rs",
+      "sha256": "4528c876865c11f4c8caeb5af5f01de32dcb67bee55c147b518c84597c40539a"
+    },
+    {
+      "path": "src-tauri/src/main.rs",
+      "sha256": "c999edfbff31fbc587306c65fa1e3d067c9b898f4c94cf4d2c8f796b8ab00127"
+    },
+    {
+      "path": "src-tauri/src/runtime.rs",
+      "sha256": "3c6d9b24f0c9f675b5c194f5371d47ba0e2ef8ca4af6bdaaddef6813b732e5a3"
+    },
+    {
+      "path": "src-tauri/src/runtime/measurement.rs",
+      "sha256": "9aaf86e6b0b3a3709bba493b41313da4c51b4518fea3578bb4624b751b4a3304"
+    },
+    {
+      "path": "src-tauri/src/runtime/refinement.rs",
+      "sha256": "4f589eedca6d032e36b0db58e05f04736208012a11c8bf3464b466831e5f0e84"
+    },
+    {
+      "path": "src-tauri/src/runtime/tests/refinement_contract.rs",
+      "sha256": "fa89ce008510e775084079f6a7d47b81e66c8f2ec4eac8d6e1ae49e7a48d56a7"
+    }
+  ],
+  "nativePressureEventsObserved": false,
+  "artificialSystemPressureGenerated": false
+}

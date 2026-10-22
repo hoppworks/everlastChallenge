@@ -127,6 +127,10 @@ pub struct RuntimeSnapshot {
 struct Shared {
     closing: bool,
     suspended: bool,
+    memory_pressure: bool,
+    refinement_active: Option<u64>,
+    pressure_hold: Option<u64>,
+    refinement_unload_requested: bool,
     admission_epoch: u64,
     snapshot: RuntimeSnapshot,
     cancellation: Option<SessionCancellation>,
@@ -229,6 +233,33 @@ pub struct Client {
 }
 
 impl Client {
+    /// Native callbacks only revoke the text job and wake the actor. ASR and
+    /// microphone ownership are unchanged; no model cleanup runs here.
+    pub fn set_memory_pressure(&self, pressured: bool) -> Result<(), RuntimeError> {
+        {
+            let mut shared = self
+                .shared
+                .lock()
+                .map_err(|_| RuntimeError::Synchronization)?;
+            if shared.closing || shared.memory_pressure == pressured {
+                return Ok(());
+            }
+            shared.memory_pressure = pressured;
+            if pressured {
+                shared.refinement_unload_requested = true;
+                if let Some(session) = shared.refinement_active {
+                    if let Some(cancel) = &shared.cancellation
+                        && cancel.session == session
+                    {
+                        cancel.refinement.cancel();
+                    }
+                    shared.pressure_hold = Some(session);
+                }
+            }
+        }
+        self.control.notify()?;
+        Ok(())
+    }
     /// Runs a bounded feedback action only while capture admission is idle.
     /// The callback must not block or re-enter Runtime. Its lock also gates
     /// accepted starts and native audio dispatch, so feedback cannot race them.
@@ -664,6 +695,10 @@ impl Runtime {
         let shared = Arc::new(Mutex::new(Shared {
             closing: false,
             suspended: false,
+            memory_pressure: false,
+            refinement_active: None,
+            pressure_hold: None,
+            refinement_unload_requested: false,
             admission_epoch: 0,
             snapshot: RuntimeSnapshot {
                 revision: 1,
@@ -901,6 +936,7 @@ impl<A: AudioDriver> Actor<A> {
     }
 
     fn reconcile_revoked(&mut self) -> Result<(), RuntimeError> {
+        self.hold_for_memory_pressure()?;
         let actions = {
             let shared = Arc::clone(&self.shared);
             let _admission = shared.lock().map_err(|_| RuntimeError::Synchronization)?;
@@ -939,7 +975,7 @@ impl<A: AudioDriver> Actor<A> {
         // Result adoption and immediate revocation have a single ordering point.
         // The lock covers only state mutation, never inference or device I/O.
         let shared = Arc::clone(&self.shared);
-        let _admission = shared
+        let mut _admission = shared
             .lock()
             .map_err(|_| crate::controller::ControllerError::Resource)?;
         #[cfg(feature = "measurement")]
@@ -974,6 +1010,16 @@ impl<A: AudioDriver> Actor<A> {
         } else {
             None
         };
+        if let Event::RefinementFinished { session, .. } = &event {
+            if _admission.refinement_active == Some(*session) {
+                _admission.refinement_active = None;
+            }
+            if let Some(session) = _admission.pressure_hold.take() {
+                return self
+                    .controller
+                    .refinement_unavailable(session, refinement::MEMORY_PRESSURE.into());
+            }
+        }
         let actions = self.controller.accept(event)?;
         #[cfg(feature = "measurement")]
         {
@@ -1120,14 +1166,41 @@ impl<A: AudioDriver> Actor<A> {
                 }
                 Action::Refine(job) => {
                     let session = job.session.get();
-                    let submitted = self
-                        .refinement
-                        .as_ref()
-                        .ok_or_else(|| "Text refinement service is unavailable".to_owned())
-                        .and_then(|service| service.submit(job));
+                    let shared = Arc::clone(&self.shared);
+                    let mut admission = shared.lock().map_err(|_| RuntimeError::Synchronization)?;
+                    if admission.memory_pressure {
+                        let actions = self
+                            .controller
+                            .refinement_unavailable(session, refinement::MEMORY_PRESSURE.into())
+                            .map_err(service_error)?;
+                        drop(admission);
+                        pending.extend(actions);
+                        continue;
+                    }
+                    // A warning followed by Normal can arrive after this
+                    // actor's pressure poll. Drain that unload before admitting
+                    // a fresh job, so the next poll cannot cancel the new job.
+                    let prepared = if std::mem::take(&mut admission.refinement_unload_requested) {
+                        self.refinement
+                            .as_ref()
+                            .map_or(Ok(()), |service| service.unload())
+                    } else {
+                        Ok(())
+                    };
+                    admission.refinement_active = Some(session);
+                    let submitted = prepared.and_then(|()| {
+                        self.refinement
+                            .as_ref()
+                            .ok_or_else(|| "Text refinement service is unavailable".to_owned())
+                            .and_then(|service| service.submit(job))
+                    });
                     match submitted {
                         Ok(()) => vec![],
-                        Err(message) => self.fail(session, message).map_err(service_error)?,
+                        Err(message) => {
+                            admission.refinement_active = None;
+                            drop(admission);
+                            self.fail(session, message).map_err(service_error)?
+                        }
                     }
                 }
                 Action::CancelInference(session) => {
@@ -1376,6 +1449,12 @@ impl<A: AudioDriver> Actor<A> {
             .lock()
             .map_err(|_| RuntimeError::Synchronization)?;
         let session = self.controller.snapshot();
+        if !matches!(
+            session.refinement.status,
+            crate::controller::RefinementStatus::Processing
+        ) {
+            shared.refinement_active = None;
+        }
         #[cfg(feature = "measurement")]
         if let Some(trace) = &shared.timing {
             trace.terminal(&session)?;

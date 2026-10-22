@@ -67,6 +67,11 @@ exit permits a new process for a later explicit job; an idle crash closes the
 service without a restart loop. The caller must still recheck session authority
 after dequeuing a result and before delivery.
 
+Public macOS memory-pressure warnings also request unload. Active refinement
+retains the original without automatic insertion; ordinary ASR can continue.
+New refinement jobs are held while pressure remains elevated. A return to Normal
+allows later explicit jobs and never retries a discarded job automatically.
+
 `npm run test:refinement:process` exercises the supervisor and owner with real
 fixture children. These fixtures do not load MLX or prove dictation/UI integration.
 The [owner report](../../docs/verification/refinement-owner-2026-10-22.md) records

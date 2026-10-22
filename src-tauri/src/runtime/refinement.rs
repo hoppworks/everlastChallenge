@@ -2,6 +2,8 @@
 use super::*;
 use crate::refinement_service::{self, owner};
 use dictation_core::refinement::{AcceptedTranscript, OriginalTranscript};
+pub(super) const MEMORY_PRESSURE: &str =
+    "Textbereinigung wegen Speicherdruck abgebrochen. Das Original bleibt erhalten.";
 
 pub(super) struct Completed {
     pub session: u64,
@@ -38,7 +40,39 @@ impl Service for owner::Owner {
 }
 
 impl<A: AudioDriver> Actor<A> {
+    pub(super) fn hold_for_memory_pressure(&mut self) -> Result<(), RuntimeError> {
+        let actions = {
+            let mut shared = self
+                .shared
+                .lock()
+                .map_err(|_| RuntimeError::Synchronization)?;
+            match shared.pressure_hold.take() {
+                Some(session) => {
+                    shared.refinement_active = None;
+                    self.controller
+                        .refinement_unavailable(session, MEMORY_PRESSURE.into())
+                        .map_err(service_error)?
+                }
+                None => vec![],
+            }
+        };
+        self.execute(actions)
+    }
     pub(super) fn poll_refinement(&mut self) -> Result<(), RuntimeError> {
+        self.hold_for_memory_pressure()?;
+        let unload = {
+            let mut shared = self
+                .shared
+                .lock()
+                .map_err(|_| RuntimeError::Synchronization)?;
+            std::mem::take(&mut shared.refinement_unload_requested)
+        };
+        if unload
+            && let Some(service) = &self.refinement
+            && let Err(error) = service.unload()
+        {
+            self.retire_refinement(error)?;
+        }
         let suspended = self
             .shared
             .lock()

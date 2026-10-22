@@ -6,6 +6,7 @@ use everlast_dictation::{
 };
 use macos_integration::{
     keyboard::LayoutObserver,
+    memory_pressure::{MemoryPressure, MemoryPressureObserver},
     power::{PowerEvent, PowerObserver},
     termination::TerminationHook,
 };
@@ -120,6 +121,7 @@ struct NativeUi {
     feedback_revision: Option<u64>,
     feedback_state: Option<FeedbackState>,
     power: PowerObserver,
+    memory_pressure: MemoryPressureObserver,
     layout: LayoutObserver,
 }
 impl NativeUi {
@@ -136,6 +138,14 @@ impl NativeUi {
         // Tauri run exits the process directly. Remove native observers explicitly
         // on Exit, before its cleanup, rather than relying on a stack destructor.
         let power_desktop = app.state::<Desktop>().inner().clone();
+        let pressure_desktop = native_desktop.clone();
+        let memory_pressure = MemoryPressureObserver::new(move |pressure| {
+            if let Err(error) =
+                pressure_desktop.set_memory_pressure(pressure != MemoryPressure::Normal)
+            {
+                eprintln!("Memory pressure transition failed: {error}");
+            }
+        });
         let power_app = app.clone();
         let power = PowerObserver::new(move |event| {
             if event == PowerEvent::WillPowerOff {
@@ -188,6 +198,7 @@ impl NativeUi {
             feedback_revision,
             feedback_state,
             power,
+            memory_pressure,
             layout,
         })
     }
@@ -233,6 +244,7 @@ impl NativeUi {
         drop(self.wakeup.take());
         self.layout.remove();
         self.power.remove();
+        self.memory_pressure.remove();
     }
 }
 

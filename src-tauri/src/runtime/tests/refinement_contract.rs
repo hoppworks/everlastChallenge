@@ -408,3 +408,186 @@ fn shutdown_waits_for_text_owner_after_audio_failure_and_preserves_both_errors()
     assert!(error.contains("text cleanup failed"), "{error}");
     Ok(())
 }
+
+#[test]
+fn memory_pressure_holds_original_and_rejects_late_refinement() -> TestResult {
+    let (service, controls) = service();
+    let fixture = LifecycleFixture::with_services(TextDecoder, Some(service))?;
+    let client = fixture.runtime.client();
+    let job = start_refinement(&fixture, &controls)?;
+    client.set_memory_pressure(true)?;
+    assert!(job.cancel.is_cancelled());
+    client.set_memory_pressure(false)?;
+    controls.results.send(completed(job)?)?;
+    let snapshot = wait_for(&client, |s| s.session.phase == Phase::Idle)?;
+    assert_eq!(
+        snapshot.session.text.as_deref(),
+        Some("Das ist, äh, ein Test.")
+    );
+    assert!(
+        matches!(snapshot.session.refinement.status, RefinementStatus::Failed(ref e) if e.contains("Speicher"))
+    );
+    assert!(
+        !fixture
+            .native
+            .requests
+            .try_iter()
+            .any(|r| matches!(r, NativeCommand::Deliver { .. }))
+    );
+    settle_polls(&client)?;
+    assert_eq!(controls.unloads.load(Ordering::Acquire), 1);
+    assert!(!controls.closed.load(Ordering::Acquire));
+    fixture.runtime.join()?;
+    Ok(())
+}
+
+#[test]
+fn pressure_unloads_idle_worker_and_blocks_only_refinement_until_normal() -> TestResult {
+    let (service, controls) = service();
+    let fixture = LifecycleFixture::with_services(TextDecoder, Some(service))?;
+    let client = fixture.runtime.client();
+    client.set_memory_pressure(true)?;
+    client.set_memory_pressure(true)?;
+    settle_polls(&client)?;
+    assert_eq!(controls.unloads.load(Ordering::Acquire), 1);
+    let mut preferences = settings();
+    preferences.refinement = true;
+    fixture.record_with(preferences.clone())?;
+    client.stop(1)?;
+    assert_eq!(fixture.stops.recv_timeout(Duration::from_secs(1))?, 1);
+    fixture.audio.send(CaptureEvent::Finished {
+        session: 1,
+        result: Ok(vec![0.1; 800]),
+        maximum: false,
+    })?;
+    let held = wait_for(&client, |s| s.session.phase == Phase::Idle)?;
+    assert_eq!(held.session.text.as_deref(), Some("Das ist, äh, ein Test."));
+    assert!(controls.jobs.try_recv().is_err());
+    client.set_memory_pressure(false)?;
+    settle_polls(&client)?;
+    assert!(
+        controls.jobs.try_recv().is_err(),
+        "normal must not retry an old job"
+    );
+    for request in fixture.native.requests.try_iter() {
+        assert!(!matches!(request, NativeCommand::Deliver { .. }));
+    }
+    accepted(client.start(preferences, None, true, false)?)?;
+    assert!(
+        matches!(fixture.native.requests.recv_timeout(Duration::from_secs(1))?, NativeCommand::Capture { session, .. } if session.get() == 2)
+    );
+    fixture.native.responses.send(NativeResult::Captured {
+        session: 2,
+        result: Ok(()),
+    })?;
+    assert_eq!(fixture.starts.recv_timeout(Duration::from_secs(1))?, 2);
+    fixture.audio.send(CaptureEvent::Started {
+        session: 2,
+        format: AudioFormat {
+            sample_rate: 16_000,
+            channels: 1,
+        },
+        started: Instant::now(),
+    })?;
+    wait_for(&client, |s| s.session.phase == Phase::Recording)?;
+    client.stop(2)?;
+    assert_eq!(fixture.stops.recv_timeout(Duration::from_secs(1))?, 2);
+    fixture.audio.send(CaptureEvent::Finished {
+        session: 2,
+        result: Ok(vec![0.1; 800]),
+        maximum: false,
+    })?;
+    let job = controls.jobs.recv_timeout(Duration::from_secs(2))?;
+    assert_eq!(job.session.get(), 2);
+    client.cancel(2)?;
+    fixture.runtime.join()?;
+    Ok(())
+}
+
+#[test]
+fn warning_then_normal_after_poll_unloads_before_admitting_a_new_job() -> TestResult {
+    let (service, controls) = service();
+    let controller = Controller::with_policy(crate::pipeline::APP_POLICY);
+    let shared = Arc::new(Mutex::new(Shared {
+        closing: false,
+        suspended: false,
+        memory_pressure: false,
+        refinement_active: None,
+        pressure_hold: None,
+        refinement_unload_requested: false,
+        admission_epoch: 0,
+        cancellation: None,
+        snapshot: RuntimeSnapshot {
+            revision: 1,
+            running: true,
+            model_ready: true,
+            session: controller.snapshot(),
+            maximum_warning: false,
+            maximum_reached: false,
+            elapsed_millis: 0,
+            level_permille: 0,
+            error: None,
+        },
+        #[cfg(feature = "measurement")]
+        timing: None,
+    }));
+    let (control, _requests) = control::mailbox(4);
+    let client = Client {
+        control,
+        shared: Arc::clone(&shared),
+    };
+    let (_, events) = bounded(1);
+    let (started, _) = bounded(1);
+    let (stopped, _) = bounded(1);
+    let (native, _endpoint) = native_mailbox();
+    let mut actor = Actor {
+        controller,
+        inference: None,
+        refinement: Some(service),
+        refinement_suspended: false,
+        generation: 1,
+        audio: ControlledAudio {
+            events,
+            started,
+            stopped,
+            closed: Arc::new(AtomicBool::new(false)),
+            gate: None,
+            progress: None,
+        },
+        native,
+        shared,
+        maximum_warning: false,
+        maximum_reached: false,
+        progress: None,
+        error: None,
+        capture_pending: None,
+        deferred_audio: None,
+    };
+    actor.poll_refinement()?;
+    client.set_memory_pressure(true)?;
+    client.set_memory_pressure(false)?;
+    actor.execute(vec![Action::Refine(owner::Job {
+        session: NonZeroU64::MIN,
+        original: dictation_core::refinement::OriginalTranscript::new("Hallo.".into())?,
+        language: text_refinement_protocol::Language::German,
+        cancel: crate::refinement_service::Cancellation::new(),
+    })])?;
+    let job = controls.jobs.recv_timeout(Duration::from_secs(1))?;
+    assert_eq!(
+        controls.unloads.load(Ordering::Acquire),
+        1,
+        "old unload must precede admission"
+    );
+    actor.poll_refinement()?;
+    assert!(
+        !job.cancel.is_cancelled(),
+        "old pressure must not revoke a new job"
+    );
+    assert_eq!(controls.unloads.load(Ordering::Acquire), 1);
+    actor
+        .refinement
+        .take()
+        .ok_or("missing service")?
+        .shutdown()?;
+    Ok(())
+}

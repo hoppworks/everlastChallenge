@@ -156,3 +156,11 @@ leases now protect live snapshots; an exclusive lease permits later recovery.
 The [recovery report](verification/refinement-recovery-2026-10-22.md) separates
 controlled process-crash evidence from normal native MLX startup/shutdown and
 from the still-unqualified GPU-abort and memory-pressure cases.
+
+Memory-pressure handling was AI-assisted and independently reviewed. Review found
+that an old pending unload could cancel a newly admitted job after pressure had
+already returned to Normal. The corrected admission order has a deterministic
+regression, including a failing run with only the correction removed. The
+[pressure report](verification/refinement-pressure-2026-10-22.md) distinguishes
+runtime contracts and native source construction from actual OS-pressure delivery,
+GPU behavior and memory measurements.

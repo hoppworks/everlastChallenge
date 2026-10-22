@@ -56,6 +56,7 @@ struct PreferenceState {
 #[derive(Default)]
 struct Admission {
     suspended: bool,
+    memory_pressure: bool,
     pending_starts: usize,
     changing_settings: bool,
     refreshing_devices: bool,
@@ -395,6 +396,34 @@ impl Desktop {
     }
     pub fn refresh_permissions(&self) {
         self.0.refresh.store(true, Ordering::Release);
+    }
+    pub fn set_memory_pressure(&self, pressured: bool) -> Result<(), String> {
+        #[cfg(feature = "measurement")]
+        self.start_measurement_interference("memory-pressure");
+        let mut admission = self
+            .0
+            .admission
+            .lock()
+            .map_err(|_| "Admission lock failed")?;
+        admission.memory_pressure = pressured;
+        if self.0.closing.load(Ordering::Acquire) {
+            return Ok(());
+        }
+        let client = self
+            .0
+            .shared
+            .lock()
+            .map_err(|_| "Desktop lock failed")?
+            .client
+            .clone();
+        if let Some(client) = client
+            && let Some(runtime) = client.runtime().map_err(|e| e.to_string())?
+        {
+            runtime
+                .set_memory_pressure(pressured)
+                .map_err(|e| e.to_string())?;
+        }
+        Ok(())
     }
     /// Called by the native notification observer. Never joins workers or resumes recording.
     pub fn set_suspended(&self, sleeping: bool) -> Result<(), String> {
@@ -1251,6 +1280,11 @@ impl Desktop {
                     && let Some(runtime) = &runtime
                 {
                     runtime.suspend().map_err(|error| error.to_string())?;
+                }
+                if let Some(runtime) = &runtime {
+                    runtime
+                        .set_memory_pressure(suspended.memory_pressure)
+                        .map_err(|e| e.to_string())?;
                 }
                 let runtime = runtime
                     .map(|runtime| runtime.snapshot())
