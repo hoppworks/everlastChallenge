@@ -39,3 +39,12 @@ scheiterte vor der Korrektur und bestand danach. Der
 [Nachweis zur Sperrenlebensdauer](verification/cache-lock-lifetime-2026-10-22.md)
 trennt diesen belegten Mechanismus von der nicht vollständig aufgezeichneten
 ursprünglichen Prozessabfolge.
+
+## Deterministische Textprüfung
+
+Codex unterstützte die reinen Rust-Verträge und Tests für begrenzte Textänderungen.
+Eine unabhängige Review entdeckte Eingriffe in Links, unvollständig erfasste Zahlen,
+verwaiste Kommas und einen fehlenden positiven Selbstkorrekturfall. Die Befunde
+wurden mit fehlschlagenden Regressionen reproduziert und korrigiert. Der
+[Prüfbericht](verification/refinement-core-2026-10-22.md) trennt diese Regeln
+ausdrücklich von noch ausstehenden Modell- und Integrationsnachweisen.
