@@ -35,6 +35,27 @@ export function linkedMetallib(messages, packageId) {
 function digest(file) {
   return createHash("sha256").update(readFileSync(file)).digest("hex");
 }
+export function builtExecutable(messages, name) {
+  const paths = new Set(
+    messages
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => JSON.parse(line))
+      .filter(
+        (row) =>
+          row.reason === "compiler-artifact" &&
+          row.target?.name === name &&
+          typeof row.executable === "string",
+      )
+      .map((row) => row.executable),
+  );
+  if (paths.size !== 1)
+    throw new Error(`Expected exactly one executable artifact for ${name}`);
+  const executable = [...paths][0];
+  if (!path.isAbsolute(executable))
+    throw new Error("Executable artifact must be absolute");
+  return executable;
+}
 export function buildMlxBundle(root = ROOT) {
   const env = {
     ...Object.fromEntries(
@@ -108,10 +129,45 @@ export function buildMlxBundle(root = ROOT) {
   )
     throw new Error("Invalid active Metal library");
   const kernelSha256 = digest(metallib);
+  const workerMessages = run(
+    "cargo",
+    [
+      "build",
+      "--locked",
+      "--release",
+      "--target",
+      "aarch64-apple-darwin",
+      "-p",
+      "text-refinement-worker",
+      "--bin",
+      "text-refinement-worker",
+      "--message-format=json-render-diagnostics",
+    ],
+    {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "inherit"],
+      maxBuffer: 64 * 1024 * 1024,
+    },
+  );
+  const workerExecutable = builtExecutable(
+    workerMessages,
+    "text-refinement-worker",
+  );
+  const workerMetallib = linkedMetallib(workerMessages, packages[0].id);
+  if (digest(workerMetallib) !== kernelSha256)
+    throw new Error("App and text worker require different Metal kernels");
+  const workerSha256 = digest(workerExecutable);
   // Package first, then sign the actual destination. MetalLib signatures are
   // stored in xattrs, which Tauri's ordinary file copy does not preserve.
   const override = {
-    bundle: { macOS: { files: { "MacOS/mlx.metallib": metallib } } },
+    bundle: {
+      macOS: {
+        files: {
+          "MacOS/mlx.metallib": metallib,
+          "MacOS/text-refinement-worker": workerExecutable,
+        },
+      },
+    },
   };
   run(path.join(root, "node_modules/.bin/tauri"), [
     "build",
@@ -134,10 +190,17 @@ export function buildMlxBundle(root = ROOT) {
     config.productName + ".app",
   );
   const bundled = path.join(bundle, "Contents/MacOS/mlx.metallib");
+  const bundledWorker = path.join(
+    bundle,
+    "Contents/MacOS/text-refinement-worker",
+  );
   if (
     !existsSync(bundled) ||
     digest(bundled) !== kernelSha256 ||
-    digest(metallib) !== kernelSha256
+    digest(metallib) !== kernelSha256 ||
+    digest(workerMetallib) !== kernelSha256 ||
+    digest(bundledWorker) !== workerSha256 ||
+    digest(workerExecutable) !== workerSha256
   )
     throw new Error("Bundled kernels differ from the selected native build");
   run("/usr/bin/codesign", [
@@ -146,6 +209,15 @@ export function buildMlxBundle(root = ROOT) {
     "-",
     "--timestamp=none",
     bundled,
+  ]);
+  run("/usr/bin/codesign", [
+    "--force",
+    "--sign",
+    "-",
+    "--timestamp=none",
+    "--options",
+    "runtime",
+    bundledWorker,
   ]);
   run("/usr/bin/codesign", [
     "--force",
@@ -165,6 +237,9 @@ export function buildMlxBundle(root = ROOT) {
     sourceMetallib: metallib,
     metalLibraryBytes: stat.size,
     kernelSha256,
+    workerExecutable,
+    workerBuildSha256: workerSha256,
+    bundledWorkerSha256: digest(bundledWorker),
     metalLibrarySigning:
       "ad-hoc timestamp=none on the copied library, then on the app; xattrs must be preserved when relocating the bundle",
     override,

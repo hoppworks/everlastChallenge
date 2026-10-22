@@ -142,3 +142,10 @@ the correction retains completed-result metadata and resets it on the next
 successful start. The [UI report](verification/refinement-ui-2026-10-22.md) records
 software tests and a separate visual review of simulated states. Neither proves
 packaged inference, model quality or receipt by another application.
+
+Bundled text-worker packaging was AI-assisted and independently reviewed. Review
+found that the existing local signer rejected the new helper; a failing regression
+preceded the allowlist and nested-signing correction. The
+[packaging report](verification/refinement-package-2026-10-22.md) records focused
+tests and a real relocated-worker smoke check, separately from model quality,
+application delivery and notarization.

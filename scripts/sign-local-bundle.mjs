@@ -86,8 +86,13 @@ function validateBundle(bundle, run, root) {
       "Bundle identity/executable is not the expected Everlast app",
     );
   const executable = path.join(bundle, "Contents/MacOS", MAIN);
-  if (!(regular(executable).mode & 0o111))
-    throw new Error("Main executable is not executable");
+  const worker = path.join(bundle, "Contents/MacOS/text-refinement-worker");
+  for (const binary of [executable, worker]) {
+    if (!(regular(binary, 512 * 1024 * 1024).mode & 0o111))
+      throw new Error(`Expected executable permissions: ${binary}`);
+  }
+  const kernels = path.join(bundle, "Contents/MacOS/mlx.metallib");
+  regular(kernels, 512 * 1024 * 1024);
   let count = 0;
   function visit(directory) {
     for (const item of readdirSync(directory, { withFileTypes: true })) {
@@ -113,10 +118,11 @@ function validateBundle(bundle, run, root) {
           0xfeedface, 0xfeedfacf, 0xcefaedfe, 0xcffaedfe, 0xcafebabe,
           0xbebafeca, 0xcafebabf, 0xbfbafeca,
         ].includes(magic);
-        if (file !== executable && (stat.mode & 0o111 || macho))
+        const expectedBinary = file === executable || file === worker;
+        if (!expectedBinary && (stat.mode & 0o111 || macho))
           throw new Error("Additional executable payload is unsupported");
-        if (file === executable && !macho)
-          throw new Error("Main executable is not Mach-O");
+        if (expectedBinary && !macho)
+          throw new Error(`Expected Mach-O executable: ${file}`);
       } else throw new Error("Nonregular bundle content is unsupported");
     }
   }
@@ -175,6 +181,30 @@ export function signLocalBundle({
   bundle = path.resolve(root, bundle || builtBundlePath(root, env));
   const entitlements = validateBundle(bundle, run, root);
   verify(bundle);
+  run(
+    "/usr/bin/codesign",
+    [
+      "--force",
+      "--sign",
+      fingerprint,
+      "--timestamp=none",
+      path.join(bundle, "Contents/MacOS/mlx.metallib"),
+    ],
+    { stdio: "inherit" },
+  );
+  run(
+    "/usr/bin/codesign",
+    [
+      "--force",
+      "--sign",
+      fingerprint,
+      "--timestamp=none",
+      "--options",
+      "runtime",
+      path.join(bundle, "Contents/MacOS/text-refinement-worker"),
+    ],
+    { stdio: "inherit" },
+  );
   run(
     "/usr/bin/codesign",
     [

@@ -8,6 +8,7 @@ import {
   readFileSync,
   renameSync,
   realpathSync,
+  chmodSync,
 } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -58,6 +59,12 @@ function fixture() {
     Buffer.from([0xcf, 0xfa, 0xed, 0xfe]),
     { mode: 0o755 },
   );
+  writeFileSync(
+    path.join(bundle, "Contents/MacOS/text-refinement-worker"),
+    Buffer.from([0xcf, 0xfa, 0xed, 0xfe]),
+    { mode: 0o755 },
+  );
+  writeFileSync(path.join(bundle, "Contents/MacOS/mlx.metallib"), "MTLB");
   return { root, bundle };
 }
 const info = {
@@ -78,7 +85,7 @@ function commands(calls, metadata = info) {
   };
 }
 
-test("only the selected main app is signed; strict verification surrounds signing", () => {
+test("fixed helper and kernels are signed before the selected app, with verification around all signing", () => {
   const { root } = fixture();
   try {
     const calls = [];
@@ -92,8 +99,28 @@ test("only the selected main app is signed; strict verification surrounds signin
       (call) => call.program === "/usr/bin/codesign",
     );
     assert.equal(calls[signIndex - 1].verify, result.bundle);
-    assert.equal(calls[signIndex + 1].verify, result.bundle);
-    assert.deepEqual(calls[signIndex].args, [
+    const signing = calls.filter(
+      (call) => call.program === "/usr/bin/codesign",
+    );
+    assert.equal(signing.length, 3);
+    assert.equal(calls.at(-1).verify, result.bundle);
+    assert.deepEqual(signing[0].args, [
+      "--force",
+      "--sign",
+      result.signingIdentity,
+      "--timestamp=none",
+      path.join(result.bundle, "Contents/MacOS/mlx.metallib"),
+    ]);
+    assert.deepEqual(signing[1].args, [
+      "--force",
+      "--sign",
+      result.signingIdentity,
+      "--timestamp=none",
+      "--options",
+      "runtime",
+      path.join(result.bundle, "Contents/MacOS/text-refinement-worker"),
+    ]);
+    assert.deepEqual(signing[2].args, [
       "--force",
       "--sign",
       "73E69FEC7B988BA45831F5250114E400A920DD70",
@@ -135,6 +162,44 @@ test("foreign identity and nested executable bundles are rejected before codesig
               assert.fail("verification started before structural validation"),
           }),
         nested ? /Nested executable/ : /identity/,
+      );
+      assert.equal(
+        calls.some((call) => call.program === "/usr/bin/codesign"),
+        false,
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }
+});
+
+test("helper allowlist still rejects additional code and malformed helpers before signing", () => {
+  for (const scenario of ["extra", "non-macho", "not-executable", "missing"]) {
+    const { root, bundle } = fixture();
+    try {
+      const worker = path.join(bundle, "Contents/MacOS/text-refinement-worker");
+      if (scenario === "extra") {
+        writeFileSync(
+          path.join(bundle, "Contents/MacOS/other-worker"),
+          Buffer.from([0xcf, 0xfa, 0xed, 0xfe]),
+        );
+      } else if (scenario === "non-macho") {
+        writeFileSync(worker, "not a native executable");
+      } else if (scenario === "not-executable") {
+        chmodSync(worker, 0o644);
+      } else {
+        rmSync(worker);
+      }
+      const calls = [];
+      assert.throws(
+        () =>
+          signLocalBundle({
+            root,
+            env: {},
+            run: commands(calls),
+            verify: () => assert.fail("invalid package reached verification"),
+          }),
+        /Additional executable|Expected Mach-O|executable permissions|ENOENT/,
       );
       assert.equal(
         calls.some((call) => call.program === "/usr/bin/codesign"),
@@ -209,7 +274,7 @@ test("experimental bundle identity is read from this checkout before signing", (
     assert.equal(result.bundle, realpathSync(experimental));
     assert.equal(
       calls.filter((call) => call.program === "/usr/bin/codesign").length,
-      1,
+      3,
     );
   } finally {
     rmSync(root, { recursive: true, force: true });

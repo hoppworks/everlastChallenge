@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, lstatSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -27,6 +27,45 @@ function readPlist(input) {
     }),
   );
 }
+export function runtimeFileErrors(bundle, executable) {
+  if (
+    typeof executable !== "string" ||
+    !/^[\w.-]+$/.test(executable) ||
+    executable === "." ||
+    executable === ".."
+  )
+    return ["Invalid bundle executable name"];
+  const errors = [];
+  for (const name of [executable, "text-refinement-worker", "mlx.metallib"]) {
+    try {
+      const stat = lstatSync(path.join(bundle, "Contents/MacOS", name));
+      if (
+        !stat.isFile() ||
+        stat.isSymbolicLink() ||
+        stat.size === 0 ||
+        stat.size > 512 * 1024 * 1024
+      )
+        errors.push(`${name} must be a nonempty regular file`);
+      if (name !== "mlx.metallib" && (stat.mode & 0o111) === 0)
+        errors.push(`${name} is not executable`);
+    } catch {
+      errors.push(`Missing runtime file: ${name}`);
+    }
+  }
+  return errors;
+}
+export function externalLibraryErrors(output) {
+  return output
+    .split("\n")
+    .slice(1)
+    .map((line) => line.trim().split(" (", 1)[0])
+    .filter(Boolean)
+    .filter(
+      (name) =>
+        !name.startsWith("/System/Library/") && !name.startsWith("/usr/lib/"),
+    )
+    .map((name) => `Non-system runtime dependency: ${name}`);
+}
 
 export function verifyBundle(bundle) {
   execFileSync(
@@ -39,6 +78,28 @@ export function verifyBundle(bundle) {
   const info = readPlist(
     readFileSync(path.join(bundle, "Contents", "Info.plist")),
   );
+  const fileErrors = runtimeFileErrors(bundle, info.CFBundleExecutable);
+  if (fileErrors.length) throw new Error(fileErrors.join("; "));
+  for (const name of [info.CFBundleExecutable, "text-refinement-worker"]) {
+    const file = path.join(bundle, "Contents/MacOS", name);
+    execFileSync("/usr/bin/codesign", ["--verify", "--strict", file], {
+      stdio: "pipe",
+    });
+    const architectures = execFileSync("/usr/bin/lipo", ["-archs", file], {
+      encoding: "utf8",
+    }).trim();
+    if (architectures !== "arm64")
+      throw new Error(`Unexpected architecture for ${name}: ${architectures}`);
+    const dependencies = externalLibraryErrors(
+      execFileSync("/usr/bin/otool", ["-L", file], { encoding: "utf8" }),
+    );
+    if (dependencies.length) throw new Error(dependencies.join("; "));
+  }
+  execFileSync(
+    "/usr/bin/codesign",
+    ["--verify", "--strict", path.join(bundle, "Contents/MacOS/mlx.metallib")],
+    { stdio: "pipe" },
+  );
   const signed = execFileSync(
     "/usr/bin/codesign",
     ["-d", "--entitlements", "-", "--xml", bundle],
@@ -47,7 +108,9 @@ export function verifyBundle(bundle) {
   const entitlements = signed.length === 0 ? {} : readPlist(signed);
   const errors = microphoneConfigurationErrors(info, entitlements);
   if (errors.length > 0) throw new Error(errors.join("; "));
-  console.log("Bundle signature and microphone declarations verified");
+  console.log(
+    "Bundle runtime inventory, signatures, architecture, linkage and microphone declarations verified",
+  );
 }
 
 /** Signature integrity alone is insufficient for a normal downloaded app. */

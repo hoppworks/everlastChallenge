@@ -1,6 +1,51 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { linkedMetallib } from "./build-mlx-bundle.mjs";
+import { linkedMetallib, builtExecutable } from "./build-mlx-bundle.mjs";
+test("worker path comes from the exact Cargo executable artifact", () => {
+  const row = (name, executable) =>
+    JSON.stringify({
+      reason: "compiler-artifact",
+      target: { name },
+      executable,
+    });
+  assert.equal(
+    builtExecutable(
+      [
+        row("other", "/wrong"),
+        row("text-refinement-worker", "/current/worker"),
+      ].join("\n"),
+      "text-refinement-worker",
+    ),
+    "/current/worker",
+  );
+  assert.throws(
+    () =>
+      builtExecutable(
+        row("text-refinement-worker", null),
+        "text-refinement-worker",
+      ),
+    /exactly one/,
+  );
+  assert.throws(
+    () =>
+      builtExecutable(
+        row("text-refinement-worker", "relative"),
+        "text-refinement-worker",
+      ),
+    /absolute/,
+  );
+  assert.throws(
+    () =>
+      builtExecutable(
+        [
+          row("text-refinement-worker", "/one"),
+          row("text-refinement-worker", "/two"),
+        ].join("\n"),
+        "text-refinement-worker",
+      ),
+    /exactly one/,
+  );
+});
 test("bundle takes Metal kernels only from the MLX sys build selected by Cargo", () => {
   const messages = [
     {

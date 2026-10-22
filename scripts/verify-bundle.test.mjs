@@ -3,7 +3,66 @@ import assert from "node:assert/strict";
 import {
   microphoneConfigurationErrors,
   verifyDistribution,
+  runtimeFileErrors,
+  externalLibraryErrors,
 } from "./verify-bundle.mjs";
+import {
+  mkdtempSync,
+  mkdirSync,
+  writeFileSync,
+  chmodSync,
+  symlinkSync,
+  rmSync,
+} from "node:fs";
+import os from "node:os";
+import path from "node:path";
+
+test("runtime inventory rejects a missing or symlinked helper", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "bundle-inventory-"));
+  try {
+    const dir = path.join(root, "Contents/MacOS");
+    mkdirSync(dir, { recursive: true });
+    for (const name of ["app", "mlx.metallib"]) {
+      writeFileSync(path.join(dir, name), "fixture");
+      chmodSync(path.join(dir, name), 0o700);
+    }
+    assert.match(
+      runtimeFileErrors(root, "app").join(),
+      /text-refinement-worker/,
+    );
+    symlinkSync(
+      path.join(dir, "app"),
+      path.join(dir, "text-refinement-worker"),
+    );
+    assert.match(runtimeFileErrors(root, "app").join(), /regular file/);
+    rmSync(path.join(dir, "text-refinement-worker"));
+    writeFileSync(path.join(dir, "text-refinement-worker"), "fixture");
+    chmodSync(path.join(dir, "text-refinement-worker"), 0o700);
+    assert.deepEqual(runtimeFileErrors(root, "app"), []);
+    assert.match(runtimeFileErrors(root, "../app").join(), /executable name/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+test("linked libraries cannot depend on a build machine or external rpath", () => {
+  assert.deepEqual(
+    externalLibraryErrors(
+      "app:\n\t/usr/lib/libc++.1.dylib (compatibility version 1.0.0)\n\t/System/Library/Frameworks/Metal.framework/Metal (compatibility version 1.0.0)",
+    ),
+    [],
+  );
+  for (const lib of [
+    "/opt/homebrew/lib/libmlx.dylib",
+    "@rpath/libmlx.dylib",
+    "/Users/build/lib.dylib",
+  ])
+    assert.match(
+      externalLibraryErrors(
+        `app:\n\t${lib} (compatibility version 1.0.0)`,
+      ).join(),
+      /Non-system/,
+    );
+});
 
 test("usage text alone cannot authorize hardened-runtime audio input", () => {
   const info = { NSMicrophoneUsageDescription: "Local dictation" };
