@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/dictation-core", "crates/macos-integration", "src-tauri"]
+members = ["crates/dictation-core", "crates/macos-integration", "crates/text-refinement-protocol", "src-tauri"]
 resolver = "2"
 
 [workspace.package]

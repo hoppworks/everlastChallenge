@@ -64,7 +64,8 @@ Vertragsvergleich geprüft. `npm run check:dependencies` verwendet gepinntes Kni
 für ungenutzte Dateien, Exporte und npm-Abhängigkeiten. `gitleaks` ist dort als
 extern installiertes Prüfwerkzeug ausgewiesen, nicht als npm-Paket versteckt.
 `npm run check:dependencies:rust` verwendet cargo-machete 0.9.2 ausschließlich auf
-den drei eigenen Crates; vendorte Upstream-Manifeste werden nicht umgeschrieben.
+den eigenen Crates einschließlich des Worker-Protokolls; vendorte
+Upstream-Manifeste werden nicht umgeschrieben.
 Setup und CI installieren diese Version explizit.
 
 Leere TypeScript-Catchblöcke, fokussierte/übersprungene Frontendtests, unkommentierte

@@ -4767,6 +4767,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "text-refinement-protocol"
+version = "0.2.0"
+dependencies = [
+ "dictation-core",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -48,3 +48,10 @@ verwaiste Kommas und einen fehlenden positiven Selbstkorrekturfall. Die Befunde
 wurden mit fehlschlagenden Regressionen reproduziert und korrigiert. Der
 [Prüfbericht](verification/refinement-core-2026-10-22.md) trennt diese Regeln
 ausdrücklich von noch ausstehenden Modell- und Integrationsnachweisen.
+
+Für das getrennte Worker-Protokoll wurden ebenfalls Tests vor der jeweiligen
+Implementierung und eine unabhängige Review eingesetzt. Ein negativer Test
+zeigte, dass eine parameterlose Serde-Variante zusätzliche Felder akzeptierte;
+eine explizite leere Struktur verhindert dies. Die Protokolltests prüfen
+Speichergrenzen, Teilrahmen, Versionen und unbekannte/doppelte Felder in
+kontrollierten Speicherstreams; sie ersetzen keine Prozess- oder Modellprüfung.
