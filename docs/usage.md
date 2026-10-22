@@ -14,9 +14,10 @@ Sperre nicht auf.
 Wenn du die App aus diesem Repository bewusst ausführen möchtest, prüfe zunächst
 Downloadquelle und die Prüfsumme im Release. Danach:
 
-1. Im Dialog **Done** wählen.
-2. **System Settings → Privacy & Security** öffnen.
-3. Bei der Meldung zu **Everlast Coding Challenge** auf **Open Anyway** klicken
+1. Im Dialog **Fertig (Done)** wählen.
+2. **Systemeinstellungen → Datenschutz & Sicherheit** öffnen
+   (englisch: **System Settings → Privacy & Security**).
+3. Bei der Meldung zu **Everlast Coding Challenge** auf **Dennoch öffnen (Open Anyway)** klicken
    und die anschließende Bestätigung durchführen.
 
 Dies entspricht [Apples Anleitung für nicht notarisierte Apps](https://support.apple.com/en-au/102445).

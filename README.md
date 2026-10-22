@@ -12,8 +12,10 @@ Oberfläche ist in React/TypeScript umgesetzt.
 
 Benötigt **Apple Silicon und macOS 27 oder neuer**. ZIP entpacken und die App
 nach Programme ziehen. **Der Build ist lokal signiert, nicht Apple-notarisiert.**
-macOS kann ihn beim ersten Öffnen blockieren. Die einmalige Freigabe erfolgt
-über **System Settings → Privacy & Security → Open Anyway**;
+macOS kann deshalb beim ersten Öffnen „Apple konnte nicht überprüfen …“ anzeigen.
+Dann **Fertig (Done)** wählen und die App einmalig unter
+**Systemeinstellungen → Datenschutz & Sicherheit → Dennoch öffnen (Open Anyway)**
+freigeben. Bei englischem macOS: **System Settings → Privacy & Security**.
 [Details zur Meldung](docs/usage.md#macos-blockiert-das-erste-öffnen).
 
 ## Loslegen
