@@ -179,7 +179,12 @@ impl PrivateSnapshot {
         if count != expected_bytes {
             return Err(ModelError::Size);
         }
-        if format!("{:x}", hash.finalize()) != expected_sha {
+        if (hash.finalize())
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
+            != expected_sha
+        {
             return Err(ModelError::Hash);
         }
         output.flush()?;
@@ -248,7 +253,10 @@ mod tests {
         let source = root.path().join("original.bin");
         let bytes = b"verified model fixture";
         fs::write(&source, bytes)?;
-        let hash = format!("{:x}", Sha256::digest(bytes));
+        let hash = (Sha256::digest(bytes))
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>();
         let snapshot = PrivateSnapshot::copy(&source, bytes.len() as u64, &hash, root.path())?;
         assert_eq!(
             fs::metadata(&snapshot.directory)?.permissions().mode() & 0o777,

@@ -1,3 +1,7 @@
+Aktueller Paketgraph vom 22.10.2026: [Lockfile-gebundenes Inventar](updated-dependencies-2026-10-22.json)
+und [Originaltext-Nachtrag](package-update-supplement.json). Die folgenden
+Inventare bleiben historische Belege und Herkunftsnachweise unveränderter Teile.
+
 # Drittbestandteile: Lizenztexte und Herkunft
 
 Aktueller Lizenznachtrag: [Originaltexte und Quellenbindung](license-completion.json)

@@ -269,7 +269,10 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     assert_eq!(readback.match_indices(UNICODE).count(), 1);
     assert_eq!(readback.len(), 80);
     assert_eq!(
-        format!("{:x}", Sha256::digest(readback.as_bytes())),
+        (Sha256::digest(readback.as_bytes()))
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>(),
         "55dcecf192298167c397764f94f84551b7bd6980287a3cf310b8eb1346a0fcfb"
     );
     assert_eq!(lease.restore(main)?, RestoreOutcome::Restored);

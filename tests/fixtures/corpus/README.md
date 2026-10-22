@@ -4,6 +4,10 @@ Dieser Korpus dient der lokalen Qualitätsmessung. Er ist noch keine bestandene
 P05-Abnahme. Die Audiodateien liegen ausschließlich im ignorierten Verzeichnis
 `artifacts/corpus`; private Benutzeraufnahmen gehören nicht zu dieser Auswahl.
 
+Die historischen JSON-Dateien bleiben unverändert. Neue Generatorausgaben
+verwenden neue Pfade; Hinweise zur Format- und Hashbindung stehen in
+[Entwicklerwerkzeuge](../../../docs/tooling.md).
+
 ## Reproduktion
 
 Die festen Quellen, Downloadlinks, Hashes und Lizenzbelege stehen in
@@ -14,13 +18,13 @@ Das Heidelberg-Archiv heißt `artifacts/corpus/source/hd_audio.tar.gz`.
 Beide Builder prüfen die fest im Quelltext hinterlegten Hashes vor Verwendung.
 
 ```sh
-/usr/bin/python3 scripts/corpus.py --source artifacts/corpus/source --manifest artifacts/corpus/fleurs-base.json
-/usr/bin/python3 scripts/short_corpus.py artifacts/corpus/fleurs-base.json --source artifacts/corpus/source/hd_audio.tar.gz --output tests/fixtures/corpus/manifest.json
+node --import tsx scripts/corpus.ts --source artifacts/corpus/source --manifest artifacts/corpus/fleurs-base.json
+node --import tsx scripts/short-corpus.ts artifacts/corpus/fleurs-base.json --source artifacts/corpus/source/hd_audio.tar.gz --output artifacts/corpus/manifest-ts.json
 npm run test:quality
 ```
 
-Für die Auswertung ist Python mit Unicode-Datenbank **13.0.0** erforderlich;
-auf dem Prüfgerät ist das `/usr/bin/python3` (Python 3.9.6). Die HD-Konvertierung
+Die Auswertung verwendet fest eingebundene Unicode-13.0.0-Tabellen. Node führt
+die TypeScript-Werkzeuge aus; eine Python-Installation ist nicht erforderlich. Die HD-Konvertierung
 verwendet das vorhandene `/opt/homebrew/bin/ffmpeg`; Version und Binärhash stehen
 im erzeugten Manifest. Abweichende eingefrorene Dateien werden nicht ersetzt.
 Werkzeuge und Audiohashes müssen vor dem Modellvergleich festgeschrieben sein.
@@ -53,7 +57,7 @@ Der Entwickler-Probe akzeptiert ein Manifest mit ausgewählter Fallmenge:
 
 ```sh
 EVERLAST_BENCHMARK_REVISION="$(git rev-parse HEAD)" cargo run -p everlast-dictation --release --example corpus_probe -- MODEL_PATH reference MANIFEST_JSON OUTPUT_JSON
-/usr/bin/python3 scripts/quality.py MANIFEST_JSON OUTPUT_JSON --output REPORT_JSON
+node --import tsx scripts/quality.ts MANIFEST_JSON OUTPUT_JSON --output REPORT_JSON
 ```
 
 Für das kleine Modell wird `small` übergeben. Ergebnisse und Metadaten sind neue
@@ -90,7 +94,7 @@ Stille und ein fest vorgewählter natürlicher Büroton, jeweils DE/EN. Die
 sind getrennt dokumentiert. Die ursprüngliche Abnahmemenge bleibt unverändert.
 
 ```sh
-/usr/bin/python3 scripts/calibration.py --source-manifest tests/fixtures/corpus/manifest.json --room-source artifacts/corpus/source/freesound-456207-hq.mp3 --output tests/fixtures/corpus/calibration-v2.json
+node --import tsx scripts/calibration.ts --source-manifest tests/fixtures/corpus/manifest.json --room-source artifacts/corpus/source/freesound-456207-hq.mp3 --output artifacts/corpus/calibration-v2-ts.json
 ```
 
 Der Builder prüft Quellmanifest, tatsächliche WAV-Bytes, Raumdatei und Decoder

@@ -1,6 +1,21 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "entry": ["src/**/*.test.{ts,tsx}", "scripts/*.mjs", "*.config.{ts,mjs}"],
-  "project": ["src/**/*.{ts,tsx}", "scripts/**/*.mjs", "*.config.{ts,mjs}"],
+  "entry": [
+    "src/**/*.test.{ts,tsx}",
+    "scripts/*.mjs",
+    "*.config.{ts,mjs}",
+    "scripts/*.ts",
+    "tests/tooling/**/*.test.ts",
+    "tools/**/*.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "scripts/**/*.mjs",
+    "*.config.{ts,mjs}",
+    "scripts/**/*.ts",
+    "tests/tooling/**/*.ts",
+    "tools/**/*.ts",
+    "tests/fixtures/browser-fields/**/*.ts"
+  ],
   "ignoreBinaries": ["gitleaks"]
 }

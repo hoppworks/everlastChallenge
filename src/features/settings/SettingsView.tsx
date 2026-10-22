@@ -143,9 +143,8 @@ export function SettingsView(props: SettingsViewProps) {
         {props.error && <p role="alert">{props.error}</p>}
         {preferences.needsRestart && (
           <p role="alert">
-            Bitte starte die App neu, um die gespeicherte Modellwahl zu laden
-            oder die Einstellungen wieder vollständig anzuwenden. Bis dahin sind
-            Aufnahme und weitere Änderungen gesperrt.
+            Bitte starte die App neu, um die Einstellungen wieder vollständig
+            anzuwenden. Bis dahin sind Aufnahme und weitere Änderungen gesperrt.
           </p>
         )}
         {preferences.error && <p role="alert">{preferences.error}</p>}
@@ -317,44 +316,9 @@ export function SettingsView(props: SettingsViewProps) {
           <section className="settings-detail" aria-labelledby="settings-model">
             <h3 id="settings-model">Sprachmodell</h3>
             <p>{setup.model.name}</p>
-            <label>
-              Erkennungsmodell
-              <select
-                disabled={disabled}
-                value={draft.model ?? ""}
-                onChange={(event) =>
-                  setDraft({
-                    ...draft,
-                    model: event.target.value as
-                      | "reference"
-                      | "mlx_reference_encoder",
-                  })
-                }
-              >
-                {!preferences.current.model && (
-                  <option value="" disabled>
-                    Bisherige Modellwahl beibehalten
-                  </option>
-                )}
-                <option value="mlx_reference_encoder">
-                  MLX-Hybrid · optimierter Encoder, whisper.cpp-Decoder
-                </option>
-                <option value="reference">whisper.cpp · Referenz</option>
-              </select>
-            </label>
             <p className="settings-help">
-              Der Wechsel wird erst nach dem Speichern und einem Neustart aktiv.
-              Danach wird das gewählte Modell geprüft und bei Bedarf
-              eingerichtet. Mikrofon und Tastenkürzel bleiben erhalten.
+              MLX-Hybrid · optimierter Encoder, whisper.cpp-Decoder
             </p>
-            <button
-              type="button"
-              className="primary-action"
-              disabled={disabled || !dirty || !valid}
-              onClick={() => props.onSave(draft)}
-            >
-              Modellwahl speichern
-            </button>
             <p>{phaseLabels[setup.phase]}</p>
             {setup.error && <p role="alert">{setup.error}</p>}
             <p className="settings-help">

@@ -177,7 +177,7 @@ fn diagnose(
     Ok(serde_json::json!({
         "schemaVersion":1,"kind":"reference-encoder-dtype-direct-diagnostic",
         "sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
-        "probeSha256":format!("{:x}", <sha2::Sha256 as sha2::Digest>::digest(include_bytes!("encoder_precision_probe.rs"))),
+        "probeSha256":(<sha2::Sha256 as sha2::Digest>::digest(include_bytes!("encoder_precision_probe.rs"))).iter().map(|byte| format!("{byte:02x}")).collect::<String>(),
         "passed":workload.is_ok()&&finish.is_ok()&&after_finish_memory.is_ok(),"qualified":false,"workerJoined":true,
         "requestedPrecision":precision,"encoderComputeDtype":actual_label,
         "checkpointDtype":"fp32","bridgeFeatureDtype":"fp32",

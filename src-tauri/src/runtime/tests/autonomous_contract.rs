@@ -16,7 +16,10 @@ fn public_pcm() -> TestResult<Vec<i16>> {
         "/../tests/fixtures/jfk.wav"
     ));
     assert_eq!(
-        format!("{:x}", Sha256::digest(bytes)),
+        (Sha256::digest(bytes))
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>(),
         "59dfb9a4acb36fe2a2affc14bacbee2920ff435cb13cc314a08c13f66ba7860e"
     );
     let mut wav = hound::WavReader::new(Cursor::new(bytes))?;
@@ -92,7 +95,11 @@ impl Decoder for CheckedDecoder {
         // Independent literal binding: PCM16 normalized by 32768, generated
         // from the public fixture without invoking the production DSP.
         if pcm.len() != FRAMES
-            || format!("{:x}", hash.finalize()) != PCM_HASH
+            || (hash.finalize())
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<String>()
+                != PCM_HASH
             || language != Language::English
         {
             return Err(InferenceError::InvalidAudio);

@@ -566,7 +566,13 @@ fn pinned_restart_bytes(
     std::fs::File::open(path)?
         .take(maximum + 1)
         .read_to_end(&mut bytes)?;
-    if bytes.len() as u64 > maximum || format!("{:x}", Sha256::digest(&bytes)) != expected_hash {
+    if bytes.len() as u64 > maximum
+        || (Sha256::digest(&bytes))
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
+            != expected_hash
+    {
         return Err("pinned native restart fixture size/hash mismatch".into());
     }
     Ok(bytes)

@@ -97,7 +97,7 @@ fn binding(path: &Path, limit: u64) -> Result<Value, Error> {
     }
     Ok(
         json!({"path":path.to_str().ok_or("bound path is not UTF8")?,"bytes":total,
-        "sha256":format!("{:x}",hash.finalize()),"mode":format!("0o{:o}",after.permissions().mode()&0o777)}),
+        "sha256":(hash.finalize()).iter().map(|byte| format!("{byte:02x}")).collect::<String>(),"mode":format!("0o{:o}",after.permissions().mode()&0o777)}),
     )
 }
 fn shape(manifest: &input::Manifest) -> Result<(), Error> {

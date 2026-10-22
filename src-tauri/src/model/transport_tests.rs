@@ -100,12 +100,13 @@ impl Drop for Server {
         { /* assertion path already fails the test */ }
     }
 }
-fn client() -> Result<reqwest::Client, reqwest::Error> {
-    download_client_builder()
+fn client() -> Result<reqwest::Client, ModelError> {
+    download_client_builder()?
         .https_only(false)
         .no_proxy()
         .read_timeout(Duration::from_millis(100))
         .build()
+        .map_err(network_error)
 }
 fn run(
     directory: &Path,
@@ -268,7 +269,7 @@ fn production_client_refuses_plaintext_before_any_request() -> TestResult {
     let server = Server::new(|stream| {
         stream.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 3\r\nConnection: close\r\n\r\nabc")
     })?;
-    let production = download_client_builder().no_proxy().build()?;
+    let production = download_client_builder()?.no_proxy().build()?;
     let result = run(
         directory.path(),
         &server.url,
@@ -320,9 +321,12 @@ fn untrusted_tls_is_rejected_and_explicit_test_trust_is_a_positive_control() -> 
             tls.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 3\r\nConnection: close\r\n\r\nabc")?;
             tls.flush()
         })?;
-        let mut builder = download_client_builder().no_proxy();
+        let mut builder = download_client_builder()?.no_proxy();
         if trust_fixture {
-            builder = builder.add_root_certificate(reqwest::Certificate::from_der(CERTIFICATE)?);
+            // Isolate this positive control to the explicit fixture trust anchor.
+            // The ordinary arm retains the platform verifier. Do not import the
+            // artificial long-lived test certificate into system trust or bypass TLS.
+            builder = builder.tls_certs_only([reqwest::Certificate::from_der(CERTIFICATE)?]);
         }
         let client = builder.build()?;
         let directory = tempfile::tempdir()?;
@@ -366,10 +370,13 @@ fn external_cancel_interrupts_an_outstanding_body_read() -> TestResult {
     let (finished, result) = std::sync::mpsc::channel();
     let worker = thread::spawn(move || {
         let outcome = download_client_builder()
-            .https_only(false)
-            .no_proxy()
-            .build()
-            .map_err(network_error)
+            .and_then(|builder| {
+                builder
+                    .https_only(false)
+                    .no_proxy()
+                    .build()
+                    .map_err(network_error)
+            })
             .and_then(|client| {
                 run(&path, &source, &client, &requested, |bytes| {
                     if bytes == 0 && entered.send(()).is_err() { /* assertion cleanup */ }
@@ -400,7 +407,7 @@ fn connection_refused_stays_network_and_preserves_old_model_and_foreign_part() -
     drop(listener);
     let directory = tempfile::tempdir()?;
     old_model(directory.path())?;
-    let client = download_client_builder()
+    let client = download_client_builder()?
         .no_proxy()
         .connect_timeout(Duration::from_millis(200))
         .timeout(Duration::from_secs(1))

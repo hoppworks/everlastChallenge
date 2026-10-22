@@ -65,7 +65,10 @@ pub fn pcm_sha(samples: &[f32]) -> String {
     for sample in samples {
         hash.update(sample.to_le_bytes());
     }
-    format!("{:x}", hash.finalize())
+    (hash.finalize())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>()
 }
 
 pub struct PairInput {

@@ -40,7 +40,13 @@ pub fn template() -> Result<Value, serde_json::Error> {
             "runner":source("src-tauri/examples/runtime_resource_probe/runner.rs",include_bytes!("runner.rs")),
             "metrics":source("src-tauri/examples/runtime_resource_probe/metrics.rs",include_bytes!("metrics.rs")),
             "parameters":source("src-tauri/examples/runtime_resource_probe/parameters.rs",include_bytes!("parameters.rs")),
-            "launcher":source("scripts/run-runtime-resource.py",include_bytes!("../../../scripts/run-runtime-resource.py"))
+            "launcher":source("scripts/run-runtime-resource.ts",include_bytes!("../../../scripts/run-runtime-resource.ts")),
+            "processOwner":source("scripts/controlled-probe.ts",include_bytes!("../../../scripts/controlled-probe.ts")),
+            "groupCleanup":source("scripts/tooling/owned-probe.ts",include_bytes!("../../../scripts/tooling/owned-probe.ts")),
+            "fileTools":source("scripts/tooling/files.ts",include_bytes!("../../../scripts/tooling/files.ts")),
+            "ioTools":source("scripts/tooling/io.ts",include_bytes!("../../../scripts/tooling/io.ts")),
+            "audioTools":source("scripts/tooling/audio-data.ts",include_bytes!("../../../scripts/tooling/audio-data.ts")),
+            "packageLock":source("package-lock.json",include_bytes!("../../../package-lock.json"))
         }
     }))
 }

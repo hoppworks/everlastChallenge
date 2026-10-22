@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "texts": [
+    {
+      "components": [
+        "ts-rs@12.0.1",
+        "ts-rs-macros@12.0.1"
+      ],
+      "path": "docs/licenses/third-party/texts/db7f7f8e7236a2d0b41b855b2501b7b913caebbcda6ce498637a304ad1706ce1.txt",
+      "sha256": "db7f7f8e7236a2d0b41b855b2501b7b913caebbcda6ce498637a304ad1706ce1",
+      "bytes": 1073,
+      "sourceUrl": "https://raw.githubusercontent.com/Aleph-Alpha/ts-rs/7182ad8289596097235406b715fa04506443b4ad/LICENSE"
+    },
+    {
+      "components": [
+        "config/unicode-13.json"
+      ],
+      "name": "unicode",
+      "path": "docs/licenses/third-party/texts/e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96.txt",
+      "bytes": 1995,
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96",
+      "sourceUrl": "https://www.unicode.org/license.txt"
+    },
+    {
+      "components": [
+        "objc2-audio-toolbox@0.3.2",
+        "objc2-core-audio@0.3.2",
+        "objc2-core-audio-types@0.3.2"
+      ],
+      "name": "objc2 LICENSE-MIT.txt",
+      "path": "docs/licenses/third-party/texts/f6a2e783669a0dd7a2c3b8a4f76db40ae49033e66e1bdc30f3aa25fe5577b070.txt",
+      "sha256": "f6a2e783669a0dd7a2c3b8a4f76db40ae49033e66e1bdc30f3aa25fe5577b070",
+      "bytes": 1053,
+      "sourceUrl": "https://raw.githubusercontent.com/madsmtm/objc2/ee9a7ada2131f5944b8750428e265c15632f2a19/LICENSE-MIT.txt",
+      "scope": "Unmodified upstream supplement added after the pinned crate source revisions; preserves original declarations and their Apple SDK caveat. Select only a license declared by each crate. Not a claim that all historical contributors are named."
+    },
+    {
+      "components": [
+        "objc2-audio-toolbox@0.3.2",
+        "objc2-core-audio@0.3.2",
+        "objc2-core-audio-types@0.3.2"
+      ],
+      "name": "objc2 LICENSE-APACHE.txt",
+      "path": "docs/licenses/third-party/texts/0c9a5f6fe28e27015e12506ffe58c9e007cead169af9670ec15c1df0d14e4f2a.txt",
+      "sha256": "0c9a5f6fe28e27015e12506ffe58c9e007cead169af9670ec15c1df0d14e4f2a",
+      "bytes": 10204,
+      "sourceUrl": "https://raw.githubusercontent.com/madsmtm/objc2/ee9a7ada2131f5944b8750428e265c15632f2a19/LICENSE-APACHE.txt",
+      "scope": "Unmodified upstream supplement added after the pinned crate source revisions; preserves original declarations and their Apple SDK caveat. Select only a license declared by each crate. Not a claim that all historical contributors are named."
+    },
+    {
+      "components": [
+        "objc2-audio-toolbox@0.3.2",
+        "objc2-core-audio@0.3.2",
+        "objc2-core-audio-types@0.3.2"
+      ],
+      "name": "objc2 LICENSE-ZLIB.txt",
+      "path": "docs/licenses/third-party/texts/fced3e7fedc235fa83ed0108b0df74d86b435d06436356f46917a903cbadd80a.txt",
+      "sha256": "fced3e7fedc235fa83ed0108b0df74d86b435d06436356f46917a903cbadd80a",
+      "bytes": 838,
+      "sourceUrl": "https://raw.githubusercontent.com/madsmtm/objc2/ee9a7ada2131f5944b8750428e265c15632f2a19/LICENSE-ZLIB.txt",
+      "scope": "Unmodified upstream supplement added after the pinned crate source revisions; preserves original declarations and their Apple SDK caveat. Select only a license declared by each crate. Not a claim that all historical contributors are named."
+    }
+  ],
+  "notes": [
+    "Original upstream texts preserved. Unicode property data derives from Unicode 13.0.0; its source URL and hash are in the data file.",
+    "The unchanged vendor components and predecessor notices remain covered by their existing inventories."
+  ]
+}

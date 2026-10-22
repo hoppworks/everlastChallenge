@@ -44,7 +44,7 @@ pub fn decorate(mut value: Value, configuration: &str) -> Value {
     value["state"] = json!({"warmAsrContexts":2,"warmVadContexts":2,"vadContextsUsedPerJob":1,"freshDecoderCachesPerJob":true,
         "crossJobGpuCacheReuse":false,"precomputation":false,"completeRecording":true});
     value["measurement"]["variant"] = json!("complete-recording-mlx-reference-encoder");
-    macro_rules! source {($name:literal,$path:literal)=>{json!({"filename":$name,"sha256":format!("{:x}",Sha256::digest(include_bytes!($path)))})};}
+    macro_rules! source {($name:literal,$path:literal)=>{json!({"filename":$name,"sha256":(Sha256::digest(include_bytes!($path))).iter().map(|byte| format!("{byte:02x}")).collect::<String>()})};}
     value["mlxSources"] = json!({
         "cppEncoderBridge":source!("vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp","../../../vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp"),
         "cppEncoderHeader":source!("vendor/whisper-rs-sys/whisper.cpp/include/whisper.h","../../../vendor/whisper-rs-sys/whisper.cpp/include/whisper.h"),

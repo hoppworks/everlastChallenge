@@ -34,7 +34,7 @@ Die GitHub-Workflowdatei prüft portable Regeln und Secrets automatisch bei PRs 
 auf Main. Native Tauri-/Metal-Prüfungen verlangen einen ausdrücklich eingerichteten
 passenden Mac-Runner. Branch Protection und ein erfolgreicher Remote-Lauf sind
 Einstellungen beziehungsweise Ergebnisse auf GitHub, keine Eigenschaft dieser
-lokalen YAML-Datei. Das Repository hat bislang keinen konfigurierten Remote.
+lokalen YAML-Datei.
 
 ## Bewusst gewählte Invarianten
 
@@ -51,9 +51,10 @@ Inferenz-/NativeService und Audio-Pipeline. Sie sind wichtiger als eine globale
 Zahl von Tests oder künstliche Komplexitätslimits.
 
 Die zusätzliche typinformierte Prüfung nutzt ausschließlich als Entwicklungstools
-`eslint` 9.39.5 und `typescript-eslint` 8.72.0, mit aufgelösten Versionen im
+`eslint` 10.13.0 und `typescript-eslint` 8.72.0, mit aufgelösten Versionen im
 `package-lock.json`. Sie ersetzt weder den TypeScript-Compiler noch die bestehenden
-Oxlint-Regeln. Die Compiler-Version der App bleibt unverändert.
+Oxlint-Regeln. TypeScript 7 prüft App und Werkzeuge; die AST-Prüfer verwenden
+die separat gepinnte TypeScript-6-API. Die konkrete Auflösung steht im Lockfile.
 
 ## Zusätzliche Abschlussregeln
 
@@ -81,3 +82,8 @@ nicht ignorierten neuen Dateien. Er scannt damit auch neue Quelltexte vor dem
 Commit, aber keine ignorierten lokalen Builds, Modelle oder privaten Sicherungen.
 Versionierte Dateien bleiben selbst bei passender Ignore-Regel eingeschlossen.
 Dies ist ein Repository-Quellscan, kein Scan sämtlicher lokaler Daten.
+
+Hashgebundene Original-Lizenztexte unter `docs/licenses/third-party/texts/`
+behalten ihre vollständigen Bytes einschließlich Whitespace. Nur dort ist
+Gits Whitespaceprüfung per `.gitattributes` ausgenommen; eigene Quelltexte und
+Dokumentation behalten die üblichen Prüfungen.

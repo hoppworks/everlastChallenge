@@ -1,0 +1,4 @@
+# Upstream source remains available with its licenses and local patch receipts.
+vendor/** linguist-vendored
+# Upstream license notices are hash-bound originals, including their whitespace.
+docs/licenses/third-party/texts/** -whitespace

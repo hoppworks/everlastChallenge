@@ -11,11 +11,17 @@ export default [
     ],
   },
   {
-    files: ["src/**/*.{ts,tsx}"],
+    files: [
+      "src/**/*.{ts,tsx}",
+      "scripts/**/*.ts",
+      "tests/tooling/**/*.ts",
+      "tools/**/*.ts",
+      "tests/fixtures/browser-fields/validate.ts",
+    ],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
-        projectService: true,
+        project: ["./tsconfig.json", "./tsconfig.tools.json"],
         tsconfigRootDir: import.meta.dirname,
       },
     },

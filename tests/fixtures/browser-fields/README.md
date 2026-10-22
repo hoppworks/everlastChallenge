@@ -1,3 +1,8 @@
+Aktueller statischer Validator: `validate.ts`; Ausführung vom Repository-Root
+mit `node --import tsx --test tests/tooling/browser-fixture.test.ts`.
+`PROVENANCE.json` ist der unveränderte historische Erstellungsbeleg, kein
+Hashmanifest des heutigen Validators.
+
 # Lokale Browserfeld-Fixture – Vorbereitung, keine native Abnahme
 
 Stand: öffentliche Plan-/Produktquellen aus Commit
@@ -19,14 +24,14 @@ Systemfarben. Die Seite enthält keine eigene Diktierlogik oder Rechteabfrage.
 
 fixture.test.cjs führt den tatsächlichen Inline-JS-Text mit kleinen DOM-/Timer-
 Doubles aus. Das beweist Aktionsreihenfolge/Identität und verhindert versehentliches
-Wertlesen an dieser Grenze, keine native Browser- oder AX-Abbildung. validate.py
+Wertlesen an dieser Grenze, keine native Browser- oder AX-Abbildung. validate.ts
 prüft den statischen Aufbau/Referenzen/Netzwerkgrenzen. Es gab KEINEN echten
 Browserstart, Screenshot, AX-/TCC-/Secure-Input-/Clipboard-/Einfügetest.
 matrix.json hat ausschließlich status:not-run und observations:null.
 
 ## Späterer begrenzter Mac-Prüflauf
 
-Erst nach Root-Freigabe, ohne konkurrierende Modell-/GUI-Messung:
+Ohne konkurrierende Modell-/GUI-Messung:
 
 1. Die unveränderte Seite lokal als file:// öffnen. Kein Server ist nötig.
    Browser/OS/App-Version, Kandidatenrevision, App-/Artefakt-SHA und CDHash,
@@ -116,7 +121,7 @@ Passende Inhalte selbst vorzulesen ersetzt den gesonderten Fixture-Transport nic
 ## Reine Remote-Prüfbefehle
 
 node --test fixture.test.cjs
-python3 -m unittest -v test_validate.py
+node --import tsx --test tests/tooling/browser-fixture.test.ts
 
 Keine Abhängigkeiten/Downloads. Native Browserausführung und visuelle Prüfung
 sind ausdrücklich noch nicht erfolgt. Root prüft dieses Paket unabhängig;

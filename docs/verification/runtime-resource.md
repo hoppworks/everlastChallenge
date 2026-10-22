@@ -1,3 +1,11 @@
+Aktueller Launcher: `scripts/run-runtime-resource.ts`, ausgeführt mit
+`node --import tsx`. Der folgende Bericht und seine Kommandos bleiben historische
+Belege. Für einen neuen Lauf zuerst die Parameter des aktuellen Probe-Binaries
+mit `--print-parameters` beziehungsweise
+`--print-mlx-reference-encoder-parameters` in eine neue Datei schreiben; alte
+Parameter passen absichtlich nicht zu geändertem Code. Siehe
+[Entwicklerwerkzeuge](../tooling.md).
+
 # Wiederholte Runtime-Sitzungen und Speicherbeobachtung
 
 Stand: 17.10.2026. Werkzeugbasis `d1a2527`, erster tatsächlicher Modelllauf

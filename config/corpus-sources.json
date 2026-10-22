@@ -1,0 +1,34 @@
+{
+  "de_de-dev": {
+    "language": "de",
+    "split": "dev",
+    "archiveBytes": 227694463,
+    "archiveSha256": "72cac13bbddbddf674d8102a9e7b90a3b1db5d777ed92e88eccc5ae69cb8fc9d",
+    "tsvBytes": 221691,
+    "tsvSha256": "055b6ddecc9ad493d9ead86babe3ebe225148dd3c174fa6f95cb83a4f9586e18"
+  },
+  "de_de-test": {
+    "language": "de",
+    "split": "test",
+    "archiveBytes": 568734559,
+    "archiveSha256": "e86b42dfcdef749926cd92135045f87c25966c09e50d01c401adb04ee7d8628f",
+    "tsvBytes": 559542,
+    "tsvSha256": "82fab72c58a347345675c238f2492bb997105a4ab45d69e2a2b34ed29082fa97"
+  },
+  "en_us-dev": {
+    "language": "en",
+    "split": "dev",
+    "archiveBytes": 171250900,
+    "archiveSha256": "2658fda72f199e12676ecac9415094667a4e14e149b146e568ea00b2a2f0954c",
+    "tsvBytes": 213065,
+    "tsvSha256": "9d57ee7e91e9d4c92edb39f6bbea668ef8dc2a3ff96eb510d5580b2ad05d17ec"
+  },
+  "en_us-test": {
+    "language": "en",
+    "split": "test",
+    "archiveBytes": 289851356,
+    "archiveSha256": "d9c2e37b41aacd41bc283554a0a82b5476b36887049774ecb2819dcaaa55a356",
+    "tsvBytes": 367864,
+    "tsvSha256": "74c046239374deeb60fa63f258f907388093a32bcaa3140965f70ef05c79f7ca"
+  }
+}

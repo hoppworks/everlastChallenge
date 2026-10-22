@@ -13,8 +13,8 @@ pub fn decorate(mut value: Value, reduced: bool) -> Value {
     } else {
         json!({"policy":"audioContextExperiment","atMostPreparedFrames":reduced_context::MAX_PREPARED_FRAMES,"then":reduced_context::REDUCED_AUDIO_CTX,"otherwise":0,"modelDefault":reduced_context::EXPECTED_MODEL_AUDIO_CTX})
     };
-    value["sourceHashes"]["audioContextAdapter"] = json!({"filename":"src-tauri/examples/shared/audio_context.rs","sha256":format!("{:x}",Sha256::digest(include_bytes!("audio_context.rs")))});
-    value["sourceHashes"]["audioContextPolicy"] = json!({"filename":"src-tauri/src/transcription/reduced_context.rs","sha256":format!("{:x}",Sha256::digest(include_bytes!("../../src/transcription/reduced_context.rs")))});
-    value["sourceHashes"]["audioContextConfiguration"] = json!({"filename":"src-tauri/examples/shared/context_configuration.rs","sha256":format!("{:x}",Sha256::digest(include_bytes!("context_configuration.rs")))});
+    value["sourceHashes"]["audioContextAdapter"] = json!({"filename":"src-tauri/examples/shared/audio_context.rs","sha256":(Sha256::digest(include_bytes!("audio_context.rs"))).iter().map(|byte| format!("{byte:02x}")).collect::<String>()});
+    value["sourceHashes"]["audioContextPolicy"] = json!({"filename":"src-tauri/src/transcription/reduced_context.rs","sha256":(Sha256::digest(include_bytes!("../../src/transcription/reduced_context.rs"))).iter().map(|byte| format!("{byte:02x}")).collect::<String>()});
+    value["sourceHashes"]["audioContextConfiguration"] = json!({"filename":"src-tauri/examples/shared/context_configuration.rs","sha256":(Sha256::digest(include_bytes!("context_configuration.rs"))).iter().map(|byte| format!("{byte:02x}")).collect::<String>()});
     value
 }

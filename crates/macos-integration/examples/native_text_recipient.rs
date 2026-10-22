@@ -250,7 +250,12 @@ fn receipt_metrics(text: &str) -> io::Result<(usize, Option<String>)> {
     }
     Ok((
         text.len(),
-        (!text.is_empty()).then(|| format!("{:x}", Sha256::digest(text.as_bytes()))),
+        (!text.is_empty()).then(|| {
+            (Sha256::digest(text.as_bytes()))
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<String>()
+        }),
     ))
 }
 fn text_metrics(text: &str) -> io::Result<(bool, usize, bool)> {

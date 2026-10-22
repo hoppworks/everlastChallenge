@@ -54,10 +54,7 @@ function draft(value: unknown): value is SettingsDraft {
     ])
   )
     return false;
-  if (
-    "model" in value &&
-    !oneOf(value.model, ["reference", "mlx_reference_encoder"])
-  )
+  if ("model" in value && !oneOf(value.model, ["mlx_reference_encoder"]))
     return false;
   const hotkey = value.hotkey;
   return (

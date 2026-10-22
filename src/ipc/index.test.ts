@@ -437,6 +437,7 @@ test.each([
 test.each([
   { current: null },
   { current: { ...snapshot().preferences.current, model: "small" } },
+  { current: { ...snapshot().preferences.current, model: "reference" } },
   { current: { ...snapshot().preferences.current, language: "auto" } },
   { current: { ...snapshot().preferences.current, device: " bad " } },
   { current: { ...snapshot().preferences.current, device: "x".repeat(513) } },

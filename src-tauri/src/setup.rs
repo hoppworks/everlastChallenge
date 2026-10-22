@@ -507,7 +507,7 @@ mod tests {
         let source_vad = required("EVERLAST_OFFLINE_VAD")?;
         let source_wav = required("EVERLAST_OFFLINE_WAV")?;
         let wav_bytes = fs::read(source_wav)?;
-        if format!("{:x}", Sha256::digest(&wav_bytes))
+        if model::hex_digest(Sha256::digest(&wav_bytes))
             != "b892cf9dc80c437f0a78c6f261d83dda196252e31a1e415032981472d3ea9137"
         {
             return Err("public WAV identity mismatch".into());
@@ -592,7 +592,7 @@ mod tests {
         assert_eq!(completed.sample_range, 0..168_960);
         assert_eq!(completed.timeline_range, 0..168_960);
         let text = completed.result?;
-        let transcript_sha256 = format!("{:x}", Sha256::digest(text.as_bytes()));
+        let transcript_sha256 = model::hex_digest(Sha256::digest(text.as_bytes()));
         assert!(
             text.len() == 134
                 && transcript_sha256

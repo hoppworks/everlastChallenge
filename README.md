@@ -15,12 +15,12 @@ aber nicht als Produktstandard übernommen.
 
 ## Download für macOS
 
-**[App herunterladen — macOS, Apple Silicon (.zip)](https://github.com/hoppworks/everlastChallenge/releases/download/v0.1.0/Everlast-Coding-Challenge-macOS-arm64.zip)**
+**[App herunterladen — macOS, Apple Silicon (.zip)](https://github.com/hoppworks/everlastChallenge/releases/latest/download/Everlast-Coding-Challenge-macOS-arm64.zip)**
 
 ZIP entpacken und die App nach Programme ziehen. Erfordert **macOS 27 oder neuer**
 auf Apple Silicon. Die App ist lokal signiert, nicht Apple-notarisiert; macOS kann
 beim ersten Öffnen einen Sicherheitshinweis anzeigen. Prüfsumme und Details stehen
-im [Release v0.1.0](https://github.com/hoppworks/everlastChallenge/releases/tag/v0.1.0).
+im [aktuellen Release](https://github.com/hoppworks/everlastChallenge/releases/latest).
 
 ## In wenigen Minuten durch das Repository
 
@@ -29,6 +29,7 @@ im [Release v0.1.0](https://github.com/hoppworks/everlastChallenge/releases/tag/
 3. [Guardrails](docs/guardrails.md): automatisierte Architektur- und Qualitätsregeln.
 4. [Leistung](docs/performance.md) und [Vergleich](docs/comparison.md): Messwerte und Grenzen.
 5. [KI-Nutzung](docs/ai-review.md): Werkzeuge und überprüfte Beispiele.
+6. [Entwicklerwerkzeuge](docs/tooling.md): Auswertung, Korpus und reproduzierbare Prüfungen.
 
 ## Fertige App starten
 
@@ -61,9 +62,9 @@ passendes Format, hilft die Fehlermeldung bei der Einstellung im Audio-MIDI-Setu
 CPAL kann dabei die nominale Rate des Audiogeräts systemweit umstellen; andere
 Audioanwendungen können betroffen sein. Dies ist keine Garantie für jedes externe Interface.
 
-Unter **Einstellungen → Modell** sind Hybrid und CPP-Referenz explizit wählbar;
-ein Modellwechsel wird nach dem Neustart aktiv. Neue Einstellungen verwenden
-den Hybrid. Gespeicherte Modellwahl, Mikrofon und Hotkey werden erhalten.
+Die App verwendet ausschließlich den MLX-Hybrid. **Einstellungen → Modell**
+zeigt dessen Status und Herkunft. Ältere gespeicherte Modellwahlen werden beim
+Start auf den Hybrid umgestellt; Mikrofon und Hotkey bleiben erhalten.
 Deutsch ist die freigegebene Produktsprache. Weitere Sprachen und schwierige
 Aufnahmen haben dokumentierte Qualitätsgrenzen.
 
@@ -88,7 +89,8 @@ Zustandsmodellen und Verhaltenstests ausdrücklich abgebildet.
 Qualifiziert ist **Apple Silicon mit macOS 27**. Auf dem Prüfhost: macOS 27.0.1,
 Xcode 27.1 (27A9275) mit separat installierter Metal Toolchain, Node 22.23.1 /
 npm 10.9.8, Rust 1.99.1 und CMake 4.4.4. Andere Hostkombinationen sind nicht als
-getestet ausgewiesen. Die Mindestversion für Node ist 22.12, für CMake 3.25.
+getestet ausgewiesen. Unterstützt sind Node 22 ab 22.22.2, Node 24 ab 24.15 sowie Node ab 26.
+Die Mindestversion für CMake ist 3.25.
 
 Vor dem ersten Setup auf einem neuen Mac:
 

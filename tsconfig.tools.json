@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": ["node"]
+  },
+  "include": [
+    "scripts/**/*.ts",
+    "tests/tooling/**/*.ts",
+    "tools/**/*.ts",
+    "tests/fixtures/browser-fields/**/*.ts"
+  ]
+}

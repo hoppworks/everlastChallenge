@@ -39,7 +39,12 @@ fn main() -> Result<(), Error> {
     std::fs::File::open(&args[0])?
         .take(VAD.bytes() + 1)
         .read_to_end(&mut bytes)?;
-    if bytes.len() as u64 != VAD.bytes() || format!("{:x}", Sha256::digest(&bytes)) != VAD.sha256()
+    if bytes.len() as u64 != VAD.bytes()
+        || (Sha256::digest(&bytes))
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
+            != VAD.sha256()
     {
         return Err("VAD snapshot hash mismatch".into());
     }
@@ -97,8 +102,8 @@ fn main() -> Result<(), Error> {
     let report = serde_json::json!({
         "schemaVersion":1,"kind":"constructed-vad-resource-workload","speechQualityEvidence":false,"nativeSessionAcceptance":false,
         "sourceRevision":std::env::var("EVERLAST_BENCHMARK_REVISION").ok(),
-        "probeSourceSha256":format!("{:x}",Sha256::digest(include_bytes!("vad_resource_probe.rs"))),
-        "cppSourceSha256":format!("{:x}",Sha256::digest(include_bytes!("../../vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp"))),
+        "probeSourceSha256":(Sha256::digest(include_bytes!("vad_resource_probe.rs"))).iter().map(|byte| format!("{byte:02x}")).collect::<String>(),
+        "cppSourceSha256":(Sha256::digest(include_bytes!("../../vendor/whisper-rs-sys/whisper.cpp/src/whisper.cpp"))).iter().map(|byte| format!("{byte:02x}")).collect::<String>(),
         "model":{"id":VAD.id(),"sha256":VAD.sha256()},
         "workload":{"frames":frames,"sampleRate":16000,"waveform":"constructed-periodic-not-speech","peakTarget":0.95,"gain":gain,"warmContext":true,"shortRepeats":100,"shortRepeatFrames":3200,"threads":1,"useGpu":false},
         "timing":{"initMicros":init_micros,"prepareMicros":prepare_micros,"maximumCallMicros":maximum_call_micros,"shortRepeatsMicros":repeats_micros},

@@ -12,7 +12,7 @@ fn sample_rank(format: cpal::SampleFormat) -> Option<usize> {
 }
 fn supported(config: &SupportedStreamConfig) -> bool {
     AudioFormat {
-        sample_rate: config.sample_rate().0,
+        sample_rate: config.sample_rate(),
         channels: config.channels(),
     }
     .validate()
@@ -34,7 +34,7 @@ pub(super) fn choose(
         .flat_map(|range| {
             RATES
                 .into_iter()
-                .filter_map(move |rate| range.try_with_sample_rate(cpal::SampleRate(rate)))
+                .filter_map(move |rate| range.try_with_sample_rate(rate))
         })
         .filter(supported)
         .min_by_key(|config| {
@@ -44,9 +44,7 @@ pub(super) fn choose(
             };
             (
                 config.channels(),
-                RATES
-                    .iter()
-                    .position(|rate| *rate == config.sample_rate().0),
+                RATES.iter().position(|rate| *rate == config.sample_rate()),
                 sample_rank(config.sample_format()),
                 buffer,
             )
@@ -61,7 +59,7 @@ pub(super) fn negotiate<I: IntoIterator<Item = SupportedStreamConfigRange>>(
     if let Ok(config) = &default
         && supported(config)
     {
-        return Ok(config.clone());
+        return Ok(*config);
     }
     let ranges = advertised().map_err(|error| {
         CaptureError::Native(match &default {
@@ -77,12 +75,12 @@ pub(super) fn negotiate<I: IntoIterator<Item = SupportedStreamConfigRange>>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use cpal::{SampleFormat, SampleRate, SupportedBufferSize};
+    use cpal::{SampleFormat, SupportedBufferSize};
     fn range(channels: u16, low: u32, high: u32) -> SupportedStreamConfigRange {
         SupportedStreamConfigRange::new(
             channels,
-            SampleRate(low),
-            SampleRate(high),
+            low,
+            high,
             SupportedBufferSize::Unknown,
             SampleFormat::F32,
         )
@@ -91,7 +89,7 @@ mod tests {
     fn incompatible_default_uses_an_advertised_supported_alternative() -> Result<(), CaptureError> {
         let default = range(2, 96_000, 96_000).with_max_sample_rate();
         let selected = choose(Some(default), [range(2, 44_100, 48_000)])?;
-        assert_eq!(selected.sample_rate().0, 48_000);
+        assert_eq!(selected.sample_rate(), 48_000);
         assert_eq!(selected.channels(), 2);
         Ok(())
     }
@@ -100,7 +98,7 @@ mod tests {
     {
         let default = range(2, 44_100, 44_100).with_max_sample_rate();
         let chosen = negotiate(
-            Ok(default.clone()),
+            Ok(default),
             || -> Result<Vec<SupportedStreamConfigRange>, String> {
                 Err("enumeration must not be necessary".into())
             },
@@ -116,7 +114,7 @@ mod tests {
         for ranges in [[a, b], [b, a]] {
             let chosen = choose(None, ranges)?;
             assert_eq!(chosen.channels(), 1);
-            assert_eq!(chosen.sample_rate().0, 48_000);
+            assert_eq!(chosen.sample_rate(), 48_000);
         }
         Ok(())
     }
@@ -124,7 +122,7 @@ mod tests {
     fn failed_default_can_use_advertised_format_but_query_errors_are_not_hidden()
     -> Result<(), CaptureError> {
         let selected = negotiate(Err("no default".into()), || Ok([range(1, 16_000, 16_000)]))?;
-        assert_eq!(selected.sample_rate().0, 16_000);
+        assert_eq!(selected.sample_rate(), 16_000);
         let result = negotiate(
             Err("no default".into()),
             || -> Result<Vec<SupportedStreamConfigRange>, String> { Err("device removed".into()) },

@@ -1,6 +1,7 @@
 //! Continuous downmix/resampling. Only the DSP worker calls this interface.
 
-use rubato::{FftFixedIn, Resampler};
+use rubato::audioadapter_buffers::direct::{InterleavedSlice, SequentialSliceOfVecs};
+use rubato::{Fft, FixedSync, Resampler, WindowFunction};
 
 pub mod pauses;
 
@@ -89,7 +90,7 @@ pub enum AudioError {
 
 pub struct AudioProcessor {
     format: AudioFormat,
-    resampler: Option<FftFixedIn<f32>>,
+    resampler: Option<Fft<f32>>,
     pending: Vec<f32>,
     output: Vec<Vec<f32>>,
     journal: Vec<f32>,
@@ -105,14 +106,22 @@ impl AudioProcessor {
             None
         } else {
             Some(
-                FftFixedIn::new(format.sample_rate as usize, OUTPUT_RATE, CHUNK, 2, 1)
-                    .map_err(|error| AudioError::Resampler(error.to_string()))?,
+                Fft::new_custom(
+                    format.sample_rate as usize,
+                    OUTPUT_RATE,
+                    CHUNK,
+                    2,
+                    1,
+                    WindowFunction::BlackmanHarris2,
+                    FixedSync::Input,
+                )
+                .map_err(|error| AudioError::Resampler(error.to_string()))?,
             )
         };
         let remaining_delay = resampler.as_ref().map_or(0, Resampler::output_delay);
-        let output = resampler
-            .as_ref()
-            .map_or_else(Vec::new, |resampler| resampler.output_buffer_allocate(true));
+        let output = resampler.as_ref().map_or_else(Vec::new, |resampler| {
+            vec![vec![0.0; resampler.output_frames_max()]]
+        });
         let mut journal = Vec::new();
         journal
             .try_reserve_exact(MAX_SAMPLES)
@@ -195,8 +204,13 @@ impl AudioProcessor {
         let Some(resampler) = &mut self.resampler else {
             return Ok(());
         };
+        let input = InterleavedSlice::new(&self.pending, 1, self.pending.len())
+            .map_err(|error| AudioError::Resampler(error.to_string()))?;
+        let output_frames = self.output[0].len();
+        let mut output = SequentialSliceOfVecs::new_mut(&mut self.output, 1, output_frames)
+            .map_err(|error| AudioError::Resampler(error.to_string()))?;
         let (_, produced) = resampler
-            .process_into_buffer(&[self.pending.as_slice()], &mut self.output, None)
+            .process_into_buffer(&input, &mut output, None)
             .map_err(|error| AudioError::Resampler(error.to_string()))?;
         self.pending.clear();
         let skip = self.remaining_delay.min(produced);

@@ -199,7 +199,7 @@ pub fn download_model(
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()?;
-    let client = download_client_builder().build().map_err(network_error)?;
+    let client = download_client_builder()?.build().map_err(network_error)?;
     runtime.block_on(transfer(
         directory,
         definition,
@@ -210,8 +210,19 @@ pub fn download_model(
     ))
 }
 
-fn download_client_builder() -> reqwest::ClientBuilder {
-    reqwest::Client::builder()
+fn download_client_builder() -> Result<reqwest::ClientBuilder, ModelError> {
+    // reqwest's rustls-no-provider does not initialize Rustls from crate features.
+    // Install Ring once; an already configured or concurrently installed process
+    // provider is valid and must not be replaced. No client exists before this.
+    if rustls::crypto::CryptoProvider::get_default().is_none()
+        && rustls::crypto::ring::default_provider()
+            .install_default()
+            .is_err()
+        && rustls::crypto::CryptoProvider::get_default().is_none()
+    {
+        return Err(ModelError::Tls);
+    }
+    Ok(reqwest::Client::builder()
         .https_only(true)
         .connect_timeout(std::time::Duration::from_secs(15))
         .read_timeout(std::time::Duration::from_secs(60))
@@ -222,7 +233,7 @@ fn download_client_builder() -> reqwest::ClientBuilder {
             } else {
                 attempt.error("model redirect policy")
             }
-        }))
+        })))
 }
 
 // The product caller always supplies the fixed manifest URL and HTTPS-only
@@ -267,7 +278,7 @@ async fn transfer(
     output.finish()
 }
 
-fn hex_digest(digest: impl AsRef<[u8]>) -> String {
+pub(crate) fn hex_digest(digest: impl AsRef<[u8]>) -> String {
     digest
         .as_ref()
         .iter()

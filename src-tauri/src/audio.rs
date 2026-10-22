@@ -182,7 +182,7 @@ pub fn capture_buffer(format: AudioFormat) -> Result<(CapturePort, CaptureReader
 
 impl CapturePort {
     /// The same bounded error callback is used by native streams and connector tests.
-    pub(crate) fn stream_error_callback(&self) -> impl FnMut(cpal::StreamError) + Send + 'static {
+    pub(crate) fn stream_error_callback(&self) -> impl FnMut(cpal::Error) + Send + 'static {
         let gate = Arc::clone(&self.gate);
         move |_| {
             gate.error.store(4, Ordering::Release);
@@ -695,7 +695,11 @@ fn selected_device(name: Option<&str>) -> Result<cpal::Device, CaptureError> {
     let mut matching = host
         .devices()
         .map_err(|error| CaptureError::Native(error.to_string()))?
-        .filter(|device| device.name().is_ok_and(|actual| actual == name));
+        .filter(|device| {
+            device
+                .description()
+                .is_ok_and(|actual| actual.name() == name)
+        });
     let device = matching.next().ok_or(CaptureError::DeviceUnavailable)?;
     if matching.next().is_some() {
         return Err(CaptureError::DeviceUnavailable);
@@ -714,7 +718,7 @@ where
     let failure = port.stream_error_callback();
     device
         .build_input_stream(
-            config,
+            *config,
             move |samples: &[T], _| port.publish(samples),
             failure,
             None,
@@ -794,7 +798,7 @@ fn record(
         },
     )?;
     let format = AudioFormat {
-        sample_rate: config.sample_rate().0,
+        sample_rate: config.sample_rate(),
         channels: config.channels(),
     };
     let processor = AudioProcessor::new(format)?;

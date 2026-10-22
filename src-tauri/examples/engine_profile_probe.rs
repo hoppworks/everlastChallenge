@@ -203,7 +203,10 @@ fn pcm_fingerprint(samples: &[f32]) -> String {
     for sample in samples {
         hash.update(sample.to_le_bytes());
     }
-    format!("{:x}", hash.finalize())
+    (hash.finalize())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>()
 }
 fn prepare_pcm(samples: &[f32]) -> Result<(Vec<f32>, Value), Error> {
     let before = pcm_fingerprint(samples);

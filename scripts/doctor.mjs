@@ -35,12 +35,14 @@ export function inspectPrerequisites({
     `${platform}/${arch}`,
     "Der qualifizierte Build benötigt Apple Silicon und macOS 27.",
   );
-  const [major, minor] = node.split(".").map(Number);
+  const [major, minor, patch] = node.split(".").map(Number);
   check(
     "Node.js",
-    major > 22 || (major === 22 && minor >= 12),
+    major >= 26 ||
+      (major === 24 && minor >= 15) ||
+      (major === 22 && (minor > 22 || (minor === 22 && patch >= 2))),
     node,
-    "Node.js ab 22.12 installieren.",
+    "Node.js 22.22.2+, 24.15+ oder ab 26 installieren.",
   );
   const os = execute("sw_vers", ["-productVersion"]);
   check(

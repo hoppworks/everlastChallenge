@@ -164,7 +164,7 @@ fn device_unavailable_callback_crosses_cpal_poll_and_releases_for_restart() -> T
     assert_capture_failure(
         |port| {
             let mut callback = port.stream_error_callback();
-            callback(cpal::StreamError::DeviceNotAvailable);
+            callback(cpal::Error::new(cpal::ErrorKind::DeviceNotAvailable));
         },
         crate::audio::CaptureError::Stream,
     )

@@ -57,7 +57,7 @@ export function inspectPcm16Audio(input) {
   let format;
   let dataBytes;
   let chunks = 0;
-  for (let offset = 12; offset < input.length; ) {
+  for (let offset = 12; offset < input.length;) {
     if (++chunks > 1024) reject("audio-chunk-limit");
     if (offset + 8 > input.length) reject("audio-chunk-invalid");
     const tag = input.toString("ascii", offset, offset + 4);

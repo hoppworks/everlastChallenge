@@ -1,0 +1,4 @@
+{
+  "patched": "        let model_path = CString::new(model_path).expect(\"VAD model path contains null byte\");\n        let ptr = unsafe {\n            whisper_vad_init_from_file_with_params(model_path.as_ptr(), params.into_inner())\n        };",
+  "baseline": "        let model_path = CString::new(model_path)\n            .expect(\"VAD model path contains null byte\")\n            .into_raw() as *const c_char;\n        let ptr =\n            unsafe { whisper_vad_init_from_file_with_params(model_path, params.into_inner()) };"
+}

@@ -1,13 +1,33 @@
-## ARM-SHA-256-Beschleunigung
+## Aktueller Paketstand
 
-`sha2` bleibt auf 0.10.9. Sein offizielles `asm`-Feature aktiviert auf Apple
-Silicon den zur Laufzeit erkannten SHA-256-Hardwarepfad; ohne passende
-CPU-Fähigkeit bleibt der Software-Fallback erhalten. Neu ist die durch
-Cargo.lock gepinnte transitive MIT-Crate `sha2-asm` 0.6.4. Herkunft und
-unveränderter Lizenztext stehen im
-[Addendum](licenses/third-party/sha256-acceleration.json).
-Dateigrößen, vollständige SHA-256-Prüfung und Fehler-/Cancel-Verhalten bleiben
-erhalten. Es gibt keinen Cache, der die Integritätsprüfung überspringt.
+Die direkten npm- und Cargo-Abhängigkeiten sind exakt in den Manifesten und
+Lockfiles gebunden. Der Aktualisierungsstand vom 22.10.2026 umfasst unter anderem
+CPAL 0.18.2, rtrb 0.4.0, Rubato 5.0.1, reqwest 0.13.5, sha2 0.11.1,
+ts-rs 12.0.1 und Tauri 2.12.5. Vendorte, lokal angepasste Quellen bleiben auf
+ihren dokumentierten Ständen; ein Registry-Update würde ihre Patches umgehen.
+
+TypeScript 7.0.2 prüft die Anwendung und Werkzeuge. Der Paketalias
+`@typescript/native` stellt dessen `tsc` bereit. ESLint und die AST-Guardrails
+verwenden gemäß der offiziellen Übergangslösung die separat gepinnte
+TypeScript-6.0.3-Compiler-API (`typescript` → `@typescript/typescript6`).
+Beide stehen im Lockfile; ein Compiler-API-Import lädt nicht versehentlich das
+native Paket ohne JavaScript-API.
+
+sha2 0.11 verwendet seine eingebaute, zur Laufzeit erkannte Hardwarebeschleunigung;
+das frühere `asm`-Feature und die direkte Abhängigkeit von `sha2-asm` entfallen.
+Die vollständige Modell-Hashprüfung bleibt erhalten. reqwest verwendet den
+Rustls-Provider Ring und den Plattform-Zertifikatsprüfer. TLS-Fehler werden nicht
+als Cachetreffer oder erfolgreiche Downloads behandelt.
+
+Das [aktualisierte Zielgraph-Inventar](licenses/third-party/updated-dependencies-2026-10-22.json)
+ist an beide Lockfiles gebunden. [Neue Originaltexte](licenses/third-party/package-update-supplement.json)
+ergänzen die unveränderten Vendor- und Herkunftsnachweise. Der Graph ist
+konservativ und behauptet keine exakt gemessene finale Linkclosure.
+
+## Historische Auswahl und Nachprüfung
+
+Die folgenden Abschnitte dokumentieren frühere Versionen und deren Entscheidungen.
+Sie ersetzen nicht den aktuellen Lockfile- und Zielgraphstand.
 
 ## P01-Auswahl und Nachprüfung
 
@@ -107,7 +127,7 @@ Vendorreceipts erhalten. `mlx-rs` und `mlxrs` sind unterschiedliche Crates.
 | Tokenizer-Abhängigkeit   | Der lokale Tokenizers-Patch ersetzt nur den unmaintained Paste-Makronamen durch das kompatible, gepinnte Pastey-Paket. Die Tokenizerlogik wird damit nicht umgeschrieben. Advisorygrenzen wurden nicht gelockert.                                                                                                                                                                                                                          |
 | Modell-/Speicherbedarf   | Der aktuelle FP16-Modellsatz umfasst 1.617.856.158 Byte, darunter 1.613.977.612 Byte Encodergewichte. Der optionale historische Koeffizientenpfad umfasst 3.813.494.037 Byte inklusive 3.235.574.296 Byte F32-Gewichten. Zwei ASR-Modelle und zwei VAD-Kontexte bleiben geladen; je Auftrag wird ein VAD verwendet. Die native Speicher-/Ladezeitabnahme ist von der Textqualität getrennt. Bisher wurde nur der M5 mit 32 GiB geprüft.                                                                                                   |
 | Paketierung              | Die 183.778.048 Byte große MLX-Metallib muss aus dem aktiven Cargo-OUT_DIR neben das Executable gelangen. Metallib-Signaturen liegen in xattrs; gewöhnliches Kopieren verlor sie im tatsächlichen Fehlversuch. Der Releasehelper kopiert zuerst, signiert die kopierte Bibliothek und dann die App und prüft das Ergebnis strikt. Spätere Relokation muss xattrs erhalten.                                                                 |
-| Lieferkette und Lizenzen | Cargo-/npm-Prüfungen sowie Quell-/Archiv-/Assethashes sind konkrete Gates, keine vollständige Sicherheits- oder Rechtsfreigabe. Die MLX-Inventare erfassen konservativ den aufgelösten Graphen; sie sind keine exakt nachgewiesene finale Linkclosure. Noch nicht vollständig rekonstruierte native Lizenz-/Attributionstexte bleiben explizit markiert. Eine Veröffentlichung ist nicht Teil dieses Auftrags.                             |
+| Lieferkette und Lizenzen | Cargo-/npm-Prüfungen sowie Quell-/Archiv-/Assethashes sind konkrete Gates, keine vollständige Sicherheits- oder Rechtsfreigabe. Die MLX-Inventare erfassen konservativ den aufgelösten Graphen; sie sind keine exakt nachgewiesene finale Linkclosure. Noch nicht vollständig rekonstruierte native Lizenz-/Attributionstexte bleiben explizit markiert.                              |
 
 Die sichere lokale Modellkonvertierung, Hashprüfung, atomare Veröffentlichung,
 Abbruchbehandlung und getrennten Cacheverzeichnisse sind tatsächlich geprüft.

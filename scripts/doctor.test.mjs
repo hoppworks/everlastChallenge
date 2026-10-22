@@ -91,3 +91,16 @@ test("Rust inspection never calls auto-installing rustup proxies", () => {
     ),
   );
 });
+
+test("Node range matches the installed toolchain dependencies", () => {
+  for (const node of ["22.12.0", "22.22.1", "23.0.0", "24.14.9", "25.0.0"])
+    assert.equal(
+      inspect({}, { node }).find((row) => row.name === "Node.js").ok,
+      false,
+    );
+  for (const node of ["22.22.2", "22.23.1", "24.15.0", "26.0.0"])
+    assert.equal(
+      inspect({}, { node }).find((row) => row.name === "Node.js").ok,
+      true,
+    );
+});

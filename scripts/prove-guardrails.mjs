@@ -99,7 +99,14 @@ for (const [name, source, valid] of typescriptFixtures) {
   fs.writeFileSync(`${directory}/sample.ts`, source);
   command(
     "node_modules/.bin/tsc",
-    ["--strict", "--noEmit", "--skipLibCheck", `${directory}/sample.ts`],
+    // TS7 requires explicit standalone-file mode when a project config exists.
+    [
+      "--ignoreConfig",
+      "--strict",
+      "--noEmit",
+      "--skipLibCheck",
+      `${directory}/sample.ts`,
+    ],
     valid,
   );
   console.log(`Proved TypeScript rule: ${name}`);

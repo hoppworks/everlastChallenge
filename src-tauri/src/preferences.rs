@@ -8,17 +8,15 @@ use ts_rs::TS;
 
 pub const SUPPORTED_LANGUAGES: &[SettingsLanguage] = &[SettingsLanguage::German];
 
-/// Only qualified product engines are selectable. None preserves a legacy choice.
+/// The product exposes only the qualified hybrid. Legacy files migrate at startup.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "snake_case")]
 pub enum PreferenceModel {
-    Reference,
     MlxReferenceEncoder,
 }
 impl PreferenceModel {
     pub fn from_settings(settings: &Settings) -> Option<Self> {
         match settings.model {
-            crate::settings::ModelChoice::Reference => Some(Self::Reference),
             #[cfg(feature = "mlx")]
             crate::settings::ModelChoice::MlxReferenceEncoder => Some(Self::MlxReferenceEncoder),
             _ => None,
@@ -42,8 +40,7 @@ impl SettingsDraft {
             return Err(PreferencesError::LanguageUnavailable);
         }
         let model = match self.model {
-            None => current.model,
-            Some(PreferenceModel::Reference) => crate::settings::ModelChoice::Reference,
+            None => Settings::default().model,
             #[cfg(feature = "mlx")]
             Some(PreferenceModel::MlxReferenceEncoder) => {
                 crate::settings::ModelChoice::MlxReferenceEncoder
@@ -618,7 +615,7 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn draft_rejects_unaccepted_english_and_preserves_model_and_schema()
+    fn draft_rejects_unaccepted_english_and_uses_product_model()
     -> Result<(), Box<dyn std::error::Error>> {
         let current = Settings {
             model: crate::settings::ModelChoice::Small,
@@ -636,7 +633,7 @@ mod tests {
         ));
         draft.language = SettingsLanguage::German;
         let next = draft.apply_to(&current)?;
-        assert_eq!(next.model, current.model);
+        assert_eq!(next.model, Settings::default().model);
         assert_eq!(next.schema_version, current.schema_version);
         Ok(())
     }

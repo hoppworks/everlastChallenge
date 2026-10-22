@@ -16,3 +16,15 @@ Die Änderungen wurden mit automatisierten Checks und gezielten nativen Tests ge
 Automatisierte Tests decken die geprüften Verträge ab, nicht jede Mikrofon-/App-
 Kombination. Agentenreviews bleiben fehlbar. Historische Ergebnisse gelten nur
 für ihre angegebenen Quellen, Modelle und Messbedingungen.
+
+## Paket- und Werkzeugmigration 0.2.0
+
+Codex unterstützte die Bibliotheksanpassungen und TypeScript-Migration. Ein
+unabhängiges kombiniertes Code-Review prüfte Anforderungen, Fehlerpfade und
+Projektregeln. Dabei wurden ein zweiter ungebundener Dateilesezugriff, zu
+weiche Feldtypprüfung, unvollständige Fall-ID-Prüfung und fehlende Eingabehashes
+korrigiert. Die TLS-Initialisierung wurde zusätzlich anhand der fehlschlagenden
+Transporttests berichtigt. Gezielte Regressionen, der gemeinsame Softwarelauf
+und die tatsächlich erreichten Abdeckungsgrenzen stehen im
+[technischen Prüfbericht](verification/tooling-and-packages-2026-10-22.md).
+Das Review ersetzt diese ausführbaren Nachweise nicht.

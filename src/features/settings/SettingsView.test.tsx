@@ -437,17 +437,16 @@ test("command errors remain visible in every area and permission requests have t
     "Freigabe konnte nicht angefragt werden",
   );
 });
-test("model migration remains a draft until explicit save and retains microphone and hotkey", () => {
+test("hybrid model is fixed and settings offer no engine switch", () => {
   const p = props();
   render(<SettingsView {...p} />);
   fireEvent.click(screen.getByRole("button", { name: "Modell" }));
-  fireEvent.change(screen.getByLabelText("Erkennungsmodell"), {
-    target: { value: "mlx_reference_encoder" },
-  });
+  expect(screen.queryByRole("combobox")).toBeNull();
+  expect(
+    screen.queryByRole("button", { name: "Modellwahl speichern" }),
+  ).toBeNull();
+  expect(
+    screen.getByText("MLX-Hybrid · optimierter Encoder, whisper.cpp-Decoder"),
+  ).toBeTruthy();
   expect(p.onSave).not.toHaveBeenCalled();
-  fireEvent.click(screen.getByRole("button", { name: "Modellwahl speichern" }));
-  expect(p.onSave).toHaveBeenCalledWith({
-    ...p.preferences.current,
-    model: "mlx_reference_encoder",
-  });
 });

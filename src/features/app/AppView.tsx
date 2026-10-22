@@ -19,11 +19,7 @@ type SessionPhase =
   | "Delivering"
   | "Cancelling";
 type PermissionStatus =
-  | "granted"
-  | "denied"
-  | "notDetermined"
-  | "restricted"
-  | "unavailable";
+  "granted" | "denied" | "notDetermined" | "restricted" | "unavailable";
 type SessionOutcome =
   | { kind: "local" | "empty" | "sent" | "cancelled" }
   | { kind: "held" | "failed"; message: string };

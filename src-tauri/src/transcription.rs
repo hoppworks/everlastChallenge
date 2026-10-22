@@ -877,7 +877,10 @@ mod tests {
             .take(1_048_577)
             .read_to_end(&mut manifest)?;
         assert_eq!(
-            format!("{:x}", Sha256::digest(&manifest)),
+            (Sha256::digest(&manifest))
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<String>(),
             "d3b743f0d589c90a74fda2b1bfc758c0ab1e43937136bf7cc10f37dab028826b",
             "fixed independent fixture manifest changed"
         );
@@ -888,7 +891,10 @@ mod tests {
         .take(16 * 1024 * 1024 + 1)
         .read_to_end(&mut wav)?;
         assert_eq!(
-            format!("{:x}", Sha256::digest(&wav)),
+            (Sha256::digest(&wav))
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect::<String>(),
             "5c1235a48aa1387e53354108f9106b1328462a69cb929f92831027e4d40a9b02",
             "fixed PCM fixture changed"
         );

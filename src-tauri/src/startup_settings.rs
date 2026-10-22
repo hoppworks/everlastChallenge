@@ -12,6 +12,18 @@ impl StartupSettings {
         let store = SettingsStore::new(directory);
         let loaded = (|| {
             if let Some(settings) = store.load()? {
+                #[cfg(feature = "mlx")]
+                let settings = {
+                    let mut settings = settings;
+                    if settings.model != crate::settings::ModelChoice::MlxReferenceEncoder {
+                        settings.model = crate::settings::ModelChoice::MlxReferenceEncoder;
+                        store.save(&settings)?;
+                        if store.load()?.as_ref() != Some(&settings) {
+                            return Err(SettingsError::Format);
+                        }
+                    }
+                    settings
+                };
                 return Ok(settings);
             }
             let defaults = Settings::default();
@@ -83,13 +95,38 @@ fn message(error: &SettingsError) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(feature = "mlx")]
+    #[test]
+    fn legacy_engines_migrate_to_hybrid_without_losing_user_preferences()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for model in [
+            crate::settings::ModelChoice::Reference,
+            crate::settings::ModelChoice::Small,
+            crate::settings::ModelChoice::MlxFp16,
+        ] {
+            let directory = tempfile::tempdir()?;
+            let legacy = Settings {
+                model,
+                device: Some("Studio Mikrofon".into()),
+                ..Settings::default()
+            };
+            SettingsStore::new(directory.path()).save(&legacy)?;
+            let expected = Settings {
+                model: crate::settings::ModelChoice::MlxReferenceEncoder,
+                ..legacy
+            };
+            let startup = StartupSettings::load(directory.path());
+            assert_eq!(startup.ready(), Some(&expected));
+            assert_eq!(SettingsStore::new(directory.path()).load()?, Some(expected));
+        }
+        Ok(())
+    }
     #[test]
     fn existing_valid_preferences_are_preserved_byte_for_byte()
     -> Result<(), Box<dyn std::error::Error>> {
         let directory = tempfile::tempdir()?;
         let settings = Settings {
             device: Some("Studio Mikrofon".into()),
-            model: crate::settings::ModelChoice::Small,
             ..Settings::default()
         };
         let bytes = format!("  {}\n", serde_json::to_string(&settings)?);

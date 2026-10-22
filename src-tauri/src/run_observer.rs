@@ -361,8 +361,12 @@ fn project(snapshot: &view::Snapshot) -> Result<Value, &'static str> {
             view::SessionOutcome::Held { .. } => "held",
             view::SessionOutcome::Failed { .. } => "failed",
         });
-    let hash = (!snapshot.session.text.is_empty())
-        .then(|| format!("{:x}", Sha256::digest(snapshot.session.text.as_bytes())));
+    let hash = (!snapshot.session.text.is_empty()).then(|| {
+        (Sha256::digest(snapshot.session.text.as_bytes()))
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
+    });
     Ok(json!({
         "setupReady": snapshot.setup.phase == view::SetupPhase::Ready,
         "microphoneGranted": snapshot.permissions.microphone == view::PermissionStatus::Granted,

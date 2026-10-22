@@ -86,7 +86,7 @@ ursprünglichen Messkonfiguration erhalten die lokale Nachweiskette. Dieser
 Auszug ist ausdrücklich kein unverändertes vollständiges Roharchiv.
 
 ```sh
-python3 tools/measurement/summarize-helper-comparison.py
+node --import tsx tools/measurement/summarize-helper-comparison.ts
 ```
 
 Das Skript prüft Vollständigkeit und Transkriptgleichheit und berechnet Mediane,

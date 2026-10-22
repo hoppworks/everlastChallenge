@@ -48,7 +48,10 @@ pub fn bounded_read(path: &Path, maximum: u64) -> Result<Vec<u8>, Error> {
     Ok(bytes)
 }
 pub fn digest(bytes: &[u8]) -> String {
-    format!("{:x}", Sha256::digest(bytes))
+    (Sha256::digest(bytes))
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>()
 }
 pub fn parse_manifest(bytes: &[u8]) -> Result<Manifest, Error> {
     if bytes.len() as u64 > MAX_MANIFEST {
