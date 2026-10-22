@@ -3,7 +3,7 @@
 use std::{
     fs::{self, File, OpenOptions},
     io::{self, Read, Write},
-    os::unix::fs::{MetadataExt, OpenOptionsExt},
+    os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt},
     path::{Path, PathBuf},
 };
 const PREFIX: &str = "text-worker-v1-";
@@ -104,7 +104,12 @@ impl Scratch {
     pub(super) fn create(root: &Path) -> io::Result<Self> {
         let _root_lock = directory_lock(root)?;
         recover_locked(root)?;
-        let directory = tempfile::Builder::new().prefix(PREFIX).tempdir_in(root)?;
+        let directory = tempfile::Builder::new()
+            .prefix(PREFIX)
+            // Set at creation: the worker requires a private snapshot parent,
+            // independently of the user's umask.
+            .permissions(fs::Permissions::from_mode(0o700))
+            .tempdir_in(root)?;
         let mut file = OpenOptions::new()
             .read(true)
             .write(true)

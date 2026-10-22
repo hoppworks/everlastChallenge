@@ -185,3 +185,52 @@ fn duplicate_numeric_windows_do_not_consume_an_additional_candidate_slot() -> Te
     assert_eq!(choices.len(), 64);
     Ok(())
 }
+
+#[test]
+fn statement_correction_options_include_the_complete_revised_clause() -> TestResult {
+    for (text, expected, language) in [
+        (
+            "Die Option ist aktiviert, Korrektur: Die Option ist nicht aktiviert.",
+            "Die Option ist nicht aktiviert.",
+            Language::German,
+        ),
+        (
+            "I approve the draft, correction: I do not approve the draft.",
+            "I do not approve the draft.",
+            Language::English,
+        ),
+    ] {
+        let source = OriginalTranscript::new(text.into())?;
+        let choices = proposal_candidates(&source, language)?;
+        assert!(
+            choices.iter().any(
+                |choice| validate(&source, std::slice::from_ref(choice), language)
+                    .is_ok_and(|accepted| accepted.as_str() == expected)
+            ),
+            "{text}"
+        );
+        assert!(
+            !choices
+                .iter()
+                .any(|choice| choice.after == "Die" || choice.after == "I")
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn numeric_replacements_cannot_consume_a_preceding_predicate() -> TestResult {
+    let source =
+        OriginalTranscript::new("Der Termin dauert 40, Entschuldigung, 14 Minuten.".into())?;
+    let choices = proposal_candidates(&source, Language::German)?;
+    assert!(!choices.is_empty());
+    for choice in choices {
+        let accepted = validate(&source, std::slice::from_ref(&choice), Language::German)?;
+        assert!(
+            accepted.as_str().starts_with("Der Termin dauert "),
+            "{}",
+            accepted.as_str()
+        );
+    }
+    Ok(())
+}

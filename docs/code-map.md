@@ -10,6 +10,8 @@ flowchart LR
   Runtime --> Audio[Audioowner: Ring, DSP, Flush]
   Audio --> Inference[Serieller Inferenzowner]
   Inference --> Runtime
+  Runtime -->|optionale Textbereinigung|Refinement[MLX-Textworker / atomare Validierung]
+  Refinement --> Runtime
   Runtime --> Native[Zielprüfung / native Übergabe]
   Runtime --> Local[Lokaler Text / Snapshot]
   Native --> Local
@@ -121,3 +123,8 @@ grenzt Browserdarstellung und Vertragstests von der noch ausstehenden Paketabnah
 
 Aktive Entwicklerwerkzeuge und der Umgang mit historischen Messreihen stehen in
 [tooling.md](tooling.md).
+
+Die [kontextgebundene Korrekturprüfung](verification/refinement-context-2026-10-22.md)
+verbindet den erweiterten Fallkorpus mit den nativen Start-/Abbruchbeobachtungen.
+Der Host erzeugt Worker-Verzeichnisse direkt mit privaten `0700`-Rechten; ein
+bestehender ASR-/Rohworker-Nachweis ersetzt diese Hostgrenze nicht.

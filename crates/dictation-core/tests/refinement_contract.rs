@@ -574,3 +574,185 @@ fn ordinary_negation_and_path_components_do_not_authorize_replacement() -> TestR
     }
     Ok(())
 }
+
+#[test]
+fn explicit_statement_revisions_keep_the_complete_corrected_negation() -> TestResult {
+    for (source, before, after, expected, language) in [
+        (
+            "Die Option ist aktiviert, Korrektur: Die Option ist nicht aktiviert.",
+            "Die Option ist aktiviert, Korrektur: Die Option ist nicht aktiviert",
+            "Die Option ist nicht aktiviert",
+            "Die Option ist nicht aktiviert.",
+            Language::German,
+        ),
+        (
+            "I approve the draft, correction: I do not approve the draft.",
+            "I approve the draft, correction: I do not approve the draft",
+            "I do not approve the draft",
+            "I do not approve the draft.",
+            Language::English,
+        ),
+        (
+            "Die Option ist nicht aktiviert, Korrektur: Die Option ist aktiviert.",
+            "Die Option ist nicht aktiviert, Korrektur: Die Option ist aktiviert",
+            "Die Option ist aktiviert",
+            "Die Option ist aktiviert.",
+            Language::German,
+        ),
+        (
+            "I do not approve the draft, correction: I approve the draft.",
+            "I do not approve the draft, correction: I approve the draft",
+            "I approve the draft",
+            "I approve the draft.",
+            Language::English,
+        ),
+        (
+            "Wir zahlen nicht 50, Korrektur: Wir zahlen nicht 15 Euro.",
+            "Wir zahlen nicht 50, Korrektur: Wir zahlen nicht 15 Euro",
+            "Wir zahlen nicht 15 Euro",
+            "Wir zahlen nicht 15 Euro.",
+            Language::German,
+        ),
+    ] {
+        assert_eq!(
+            validate(
+                &OriginalTranscript::new(source.into())?,
+                &[edit(EditKind::SelfCorrection, before, after)],
+                language
+            )
+            .map_err(|e| format!("{source}: {e}"))?
+            .as_str(),
+            expected
+        );
+    }
+    for (source, before, after, language) in [
+        (
+            "Die Option ist aktiviert, Korrektur: Die Option ist nicht aktiviert.",
+            "aktiviert, Korrektur: Die",
+            "Die",
+            Language::German,
+        ),
+        (
+            "I approve the draft, correction: I do not approve the draft.",
+            "draft, correction: I",
+            "I",
+            Language::English,
+        ),
+        (
+            "Die Option ist aktiviert, Korrektur: Die Option ist nicht aktiviert.",
+            "Die Option ist aktiviert, Korrektur: Die Option ist nicht",
+            "Die Option ist nicht",
+            Language::German,
+        ),
+    ] {
+        assert!(
+            validate(
+                &OriginalTranscript::new(source.into())?,
+                &[edit(EditKind::SelfCorrection, before, after)],
+                language
+            )
+            .is_err()
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn correction_context_rejects_partial_restatements_without_banning_short_values() -> TestResult {
+    for (source, before, after, expected, language) in [
+        (
+            "We ordered 5 boxes for 10, correction: 5 dollars.",
+            "10, correction: 5 dollars",
+            "5 dollars",
+            "We ordered 5 boxes for 5 dollars.",
+            Language::English,
+        ),
+        (
+            "Paul ruft Maria, Entschuldigung, Paul.",
+            "Maria, Entschuldigung, Paul",
+            "Paul",
+            "Paul ruft Paul.",
+            Language::German,
+        ),
+        (
+            "Wir zahlen fünf, Entschuldigung, 15 Euro.",
+            "fünf, Entschuldigung, 15",
+            "15",
+            "Wir zahlen 15 Euro.",
+            Language::German,
+        ),
+        (
+            "We pay five, sorry, 15 dollars.",
+            "five, sorry, 15",
+            "15",
+            "We pay 15 dollars.",
+            Language::English,
+        ),
+        (
+            "Wir kommen morgen, ich meine, am Montag.",
+            "morgen, ich meine, am Montag",
+            "am Montag",
+            "Wir kommen am Montag.",
+            Language::German,
+        ),
+        (
+            "We arrive tomorrow, I mean, on Monday.",
+            "tomorrow, I mean, on Monday",
+            "on Monday",
+            "We arrive on Monday.",
+            Language::English,
+        ),
+    ] {
+        assert_eq!(
+            validate(
+                &OriginalTranscript::new(source.into())?,
+                &[edit(EditKind::SelfCorrection, before, after)],
+                language
+            )?
+            .as_str(),
+            expected
+        );
+    }
+    for (source, before, after, language) in [
+        (
+            "The price is wrong, correction: 5 dollars is correct.",
+            "wrong, correction: 5 dollars is correct",
+            "5 dollars is correct",
+            Language::English,
+        ),
+        (
+            "We need a blue folder, correction: a red folder.",
+            "blue folder, correction: a red folder",
+            "a red folder",
+            Language::English,
+        ),
+        (
+            "The option is enabled, correction: This option remains disabled.",
+            "enabled, correction: This",
+            "This",
+            Language::English,
+        ),
+        (
+            "The option is enabled, correction: This option is not enabled.",
+            "enabled, correction: This",
+            "This",
+            Language::English,
+        ),
+        (
+            "Die Option ist aktiviert, Korrektur: Diese Option ist nicht aktiviert.",
+            "aktiviert, Korrektur: Diese",
+            "Diese",
+            Language::German,
+        ),
+    ] {
+        assert!(
+            validate(
+                &OriginalTranscript::new(source.into())?,
+                &[edit(EditKind::SelfCorrection, before, after)],
+                language
+            )
+            .is_err()
+        );
+    }
+    Ok(())
+}

@@ -1,0 +1,37 @@
+{
+  "baseCommit": "e586edbaabeb059b228008e3a7769cb8aba73508",
+  "sourceFiles": [
+    {
+      "path": "crates/dictation-core/src/refinement/correction.rs",
+      "sha256": "178859da8289e59c5a040b88aa18c1b788036de6b7af98cf6959e6a8444df48d"
+    },
+    {
+      "path": "crates/dictation-core/src/refinement/validator.rs",
+      "sha256": "f99631d73b2e9cfd6e53bdb59378f06fc1d63f7ba4152fb9abe8ed42d729f4f8"
+    },
+    {
+      "path": "crates/dictation-core/tests/refinement_contract.rs",
+      "sha256": "44ff461f341bb62f50f2238aa78cd895a67c396d4680c779d276ea3e4e910902"
+    },
+    {
+      "path": "crates/dictation-core/tests/refinement_candidates.rs",
+      "sha256": "2b34dba7471d5bfbbb634b5e5c20a46726513ffd493c1168387a8447656c15c7"
+    },
+    {
+      "path": "crates/text-refinement-protocol/src/lib.rs",
+      "sha256": "fffbece9099a32e22630f8dc691f95a48ff316e7362ff3b16c8bff6e51e90028"
+    },
+    {
+      "path": "crates/text-refinement-worker/tests/supervisor.rs",
+      "sha256": "45252596c510825438918fc7c12c21d56582192cc066645c52d6ee5b9c81dd2c"
+    },
+    {
+      "path": "src-tauri/src/refinement_service.rs",
+      "sha256": "5111f1a401d8c21d2e2383d350775fa4d8321fda3e606636fe88da008e1f4017"
+    },
+    {
+      "path": "src-tauri/src/refinement_service/scratch.rs",
+      "sha256": "d8f776b85d82fbeac6427966e637797769a9c9ca738aea107dc4a6d0611566ec"
+    }
+  ]
+}

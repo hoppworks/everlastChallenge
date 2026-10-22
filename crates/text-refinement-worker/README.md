@@ -57,7 +57,7 @@ full stops, commas, colons or semicolons inside a replacement or at a source
 boundary. Existing ellipses can remain unchanged. This is a structural check;
 it does not decide whether a sentence boundary is linguistically appropriate.
 
-Protocol 2, prompt 7 and policy 5 carry both stages explicitly. They share the
+Protocol 2, prompt 7 and policy 6 carry both stages explicitly. They share the
 30-second request deadline, 4,096 generated-token budget and 32-KiB output-byte
 budget. Each model prompt is limited to 8,192 tokens. No first model call is
 needed when the structural option list is empty. The punctuation grammar retains
@@ -87,3 +87,9 @@ fixture children. These fixtures do not load MLX or prove dictation/UI integrati
 The [owner report](../../docs/verification/refinement-owner-2026-10-22.md) records
 its original verification scope. Later runtime, UI and packaging reports extend
 that evidence; none alone proves final model quality or end-to-end delivery.
+
+Policy 6 checks repeated source phrases around a correction so a partial
+restatement cannot leave them behind. It also rejects spans that absorb an
+unrelated predicate into a numeric correction.
+Complete explicit restatements may add or remove negation only when the remaining
+words match; this does not authorize deleting ordinary negation.

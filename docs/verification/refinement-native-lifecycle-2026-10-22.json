@@ -1,0 +1,29 @@
+{
+  "cancelReason": "Cancelled",
+  "cancelToJoinMs": 97.235292,
+  "childAbsent": true,
+  "forcedTermination": false,
+  "restartCleanExit": true,
+  "restartOutput": "Wir schicken den Bericht morgen.",
+  "restartScratchRemoved": true,
+  "sampleCommandSucceeded": true,
+  "scratchRemoved": true,
+  "binarySha256": "e6c7b26ddf7532ddc3336f120edebcf6a9f6ff864780b475e63ec1c5b33ecb35",
+  "observedGpuStack": true,
+  "sampleSha256": "165bc63f24937457ce7c8e33257acf352ce4b3e4f44e0504e71ef24b71d402f2",
+  "scope": "One native worker cancellation/restart through the host supervisor; sampled GPU activity, not worst-case latency or full-app acceptance.",
+  "sampledCallGraphEntries": [
+    "    + !           469 _RINvCs6BU6HRP9cNi_22text_refinement_worker5serveNtNtNtCsdnanKjkF2cC_3std2io5stdio5StdinNtBM_6StdoutNtNtB2_5model12MlxGeneratorNCNvCsfjd8DXVGS9_22text_refinement_worker3runs0_0EB24_  (in text-refinement-worker) + 3228",
+    "    + !             469 _RNvXs_NtCs6BU6HRP9cNi_22text_refinement_worker5modelNtB4_12MlxGeneratorNtB6_9Generator8generate  (in text-refinement-worker) + 2464",
+    "    + !               469 _RNvMNtCs6BU6HRP9cNi_22text_refinement_worker5modelNtB2_12MlxGenerator5infer  (in text-refinement-worker) + 2780",
+    "    + !                   :         | + ! 8 mlx::core::QuantizedMatmul::eval_gpu(std::vector<mlx::core::array> const&, mlx::core::array&)  (in text-refinement-worker) + 880",
+    "    + !                   :         | + ! 4 mlx::core::QuantizedMatmul::eval_gpu(std::vector<mlx::core::array> const&, mlx::core::array&)  (in text-refinement-worker) + 984",
+    "    + !                   :         | + ! 2 mlx::core::QuantizedMatmul::eval_gpu(std::vector<mlx::core::array> const&, mlx::core::array&)  (in text-refinement-worker) + 108",
+    "    + !                   :         | + ! :     1 mlx::core::metal::CommandEncoder::dispatch_threads(MTL::Size, MTL::Size)  (in text-refinement-worker) + 36",
+    "    + !                   :         | + ! :     1 mlx::core::metal::CommandEncoder::dispatch_threads(MTL::Size, MTL::Size)  (in text-refinement-worker) + 108",
+    "    + !                   :         | + ! 2 mlx::core::fast::RMSNorm::eval_gpu(std::vector<mlx::core::array> const&, std::vector<mlx::core::array>&)  (in text-refinement-worker) + 1240",
+    "    + !                   :         | + ! 1 mlx::core::fast::RMSNorm::eval_gpu(std::vector<mlx::core::array> const&, std::vector<mlx::core::array>&)  (in text-refinement-worker) + 232",
+    "    + !                   :         | + ! 1 mlx::core::fast::RMSNorm::eval_gpu(std::vector<mlx::core::array> const&, std::vector<mlx::core::array>&)  (in text-refinement-worker) + 1028",
+    "    + !                   :         | + ! 1 mlx::core::fast::RMSNorm::eval_gpu(std::vector<mlx::core::array> const&, std::vector<mlx::core::array>&)  (in text-refinement-worker) + 1300"
+  ]
+}

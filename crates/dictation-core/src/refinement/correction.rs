@@ -142,6 +142,28 @@ fn frame(word: &str, language: Language) -> bool {
     }
 }
 
+// Compare an explicitly restated clause after removing only the polarity
+// construction. English "do not" needs its support verb removed as a unit;
+// unrelated verbs, names, quantities and grammatical words remain significant.
+fn without_polarity<'a>(words: &[&'a str], language: Language) -> Vec<&'a str> {
+    words
+        .iter()
+        .enumerate()
+        .filter_map(|(index, &word)| {
+            let negative = match language {
+                Language::German => word.eq_ignore_ascii_case("nicht"),
+                Language::English => word.eq_ignore_ascii_case("not"),
+            };
+            let support = language == Language::English
+                && word.eq_ignore_ascii_case("do")
+                && words
+                    .get(index + 1)
+                    .is_some_and(|next| next.eq_ignore_ascii_case("not"));
+            (!negative && !support).then_some(word)
+        })
+        .collect()
+}
+
 pub(super) fn allowed(before: &str, after: &str, language: Language) -> bool {
     let Some(Correction {
         old,
@@ -157,7 +179,7 @@ pub(super) fn allowed(before: &str, after: &str, language: Language) -> bool {
     }
     let old_words = text::words(old);
     let new_words = text::words(replacement);
-    if old_words.is_empty() || old_words.len() > 6 || old_words.len() > new_words.len() {
+    if old_words.is_empty() || old_words.len() > 6 {
         return false;
     }
     if weak_marker && !comparable(&old_words, &new_words, language, comma) {
@@ -176,6 +198,42 @@ pub(super) fn allowed(before: &str, after: &str, language: Language) -> bool {
                         .next()
                         .is_some_and(|c| c.is_ascii_digit()))
     }) {
+        return false;
+    }
+    let shared = old_words
+        .iter()
+        .zip(&new_words)
+        .take_while(|(old, new)| old.eq_ignore_ascii_case(new))
+        .count();
+    if !weak_marker && shared >= 1 {
+        let old_plain = without_polarity(&old_words, language);
+        let new_plain = without_polarity(&new_words, language);
+        let negative = |word: &&str| match language {
+            Language::German => word.eq_ignore_ascii_case("nicht"),
+            Language::English => word.eq_ignore_ascii_case("not"),
+        };
+        let polarity_changed = old_words.iter().any(negative) != new_words.iter().any(negative);
+        if polarity_changed {
+            // Only a complete explicit restatement may revise polarity. A
+            // prefix ending at "not" cannot stand in for the full clause.
+            return old_plain.len() == new_plain.len()
+                && old_plain
+                    .iter()
+                    .zip(&new_plain)
+                    .all(|(old, new)| old.eq_ignore_ascii_case(new));
+        }
+    }
+    if old_words.len() > new_words.len() {
+        return false;
+    }
+    // Preserve lexical context before an existing numeric value. A spoken
+    // number ("five") may still be corrected to digits ("15") or vice versa.
+    let numeric = |word: &str| word.chars().all(|c| c.is_ascii_digit());
+    if shared == 0
+        && !numeric(old_words[0])
+        && numeric(new_words[0])
+        && old_words.iter().skip(1).any(|word| numeric(word))
+    {
         return false;
     }
     let old_frame = old_words
@@ -244,4 +302,78 @@ fn comparable(old: &[&str], new: &[&str], language: Language, comma: bool) -> bo
             })
     };
     comma && proper_name(&old[shared..]) && proper_name(&new[shared..])
+}
+
+/// A bounded context check for a restated phrase around a correction marker.
+/// Repeated words on both sides must belong to the selected correction;
+/// accepting only a prefix of the replacement would leave the old phrase behind.
+/// This is a structural guard, not a general natural-language parser.
+pub(super) fn context_aligned(
+    source: &str,
+    range: &std::ops::Range<usize>,
+    before: &str,
+    after: &str,
+    language: Language,
+) -> bool {
+    let Some(correction) = parts(before, language) else {
+        return false;
+    };
+    let old_end = range.start + correction.old.len();
+    let replacement_start = range.end - after.len();
+    let boundary = |text: &str, index: usize, c: char| {
+        matches!(c, '?' | '!' | ';' | '\n' | '\r')
+            || c == '.'
+                && !(text[..index]
+                    .chars()
+                    .next_back()
+                    .is_some_and(|c| c.is_ascii_digit())
+                    && text[index + 1..]
+                        .chars()
+                        .next()
+                        .is_some_and(|c| c.is_ascii_digit()))
+    };
+    let left = &source[..old_end];
+    let left_start = left
+        .char_indices()
+        .rev()
+        .find(|(i, c)| boundary(left, *i, *c))
+        .map_or(0, |(i, c)| i + c.len_utf8());
+    let right = &source[replacement_start..];
+    let right_end = right
+        .char_indices()
+        .find(|(i, c)| boundary(right, *i, *c))
+        .map_or(right.len(), |(i, _)| i);
+    let old_words = text::word_ranges(&source[left_start..old_end]);
+    let new_words = text::word_ranges(&right[..right_end]);
+    // A complete short value is not a restated clause. Its spelling can
+    // legitimately repeat an unrelated quantity or person in the preceding
+    // sentence ("5 boxes for 10, correction: 5 dollars", "Paul calls Maria,
+    // sorry Paul"). Partial prefixes of a longer clause never take this path.
+    let full_value = right[..right_end].trim_end();
+    let value_words = text::words(full_value);
+    let name = !value_words.is_empty()
+        && value_words.len() <= 3
+        && value_words.iter().all(|word| {
+            word.chars().next().is_some_and(char::is_uppercase)
+                && !frame(&word.to_lowercase(), language)
+        });
+    let scalar = value_words.len() == 1 || name;
+    if scalar && range.end >= replacement_start + full_value.len() {
+        return true;
+    }
+    for old in &old_words[old_words.len().saturating_sub(6)..] {
+        for new in &new_words[..new_words.len().min(6)] {
+            let old_word = &source[left_start + old.start..left_start + old.end];
+            // Repeated quantities are values, not evidence of a repeated
+            // grammatical frame ("5 boxes for 10, correction: 5 dollars").
+            let same = !old_word.chars().all(|c| c.is_ascii_digit())
+                && old_word.eq_ignore_ascii_case(&right[new.clone()]);
+            if same
+                && (range.start > left_start + old.start || range.end < replacement_start + new.end)
+            {
+                return false;
+            }
+        }
+    }
+    true
 }

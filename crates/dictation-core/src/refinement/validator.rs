@@ -49,7 +49,14 @@ pub(super) fn validate(
         resolved.push(match edit.kind {
             EditKind::Filler => deletion(source, range, edit, language)?,
             EditKind::SelfCorrection
-                if super::correction::allowed(&edit.before, &edit.after, language) =>
+                if super::correction::allowed(&edit.before, &edit.after, language)
+                    && super::correction::context_aligned(
+                        source,
+                        &range,
+                        &edit.before,
+                        &edit.after,
+                        language,
+                    ) =>
             {
                 ResolvedEdit {
                     kind: edit.kind,

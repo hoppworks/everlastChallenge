@@ -177,3 +177,17 @@ verification then exposed literal control-token encoding and long-grammar
 compilation failures; deterministic regressions preceded both corrections. The
 [pipeline report](verification/refinement-pipeline-2026-10-22.md) distinguishes
 these checks from full product quality, delivery and performance acceptance.
+
+An independently authored corpus exposed failures that the original text cases
+missed. AI-assisted diagnosis and independent review corrected incomplete
+self-correction spans and a predicate-consuming numeric option. Positive tests
+also preserve valid spelled-number, time, repeated-name and repeated-quantity
+corrections. The [context report](verification/refinement-context-2026-10-22.md)
+records the structural limits; finite case results do not establish arbitrary
+linguistic correctness.
+
+Real host-supervisor verification also found that default temporary-directory
+permissions prevented native model startup. The host now requests `0700` at
+creation; a failing/passing supervisor regression and a real model
+cancellation/restart check verify this path. The context report records sampled
+MLX/Metal activity separately from final application and memory-pressure gates.

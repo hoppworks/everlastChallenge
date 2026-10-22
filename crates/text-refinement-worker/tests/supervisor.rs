@@ -453,6 +453,15 @@ fn owned_worker_roundtrips_then_reaps_and_removes_its_snapshot() -> TestResult {
     let root = tempfile::tempdir()?;
     let mut worker = Worker::spawn(spec(root.path(), "normal")?, limits(), &Cancellation::new())?;
     let scratch = worker.scratch_directory().to_path_buf();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        assert_eq!(
+            std::fs::metadata(&scratch)?.permissions().mode() & 0o077,
+            0,
+            "worker snapshot must be private before model loading"
+        );
+    }
     let original = OriginalTranscript::new("Hello.".into())?;
     let accepted = worker.run(job(1)?, &original, Language::English, &Cancellation::new())?;
     assert_eq!(accepted.as_str(), "Hello.");
