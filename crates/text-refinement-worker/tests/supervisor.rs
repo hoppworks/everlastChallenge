@@ -7,6 +7,52 @@ use text_refinement_protocol::{JobKey, Language};
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 #[test]
+fn rejected_start_and_closed_worker_cannot_receive_work() -> TestResult {
+    let root = tempfile::tempdir()?;
+    let cancelled = Cancellation::new();
+    cancelled.cancel();
+    assert!(matches!(
+        Worker::spawn(spec(root.path(), "normal")?, limits(), &cancelled),
+        Err(service::Error {
+            reason: service::Failure::Cancelled,
+            ..
+        })
+    ));
+    let mut invalid = spec(root.path(), "normal")?;
+    invalid.executable = PathBuf::from("relative-worker");
+    assert!(matches!(
+        Worker::spawn(invalid, limits(), &Cancellation::new()),
+        Err(service::Error {
+            reason: service::Failure::InvalidPath,
+            ..
+        })
+    ));
+    let mut worker = Worker::spawn(spec(root.path(), "normal")?, limits(), &Cancellation::new())?;
+    worker.close()?;
+    let original = OriginalTranscript::new("Hello.".into())?;
+    let job = JobKey {
+        generation: NonZeroU64::new(1).ok_or("zero")?,
+        session: NonZeroU64::new(1).ok_or("zero")?,
+        request: NonZeroU64::new(1).ok_or("zero")?,
+    };
+    assert!(matches!(
+        worker.run(job, &original, Language::English, &cancelled),
+        Err(service::Error {
+            reason: service::Failure::Cancelled,
+            ..
+        })
+    ));
+    assert!(matches!(
+        worker.run(job, &original, Language::English, &Cancellation::new()),
+        Err(service::Error {
+            reason: service::Failure::Closed,
+            ..
+        })
+    ));
+    Ok(())
+}
+
+#[test]
 fn runtime_preparation_secures_directories_and_rejects_files_and_symlinks() -> TestResult {
     use std::os::unix::fs::{PermissionsExt, symlink};
     let root = tempfile::tempdir()?;

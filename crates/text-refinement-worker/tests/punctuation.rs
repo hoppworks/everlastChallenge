@@ -39,3 +39,34 @@ fn pattern_preserves_existing_lines_and_escapes_literal_syntax() -> TestResult {
     assert!(!pattern.contains("*"));
     Ok(())
 }
+
+#[test]
+fn grammar_and_decode_reject_oversized_inputs_before_processing() -> TestResult {
+    use text_refinement_protocol::FailureKind;
+    let original = OriginalTranscript::new("a ".repeat(8193))?;
+    assert!(matches!(Plan::new(original), Err(FailureKind::InputLimit)));
+    let plan =
+        Plan::new(OriginalTranscript::new("Hello.".into())?).map_err(|e| format!("{e:?}"))?;
+    assert_eq!(
+        plan.decode(&" ".repeat(65537), Language::English),
+        Err(FailureKind::InputLimit)
+    );
+    Ok(())
+}
+
+#[test]
+fn existing_comma_does_not_authorize_a_new_sentence_capital() -> TestResult {
+    let plan =
+        Plan::new(OriginalTranscript::new("hello, world".into())?).map_err(|e| format!("{e:?}"))?;
+    let schema = plan.schema();
+    let pattern = schema["properties"]["text"]["pattern"]
+        .as_str()
+        .ok_or("pattern")?;
+    assert!(pattern.contains(" world"));
+    assert!(!pattern.contains("World"));
+    assert!(
+        plan.decode(r#"{"text":"Hello, World."}"#, Language::English)
+            .is_err()
+    );
+    Ok(())
+}
