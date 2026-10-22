@@ -13,6 +13,15 @@ aber nicht als Produktstandard übernommen.
 [Repository](https://github.com/hoppworks/everlastChallenge) ·
 [CI-Läufe](https://github.com/hoppworks/everlastChallenge/actions)
 
+## Download für macOS
+
+**[App herunterladen — macOS, Apple Silicon (.zip)](https://github.com/hoppworks/everlastChallenge/releases/download/v0.1.0/Everlast-Coding-Challenge-macOS-arm64.zip)**
+
+ZIP entpacken und die App nach Programme ziehen. Erfordert **macOS 27 oder neuer**
+auf Apple Silicon. Die App ist lokal signiert, nicht Apple-notarisiert; macOS kann
+beim ersten Öffnen einen Sicherheitshinweis anzeigen. Prüfsumme und Details stehen
+im [Release v0.1.0](https://github.com/hoppworks/everlastChallenge/releases/tag/v0.1.0).
+
 ## In wenigen Minuten durch das Repository
 
 1. [Technische Entscheidungen](docs/engineering-decisions.md): zentrale Invarianten und Abwägungen.
@@ -23,12 +32,9 @@ aber nicht als Produktstandard übernommen.
 
 ## Fertige App starten
 
-Den separat bereitgestellten macOS-ZIP entpacken und die `.app` nach Programme
-kopieren. Aktuell gibt es noch keinen veröffentlichten Downloadlink. Das lokale
-Release-Paket enthält Prüfsummen und eine Übergabeanleitung. Es ist für Apple Silicon,
-lokal signiert und nicht Apple-notarisiert; ein macOS-Hinweis zur Herkunft kann
-deshalb auftreten. Der Paketbau lädt keine Modelle mit herunter. Für deren
-einmaligen Download wird Internet benötigt; anschließend erfolgt die Erkennung offline.
+Den oben verlinkten ZIP entpacken und die `.app` nach Programme kopieren.
+Die Modellgewichte sind nicht im Download enthalten. Für den einmaligen
+Modelldownload wird Internet benötigt; anschließend erfolgt die Erkennung offline.
 
 ## Benutzen
 
