@@ -126,3 +126,11 @@ process; its final regression fixes the exact state ordering deterministically.
 Fatal closure now takes precedence over an unconsumed completion. The
 [runtime report](verification/refinement-runtime-2026-10-22.md) records the
 integration boundary; product setup, UI and model-quality acceptance remain open.
+
+Text-model provisioning and preference migration were AI-assisted and independently
+reviewed. Review found that an invalid optional runtime directory prevented ASR
+startup; a failing then passing test now covers ready ASR with a foreign file or
+symlink at that path. A separate regression exposed inconsistent legacy decoding
+in preference rollback. The shared decoder now preserves the original bytes on
+failed saves. The [provisioning report](verification/refinement-provisioning-2026-10-22.md)
+separates these host contracts from UI, bundle and model-quality acceptance.

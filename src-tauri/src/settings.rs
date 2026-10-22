@@ -14,7 +14,7 @@ use std::{
 };
 use ts_rs::TS;
 
-pub const SCHEMA_VERSION: u32 = 1;
+pub const SCHEMA_VERSION: u32 = 2;
 const MAX_FILE_BYTES: usize = 16 * 1024;
 const MAX_DEVICE_BYTES: usize = 512;
 static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(1);
@@ -107,12 +107,27 @@ pub struct Settings {
     pub language: SettingsLanguage,
     pub hotkey: Hotkey,
     pub model: ModelChoice,
+    pub refinement: bool,
+}
+
+/// Decode old files without silently accepting a missing field in the current
+/// schema. Keeping this typed also preserves duplicate/unknown-field rejection.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct StoredSettings {
+    schema_version: u32,
+    device: Option<String>,
+    language: SettingsLanguage,
+    hotkey: Hotkey,
+    model: ModelChoice,
+    refinement: Option<bool>,
 }
 
 impl Default for Settings {
     fn default() -> Self {
         Self {
             schema_version: SCHEMA_VERSION,
+            refinement: false,
             device: None,
             language: SettingsLanguage::German,
             #[cfg(feature = "mlx")]
@@ -168,6 +183,33 @@ impl Settings {
     }
 }
 
+/// One decoder for startup, storage and rollback snapshots of either schema.
+pub(crate) fn decode_stored(bytes: &[u8]) -> Result<(Settings, bool), SettingsError> {
+    let stored: StoredSettings =
+        serde_json::from_slice(bytes).map_err(|_| SettingsError::Format)?;
+    let migrated = match stored.schema_version {
+        1 if stored.refinement.is_none() => true,
+        1 => return Err(SettingsError::Format),
+        SCHEMA_VERSION => false,
+        _ => return Err(SettingsError::Version),
+    };
+    let refinement = if migrated {
+        false
+    } else {
+        stored.refinement.ok_or(SettingsError::Format)?
+    };
+    let settings = Settings {
+        schema_version: SCHEMA_VERSION,
+        device: stored.device,
+        language: stored.language,
+        hotkey: stored.hotkey,
+        model: stored.model,
+        refinement,
+    };
+    settings.validate()?;
+    Ok((settings, migrated))
+}
+
 /// Caller chooses the application's own data directory. Calls are serialized
 /// by the app supervisor; active-session/model restrictions belong there.
 #[derive(Debug, Clone)]
@@ -183,6 +225,10 @@ impl SettingsStore {
 
     /// Absence permits first-run defaults; every existing invalid file is an error.
     pub fn load(&self) -> Result<Option<Settings>, SettingsError> {
+        Ok(self.load_with_migration()?.map(|(settings, _)| settings))
+    }
+
+    pub(crate) fn load_with_migration(&self) -> Result<Option<(Settings, bool)>, SettingsError> {
         let path = self.directory.join("settings.json");
         let metadata = match fs::symlink_metadata(&path) {
             Ok(metadata) => metadata,
@@ -199,10 +245,7 @@ impl SettingsStore {
         if bytes.len() > MAX_FILE_BYTES {
             return Err(SettingsError::TooLarge);
         }
-        let settings: Settings =
-            serde_json::from_slice(&bytes).map_err(|_| SettingsError::Format)?;
-        settings.validate()?;
-        Ok(Some(settings))
+        decode_stored(&bytes).map(Some)
     }
 
     /// Never overwrites an unrecognized or invalid existing configuration.
@@ -272,6 +315,60 @@ impl Drop for Temporary {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn current_schema_requires_a_boolean_refinement_field_and_rejects_duplicates()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("settings.json");
+        let store = SettingsStore::new(directory.path());
+        let base = serde_json::to_value(Settings::default())?;
+        for value in [serde_json::Value::Null, "yes".into(), 1.into()] {
+            let mut invalid = base.clone();
+            invalid["refinement"] = value;
+            fs::write(&path, serde_json::to_vec(&invalid)?)?;
+            assert!(matches!(store.load(), Err(SettingsError::Format)));
+        }
+        let mut missing = base.clone();
+        missing
+            .as_object_mut()
+            .ok_or("object")?
+            .remove("refinement");
+        fs::write(&path, serde_json::to_vec(&missing)?)?;
+        assert!(matches!(store.load(), Err(SettingsError::Format)));
+        let encoded = serde_json::to_string(&base)?;
+        let duplicate = encoded.replacen(
+            "\"refinement\":false",
+            "\"refinement\":false,\"refinement\":true",
+            1,
+        );
+        assert_ne!(encoded, duplicate);
+        fs::write(&path, duplicate)?;
+        assert!(matches!(store.load(), Err(SettingsError::Format)));
+        Ok(())
+    }
+
+    #[test]
+    fn legacy_settings_migrate_without_enabling_refinement()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("settings.json");
+        let bytes = br#"{"schema_version":1,"device":"Studio Mic","language":"german","model":"small","hotkey":{"key":"K","option":true,"command":false,"control":false,"shift":true}}"#;
+        fs::write(&path, bytes)?;
+        let store = SettingsStore::new(directory.path());
+        let settings = store.load()?.ok_or("missing legacy settings")?;
+        assert_eq!(settings.schema_version, 2);
+        assert_eq!(serde_json::to_value(&settings)?["refinement"], false);
+        assert_eq!(settings.device.as_deref(), Some("Studio Mic"));
+        assert_eq!(settings.hotkey.key, PhysicalKey::K);
+        assert_eq!(fs::read(&path)?, bytes, "read must not rewrite preferences");
+        let mut enabled = serde_json::to_value(settings)?;
+        enabled["refinement"] = true.into();
+        let enabled: Settings = serde_json::from_value(enabled)?;
+        store.save(&enabled)?;
+        assert_eq!(store.load()?, Some(enabled));
+        Ok(())
+    }
     use std::os::unix::fs::{PermissionsExt, symlink};
 
     #[cfg(feature = "mlx")]
@@ -378,7 +475,7 @@ mod tests {
         let store = SettingsStore::new(directory.path());
         let base = serde_json::to_value(Settings::default())?;
         let mut version = base.clone();
-        version["schema_version"] = 2.into();
+        version["schema_version"] = 3.into();
         fs::write(&path, serde_json::to_vec(&version)?)?;
         assert!(matches!(store.load(), Err(SettingsError::Version)));
         let mut model = base.clone();

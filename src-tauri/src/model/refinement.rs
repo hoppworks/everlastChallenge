@@ -66,6 +66,16 @@ pub struct RefinementModel {
     total: u64,
 }
 impl RefinementModel {
+    pub fn fingerprint() -> String {
+        use sha2::{Digest, Sha256};
+        Sha256::digest(MANIFEST.as_bytes())
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect()
+    }
+    pub fn cache_directory(&self, models: &Path) -> PathBuf {
+        self.directory(models)
+    }
     pub fn bundled() -> Result<Self, Error> {
         Self::parse(MANIFEST)
     }

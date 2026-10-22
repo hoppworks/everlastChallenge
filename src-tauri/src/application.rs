@@ -20,6 +20,7 @@ pub struct Snapshot {
     pub running: bool,
     pub closing: bool,
     pub setup: setup::Snapshot,
+    pub refinement_setup: Option<crate::refinement_setup::Snapshot>,
     pub runtime_available: bool,
     pub error: Option<String>,
 }
@@ -38,12 +39,18 @@ struct State {
     snapshot: Snapshot,
     runtime: Option<RuntimeClient>,
     setup_epoch: u64,
+    refinement_epoch: u64,
+}
+enum SetupRequest {
+    Asr(u64),
+    Refinement(u64),
 }
 #[derive(Clone)]
 pub struct Client {
     state: Arc<Mutex<State>>,
     setup: Arc<SetupService>,
-    requests: Sender<u64>,
+    requests: Sender<SetupRequest>,
+    refinement: Option<Arc<crate::refinement_setup::Setup>>,
 }
 impl Client {
     pub fn snapshot(&self) -> Result<Snapshot, ApplicationError> {
@@ -78,7 +85,7 @@ impl Client {
             return Err(ApplicationError::Closed);
         }
         self.requests
-            .try_send(state.setup_epoch)
+            .try_send(SetupRequest::Asr(state.setup_epoch))
             .map_err(|error| match error {
                 crossbeam_channel::TrySendError::Full(_) => ApplicationError::Busy,
                 crossbeam_channel::TrySendError::Disconnected(_) => ApplicationError::Closed,
@@ -100,6 +107,42 @@ impl Client {
             .cancel()
             .map_err(|error| ApplicationError::Worker(error.to_string()))
     }
+    pub fn download_refinement(&self) -> Result<(), ApplicationError> {
+        let state = self
+            .state
+            .lock()
+            .map_err(|_| ApplicationError::Synchronization)?;
+        if state.snapshot.closing || !state.snapshot.running {
+            return Err(ApplicationError::Closed);
+        }
+        if self.refinement.is_none() {
+            return Err(worker_error("Local text setup is unavailable"));
+        }
+        self.requests
+            .try_send(SetupRequest::Refinement(state.refinement_epoch))
+            .map_err(|error| match error {
+                crossbeam_channel::TrySendError::Full(_) => ApplicationError::Busy,
+                crossbeam_channel::TrySendError::Disconnected(_) => ApplicationError::Closed,
+            })
+    }
+    pub fn cancel_refinement_setup(&self) -> Result<(), ApplicationError> {
+        let mut state = self
+            .state
+            .lock()
+            .map_err(|_| ApplicationError::Synchronization)?;
+        if state.snapshot.closing || !state.snapshot.running {
+            return Err(ApplicationError::Closed);
+        }
+        state.refinement_epoch = state
+            .refinement_epoch
+            .checked_add(1)
+            .ok_or(ApplicationError::Busy)?;
+        self.refinement
+            .as_ref()
+            .ok_or_else(|| worker_error("Local text setup is unavailable"))?
+            .cancel()
+            .map_err(worker_error)
+    }
     /// Revokes access immediately; cleanup and joins remain on the owner thread.
     pub fn shutdown(&self) -> Result<(), ApplicationError> {
         let mut state = self
@@ -118,13 +161,24 @@ impl Client {
             Ok(()) | Err(setup::SetupError::Closed) => Ok(()),
             Err(error) => Err(worker_error(error)),
         };
-        runtime_result.and(setup_result)
+        let refinement_result = match &self.refinement {
+            Some(refinement) => match refinement.cancel() {
+                Ok(()) | Err(setup::SetupError::Closed) => Ok(()),
+                Err(error) => Err(worker_error(error)),
+            },
+            None => Ok(()),
+        };
+        runtime_result.and(setup_result).and(refinement_result)
     }
 }
 
 pub struct AppSupervisor {
     client: Client,
     worker: Option<JoinHandle<Result<(), ApplicationError>>>,
+}
+struct RefinementConfig {
+    models: PathBuf,
+    worker: crate::refinement_service::WorkerSpec,
 }
 impl AppSupervisor {
     pub fn for_app(
@@ -136,10 +190,34 @@ impl AppSupervisor {
             .app_data_dir()
             .map_err(|error| ApplicationError::Worker(error.to_string()))?
             .join("models");
-        Self::spawn(
+        let model = crate::model::refinement::RefinementModel::bundled().map_err(worker_error)?;
+        let executable = std::env::current_exe().map_err(worker_error)?;
+        let executable = executable
+            .parent()
+            .ok_or_else(|| worker_error("Application directory is unavailable"))?
+            .join("text-refinement-worker");
+        let refinement = RefinementConfig {
+            models: directory.clone(),
+            worker: crate::refinement_service::WorkerSpec {
+                executable,
+                model_directory: model.cache_directory(&directory),
+                runtime_directory: directory
+                    .parent()
+                    .ok_or_else(|| worker_error("Application data directory is unavailable"))?
+                    .join("text-runtime"),
+                identity: crate::refinement_service::ExpectedIdentity {
+                    generation: std::num::NonZeroU64::MIN,
+                    model_manifest_sha256: crate::model::refinement::RefinementModel::fingerprint(),
+                    prompt_version: text_refinement_protocol::TEXT_PROMPT_VERSION,
+                    policy_version: text_refinement_protocol::TEXT_POLICY_VERSION,
+                },
+            },
+        };
+        Self::spawn_configured(
             definition.cache_directory(&directory),
             definition,
             move |endpoint| NativeService::for_app(endpoint, app),
+            Some(refinement),
         )
     }
     /// Starts the owner with a trusted host-selected model directory and native factory.
@@ -151,6 +229,19 @@ impl AppSupervisor {
         definition: ModelDefinition,
         native: impl FnOnce(NativeEndpoint) -> Result<NativeService, String> + Send + 'static,
     ) -> Result<Self, ApplicationError> {
+        Self::spawn_configured(directory, definition, native, None)
+    }
+    fn spawn_configured(
+        directory: PathBuf,
+        definition: ModelDefinition,
+        native: impl FnOnce(NativeEndpoint) -> Result<NativeService, String> + Send + 'static,
+        refinement: Option<RefinementConfig>,
+    ) -> Result<Self, ApplicationError> {
+        let refinement_setup = refinement
+            .as_ref()
+            .map(|config| crate::refinement_setup::Setup::new(config.models.clone()).map(Arc::new))
+            .transpose()
+            .map_err(worker_error)?;
         let setup = Arc::new(SetupService::new(directory, definition));
         let snapshot = setup.snapshot().map_err(worker_error)?;
         let state = Arc::new(Mutex::new(State {
@@ -159,17 +250,24 @@ impl AppSupervisor {
                 running: true,
                 closing: false,
                 setup: snapshot,
+                refinement_setup: refinement_setup
+                    .as_ref()
+                    .map(|setup| setup.snapshot())
+                    .transpose()
+                    .map_err(worker_error)?,
                 runtime_available: false,
                 error: None,
             },
             runtime: None,
             setup_epoch: 0,
+            refinement_epoch: 0,
         }));
         let (requests, receive) = bounded(8);
         let client = Client {
             state: Arc::clone(&state),
             setup: Arc::clone(&setup),
             requests,
+            refinement: refinement_setup.clone(),
         };
         let worker = thread::Builder::new()
             .name("application-owner".into())
@@ -185,6 +283,9 @@ impl AppSupervisor {
                             .map_err(|_| ApplicationError::Synchronization)?;
                         if !state.snapshot.closing {
                             setup.start(false).map_err(worker_error)?;
+                            if let Some(refinement) = &refinement_setup {
+                                refinement.start(false).map_err(worker_error)?;
+                            }
                         }
                     }
                     loop {
@@ -200,21 +301,26 @@ impl AppSupervisor {
                                 state.snapshot.setup = setup_snapshot;
                                 state.snapshot.revision = state.snapshot.revision.saturating_add(1);
                             }
+                            if let Some(refinement) = &refinement_setup {
+                                let snapshot = refinement.snapshot().map_err(worker_error)?;
+                                if state.snapshot.refinement_setup.as_ref() != Some(&snapshot) {
+                                    state.snapshot.refinement_setup = Some(snapshot);
+                                    state.snapshot.revision =
+                                        state.snapshot.revision.saturating_add(1);
+                                }
+                            }
                             if runtime.is_none()
                                 && let Some(inference) = setup.take_ready().map_err(worker_error)?
                             {
                                 // Startup admission shares the shutdown lock. Once admitted, ownership
                                 // stays on this thread even if shutdown is requested immediately after.
                                 let (port, endpoint) = runtime::native_mailbox();
-                                runtime = Some(
-                                    Runtime::spawn_with_policy(
-                                        inference,
-                                        1,
-                                        port,
-                                        crate::pipeline::APP_POLICY,
-                                    )
-                                    .map_err(worker_error)?,
-                                );
+                                let (started, refinement_error) =
+                                    start_runtime(inference, port, refinement.as_ref())?;
+                                runtime = Some(started);
+                                if let Some(error) = refinement_error {
+                                    state.snapshot.error = Some(error);
+                                }
                                 let start_native = factory.take().ok_or_else(|| {
                                     worker_error(
                                         "Der Dienst für die Übergabe wurde bereits eingerichtet.",
@@ -244,7 +350,7 @@ impl AppSupervisor {
                             }
                         }
                         match receive.recv_timeout(Duration::from_millis(10)) {
-                            Ok(epoch) => {
+                            Ok(SetupRequest::Asr(epoch)) => {
                                 let mut state = state
                                     .lock()
                                     .map_err(|_| ApplicationError::Synchronization)?;
@@ -255,6 +361,20 @@ impl AppSupervisor {
                                             state.snapshot.error = Some(error.to_string())
                                         }
                                     }
+                                    state.snapshot.revision =
+                                        state.snapshot.revision.saturating_add(1);
+                                }
+                            }
+                            Ok(SetupRequest::Refinement(epoch)) => {
+                                let mut state = state
+                                    .lock()
+                                    .map_err(|_| ApplicationError::Synchronization)?;
+                                if !state.snapshot.closing
+                                    && state.refinement_epoch == epoch
+                                    && let Some(refinement) = &refinement_setup
+                                {
+                                    state.snapshot.error =
+                                        refinement.start(true).err().map(|error| error.to_string());
                                     state.snapshot.revision =
                                         state.snapshot.revision.saturating_add(1);
                                 }
@@ -283,8 +403,17 @@ impl AppSupervisor {
                     None => Ok(()),
                 };
                 let setup_cleanup = setup.shutdown().map_err(worker_error);
-                let result =
-                    finish_application([result, runtime_cleanup, native_cleanup, setup_cleanup]);
+                let refinement_cleanup = match &refinement_setup {
+                    Some(setup) => setup.shutdown().map_err(worker_error),
+                    None => Ok(()),
+                };
+                let result = finish_application([
+                    result,
+                    runtime_cleanup,
+                    native_cleanup,
+                    setup_cleanup,
+                    refinement_cleanup,
+                ]);
                 if let Err(error) = &result
                     && let Ok(mut state) = state.lock()
                 {
@@ -314,6 +443,52 @@ impl AppSupervisor {
             })?;
         joined.and(requested)
     }
+}
+
+fn start_runtime(
+    inference: crate::inference_service::InferenceService,
+    port: runtime::NativePort,
+    refinement: Option<&RefinementConfig>,
+) -> Result<(Runtime, Option<String>), ApplicationError> {
+    let prepared = refinement.map(|config| {
+        let spec = config.worker.clone();
+        prepare_runtime_directory(&spec.runtime_directory).map_err(worker_error)?;
+        crate::refinement_service::owner::Owner::spawn(
+            spec,
+            crate::refinement_service::Limits::default(),
+            Duration::from_secs(120),
+        )
+        .map_err(worker_error)
+    });
+    let (owner, error) = match prepared {
+        Some(Ok(owner)) => (Some(owner), None),
+        Some(Err(error)) => (
+            None,
+            Some(format!("Textbereinigung nicht verfügbar: {error}")),
+        ),
+        None => (None, None),
+    };
+    let runtime = match owner {
+        Some(owner) => Runtime::spawn_with_refinement(inference, 1, port, owner),
+        None => Runtime::spawn_with_policy(inference, 1, port, crate::pipeline::APP_POLICY),
+    }
+    .map_err(worker_error)?;
+    Ok((runtime, error))
+}
+
+fn prepare_runtime_directory(path: &std::path::Path) -> std::io::Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+    match std::fs::symlink_metadata(path) {
+        Ok(metadata) if !metadata.is_dir() || metadata.file_type().is_symlink() => {
+            return Err(std::io::Error::other("Invalid text runtime directory"));
+        }
+        Ok(_) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            std::fs::create_dir_all(path)?
+        }
+        Err(error) => return Err(error),
+    }
+    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o700))
 }
 impl Drop for AppSupervisor {
     fn drop(&mut self) {
@@ -370,6 +545,141 @@ mod tests {
     use super::*;
     use crate::model::REFERENCE;
     use std::time::Instant;
+    #[test]
+    fn unavailable_text_directory_keeps_ready_asr_running() -> Result<(), Box<dyn std::error::Error>>
+    {
+        struct Decoder;
+        impl crate::inference_service::Decoder for Decoder {
+            fn decode(
+                &mut self,
+                _: &[f32],
+                _: crate::transcription::Language,
+            ) -> Result<String, crate::transcription::InferenceError> {
+                Ok("Ready.".into())
+            }
+        }
+        for symlink in [false, true] {
+            let root = tempfile::tempdir()?;
+            let path = root.path().join("text-runtime");
+            let foreign = root.path().join("foreign");
+            std::fs::write(&foreign, b"preserve")?;
+            if symlink {
+                std::os::unix::fs::symlink(&foreign, &path)?;
+            } else {
+                std::fs::write(&path, b"preserve")?;
+            }
+            let config = RefinementConfig {
+                models: root.path().join("models"),
+                worker: crate::refinement_service::WorkerSpec {
+                    executable: root.path().join("unused-worker"),
+                    model_directory: root.path().join("models"),
+                    runtime_directory: path.clone(),
+                    identity: crate::refinement_service::ExpectedIdentity {
+                        generation: std::num::NonZeroU64::MIN,
+                        model_manifest_sha256:
+                            crate::model::refinement::RefinementModel::fingerprint(),
+                        prompt_version: text_refinement_protocol::TEXT_PROMPT_VERSION,
+                        policy_version: text_refinement_protocol::TEXT_POLICY_VERSION,
+                    },
+                },
+            };
+            let inference = crate::inference_service::InferenceService::with_decoder(Decoder)?;
+            let (port, _endpoint) = runtime::native_mailbox();
+            let (runtime, error) = start_runtime(inference, port, Some(&config))?;
+            assert!(error.is_some(), "optional failure must remain visible");
+            let deadline = Instant::now() + Duration::from_secs(3);
+            loop {
+                let snapshot = runtime.client().snapshot()?;
+                assert!(snapshot.running);
+                if snapshot.model_ready {
+                    break;
+                }
+                if Instant::now() >= deadline {
+                    return Err("ASR did not become ready".into());
+                }
+                thread::sleep(Duration::from_millis(1));
+            }
+            runtime.join()?;
+            assert_eq!(std::fs::read(&foreign)?, b"preserve");
+            assert_eq!(std::fs::read(&path)?, b"preserve");
+        }
+        Ok(())
+    }
+    #[test]
+    fn text_setup_checks_local_cache_without_downloading_or_blocking_the_application()
+    -> Result<(), Box<dyn std::error::Error>> {
+        for invalid in [false, true] {
+            let root = tempfile::tempdir()?;
+            let models = root.path().join("models");
+            if invalid {
+                std::fs::create_dir(&models)?;
+                std::fs::write(models.join("text-refinement"), b"not a directory")?;
+            }
+            let model = crate::model::refinement::RefinementModel::bundled()?;
+            let config = RefinementConfig {
+                models: models.clone(),
+                worker: crate::refinement_service::WorkerSpec {
+                    executable: root.path().join("no-worker-without-asr"),
+                    model_directory: model.cache_directory(&models),
+                    runtime_directory: root.path().join("text-runtime"),
+                    identity: crate::refinement_service::ExpectedIdentity {
+                        generation: std::num::NonZeroU64::MIN,
+                        model_manifest_sha256:
+                            crate::model::refinement::RefinementModel::fingerprint(),
+                        prompt_version: text_refinement_protocol::TEXT_PROMPT_VERSION,
+                        policy_version: text_refinement_protocol::TEXT_POLICY_VERSION,
+                    },
+                },
+            };
+            let supervisor = AppSupervisor::spawn_configured(
+                models.clone(),
+                REFERENCE,
+                |_| Err("ASR is absent; no native owner should start".into()),
+                Some(config),
+            )?;
+            let client = supervisor.client();
+            let deadline = Instant::now() + Duration::from_secs(3);
+            loop {
+                let snapshot = client.snapshot()?;
+                let text = snapshot.refinement_setup.ok_or("text setup missing")?;
+                if text.revision > 1 && !matches!(text.phase, setup::Phase::Checking) {
+                    assert!(snapshot.running);
+                    assert!(!snapshot.runtime_available);
+                    assert_eq!(
+                        text.phase,
+                        if invalid {
+                            setup::Phase::Failed
+                        } else {
+                            setup::Phase::Missing
+                        }
+                    );
+                    break;
+                }
+                if Instant::now() >= deadline {
+                    return Err("text setup did not settle".into());
+                }
+                thread::sleep(Duration::from_millis(1));
+            }
+            if invalid {
+                assert_eq!(
+                    std::fs::read(models.join("text-refinement"))?,
+                    b"not a directory"
+                );
+            } else {
+                assert!(!models.exists());
+            }
+            supervisor.join()?;
+            assert!(matches!(
+                client.download_refinement(),
+                Err(ApplicationError::Closed)
+            ));
+            assert!(matches!(
+                client.cancel_refinement_setup(),
+                Err(ApplicationError::Closed)
+            ));
+        }
+        Ok(())
+    }
     #[test]
     fn invalid_cache_remains_visible_and_is_not_replaced_automatically()
     -> Result<(), Box<dyn std::error::Error>> {

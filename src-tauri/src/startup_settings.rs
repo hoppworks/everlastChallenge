@@ -11,19 +11,25 @@ impl StartupSettings {
     pub fn load(directory: impl AsRef<Path>) -> Self {
         let store = SettingsStore::new(directory);
         let loaded = (|| {
-            if let Some(settings) = store.load()? {
+            if let Some((settings, migrated)) = store.load_with_migration()? {
                 #[cfg(feature = "mlx")]
-                let settings = {
+                let (settings, changed) = {
                     let mut settings = settings;
+                    let mut changed = migrated;
                     if settings.model != crate::settings::ModelChoice::MlxReferenceEncoder {
                         settings.model = crate::settings::ModelChoice::MlxReferenceEncoder;
-                        store.save(&settings)?;
-                        if store.load()?.as_ref() != Some(&settings) {
-                            return Err(SettingsError::Format);
-                        }
+                        changed = true;
                     }
-                    settings
+                    (settings, changed)
                 };
+                #[cfg(not(feature = "mlx"))]
+                let changed = migrated;
+                if changed {
+                    store.save(&settings)?;
+                    if store.load()?.as_ref() != Some(&settings) {
+                        return Err(SettingsError::Format);
+                    }
+                }
                 return Ok(settings);
             }
             let defaults = Settings::default();
@@ -95,6 +101,22 @@ fn message(error: &SettingsError) -> &'static str {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn version_one_is_persisted_as_version_two_with_refinement_disabled()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("settings.json");
+        let mut legacy = serde_json::to_value(Settings::default())?;
+        legacy["schema_version"] = 1.into();
+        legacy.as_object_mut().ok_or("object")?.remove("refinement");
+        std::fs::write(&path, serde_json::to_vec(&legacy)?)?;
+        let startup = StartupSettings::load(directory.path());
+        assert_eq!(startup.ready(), Some(&Settings::default()));
+        let stored: serde_json::Value = serde_json::from_slice(&std::fs::read(path)?)?;
+        assert_eq!(stored["schema_version"], 2);
+        assert_eq!(stored["refinement"], false);
+        Ok(())
+    }
     #[cfg(feature = "mlx")]
     #[test]
     fn legacy_engines_migrate_to_hybrid_without_losing_user_preferences()

@@ -31,7 +31,7 @@ sofortigen Abbruch eines bereits laufenden nativen Decoders.
 | Worker-Protokoll | [Nachrichten](../crates/text-refinement-protocol/src/lib.rs), [Rahmung](../crates/text-refinement-protocol/src/frame.rs) | versionierte 64-KiB-Rahmen, Sitzungs-/Generationsbindung, striktes JSON; Prozessaufsicht und Modellprüfung bleiben Aufgaben des Hosts |
 | Lokaler Textworker | [Worker](../crates/text-refinement-worker/README.md), [Prozesssteuerung](../crates/text-refinement-worker/src/lib.rs), [Modell](../crates/text-refinement-worker/src/model.rs) | separater MLX-Owner, begrenzte Ausgabe, private hashgeprüfte Modellkopie; Produktsetup noch ausstehend |
 | Textworker-Prozessaufsicht | [refinement_service.rs](../src-tauri/src/refinement_service.rs), [asynchroner Owner](../src-tauri/src/refinement_service/owner.rs), [Runtime-Adapter](../src-tauri/src/runtime/refinement.rs), [echte Prozess-Fixtures](../crates/text-refinement-worker/tests/supervisor.rs) | begrenzte Pipes, Identitätsprüfung, ein belegter Auftrag einschließlich unentnommenem Ergebnis, sofortiger Widerruf und kontrolliertes Entladen; Runtime übermittelt und entnimmt asynchron, unterscheidet Dienstfehler von Benutzerabbruch und joint den Owner auch bei weiteren Cleanupfehlern |
-| Textmodell-Installation | [refinement.rs](../src-tauri/src/model/refinement.rs), [Dateisystemkapazität](../crates/macos-integration/src/storage.rs), [Tests](../src-tauri/src/model/refinement/tests.rs) | gemeinsames Worker-Manifest, vollständige Hashprüfung, atomare Satzveröffentlichung, exklusiver Cachebesitz und konservative Stage-Recovery; nur I/O-Worker, noch nicht an Setup angeschlossen |
+| Textmodell-Installation | [refinement.rs](../src-tauri/src/model/refinement.rs), [Setup-Owner](../src-tauri/src/refinement_setup.rs), [Application](../src-tauri/src/application.rs), [Tests](../src-tauri/src/model/refinement/tests.rs) | gemeinsames Worker-Manifest, vollständige Hashprüfung, atomare Satzveröffentlichung, exklusiver Cachebesitz und konservative Stage-Recovery; gesonderter I/O-Owner, lokale Startprüfung und expliziter Download, Einrichtung noch nicht in der UI angeboten |
 | Steuerung und Lebensdauer | [control.rs](../src-tauri/src/control.rs), [runtime.rs](../src-tauri/src/runtime.rs), [main.rs](../src-tauri/src/main.rs) | begrenzte Anfragen, gesonderte Stop/Cancel/Shutdown-Signale, Admission schließen, Besitzer joinen, Panic- und Powerpfade |
 | Mikrofon und DSP | [audio.rs](../src-tauri/src/audio.rs) → [Core-DSP](../crates/dictation-core/src/audio.rs), [Aufnahmegrenzen](../crates/dictation-core/src/recording_limits.rs) | Callback produziert in den Ring; gemeinsamer CPAL-Fehlercallback meldet Streamfehler; Audioowner verarbeitet, schließt, drainiert und flusht; Sample-/Kanal-/Raten- und Speichergrenzen |
 | Inferenz | [inference_service.rs](../src-tauri/src/inference_service.rs) → [transcription.rs](../src-tauri/src/transcription.rs), [speech_gate.rs](../src-tauri/src/transcription/speech_gate.rs) | serielle Arbeit, warme Gewichte/frischer ASR-State, Job-/Session-/Generation-/Bereichsbindung, getrennte VAD-Kopie, Fehler statt scheinbarer Stille |
@@ -53,6 +53,14 @@ React überträgt ihn explizit über `copyTranscript` an `transcript_copy`; Rust
 validiert die UTF-8-Größe vor dem nativen Clipboard-Aufruf. Copy benötigt keinen
 laufenden Inferenzdienst. Conditional Clear vergleicht unmittelbar am seriellen
 Runtime-Dequeue und hält inzwischen anderen Text zurück.
+
+Einstellungsdateien der Version 1 werden typisiert auf Version 2 migriert; die
+zusätzliche Bereinigungspräferenz bleibt dabei ausgeschaltet. Start, Speicherung
+und Rollback verwenden denselben Decoder. Der Application-Owner richtet einen
+trägen Textworker am festgelegten Bundle-Pfad ein. Fehler der optionalen
+Textlaufzeit bleiben sichtbar und verhindern den ASR-Start nicht. Die bisherige
+UI übermittelt diese Präferenz noch nicht an die Sitzung; die Funktion ist dort
+noch nicht aktivierbar.
 
 `running=false` hat in React Vorrang vor Setup, Sitzung und Einstellungen:
 Neustarthilfe und letzter Text bleiben verfügbar, dienstabhängige Aktionen nicht.

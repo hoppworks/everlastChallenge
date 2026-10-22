@@ -1722,6 +1722,7 @@ mod tests {
             ..Settings::default()
         };
         let application = crate::application::Snapshot {
+            refinement_setup: None,
             revision: 1,
             running: true,
             closing: false,
@@ -1890,6 +1891,7 @@ mod tests {
     }
     fn application() -> crate::application::Snapshot {
         crate::application::Snapshot {
+            refinement_setup: None,
             revision: 1,
             running: true,
             closing: false,

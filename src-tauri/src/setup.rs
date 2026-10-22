@@ -295,7 +295,7 @@ impl Drop for SetupService {
     }
 }
 
-fn failure(error: ModelError) -> Failure {
+pub(crate) fn failure(error: ModelError) -> Failure {
     match error {
         ModelError::Busy => Failure::Busy,
         ModelError::Io(error) => match error.kind() {

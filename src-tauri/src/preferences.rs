@@ -146,9 +146,7 @@ impl Storage for PreferencesStore {
                 if bytes.len() > 16 * 1024 {
                     return Err(SettingsError::TooLarge);
                 }
-                let parsed: Settings =
-                    serde_json::from_slice(&bytes).map_err(|_| SettingsError::Format)?;
-                parsed.validate()?;
+                let (parsed, _) = crate::settings::decode_stored(&bytes)?;
                 if Some(parsed) != settings {
                     return Err(SettingsError::Format);
                 }
@@ -328,6 +326,34 @@ mod tests {
         real: PreferencesStore,
         after_rename: bool,
         fail_restore: bool,
+    }
+    #[test]
+    fn rollback_preserves_original_legacy_bytes_after_a_failed_save()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let current = Settings::default();
+        let mut legacy = serde_json::to_value(&current)?;
+        legacy["schema_version"] = 1.into();
+        legacy.as_object_mut().ok_or("object")?.remove("refinement");
+        let bytes = serde_json::to_vec(&legacy)?;
+        let path = directory.path().join("settings.json");
+        std::fs::write(&path, &bytes)?;
+        let storage = FailingSave {
+            real: PreferencesStore::new(directory.path()),
+            after_rename: true,
+            fail_restore: false,
+        };
+        let mut binding = Binding {
+            value: Some(current.hotkey.clone()),
+            reject: false,
+        };
+        let result = commit(&storage, &current, draft(&current), &mut binding);
+        assert!(
+            matches!(result, Err(PreferencesError::Storage)),
+            "{result:?}"
+        );
+        assert_eq!(std::fs::read(path)?, bytes);
+        Ok(())
     }
     impl Storage for FailingSave {
         fn snapshot(&self) -> Result<Snapshot, SettingsError> {
