@@ -5,7 +5,7 @@ use super::{
     ValidationError, text,
 };
 
-const MAX_EDITS: usize = 32;
+pub(super) const MAX_EDITS: usize = 32;
 const MAX_EDIT_BYTES: usize = 2048;
 const MAX_CONTEXT_BYTES: usize = 128;
 

@@ -1,0 +1,29 @@
+{
+  "baseCommit": "4a56b981e7dd69c8ee2b4a581a5645d0dd36cab2",
+  "sourceFiles": [
+    {
+      "path": "Cargo.lock",
+      "sha256": "ce55831b489e9b612770fddfda49b0f79fe7ba9899e01d6926faffae1cb2ca31"
+    },
+    {
+      "path": "crates/dictation-core/Cargo.toml",
+      "sha256": "4a98f8229b0f0fd1a079cbc25155029c2f37a0771561f9e133dfc84424ecaf61"
+    },
+    {
+      "path": "crates/dictation-core/src/refinement/mod.rs",
+      "sha256": "60bc9dc01ed761018f2848daf7b3fd43bcc46d7f03aaa802b59ae81d7c339860"
+    },
+    {
+      "path": "crates/dictation-core/src/refinement/staged.rs",
+      "sha256": "3f9f5273520e42f32125a24c9c88076670692fb6e342b002477a1fb5328779e7"
+    },
+    {
+      "path": "crates/dictation-core/src/refinement/validator.rs",
+      "sha256": "9f82e66838e8db4a11a7bef79885d4d6c27217e3a741eb5d1f995992904f3ecf"
+    },
+    {
+      "path": "crates/dictation-core/tests/refinement_stages.rs",
+      "sha256": "4ca1c920131ea4fac6cb9e472619570f774edcf9ce3f06c514532bdaac3a79fe"
+    }
+  ]
+}

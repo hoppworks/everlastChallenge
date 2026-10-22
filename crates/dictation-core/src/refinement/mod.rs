@@ -5,6 +5,7 @@ mod correction;
 mod literals;
 mod policy;
 mod punctuation;
+mod staged;
 mod text;
 mod validator;
 
@@ -38,6 +39,17 @@ pub struct ProposedEdit {
     #[serde(default)]
     pub right_context: Option<String>,
 }
+
+/// Two constrained stages, each anchored to its own complete source text.
+/// This is a proposal, not validation authority or a partially accepted result.
+#[derive(Clone, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub struct StagedEdits {
+    pub structural: Vec<ProposedEdit>,
+    pub punctuation: Vec<ProposedEdit>,
+}
+
+pub use staged::validate_staged;
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct OriginalTranscript(String);

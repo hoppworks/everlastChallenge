@@ -164,3 +164,9 @@ regression, including a failing run with only the correction removed. The
 [pressure report](verification/refinement-pressure-2026-10-22.md) distinguishes
 runtime contracts and native source construction from actual OS-pressure delivery,
 GPU behavior and memory measurements.
+
+The atomic two-stage edit contract was AI-assisted and independently reviewed.
+It keeps the existing validator intact, applies it to each stage's exact source
+and binds the final result back to the original dictation. The
+[staged-validation report](verification/refinement-stages-2026-10-22.md) states the
+core-only scope; this contract alone does not qualify the model or application.
