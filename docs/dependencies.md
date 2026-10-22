@@ -52,10 +52,18 @@ Die vollständige Modell-Hashprüfung bleibt erhalten. reqwest verwendet den
 Rustls-Provider Ring und den Plattform-Zertifikatsprüfer. TLS-Fehler werden nicht
 als Cachetreffer oder erfolgreiche Downloads behandelt.
 
-Das [aktualisierte Zielgraph-Inventar](licenses/third-party/updated-dependencies-2026-10-22.json)
+Das [aktualisierte Zielgraph-Inventar](licenses/third-party/refinement-dependencies-2026-10-22.json)
 ist an beide Lockfiles gebunden. [Neue Originaltexte](licenses/third-party/package-update-supplement.json)
 ergänzen die unveränderten Vendor- und Herkunftsnachweise. Der Graph ist
 konservativ und behauptet keine exakt gemessene finale Linkclosure.
+
+Der experimentelle Textworker aktiviert zusätzlich llguidance 1.9.1 und
+toktrie_hf_tokenizers 1.9.1 für begrenzte JSON-Ausgabe. Dessen veröffentlichter
+Adapter verlangt Tokenizers 0.21, hier 0.21.4; der Modell-Tokenizer bleibt auf
+der vorhandenen 0.23.2-Basis. Die Übergabe verwendet das Tokenizer-JSONformat.
+Diese zweite kompatible Reihe ist keine Herabstufung der eigenen Tokenizerbasis.
+Das Inventar erfasst nun beide Laufzeitprogramme; die Textfunktion ist noch
+nicht für den Produktablauf qualifiziert.
 
 ## Historische Auswahl und Nachprüfung
 

@@ -653,6 +653,20 @@ impl ModelContext {
     let cache = crate::lm::cache::make_prompt_cache(&self.cache_config());
     crate::lm::generate::stream_generate(self.model.as_ref(), &self.tokenizer, prompt, cache, cfg)
   }
+
+  /// Stream with request-owned processors and a fresh KV cache. Stateful
+  /// grammar processors must be constructed separately for every request.
+  pub fn stream_generate_with_processors(
+    &self,
+    prompt: &[u32],
+    cfg: GenConfig,
+    processors: Vec<crate::lm::generate::LogitsProcessor>,
+  ) -> impl Iterator<Item = Result<GenerationResponse>> + '_ {
+    let cache = crate::lm::cache::make_prompt_cache(&self.cache_config());
+    crate::lm::generate::stream_generate_with_processors(
+      self.model.as_ref(), &self.tokenizer, prompt, cache, cfg, processors,
+    )
+  }
 }
 
 impl From<LoadedModelContext> for ModelContext {

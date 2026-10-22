@@ -32,3 +32,10 @@ model-quality limitations are recorded in the
 Validation anchors stay in Rust and are not exposed as option context. If a
 source span occurs repeatedly, model options give its one-based occurrence.
 This representation does not change the exact-anchor checks on returned edits.
+
+Policy version 3 constrains generation with a request-owned JSON grammar:
+exact decision count, known fields and bounded punctuation lists/string lengths.
+The complete Rust validator still checks source spans, UTF-8 byte limits,
+overlaps and combined edit counts. Grammar-valid output can still omit a needed
+correction; it does not establish semantic quality. The existing ASR generation
+path does not use this processor.

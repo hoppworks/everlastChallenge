@@ -1,8 +1,8 @@
 # Drittanbieter-Lizenzen und Herkunft
 
 Der aktuelle Stand vom 22.10.2026 steht im
-[Lockfile-gebundenen Inventar](updated-dependencies-2026-10-22.json):
-384 native Paketkandidaten und sechs npm-Bestandteile einschließlich der
+[Lockfile-gebundenen Inventar](refinement-dependencies-2026-10-22.json):
+398 native Paketkandidaten für Desktop und Text-Hilfsprozess und sechs npm-Bestandteile einschließlich der
 Werkzeuge mit eingebrachtem Laufzeithelfer. Das Inventar enthält Versionen,
 Quellen und Verweise auf die unter `texts/` erhaltenen Originaltexte.
 
@@ -10,6 +10,11 @@ Die native Liste ist ein konservativer aufgelöster Paketgraph. Sie beweist
 nicht, welche Teile jedes Pakets tatsächlich in das fertige Binary gelinkt
 wurden. Gesammelte Lizenztexte allein belegen auch keine vollständige
 rechtliche Prüfung aller Bestandteile.
+
+Die Grammatikbegrenzung des experimentellen Textworkers verwendet llguidance
+1.9.1 und dessen Tokenizeradapter. `borrow-or-share 0.2.4` verwendet MIT-0;
+Originaltext und Paketquelle sind im Inventar erhalten. Die Lizenzfreigabe ist
+in `deny.toml` auf genau dieses Paket und diese Version beschränkt.
 
 ## Ergänzende Herkunftsnachweise
 

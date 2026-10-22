@@ -68,9 +68,9 @@
 //! [`crate::tokenizer::Tokenizer`] across via `serde_json`-roundtripped
 //! JSON bytes (mlxrs ships `tokenizers = "0.23"` while
 //! `toktrie_hf_tokenizers` pins `tokenizers = "0.21"` — the JSON wire
-//! format is stable across these versions, so this avoids dragging in two
-//! `tokenizers` versions transitively while still using mlxrs's own
-//! tokenizer instance as the source of truth).
+//! format is stable across these versions. Both crate versions remain in the
+//! dependency graph; the bridge avoids passing incompatible Rust types while
+//! using mlxrs's tokenizer instance as the source of truth).
 
 use std::cell::RefCell;
 
@@ -136,11 +136,11 @@ impl GrammarSpec {
 /// (`structured.py:117`). The mlxrs `tokenizers = "0.23"` and
 /// `toktrie_hf_tokenizers`'s pinned `tokenizers = "0.21"` are two
 /// different crate versions in the dep tree: passing the live `Tokenizer`
-/// across would force a second `tokenizers` major to be compiled. The
+/// across cannot bridge those distinct Rust types. The
 /// HuggingFace tokenizer.json wire format is stable across both versions,
 /// so we round-trip through `serde_json::to_vec` + `ByteTokenizer::from_json_bytes`
-/// (which calls `Tokenizer::from_bytes` on the v0.21 side). Result: one
-/// `tokenizers` version in the dep graph, no behavioural change.
+/// (which calls `Tokenizer::from_bytes` on the v0.21 side). Both versions remain
+/// in the dependency graph; the JSON round-trip bridges their types.
 ///
 /// **Padded vocabularies.** Many transformer LMs round the LM-head's
 /// output dim up (e.g. 32064 for Llama with a 32000-token tokenizer) so

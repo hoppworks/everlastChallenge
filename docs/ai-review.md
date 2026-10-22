@@ -78,3 +78,11 @@ error flag. Twelve child-process tests cover bounded transport, lifecycle and
 rejection behavior; the [supervisor report](verification/refinement-supervisor-2026-10-22.md)
 records source hashes and explicitly excludes GPU, delivery and crash-recovery
 acceptance.
+
+The local text worker now uses grammar-constrained generation through additive
+MLX logits-processor entry points. AI-assisted tests cover token masking,
+processor failure and exact decision counts through the real GPU/text stream.
+Independent review found no concrete code blocker and prompted a correction to
+an inherited tokenizer-version comment. The
+[structured-output report](verification/refinement-structured-2026-10-22.md)
+separates format enforcement from the still-failing model-quality criteria.

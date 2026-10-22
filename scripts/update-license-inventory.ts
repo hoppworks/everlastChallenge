@@ -108,8 +108,11 @@ export function generate() {
   ) as Metadata;
   const byId = new Map(metadata.packages.map((p) => [p.id, p])),
     nodes = new Map(metadata.resolve.nodes.map((n) => [n.id, n])),
-    host = metadata.packages.find((p) => p.name === "everlast-dictation");
-  check(host, "Host package missing");
+    roots = ["everlast-dictation", "text-refinement-worker"].map((name) => {
+      const pkg = metadata.packages.find((p) => p.name === name);
+      check(pkg, `Runtime package missing: ${name}`);
+      return pkg;
+    });
   const visited = new Set<string>();
   const visit = (id: string) => {
     if (visited.has(id)) return;
@@ -117,7 +120,7 @@ export function generate() {
     for (const dep of nodes.get(id)?.deps ?? [])
       if (dep.dep_kinds.some((k) => k.kind === null)) visit(dep.pkg);
   };
-  visit(host.id);
+  for (const root of roots) visit(root.id);
   const components = [...visited]
     .map((id) => byId.get(id)!)
     .filter((p) => p.source !== null)
@@ -167,7 +170,8 @@ export function generate() {
     }));
   return {
     schemaVersion: 1,
-    kind: "resolved dependency inventory after package migration",
+    kind: "resolved dependency inventory for desktop and bundled text worker",
+    runtimeRoots: roots.map((p) => p.name),
     cargoLockSha256: sha256(readFileSync("Cargo.lock")),
     packageLockSha256: sha256(readFileSync("package-lock.json")),
     target: "aarch64-apple-darwin",

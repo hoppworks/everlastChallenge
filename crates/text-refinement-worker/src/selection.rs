@@ -2,6 +2,33 @@
 use dictation_core::refinement::{EditKind, Language, OriginalTranscript, ProposedEdit, validate};
 use text_refinement_protocol::FailureKind;
 
+/// The grammar constrains structure only. Source spans, combined edit limits and
+/// byte limits are still checked by `decode` and the complete Rust validator.
+pub fn output_schema(choice_count: usize) -> Result<serde_json::Value, FailureKind> {
+    if choice_count > 64 {
+        return Err(FailureKind::InputLimit);
+    }
+    Ok(serde_json::json!({
+        "type":"object",
+        "properties":{
+            "decisions":{"type":"array","items":{"type":"boolean"},"minItems":choice_count,"maxItems":choice_count},
+            "punctuation":{"type":"array","maxItems":32,"items":{
+                "type":"object",
+                "properties":{
+                    "before":{"type":"string","minLength":1,"maxLength":2048},
+                    "after":{"type":"string","maxLength":2048},
+                    "leftContext":{"type":"string","maxLength":128},
+                    "rightContext":{"type":"string","maxLength":128}
+                },
+                "required":["before","after"],
+                "additionalProperties":false
+            }}
+        },
+        "required":["decisions","punctuation"],
+        "additionalProperties":false
+    }))
+}
+
 #[derive(serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Selection {

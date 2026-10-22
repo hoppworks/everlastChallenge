@@ -1,5 +1,16 @@
 # Inference-only mlxrs 0.2.0
 
+## Request-owned text grammar processors
+
+Additive generation entry points accept owned logits processors after configured
+penalties and before sampling. They reuse the existing token/stream machinery;
+ordinary callers pass an empty list. ModelContext creates a fresh KV cache per
+request. This connects the upstream grammar processor to the application's text
+worker without changing model arithmetic or the default Whisper/ASR path.
+Stateful grammar objects must be constructed per request. Errors retain the
+existing fused iterator behavior. Application tests exercise forced token
+selection, processor failure and exact-length JSON lists through a text stream.
+
 Imported from crates.io; upstream git revision and archive checksum recorded in EVERLAST-PATCH.json. Retains upstream MIT/Apache licenses. Normalized Cargo.toml removes unused optional CPAL0.18 dependency and its audio activation. Playback module omits hardware player/reexport. PlaybackConfig omits CPAL conversion. Tokenizer, sampling and GPU kernels are unchanged; text-only token exhaustion now fails explicitly as described below. The Whisper-only frontend correction and optional native encoder checkpoint table are described below. Cargo.toml.orig retains historical upstream source.
 
 Existing capture uses CPAL0.15.3. Cargo cannot resolve its native ALSA links together with playback CPAL0.18, including for macOS. Upgrading capture solely to add inference would expand regression scope. This local inference patch has no hardware playback API and needs maintenance until upstream makes playback optional.

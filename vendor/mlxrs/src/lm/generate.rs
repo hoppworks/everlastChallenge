@@ -1832,6 +1832,18 @@ pub fn generate_step<'a, M: Model + ?Sized>(
   build_generator(model, prompt, cache, cfg)
 }
 
+/// Generate with request-owned processors applied after configured penalties,
+/// before sampling. An empty list preserves the ordinary generation path.
+pub fn generate_step_with_processors<'a, M: Model + ?Sized>(
+  model: &'a M,
+  prompt: &[u32],
+  cache: Vec<Box<dyn KvCache>>,
+  cfg: GenConfig,
+  processors: Vec<LogitsProcessor>,
+) -> impl Iterator<Item = Result<GenStep>> + 'a {
+  build_generator_with_processors(model, prompt, cache, cfg, processors)
+}
+
 /// Concrete-typed twin of [`generate_step`] for the in-crate driver
 /// ([`crate::lm::session::ChatSession`]) that needs to reclaim the
 /// advanced cache via [`Generator::into_cache`] after the turn finishes.
@@ -1844,6 +1856,16 @@ pub(crate) fn build_generator<'a, M: Model + ?Sized>(
   prompt: &[u32],
   cache: Vec<Box<dyn KvCache>>,
   cfg: GenConfig,
+) -> Generator<'a, M> {
+  build_generator_with_processors(model, prompt, cache, cfg, Vec::new())
+}
+
+fn build_generator_with_processors<'a, M: Model + ?Sized>(
+  model: &'a M,
+  prompt: &[u32],
+  cache: Vec<Box<dyn KvCache>>,
+  cfg: GenConfig,
+  additional: Vec<LogitsProcessor>,
 ) -> Generator<'a, M> {
   // Build sampler + processors up front (mlx-lm's `generate` does this
   // before calling `generate_step`). An empty prompt (mlx-lm raises
@@ -1881,7 +1903,7 @@ pub(crate) fn build_generator<'a, M: Model + ?Sized>(
       &cfg.xtc_special_tokens,
       cfg.seed,
     )?;
-    let processors = make_logits_processors(
+    let mut processors = make_logits_processors(
       &cfg.logit_bias,
       cfg.repetition_penalty,
       cfg.repetition_context_size,
@@ -1890,6 +1912,7 @@ pub(crate) fn build_generator<'a, M: Model + ?Sized>(
       cfg.frequency_penalty,
       cfg.frequency_context_size,
     )?;
+    processors.extend(additional);
     Ok((sampler, processors))
   })();
 
@@ -2085,6 +2108,19 @@ pub fn stream_generate<'a, M: Model + ?Sized>(
   cache: Vec<Box<dyn KvCache>>,
   cfg: GenConfig,
 ) -> impl Iterator<Item = Result<GenerationResponse>> + 'a {
+  stream_generate_with_processors(model, tokenizer, prompt, cache, cfg, Vec::new())
+}
+
+/// Stream text with fresh request-owned logits processors. Processors run after
+/// configured penalties and before sampling; errors use the normal fused stream.
+pub fn stream_generate_with_processors<'a, M: Model + ?Sized>(
+  model: &'a M,
+  tokenizer: &'a crate::tokenizer::Tokenizer,
+  prompt: &[u32],
+  cache: Vec<Box<dyn KvCache>>,
+  cfg: GenConfig,
+  processors: Vec<LogitsProcessor>,
+) -> impl Iterator<Item = Result<GenerationResponse>> + 'a {
   use std::time::Instant;
 
   let prompt_tokens = prompt.len();
@@ -2105,7 +2141,7 @@ pub fn stream_generate<'a, M: Model + ?Sized>(
   // and never advances the detokenizer offset).
   let mut emitted_len: usize = 0;
 
-  let mut steps = generate_step(model, prompt, cache, cfg);
+  let mut steps = generate_step_with_processors(model, prompt, cache, cfg, processors);
   let mut detok = tokenizer.detokenizer();
   let mut n: usize = 0;
   let mut finished = false;

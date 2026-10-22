@@ -4,7 +4,7 @@
   "upstreamRevision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
   "registryChecksum": "dd72771402de14a1134490089ddeb6b744920291d07e7c238e1eaaee2db2400f",
   "source": "https://crates.io/api/v1/crates/mlxrs/0.2.0/download",
-  "patchPurpose": "Inference-only playback separation; Whisper periodic Hann; validated optional native encoder positions; actual EOS for text-only completion. Original model arithmetic preserved; rejected beam experiment archived outside runtime source. Exclusive reusable-buffer cache budgets with teardown-safe release and corrected allocator-counter documentation; model arithmetic unchanged.",
+  "patchPurpose": "Inference-only playback separation; Whisper periodic Hann; validated optional native encoder positions; actual EOS for text-only completion. Original model arithmetic preserved; rejected beam experiment archived outside runtime source. Exclusive reusable-buffer cache budgets with teardown-safe release and corrected allocator-counter documentation; model arithmetic unchanged. Additive request-owned logits processor entry points for grammar-constrained local text generation; ordinary ASR generation unchanged.",
   "changedFiles": [
     {
       "path": "Cargo.toml",
@@ -65,6 +65,21 @@
       "path": "src/memory/counters.rs",
       "upstreamSha256": "6d9b6715469ca93556396f9466b6c42212f44e4b1e5cae29efc4069073d87e08",
       "patchedSha256": "32a2b77b91892391c409bbf07dd884523388db62b78ee20a622f0f6c6e4ea67e"
+    },
+    {
+      "path": "src/lm/generate.rs",
+      "upstreamSha256": "a47bad8f4582408e41b050797b8cf064812824e61e0c225623e5c5df359f6bf2",
+      "patchedSha256": "8369295ae892877614d91801366db02f30fdb90ba2c9d734956033b3d7777ed4"
+    },
+    {
+      "path": "src/lm/factory.rs",
+      "upstreamSha256": "ff6d26ecaa306cf7ccb9621eb39d8197099c387f3e101db5bec1d297fcc991ad",
+      "patchedSha256": "f8e3fe2173b27623a6a8d213f8b1d8e9570e91c95fc3753872fa52a0bf10a5ad"
+    },
+    {
+      "path": "src/lm/structured.rs",
+      "upstreamSha256": "8f21bda8526c98a144a325118d4cdacce9bd0972fd97207aef8174e69f59b437",
+      "patchedSha256": "364af4ac8dec7058de767971a67af3944f650ab61bce834b281e2ef923da038d"
     }
   ],
   "whisperWindowCorrection": {

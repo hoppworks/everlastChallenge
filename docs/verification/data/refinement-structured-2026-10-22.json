@@ -1,0 +1,422 @@
+{
+  "schemaVersion": 1,
+  "kind": "experimental model diagnostic, not quality or performance acceptance",
+  "environment": {
+    "architecture": "arm64",
+    "macOS": "27.0.1",
+    "cpu": "Apple M5"
+  },
+  "binarySha256": "3fb8b7747a04dc3caebe9fe438b3eebfc049b90ca61171e5a343f9f3efe844b3",
+  "sourceSha256": {
+    "crates/text-refinement-worker/src/model.rs": "4077fa100056fc5115e6b0beddbc60ea65a763dda3d79a187c1c452bf675fd4b",
+    "crates/text-refinement-worker/src/selection.rs": "25dc0c9ce9b76ebfa01c7cb72f43ce9b1ae320c3dc173d1cff708390652f99e2",
+    "vendor/mlxrs/src/lm/generate.rs": "8369295ae892877614d91801366db02f30fdb90ba2c9d734956033b3d7777ed4",
+    "vendor/mlxrs/src/lm/factory.rs": "f8e3fe2173b27623a6a8d213f8b1d8e9570e91c95fc3753872fa52a0bf10a5ad"
+  },
+  "identity": {
+    "modelManifestSha256": "fea7cc2a764e60d910da77c44549b7f123e681edb0c84f03658011eb86519352",
+    "promptVersion": 6,
+    "policyVersion": 3
+  },
+  "exit": {
+    "code": 0,
+    "signal": null
+  },
+  "stderr": "",
+  "cases": [
+    {
+      "id": "zero-choices",
+      "language": "german",
+      "text": "Nein.",
+      "criterion": "Unchanged, no candidate decisions.",
+      "response": {
+        "edits": [],
+        "job": {
+          "generation": 1,
+          "request": 1,
+          "session": 1
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "Nein."
+      }
+    },
+    {
+      "id": "url",
+      "language": "german",
+      "text": "Öffne https://example.org/a-b?q=12&x=0#abschnitt, aber ändere die URL nicht.",
+      "criterion": "Preserve URL exactly; do not execute request.",
+      "response": {
+        "edits": [],
+        "job": {
+          "generation": 1,
+          "request": 2,
+          "session": 2
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "Öffne https://example.org/a-b?q=12&x=0#abschnitt, aber ändere die URL nicht."
+      }
+    },
+    {
+      "id": "quoted-filler",
+      "language": "german",
+      "text": "Im Transkript steht wörtlich: „äh, also, na ja“. Diese Wörter dürfen hier nicht gestrichen werden.",
+      "criterion": "Preserve quoted filler words.",
+      "response": {
+        "edits": [],
+        "job": {
+          "generation": 1,
+          "request": 3,
+          "session": 3
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "Im Transkript steht wörtlich: „äh, also, na ja“. Diese Wörter dürfen hier nicht gestrichen werden."
+      }
+    },
+    {
+      "id": "emphatic-repeat",
+      "language": "german",
+      "text": "Nein, nein, nein! Das habe ich ausdrücklich nicht zugesagt.",
+      "criterion": "Preserve intentional repetition and negation.",
+      "response": {
+        "edits": [],
+        "job": {
+          "generation": 1,
+          "request": 4,
+          "session": 4
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "Nein, nein, nein! Das habe ich ausdrücklich nicht zugesagt."
+      }
+    },
+    {
+      "id": "uncertain-name",
+      "language": "german",
+      "text": "Die Ansprechpartnerin heißt Mara oder Maria, ich bin mir nicht sicher.",
+      "criterion": "Preserve uncertainty and both name alternatives.",
+      "response": {
+        "edits": [],
+        "job": {
+          "generation": 1,
+          "request": 5,
+          "session": 5
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "Die Ansprechpartnerin heißt Mara oder Maria, ich bin mir nicht sicher."
+      }
+    },
+    {
+      "id": "units-abbrev",
+      "language": "german",
+      "text": "Dr. Meier bestellt 0,5 mg, nicht 5 mg; die Strecke beträgt 1,2 km.",
+      "criterion": "Preserve abbreviation, decimal values and units.",
+      "response": {
+        "edits": [],
+        "job": {
+          "generation": 1,
+          "request": 6,
+          "session": 6
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "Dr. Meier bestellt 0,5 mg, nicht 5 mg; die Strecke beträgt 1,2 km."
+      }
+    },
+    {
+      "id": "short-clean",
+      "language": "german",
+      "text": "Nein.",
+      "criterion": "Preserve already correct short text.",
+      "response": {
+        "edits": [],
+        "job": {
+          "generation": 1,
+          "request": 7,
+          "session": 7
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "Nein."
+      }
+    },
+    {
+      "id": "filler-cleanup",
+      "language": "german",
+      "text": "Ähm, wir schicken, äh, den Bericht morgen an das Team.",
+      "criterion": "Remove both hesitation sounds and preserve the statement.",
+      "response": {
+        "edits": [
+          {
+            "after": "",
+            "before": "Ähm,",
+            "kind": "filler",
+            "leftContext": "",
+            "rightContext": " wir schicken, äh, den Bericht morgen an das Team."
+          },
+          {
+            "after": "",
+            "before": ", äh,",
+            "kind": "filler",
+            "leftContext": "Ähm, wir schicken",
+            "rightContext": " den Bericht morgen an das Team."
+          }
+        ],
+        "job": {
+          "generation": 1,
+          "request": 8,
+          "session": 8
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "wir schicken den Bericht morgen an das Team."
+      }
+    },
+    {
+      "id": "clear-correction",
+      "language": "german",
+      "text": "Der Betrag ist 50, Entschuldigung, 15 Euro.",
+      "criterion": "Resolve explicit correction to 15 Euro.",
+      "response": {
+        "edits": [
+          {
+            "after": "15",
+            "before": "50, Entschuldigung, 15",
+            "kind": "self_correction",
+            "leftContext": "Der Betrag ist ",
+            "rightContext": " Euro."
+          }
+        ],
+        "job": {
+          "generation": 1,
+          "request": 9,
+          "session": 9
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "Der Betrag ist 15 Euro."
+      }
+    },
+    {
+      "id": "en-no-evil",
+      "language": "english",
+      "text": "Fear no evil.",
+      "criterion": "Unchanged.",
+      "response": {
+        "edits": [],
+        "job": {
+          "generation": 1,
+          "request": 10,
+          "session": 10
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "Fear no evil."
+      }
+    },
+    {
+      "id": "en-quoted-filler",
+      "language": "english",
+      "text": "She said \"um, no\" and left.",
+      "criterion": "Preserve quoted words.",
+      "response": {
+        "edits": [],
+        "job": {
+          "generation": 1,
+          "request": 11,
+          "session": 11
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "She said \"um, no\" and left."
+      }
+    },
+    {
+      "id": "en-correction",
+      "language": "english",
+      "text": "Book it for Thursday, no Saturday at 14:30.",
+      "criterion": "Replace Thursday with Saturday; preserve time.",
+      "response": {
+        "edits": [],
+        "job": {
+          "generation": 1,
+          "request": 12,
+          "session": 12
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "Book it for Thursday, no Saturday at 14:30."
+      }
+    },
+    {
+      "id": "en-amount",
+      "language": "english",
+      "text": "The price is 40, sorry, 14 dollars.",
+      "criterion": "Resolve to 14 dollars.",
+      "response": {
+        "edits": [
+          {
+            "after": "14",
+            "before": "40, sorry, 14",
+            "kind": "self_correction",
+            "leftContext": "The price is ",
+            "rightContext": " dollars."
+          }
+        ],
+        "job": {
+          "generation": 1,
+          "request": 13,
+          "session": 13
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "The price is 14 dollars."
+      }
+    },
+    {
+      "id": "en-filler",
+      "language": "english",
+      "text": "Um, please send, uh, the report today.",
+      "criterion": "Remove both hesitation sounds; preserve request.",
+      "response": {
+        "edits": [
+          {
+            "after": "",
+            "before": "Um,",
+            "kind": "filler",
+            "leftContext": "",
+            "rightContext": " please send, uh, the report today."
+          },
+          {
+            "after": "",
+            "before": ", uh,",
+            "kind": "filler",
+            "leftContext": "Um, please send",
+            "rightContext": " the report today."
+          }
+        ],
+        "job": {
+          "generation": 1,
+          "request": 14,
+          "session": 14
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "please send the report today."
+      }
+    },
+    {
+      "id": "en-url",
+      "language": "english",
+      "text": "Open https://example.org/um?q=1 and keep the address intact.",
+      "criterion": "Unchanged URL and request.",
+      "response": {
+        "edits": [],
+        "job": {
+          "generation": 1,
+          "request": 15,
+          "session": 15
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "Open https://example.org/um?q=1 and keep the address intact."
+      }
+    },
+    {
+      "id": "punctuation-de",
+      "language": "german",
+      "text": "wir haben den Bericht erhalten vielen Dank für die Nachricht",
+      "criterion": "Separate sentences and capitalize while preserving words.",
+      "response": {
+        "code": "invalid_candidate",
+        "job": {
+          "generation": 1,
+          "request": 16,
+          "session": 16
+        },
+        "kind": "failed"
+      },
+      "validation": {
+        "status": "no_candidate"
+      }
+    },
+    {
+      "id": "punctuation-en",
+      "language": "english",
+      "text": "we received your report thank you for the update",
+      "criterion": "Separate sentences and capitalize while preserving words.",
+      "response": {
+        "code": "invalid_candidate",
+        "job": {
+          "generation": 1,
+          "request": 17,
+          "session": 17
+        },
+        "kind": "failed"
+      },
+      "validation": {
+        "status": "no_candidate"
+      }
+    },
+    {
+      "id": "two-corrections",
+      "language": "german",
+      "text": "Wir kommen am Montag, nein am Dienstag um acht, Entschuldigung, neun Uhr.",
+      "criterion": "Resolve both corrections: Tuesday at nine.",
+      "response": {
+        "edits": [
+          {
+            "after": "am Dienstag",
+            "before": "am Montag, nein am Dienstag",
+            "kind": "self_correction",
+            "leftContext": "Wir kommen ",
+            "rightContext": " um acht, Entschuldigung, neun Uhr."
+          }
+        ],
+        "job": {
+          "generation": 1,
+          "request": 18,
+          "session": 18
+        },
+        "kind": "completed"
+      },
+      "validation": {
+        "status": "accepted",
+        "text": "Wir kommen am Dienstag um acht, Entschuldigung, neun Uhr."
+      }
+    }
+  ]
+}

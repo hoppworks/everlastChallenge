@@ -7,6 +7,7 @@ use mlxrs::{
         factory::{ModelConfiguration, ModelContext, ModelTypeRegistry},
         generate::{FinishReason, GenConfig},
         models::qwen3::{Qwen3, Qwen3Config},
+        structured::build_json_schema_logits_processor,
     },
     memory::CacheLimitGuard,
     tokenizer::Tokenizer,
@@ -19,7 +20,7 @@ use std::{
 use text_refinement_protocol::{FailureKind, Language};
 
 pub const PROMPT_VERSION: u16 = 6;
-pub const POLICY_VERSION: u16 = 2;
+pub const POLICY_VERSION: u16 = 3;
 const PROMPT: &str = include_str!("prompt.txt");
 const MAX_OUTPUT_BYTES: usize = 32 * 1024;
 const MAX_INPUT_TOKENS: usize = 8192;
@@ -126,7 +127,23 @@ impl Generator for MlxGenerator {
             .with_max_tokens(4096)
             .with_prefill_step_size(256);
         parameters.temp = 0.;
-        let mut stream = context.stream_generate(&input, parameters);
+        let grammar = build_json_schema_logits_processor(
+            selection::output_schema(choices.len())?,
+            context.tokenizer(),
+            Some(context.config().vocab_size as usize),
+        )
+        .map_err(|_| FailureKind::Generation)?;
+        if cancel.load(Ordering::Acquire) {
+            return Err(FailureKind::Incomplete);
+        }
+        if started.elapsed() > JOB_TIMEOUT {
+            return Err(FailureKind::Timeout);
+        }
+        let mut stream = context.stream_generate_with_processors(
+            &input,
+            parameters,
+            vec![grammar.into_logits_processor()],
+        );
         let mut output = String::new();
         let mut stopped = false;
         loop {
