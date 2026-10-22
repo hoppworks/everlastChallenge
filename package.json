@@ -7,7 +7,7 @@
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
   "scripts": {
-    "setup": "npm ci && cargo fetch --locked && cargo install cargo-machete --version 0.9.2 --locked && npm run hooks:install",
+    "setup": "npm ci && cargo fetch --locked && cargo install cargo-machete --version 0.9.2 --locked && cargo install cargo-deny --version 0.20.2 --locked && npm run hooks:install",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "format": "cargo fmt --all && prettier --write src scripts config *.json *.ts index.html",

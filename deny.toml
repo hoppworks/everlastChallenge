@@ -3,6 +3,14 @@ targets = ["aarch64-apple-darwin"]
 
 [advisories]
 version = 2
+# The stable toktrie_hf_tokenizers 1.9.1 adapter requires tokenizers 0.21,
+# whose compile-time paste macro has no maintained semver-compatible release.
+# Accept only this maintenance notice through this parent; new users or
+# other advisories still fail. See docs/dependencies.md for scope and removal.
+unused-ignored-advisory = "deny"
+ignore = [
+    { id = "RUSTSEC-2024-0436", reason = "Compile-time paste 1.0.15 via the stable grammar adapter's tokenizers 0.21.4; no compatible fixed release" },
+]
 
 [licenses]
 version = 2
@@ -34,6 +42,9 @@ allow = ["MIT-0"]
 [bans]
 multiple-versions = "warn"
 wildcards = "deny"
+deny = [
+    { name = "paste", wrappers = ["tokenizers"], reason = "Only the pinned grammar adapter's tokenizer may use this unmaintained compile-time macro" },
+]
 
 [sources]
 unknown-registry = "deny"

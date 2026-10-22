@@ -191,3 +191,12 @@ permissions prevented native model startup. The host now requests `0700` at
 creation; a failing/passing supervisor regression and a real model
 cancellation/restart check verify this path. The context report records sampled
 MLX/Metal activity separately from final application and memory-pressure gates.
+
+Further AI-assisted system checks used the signed packaged worker for hard child
+loss, abrupt host loss and subsequent recovery, plus serial coexistence with the
+real hybrid ASR. A network-denied application run exercised recording, ASR and
+refinement. The [system observation report](verification/refinement-system-2026-10-22.md)
+records the successful paths and the limits: recipient focus was not established
+for delivery, and the OS pressure simulation failed for lack of permission.
+Neither is counted as a pass; finite model cases remain separate from human
+linguistic acceptance and comparative performance.

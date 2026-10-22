@@ -28,9 +28,12 @@ jobs:
         run: |
           TOOLCHAIN=$(node --input-type=module -e 'import fs from "node:fs"; const match = /^channel\s*=\s*"([^"\n]+)"/m.exec(fs.readFileSync("rust-toolchain.toml", "utf8")); if (!match) process.exit(1); console.log(match[1]);')
           rustup toolchain install "$TOOLCHAIN" --profile minimal --component rustfmt --component clippy --component llvm-tools-preview
-      - name: Install pinned dependency analyzer
-        run: cargo install cargo-machete --version 0.9.2 --locked
+      - name: Install pinned dependency analyzers
+        run: |
+          cargo install cargo-machete --version 0.9.2 --locked
+          cargo install cargo-deny --version 0.20.2 --locked
       - run: npm run check:dependencies:rust
+      - run: cargo deny check
       - run: npm run check:fast
       - run: npm run test:portable
       - run: npm run test:quality

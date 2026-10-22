@@ -65,6 +65,21 @@ Diese zweite kompatible Reihe ist keine Herabstufung der eigenen Tokenizerbasis.
 Das Inventar erfasst nun beide Laufzeitprogramme; die Textfunktion ist noch
 nicht für den Produktablauf qualifiziert.
 
+Der Adapter zieht außerdem `paste 1.0.15` als Compile-Time-Prozedurmakro ein.
+[RUSTSEC-2024-0436](https://rustsec.org/advisories/RUSTSEC-2024-0436.html)
+ist eine Wartungsmeldung: Das Projekt ist archiviert, eine korrigierte Version
+wurde nicht veröffentlicht. Die
+[veröffentlichte Adapterquelle](https://docs.rs/crate/toktrie_hf_tokenizers/1.9.1/source/Cargo.toml)
+verlangt weiterhin die Tokenizers-0.21-Reihe. Ein Wechsel auf die gepflegte
+Makroalternative oder eine neuere Tokenizers-Reihe würde einen zusätzlichen
+lokalen Fremdcode-Fork erfordern. Die aktuelle kompatible Auflösung bleibt daher
+erhalten. `deny.toml` akzeptiert ausschließlich diese Advisory-ID; eine zusätzliche
+Paket-Sperre erlaubt `paste` nur unter dem direkten Nutzer `tokenizers`, im
+Lockfile derzeit 0.21.4. Andere direkte Nutzer und Meldungen bleiben Fehler.
+Die Ausnahme macht das Paket weder gepflegt noch sicherheitsgeprüft. Sobald der
+stabile Adapter ohne diese Abhängigkeit auskommt, werden Pin und Ausnahme
+entfernt; eine ungenutzte Ausnahme lässt die Prüfung ebenfalls scheitern.
+
 ## Historische Auswahl und Nachprüfung
 
 Die folgenden Abschnitte dokumentieren frühere Versionen und deren Entscheidungen.

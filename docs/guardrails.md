@@ -68,6 +68,9 @@ den eigenen Crates einschließlich des Worker-Protokolls; vendorte
 Upstream-Manifeste werden nicht umgeschrieben.
 Setup und CI installieren diese Version explizit.
 
+Setup und der portable CI-Job installieren außerdem `cargo-deny 0.20.2` für
+denselben Advisory-, Lizenz-, Paket- und Quellencheck wie `npm run verify`.
+
 Leere TypeScript-Catchblöcke, fokussierte/übersprungene Frontendtests, unkommentierte
 ESLint-Ausnahmen und Format-/Typunterdrückungen werden abgelehnt. Hooks- und
 ARIA-Regeln ergänzen die vorhandenen typinformierten Promiseprüfungen. Eine
@@ -107,3 +110,11 @@ Das dafür benötigte Feature `test-fixture` ist ausschließlich explizit für T
 aktiviert; die Architekturprüfung verbietet es in Produktionsdefaults und
 normalen Abhängigkeitsfeatures. Der Fixture-Binärname wird nicht paketiert.
 Die Fehlerpipe sammelt keine Texte und bricht nach 16 KiB Gesamtausgabe ab.
+
+Die einzige Advisory-Ausnahme gilt für `RUSTSEC-2024-0436` (unmaintained
+`paste`). Eine Paket-Sperre begrenzt dessen direkten Nutzer auf `tokenizers`
+(im Lockfile 0.21.4).
+Begründung und Ablösebedingung stehen in [dependencies.md](dependencies.md).
+Neue Nutzer dieses Pakets, andere Advisory-IDs und eine nicht mehr benötigte
+Ausnahme bleiben Fehler. Ein erfolgreicher Check mit dieser Ausnahme bedeutet
+nicht, dass alle Abhängigkeiten aktiv gepflegt werden.
