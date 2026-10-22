@@ -254,12 +254,15 @@ function refinement(value: unknown): boolean {
     object(setup, [
       "available",
       "phase",
+      "probePassed",
       "downloadedBytes",
       "totalBytes",
       "canCancel",
       "error",
     ]) &&
     typeof setup.available === "boolean" &&
+    typeof setup.probePassed === "boolean" &&
+    (!setup.probePassed || setup.phase === "Ready") &&
     oneOf(setup.phase, setupPhases) &&
     number(setup.downloadedBytes) &&
     number(setup.totalBytes) &&

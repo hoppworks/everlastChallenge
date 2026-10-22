@@ -4,6 +4,7 @@ import type { SetupPhase } from "./SetupPhase";
 export type RefinementSetup = {
   available: boolean;
   phase: SetupPhase;
+  probePassed: boolean;
   downloadedBytes: number;
   totalBytes: number;
   canCancel: boolean;

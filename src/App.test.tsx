@@ -31,6 +31,7 @@ function snapshot(): Snapshot {
     refinement: {
       setup: {
         available: true,
+        probePassed: true,
         phase: "Ready",
         downloadedBytes: 2278970666,
         totalBytes: 2278970666,

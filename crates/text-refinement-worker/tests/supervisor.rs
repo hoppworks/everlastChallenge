@@ -6,6 +6,34 @@ use std::{num::NonZeroU64, path::PathBuf, time::Duration};
 use text_refinement_protocol::{JobKey, Language};
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
+#[test]
+fn runtime_preparation_secures_directories_and_rejects_files_and_symlinks() -> TestResult {
+    use std::os::unix::fs::{PermissionsExt, symlink};
+    let root = tempfile::tempdir()?;
+    let runtime = root.path().join("nested/runtime");
+    service::scratch::prepare(&runtime)?;
+    assert_eq!(
+        std::fs::metadata(&runtime)?.permissions().mode() & 0o777,
+        0o700
+    );
+    std::fs::set_permissions(&runtime, std::fs::Permissions::from_mode(0o755))?;
+    service::scratch::prepare(&runtime)?;
+    assert_eq!(
+        std::fs::metadata(&runtime)?.permissions().mode() & 0o777,
+        0o700
+    );
+
+    let file = root.path().join("file");
+    std::fs::write(&file, b"keep")?;
+    assert!(service::scratch::prepare(&file).is_err());
+    assert_eq!(std::fs::read(&file)?, b"keep");
+    let linked = root.path().join("linked");
+    symlink(&runtime, &linked)?;
+    assert!(service::scratch::prepare(&linked).is_err());
+    assert!(std::fs::symlink_metadata(&linked)?.file_type().is_symlink());
+    Ok(())
+}
+
 fn until(mut ready: impl FnMut() -> bool) -> TestResult {
     let deadline = std::time::Instant::now() + Duration::from_secs(3);
     while !ready() {

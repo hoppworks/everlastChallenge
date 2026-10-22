@@ -224,3 +224,11 @@ and corrected queue/operation tests cover both. A separate negative control
 checks that setup admission uses current service state rather than delayed UI
 state. Software evidence is distinguished from pending packaged interaction and
 GPU startup verification.
+
+The [startup-test report](verification/refinement-startup-probe-2026-10-22.md)
+records AI-assisted setup probing with the actual bundled worker. Independent
+review identified a file-only readiness bypass; a failing native settings test
+preceded the separate probe-success flag and corresponding UI/IPC checks. Native
+observations include a synthetic inference, cancellation and setup alongside a
+warm worker, with child exit and scratch cleanup verified. These observations
+do not establish full application memory bounds or comparative performance.

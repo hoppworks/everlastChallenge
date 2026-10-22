@@ -50,7 +50,7 @@ impl Activation {
             self.cancel();
             return false;
         }
-        setup.phase == Phase::Ready
+        setup.phase == Phase::Ready && setup.probe_passed
     }
 }
 
@@ -61,6 +61,7 @@ mod tests {
         Snapshot {
             revision,
             phase,
+            probe_passed: phase == Phase::Ready,
             received: 0,
             total: 10,
             failure: None,

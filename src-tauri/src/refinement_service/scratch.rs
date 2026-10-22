@@ -137,3 +137,18 @@ impl Scratch {
         directory.keep()
     }
 }
+
+pub fn prepare(path: &std::path::Path) -> std::io::Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+    match std::fs::symlink_metadata(path) {
+        Ok(metadata) if !metadata.is_dir() || metadata.file_type().is_symlink() => {
+            return Err(std::io::Error::other("Invalid text runtime directory"));
+        }
+        Ok(_) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            std::fs::create_dir_all(path)?
+        }
+        Err(error) => return Err(error),
+    }
+    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o700))
+}

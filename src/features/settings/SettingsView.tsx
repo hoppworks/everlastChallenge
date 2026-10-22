@@ -74,6 +74,9 @@ function identity(value: SettingsDraft): string {
 
 export function SettingsView(props: SettingsViewProps) {
   const { preferences, setup, permissions, refinement } = props;
+  const canEnableRefinement =
+    refinement.phase === "Ready" &&
+    (refinement.probePassed || preferences.current.refinement);
   const [area, setArea] = useState<
     "Aufnahme" | "Berechtigungen" | "Modell" | "Textbereinigung"
   >(
@@ -340,7 +343,7 @@ export function SettingsView(props: SettingsViewProps) {
                   !disabled &&
                   valid &&
                   dirty &&
-                  (refinement.phase === "Ready" || !draft.refinement)
+                  (canEnableRefinement || !draft.refinement)
                 )
                   props.onSave(draft);
               }}
@@ -352,8 +355,7 @@ export function SettingsView(props: SettingsViewProps) {
                   aria-checked={draft.refinement}
                   checked={draft.refinement}
                   disabled={
-                    disabled ||
-                    (!draft.refinement && refinement.phase !== "Ready")
+                    disabled || (!draft.refinement && !canEnableRefinement)
                   }
                   onChange={(event) =>
                     setDraft({ ...draft, refinement: event.target.checked })
@@ -369,8 +371,9 @@ export function SettingsView(props: SettingsViewProps) {
                 <>
                   {refinement.phase === "Ready" ? (
                     <p className="settings-help">
-                      Das Textmodell ist eingerichtet. Die Verarbeitung bleibt
-                      auf diesem Mac.
+                      {refinement.probePassed
+                        ? "Das Textmodell ist geprüft. Die Verarbeitung bleibt auf diesem Mac."
+                        : "Die Modelldateien sind vorhanden. Der lokale Starttest steht noch aus."}
                     </p>
                   ) : (
                     <p role="status">
@@ -378,11 +381,13 @@ export function SettingsView(props: SettingsViewProps) {
                         ? "Textmodell wird geladen"
                         : refinement.phase === "Checking"
                           ? "Textmodell wird geprüft"
-                          : refinement.phase === "Cancelling"
-                            ? "Einrichtung wird abgebrochen"
-                            : refinement.phase === "Cancelled"
-                              ? "Einrichtung abgebrochen"
-                              : "Einmalige Einrichtung erforderlich"}
+                          : refinement.phase === "Loading"
+                            ? "Textmodell wird zum Test geladen"
+                            : refinement.phase === "Cancelling"
+                              ? "Einrichtung wird abgebrochen"
+                              : refinement.phase === "Cancelled"
+                                ? "Einrichtung abgebrochen"
+                                : "Einmalige Einrichtung erforderlich"}
                     </p>
                   )}
                   {refinement.phase !== "Ready" && (
@@ -421,9 +426,11 @@ export function SettingsView(props: SettingsViewProps) {
                     </div>
                   )}
                   {refinement.error && <p role="alert">{refinement.error}</p>}
-                  {["Missing", "Failed", "Cancelled"].includes(
+                  {(["Missing", "Failed", "Cancelled"].includes(
                     refinement.phase,
-                  ) && (
+                  ) ||
+                    (refinement.phase === "Ready" &&
+                      !refinement.probePassed)) && (
                     <button
                       type="button"
                       disabled={disabled}
@@ -431,7 +438,11 @@ export function SettingsView(props: SettingsViewProps) {
                     >
                       {refinement.phase === "Failed"
                         ? "Erneut versuchen"
-                        : "Einrichten und aktivieren"}
+                        : refinement.phase === "Ready"
+                          ? preferences.current.refinement
+                            ? "Starttest ausführen"
+                            : "Starttest und aktivieren"
+                          : "Einrichten und aktivieren"}
                     </button>
                   )}
                   {refinement.canCancel && (
@@ -452,7 +463,7 @@ export function SettingsView(props: SettingsViewProps) {
                     disabled ||
                     !valid ||
                     !dirty ||
-                    (draft.refinement && refinement.phase !== "Ready")
+                    (draft.refinement && !canEnableRefinement)
                   }
                 >
                   Einstellungen speichern

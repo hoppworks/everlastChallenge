@@ -74,6 +74,7 @@ pub enum RefinementStatus {
 pub struct RefinementSetup {
     pub available: bool,
     pub phase: SetupPhase,
+    pub probe_passed: bool,
     pub downloaded_bytes: u32,
     pub total_bytes: u32,
     pub can_cancel: bool,

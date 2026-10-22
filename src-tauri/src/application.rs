@@ -126,14 +126,7 @@ impl Client {
                 .map(|s| s.snapshot())
                 .transpose()
                 .map_err(worker_error)?
-                .is_some_and(|s| {
-                    matches!(
-                        s.phase,
-                        setup::Phase::Checking
-                            | setup::Phase::Downloading
-                            | setup::Phase::Cancelling
-                    )
-                })
+                .is_some_and(|s| s.is_busy())
         {
             return Err(ApplicationError::Busy);
         }
@@ -165,13 +158,7 @@ impl Client {
             .map(|s| s.snapshot())
             .transpose()
             .map_err(worker_error)?;
-        let busy = state.refinement_pending
-            || snapshot.as_ref().is_some_and(|s| {
-                matches!(
-                    s.phase,
-                    setup::Phase::Checking | setup::Phase::Downloading | setup::Phase::Cancelling
-                )
-            });
+        let busy = state.refinement_pending || snapshot.as_ref().is_some_and(|s| s.is_busy());
         Ok((snapshot, busy))
     }
     pub fn cancel_refinement_setup(&self) -> Result<(), ApplicationError> {
@@ -289,7 +276,10 @@ impl AppSupervisor {
     ) -> Result<Self, ApplicationError> {
         let refinement_setup = refinement
             .as_ref()
-            .map(|config| crate::refinement_setup::Setup::new(config.models.clone()).map(Arc::new))
+            .map(|config| {
+                crate::refinement_setup::Setup::new(config.models.clone(), config.worker.clone())
+                    .map(Arc::new)
+            })
             .transpose()
             .map_err(worker_error)?;
         let setup = Arc::new(SetupService::new(directory, definition));
@@ -504,7 +494,8 @@ fn start_runtime(
 ) -> Result<(Runtime, Option<String>), ApplicationError> {
     let prepared = refinement.map(|config| {
         let spec = config.worker.clone();
-        prepare_runtime_directory(&spec.runtime_directory).map_err(worker_error)?;
+        crate::refinement_service::scratch::prepare(&spec.runtime_directory)
+            .map_err(worker_error)?;
         crate::refinement_service::scratch::recover(&spec.runtime_directory)
             .map_err(worker_error)?;
         crate::refinement_service::owner::Owner::spawn(
@@ -530,20 +521,6 @@ fn start_runtime(
     Ok((runtime, error))
 }
 
-fn prepare_runtime_directory(path: &std::path::Path) -> std::io::Result<()> {
-    use std::os::unix::fs::PermissionsExt;
-    match std::fs::symlink_metadata(path) {
-        Ok(metadata) if !metadata.is_dir() || metadata.file_type().is_symlink() => {
-            return Err(std::io::Error::other("Invalid text runtime directory"));
-        }
-        Ok(_) => {}
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-            std::fs::create_dir_all(path)?
-        }
-        Err(error) => return Err(error),
-    }
-    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o700))
-}
 impl Drop for AppSupervisor {
     fn drop(&mut self) {
         if self.client.shutdown().is_err() { /* owner already stopped */ }
@@ -599,6 +576,19 @@ mod tests {
     use super::*;
     use crate::model::REFERENCE;
     use std::time::Instant;
+    fn test_worker(root: &std::path::Path) -> crate::refinement_service::WorkerSpec {
+        crate::refinement_service::WorkerSpec {
+            executable: root.join("unused-worker"),
+            model_directory: root.join("unused-model"),
+            runtime_directory: root.join("unused-runtime"),
+            identity: crate::refinement_service::ExpectedIdentity {
+                generation: std::num::NonZeroU64::MIN,
+                model_manifest_sha256: crate::model::refinement::RefinementModel::fingerprint(),
+                prompt_version: text_refinement_protocol::TEXT_PROMPT_VERSION,
+                policy_version: text_refinement_protocol::TEXT_POLICY_VERSION,
+            },
+        }
+    }
     #[test]
     fn accepted_text_download_is_busy_before_dispatch_and_cancel_revokes_queue()
     -> Result<(), Box<dyn std::error::Error>> {
@@ -606,6 +596,7 @@ mod tests {
         let setup = Arc::new(SetupService::new(root.path().join("asr"), REFERENCE));
         let refinement = Arc::new(crate::refinement_setup::Setup::new(
             root.path().join("models"),
+            test_worker(root.path()),
         )?);
         let (requests, receive) = bounded(8);
         let state = Arc::new(Mutex::new(State {

@@ -420,12 +420,29 @@ impl Desktop {
             .map_err(|_| "Desktop lock failed")?
             .client
             .clone();
-        if let Some(client) = client
-            && let Some(runtime) = client.runtime().map_err(|e| e.to_string())?
-        {
-            runtime
-                .set_memory_pressure(pressured)
-                .map_err(|e| e.to_string())?;
+        if let Some(client) = client {
+            let setup_cancel = if pressured {
+                self.0
+                    .shared
+                    .lock()
+                    .map_err(|_| "Desktop lock failed")?
+                    .refinement_activation
+                    .cancel();
+                if client.refinement_busy().map_err(|e| e.to_string())? {
+                    client.cancel_refinement_setup().map_err(|e| e.to_string())
+                } else {
+                    Ok(())
+                }
+            } else {
+                Ok(())
+            };
+            let runtime_pressure = match client.runtime().map_err(|e| e.to_string())? {
+                Some(runtime) => runtime
+                    .set_memory_pressure(pressured)
+                    .map_err(|e| e.to_string()),
+                None => Ok(()),
+            };
+            setup_cancel.and(runtime_pressure)?;
         }
         Ok(())
     }
@@ -540,6 +557,11 @@ impl Desktop {
             .admission
             .lock()
             .map_err(|_| "Admission lock failed")?;
+        if admission.memory_pressure {
+            return Err(
+                "Die Textmodelleinrichtung wartet auf ausreichend freien Arbeitsspeicher.".into(),
+            );
+        }
         if admission.suspended || admission.changing_settings || admission.pending_starts != 0 {
             return Err(
                 "Bitte laufende Aufnahmen oder Einstellungsänderungen zuerst abschließen.".into(),
@@ -1581,9 +1603,9 @@ fn validate_refinement_enable(
 ) -> Result<(), String> {
     if draft.refinement
         && !current.refinement
-        && !setup.is_some_and(|s| s.phase == setup::Phase::Ready)
+        && !setup.is_some_and(|s| s.phase == setup::Phase::Ready && s.probe_passed)
     {
-        return Err("Bitte zuerst das Textmodell vollständig einrichten.".into());
+        return Err("Bitte zuerst den lokalen Starttest des Textmodells abschließen.".into());
     }
     Ok(())
 }
@@ -1685,6 +1707,7 @@ fn initial() -> view::Snapshot {
             setup: view::RefinementSetup {
                 available: false,
                 phase: view::SetupPhase::Missing,
+                probe_passed: false,
                 downloaded_bytes: 0,
                 total_bytes: 0,
                 can_cancel: false,
@@ -1751,10 +1774,15 @@ fn project(
         result.refinement.setup = view::RefinementSetup {
             available: true,
             phase: setup_phase(setup.phase),
+            probe_passed: setup.probe_passed,
             downloaded_bytes: setup.received.min(u64::from(u32::MAX)) as u32,
             total_bytes: setup.total.min(u64::from(u32::MAX)) as u32,
             can_cancel: matches!(setup.phase, setup::Phase::Checking | setup::Phase::Downloading | setup::Phase::Loading),
-            error: setup.failure.as_ref().map(|_| "Das Textmodell konnte nicht eingerichtet werden. Prüfe Verbindung und freien Speicherplatz und versuche es erneut.".into()),
+            error: setup.failure.as_ref().map(|failure| match failure {
+                setup::Failure::Initialization => "Das lokale Textmodell konnte den Starttest nicht abschließen. Bitte versuche die Einrichtung erneut.",
+                setup::Failure::Worker => "Die lokale Modellprüfung konnte nicht vollständig beendet werden. Bitte starte die App neu und versuche es erneut.",
+                _ => "Das Textmodell konnte nicht eingerichtet werden. Prüfe Verbindung und freien Speicherplatz und versuche es erneut.",
+            }.into()),
         };
     }
     result.permissions = permissions;
@@ -2216,6 +2244,21 @@ mod tests {
         }
     }
     #[test]
+    fn cached_files_without_a_startup_probe_cannot_enable_refinement() {
+        let current = Settings::default();
+        let mut draft = draft_of(&current);
+        draft.refinement = true;
+        let cached = crate::refinement_setup::Snapshot {
+            probe_passed: false,
+            revision: 2,
+            phase: setup::Phase::Ready,
+            received: 10,
+            total: 10,
+            failure: None,
+        };
+        assert!(validate_refinement_enable(&current, &draft, Some(&cached)).is_err());
+    }
+    #[test]
     fn enabling_refinement_requires_ready_assets_but_disabling_remains_available() {
         let current = Settings::default();
         let mut draft = draft_of(&current);
@@ -2232,6 +2275,7 @@ mod tests {
             setup::Phase::Ready,
         ] {
             application.refinement_setup = Some(crate::refinement_setup::Snapshot {
+                probe_passed: phase == setup::Phase::Ready,
                 revision: 1,
                 phase,
                 received: 0,
@@ -2252,10 +2296,36 @@ mod tests {
         );
     }
     #[test]
+    fn failed_text_model_probe_is_explained_as_a_local_start_failure() {
+        let mut application = application();
+        application.refinement_setup = Some(crate::refinement_setup::Snapshot {
+            probe_passed: false,
+            revision: 3,
+            phase: setup::Phase::Failed,
+            received: 10,
+            total: 10,
+            failure: Some(setup::Failure::Initialization),
+        });
+        let result = project(
+            &application,
+            None,
+            &Settings::default(),
+            initial().permissions,
+        );
+        assert!(
+            result
+                .refinement
+                .setup
+                .error
+                .is_some_and(|message| message.contains("Starttest"))
+        );
+    }
+    #[test]
     fn refinement_projection_exposes_setup_and_retained_original()
     -> Result<(), Box<dyn std::error::Error>> {
         let mut application = application();
         application.refinement_setup = Some(crate::refinement_setup::Snapshot {
+            probe_passed: true,
             revision: 3,
             phase: setup::Phase::Ready,
             received: 2_278_970_666,
@@ -2520,6 +2590,44 @@ mod tests {
     }
 
     #[test]
+    fn memory_pressure_revokes_setup_activation_and_blocks_a_new_probe()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let SettingsQueueFixture {
+            desktop,
+            supervisor,
+            ..
+        } = desktop_with_settings_queue()?;
+        let ticket = {
+            let mut shared = desktop.0.shared.lock().map_err(|_| "shared")?;
+            shared.refinement_activation.request(1);
+            shared.refinement_activation.ticket().ok_or("ticket")?
+        };
+        desktop.set_memory_pressure(true)?;
+        assert!(
+            !desktop
+                .0
+                .shared
+                .lock()
+                .map_err(|_| "shared")?
+                .refinement_activation
+                .claim(&ticket)
+        );
+        assert!(desktop.download_refinement().is_err());
+        desktop.set_memory_pressure(false)?;
+        assert!(
+            desktop
+                .0
+                .shared
+                .lock()
+                .map_err(|_| "shared")?
+                .refinement_activation
+                .ticket()
+                .is_none()
+        );
+        supervisor.join()?;
+        Ok(())
+    }
+    #[test]
     fn cancelled_queued_activation_never_executes_its_save()
     -> Result<(), Box<dyn std::error::Error>> {
         let SettingsQueueFixture {
@@ -2621,6 +2729,7 @@ mod tests {
             .request(4);
         let response = desktop.enqueue_settings(draft_of(&Settings::default()))?;
         let ready = crate::refinement_setup::Snapshot {
+            probe_passed: true,
             revision: 6,
             phase: setup::Phase::Ready,
             received: 10,

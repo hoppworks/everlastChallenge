@@ -9,6 +9,7 @@ test("shows refinement processing and preserves the original on failure", () => 
   const refining = {
     setup: {
       available: true,
+      probePassed: true,
       phase: "Ready" as const,
       downloadedBytes: 1,
       totalBytes: 1,
@@ -59,6 +60,7 @@ test("offers the original separately after edits and hides stale session status"
   const refinement = {
     setup: {
       available: true,
+      probePassed: true,
       phase: "Ready" as const,
       downloadedBytes: 1,
       totalBytes: 1,

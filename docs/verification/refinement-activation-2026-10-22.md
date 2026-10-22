@@ -48,3 +48,7 @@ establish a separate GPU startup preflight during installation. Final packaged
 interaction, human text review and comparative performance remain separate
 evidence. The inference worker and its 66-case record are unchanged by this
 activation change.
+
+The subsequent [startup-test change](refinement-startup-probe-2026-10-22.md)
+adds an explicit GPU inference probe before new activation; the observations
+above remain scoped to this earlier activation revision.

@@ -28,6 +28,7 @@ function snapshot(): Snapshot {
     refinement: {
       setup: {
         available: true,
+        probePassed: true,
         phase: "Ready",
         downloadedBytes: 2278970666,
         totalBytes: 2278970666,
@@ -108,6 +109,7 @@ test.each([
   {
     setup: {
       available: true,
+      probePassed: true,
       phase: "Ready",
       downloadedBytes: 11,
       totalBytes: 10,
@@ -139,6 +141,38 @@ test("rejects missing or non-boolean refinement preference", () => {
       preferences: {
         ...value.preferences,
         current: { ...value.preferences.current, refinement: "yes" },
+      },
+    }),
+  ).toThrow("Ungültiger Anwendungsstatus");
+});
+
+test.each([undefined, "yes", 1])(
+  "rejects invalid startup probe status %s",
+  (probePassed) => {
+    const value = snapshot();
+    expect(() =>
+      decodeSnapshot({
+        ...value,
+        refinement: {
+          ...value.refinement,
+          setup: { ...value.refinement.setup, probePassed },
+        },
+      }),
+    ).toThrow("Ungültiger Anwendungsstatus");
+  },
+);
+test("a successful probe cannot accompany an unfinished setup", () => {
+  const value = snapshot();
+  expect(() =>
+    decodeSnapshot({
+      ...value,
+      refinement: {
+        ...value.refinement,
+        setup: {
+          ...value.refinement.setup,
+          phase: "Loading",
+          probePassed: true,
+        },
       },
     }),
   ).toThrow("Ungültiger Anwendungsstatus");

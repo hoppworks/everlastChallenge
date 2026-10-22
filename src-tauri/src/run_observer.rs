@@ -397,6 +397,7 @@ mod tests {
         view::Snapshot {
             refinement: view::Refinement {
                 setup: view::RefinementSetup {
+                    probe_passed: false,
                     available: false,
                     phase: view::SetupPhase::Missing,
                     downloaded_bytes: 0,

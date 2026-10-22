@@ -8,6 +8,7 @@ function props(): SettingsViewProps {
   return {
     refinement: {
       available: true,
+      probePassed: true,
       phase: "Ready",
       downloadedBytes: 2278970666,
       totalBytes: 2278970666,
@@ -61,7 +62,12 @@ function props(): SettingsViewProps {
 }
 test("requests native setup and displays its saved activation without another save", () => {
   const p = props();
-  p.refinement = { ...p.refinement, phase: "Missing", downloadedBytes: 0 };
+  p.refinement = {
+    ...p.refinement,
+    phase: "Missing",
+    probePassed: false,
+    downloadedBytes: 0,
+  };
   const view = render(<SettingsView {...p} />);
   fireEvent.click(screen.getByRole("button", { name: "Textbereinigung" }));
   expect(
@@ -86,6 +92,7 @@ test("requests native setup and displays its saved activation without another sa
       refinement={{
         ...p.refinement,
         phase: "Ready",
+        probePassed: true,
         downloadedBytes: 2278970666,
       }}
     />,
@@ -106,27 +113,59 @@ test("requests native setup and displays its saved activation without another sa
     ).disabled,
   ).toBe(true);
 });
-test("download cancellation remains available while settings are busy", () => {
+test("cached files require a native startup test before enabling", () => {
   const p = props();
-  render(
-    <SettingsView
-      {...p}
-      busy
-      refinement={{ ...p.refinement, phase: "Downloading", canCancel: true }}
-    />,
-  );
+  p.refinement.probePassed = false;
+  render(<SettingsView {...p} />);
   fireEvent.click(screen.getByRole("button", { name: "Textbereinigung" }));
-  const cancel = screen.getByRole("button", { name: "Einrichtung abbrechen" });
-  expect((cancel as HTMLButtonElement).disabled).toBe(false);
-  fireEvent.click(cancel);
-  expect(p.onCancelRefinementSetup).toHaveBeenCalledOnce();
   expect((screen.getByRole("switch") as HTMLInputElement).disabled).toBe(true);
+  fireEvent.click(
+    screen.getByRole("button", { name: "Starttest und aktivieren" }),
+  );
+  expect(p.onDownloadRefinement).toHaveBeenCalledOnce();
+  expect(p.onSave).not.toHaveBeenCalled();
 });
+
+test.each([
+  { phase: "Downloading", label: "Textmodell wird geladen" },
+  { phase: "Loading", label: "Textmodell wird zum Test geladen" },
+] as const)(
+  "$phase cancellation remains available while settings are busy",
+  ({ phase, label }) => {
+    const p = props();
+    render(
+      <SettingsView
+        {...p}
+        busy
+        refinement={{
+          ...p.refinement,
+          phase,
+          probePassed: false,
+          canCancel: true,
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Textbereinigung" }));
+    const cancel = screen.getByRole("button", {
+      name: "Einrichtung abbrechen",
+    });
+    expect((cancel as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(cancel);
+    expect(p.onCancelRefinementSetup).toHaveBeenCalledOnce();
+    expect((screen.getByRole("switch") as HTMLInputElement).disabled).toBe(
+      true,
+    );
+    expect(screen.getByText(label)).toBeTruthy();
+  },
+);
 test("broken setup does not prevent switching refinement off", () => {
   const p = props();
   p.preferences.current.refinement = true;
   render(
-    <SettingsView {...p} refinement={{ ...p.refinement, phase: "Failed" }} />,
+    <SettingsView
+      {...p}
+      refinement={{ ...p.refinement, phase: "Failed", probePassed: false }}
+    />,
   );
   fireEvent.click(screen.getByRole("button", { name: "Textbereinigung" }));
   fireEvent.click(screen.getByRole("switch"));
