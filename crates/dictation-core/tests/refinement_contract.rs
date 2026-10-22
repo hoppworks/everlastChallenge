@@ -14,6 +14,172 @@ fn edit(kind: EditKind, before: &str, after: &str) -> ProposedEdit {
 }
 
 #[test]
+fn spoken_number_corrections_preserve_predicates_and_accept_value_only_edits() -> TestResult {
+    for (text, before, after, invalid_before, invalid_after, language) in [
+        (
+            "Die Menge beträgt sechzig, Entschuldigung, sechzehn Kartons.",
+            "sechzig, Entschuldigung, sechzehn",
+            "sechzehn",
+            "beträgt sechzig, Entschuldigung, sechzehn Kartons",
+            "sechzehn Kartons",
+            Language::German,
+        ),
+        (
+            "The order costs sixty, sorry, sixteen euros.",
+            "sixty, sorry, sixteen",
+            "sixteen",
+            "costs sixty, sorry, sixteen euros",
+            "sixteen euros",
+            Language::English,
+        ),
+        (
+            "Es sind fünfundzwanzig, nein, siebenundzwanzig Kartons.",
+            "fünfundzwanzig, nein, siebenundzwanzig",
+            "siebenundzwanzig",
+            "sind fünfundzwanzig, nein, siebenundzwanzig Kartons",
+            "siebenundzwanzig Kartons",
+            Language::German,
+        ),
+        (
+            "We need eight, no, nine boxes.",
+            "eight, no, nine",
+            "nine",
+            "need eight, no, nine boxes",
+            "nine boxes",
+            Language::English,
+        ),
+        (
+            "Die Lieferung kostet zweitausenddreihundertfünfundzwanzig, Entschuldigung, zweitausendvierhundert Euro.",
+            "zweitausenddreihundertfünfundzwanzig, Entschuldigung, zweitausendvierhundert",
+            "zweitausendvierhundert",
+            "kostet zweitausenddreihundertfünfundzwanzig, Entschuldigung, zweitausendvierhundert Euro",
+            "zweitausendvierhundert Euro",
+            Language::German,
+        ),
+        (
+            "The shipment costs twenty one, sorry, thirty two euros.",
+            "twenty one, sorry, thirty two",
+            "thirty two",
+            "costs twenty one, sorry, thirty two euros",
+            "thirty two euros",
+            Language::English,
+        ),
+    ] {
+        let source = OriginalTranscript::new(text.into())?;
+        assert!(
+            validate(
+                &source,
+                &[edit(
+                    EditKind::SelfCorrection,
+                    invalid_before,
+                    invalid_after
+                )],
+                language
+            )
+            .is_err(),
+            "predicate removed: {text}"
+        );
+        let accepted = validate(
+            &source,
+            &[edit(EditKind::SelfCorrection, before, after)],
+            language,
+        )?;
+        assert_eq!(accepted.as_str(), text.replace(before, after));
+    }
+    Ok(())
+}
+
+#[test]
+fn negative_pronoun_is_not_a_spoken_number_correction() -> TestResult {
+    for text in [
+        "We hired two, no one else applied.",
+        "I invited three, no one accepted.",
+    ] {
+        let source = OriginalTranscript::new(text.into())?;
+        let before = if text.starts_with("We") {
+            "two, no one"
+        } else {
+            "three, no one"
+        };
+        assert!(
+            validate(
+                &source,
+                &[edit(EditKind::SelfCorrection, before, "one")],
+                Language::English
+            )
+            .is_err(),
+            "{text}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn leading_number_does_not_authorize_removing_subject_and_predicate() -> TestResult {
+    for (text, before, after, value_before, value_after, expected, language) in [
+        (
+            "Two tickets cost sixty, sorry, sixteen euros for both.",
+            "Two tickets cost sixty, sorry, sixteen euros for both",
+            "sixteen euros for both",
+            "sixty, sorry, sixteen",
+            "sixteen",
+            "Two tickets cost sixteen euros for both.",
+            Language::English,
+        ),
+        (
+            "Zwei Karten kosten sechzig, Entschuldigung, sechzehn Euro für beide.",
+            "Zwei Karten kosten sechzig, Entschuldigung, sechzehn Euro für beide",
+            "sechzehn Euro für beide",
+            "sechzig, Entschuldigung, sechzehn",
+            "sechzehn",
+            "Zwei Karten kosten sechzehn Euro für beide.",
+            Language::German,
+        ),
+    ] {
+        let source = OriginalTranscript::new(text.into())?;
+        assert!(
+            validate(
+                &source,
+                &[edit(EditKind::SelfCorrection, before, after)],
+                language
+            )
+            .is_err(),
+            "{text}"
+        );
+        assert_eq!(
+            validate(
+                &source,
+                &[edit(EditKind::SelfCorrection, value_before, value_after)],
+                language
+            )?
+            .as_str(),
+            expected
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn restated_article_does_not_authorize_removing_a_number_predicate() -> TestResult {
+    let source = OriginalTranscript::new(
+        "Die Menge beträgt sechzig, Entschuldigung, die sechzehn Kartons.".into(),
+    )?;
+    assert!(
+        validate(
+            &source,
+            &[edit(
+                EditKind::SelfCorrection,
+                "Die Menge beträgt sechzig, Entschuldigung, die sechzehn Kartons",
+                "die sechzehn Kartons",
+            )],
+            Language::German,
+        )
+        .is_err()
+    );
+    Ok(())
+}
+
+#[test]
 fn punctuation_cannot_duplicate_an_existing_sentence_ending() -> TestResult {
     let original = OriginalTranscript::new("Wir kommen um neun Uhr.".into())?;
     assert!(

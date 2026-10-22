@@ -220,17 +220,45 @@ fn statement_correction_options_include_the_complete_revised_clause() -> TestRes
 
 #[test]
 fn numeric_replacements_cannot_consume_a_preceding_predicate() -> TestResult {
-    let source =
-        OriginalTranscript::new("Der Termin dauert 40, Entschuldigung, 14 Minuten.".into())?;
-    let choices = proposal_candidates(&source, Language::German)?;
-    assert!(!choices.is_empty());
-    for choice in choices {
-        let accepted = validate(&source, std::slice::from_ref(&choice), Language::German)?;
-        assert!(
-            accepted.as_str().starts_with("Der Termin dauert "),
-            "{}",
-            accepted.as_str()
-        );
+    for (text, language, prefix, expected) in [
+        (
+            "Der Termin dauert 40, Entschuldigung, 14 Minuten.",
+            Language::German,
+            "Der Termin dauert ",
+            "Der Termin dauert 14 Minuten.",
+        ),
+        (
+            "Die Menge beträgt sechzig, Entschuldigung, sechzehn Kartons.",
+            Language::German,
+            "Die Menge beträgt ",
+            "Die Menge beträgt sechzehn Kartons.",
+        ),
+        (
+            "Der Einkauf kostet fünfundzwanzig, Entschuldigung, siebenundzwanzig Euro.",
+            Language::German,
+            "Der Einkauf kostet ",
+            "Der Einkauf kostet siebenundzwanzig Euro.",
+        ),
+        (
+            "The order costs sixty, sorry, sixteen euros.",
+            Language::English,
+            "The order costs ",
+            "The order costs sixteen euros.",
+        ),
+    ] {
+        let source = OriginalTranscript::new(text.into())?;
+        let choices = proposal_candidates(&source, language)?;
+        let mut correct = false;
+        for choice in choices {
+            let accepted = validate(&source, std::slice::from_ref(&choice), language)?;
+            correct |= accepted.as_str() == expected;
+            assert!(
+                accepted.as_str().starts_with(prefix),
+                "{}",
+                accepted.as_str()
+            );
+        }
+        assert!(correct, "required correction absent: {text}");
     }
     Ok(())
 }

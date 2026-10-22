@@ -14,6 +14,7 @@ struct Correction<'a> {
     replacement: &'a str,
     weak_marker: bool,
     comma: bool,
+    comma_after: bool,
 }
 
 fn parts(before: &str, language: Language) -> Option<Correction<'_>> {
@@ -49,6 +50,7 @@ fn parts(before: &str, language: Language) -> Option<Correction<'_>> {
                 replacement,
                 weak_marker: matches!(*marker, "no" | "nein"),
                 comma: before[..index].trim_end().ends_with(','),
+                comma_after: tail.trim_start().starts_with(','),
             });
         }
     }
@@ -164,12 +166,122 @@ fn without_polarity<'a>(words: &[&'a str], language: Language) -> Vec<&'a str> {
         .collect()
 }
 
+// Recognize cardinal words only to protect a correction's surrounding text.
+// This does not convert values or authorize changing any original number.
+fn numeric_word(word: &str, language: Language) -> bool {
+    if !word.is_empty() && word.chars().all(|c| c.is_ascii_digit()) {
+        return true;
+    }
+    if word.len() > 128 {
+        return false;
+    }
+    let lower = word.to_lowercase();
+    match language {
+        Language::German => german_cardinal(&lower),
+        Language::English => matches!(
+            lower.as_str(),
+            "zero"
+                | "one"
+                | "two"
+                | "three"
+                | "four"
+                | "five"
+                | "six"
+                | "seven"
+                | "eight"
+                | "nine"
+                | "ten"
+                | "eleven"
+                | "twelve"
+                | "thirteen"
+                | "fourteen"
+                | "fifteen"
+                | "sixteen"
+                | "seventeen"
+                | "eighteen"
+                | "nineteen"
+                | "twenty"
+                | "thirty"
+                | "forty"
+                | "fifty"
+                | "sixty"
+                | "seventy"
+                | "eighty"
+                | "ninety"
+                | "hundred"
+                | "thousand"
+                | "million"
+                | "billion"
+                | "trillion"
+        ),
+    }
+}
+
+fn german_under_hundred(word: &str) -> bool {
+    const UNITS: &[&str] = &[
+        "ein", "eins", "zwei", "drei", "vier", "fünf", "sechs", "sieben", "acht", "neun",
+    ];
+    const TENS: &[&str] = &[
+        "zwanzig", "dreißig", "vierzig", "fünfzig", "sechzig", "siebzig", "achtzig", "neunzig",
+    ];
+    UNITS.contains(&word)
+        || TENS.contains(&word)
+        || matches!(
+            word,
+            "null"
+                | "zehn"
+                | "elf"
+                | "zwölf"
+                | "dreizehn"
+                | "vierzehn"
+                | "fünfzehn"
+                | "sechzehn"
+                | "siebzehn"
+                | "achtzehn"
+                | "neunzehn"
+        )
+        || word.split_once("und").is_some_and(|(unit, tens)| {
+            unit != "eins" && UNITS.contains(&unit) && TENS.contains(&tens)
+        })
+}
+
+fn german_under_thousand(word: &str) -> bool {
+    german_under_hundred(word)
+        || word.split_once("hundert").is_some_and(|(hundreds, rest)| {
+            (hundreds.is_empty()
+                || matches!(
+                    hundreds,
+                    "ein"
+                        | "zwei"
+                        | "drei"
+                        | "vier"
+                        | "fünf"
+                        | "sechs"
+                        | "sieben"
+                        | "acht"
+                        | "neun"
+                ))
+                && (rest.is_empty() || german_under_hundred(rest))
+        })
+}
+
+fn german_cardinal(word: &str) -> bool {
+    german_under_thousand(word)
+        || matches!(word, "million" | "millionen" | "milliarde" | "milliarden")
+        || word.split_once("tausend").is_some_and(|(thousands, rest)| {
+            (thousands.is_empty()
+                || !matches!(thousands, "null" | "eins") && german_under_thousand(thousands))
+                && (rest.is_empty() || german_under_thousand(rest))
+        })
+}
+
 pub(super) fn allowed(before: &str, after: &str, language: Language) -> bool {
     let Some(Correction {
         old,
         replacement,
         weak_marker,
         comma,
+        comma_after,
     }) = parts(before, language)
     else {
         return false;
@@ -182,7 +294,7 @@ pub(super) fn allowed(before: &str, after: &str, language: Language) -> bool {
     if old_words.is_empty() || old_words.len() > 6 {
         return false;
     }
-    if weak_marker && !comparable(&old_words, &new_words, language, comma) {
+    if weak_marker && !comparable(&old_words, &new_words, language, comma, comma_after) {
         return false;
     }
     // A correction is local, not permission to discard a previous sentence.
@@ -226,13 +338,17 @@ pub(super) fn allowed(before: &str, after: &str, language: Language) -> bool {
     if old_words.len() > new_words.len() {
         return false;
     }
-    // Preserve lexical context before an existing numeric value. A spoken
-    // number ("five") may still be corrected to digits ("15") or vice versa.
-    let numeric = |word: &str| word.chars().all(|c| c.is_ascii_digit());
+    // Preserve lexical context before an existing numeric value, even when
+    // the subject itself starts with a quantity ("two tickets cost sixty").
+    // Contiguous number words may still change representation ("twenty one"
+    // to "21"); a later number beyond lexical context cannot erase that text.
+    let numeric = |word: &str| numeric_word(word, language);
     if shared == 0
-        && !numeric(old_words[0])
         && numeric(new_words[0])
-        && old_words.iter().skip(1).any(|word| numeric(word))
+        && old_words
+            .iter()
+            .skip_while(|word| numeric(word))
+            .any(|word| numeric(word))
     {
         return false;
     }
@@ -251,7 +367,13 @@ pub(super) fn allowed(before: &str, after: &str, language: Language) -> bool {
     new_frame.starts_with(&old_frame)
 }
 
-fn comparable(old: &[&str], new: &[&str], language: Language, comma: bool) -> bool {
+fn comparable(
+    old: &[&str],
+    new: &[&str],
+    language: Language,
+    comma: bool,
+    comma_after: bool,
+) -> bool {
     let shared = old
         .iter()
         .zip(new.iter())
@@ -263,7 +385,13 @@ fn comparable(old: &[&str], new: &[&str], language: Language, comma: bool) -> bo
     let Some(right) = new.get(shared) else {
         return false;
     };
-    if left.chars().all(|c| c.is_ascii_digit()) && right.chars().all(|c| c.is_ascii_digit()) {
+    // Written digits are unambiguous values. Spoken numbers need an explicit
+    // separator after a weak marker: "no one" can instead begin a negative
+    // clause ("two, no one else applied").
+    let digits = |word: &str| !word.is_empty() && word.chars().all(|c| c.is_ascii_digit());
+    if digits(left) && digits(right)
+        || comma_after && numeric_word(left, language) && numeric_word(right, language)
+    {
         return true;
     }
     let days = match language {

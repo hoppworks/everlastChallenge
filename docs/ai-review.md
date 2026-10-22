@@ -207,3 +207,12 @@ host modules. The [coverage report](verification/refinement-coverage-2026-10-22.
 records the added per-file checks, their failing/passing checker tests and two
 asset-boundary tests. These line measurements do not replace real-model or
 human-language acceptance.
+
+The [long-correction report](verification/refinement-long-corrections-2026-10-22.md)
+records an AI-assisted number-word boundary fix and a more explicit correction
+prompt. Independent review found ordinary-negation and numeric-subject errors;
+failing public regressions reproduced both before correction. A fresh production
+worker and independent Rust validator exercised 66 text cases. Two erroneous
+capitalization expectations were corrected transparently after diagnostic output
+had been observed. The record preserves this limitation and does not substitute
+automatic matching for human linguistic review or application-level acceptance.

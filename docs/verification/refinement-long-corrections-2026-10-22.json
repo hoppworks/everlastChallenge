@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "baseRevision": "546a34d",
+  "scope": "Production MLX text worker with independent Rust validation; no application delivery or performance qualification.",
+  "identity": {
+    "workerSha256": "86b7a6869c2a7188da9d5aabead27844447726e340275bf4ee331181620c26a5",
+    "metallibSha256": "0f067d79c93fdd840bbe0df4de56f651b86c9ed0f59a04db4dddea7bc0a44d22",
+    "generation": 1,
+    "kind": "ready",
+    "model_manifest_sha256": "fea7cc2a764e60d910da77c44549b7f123e681edb0c84f03658011eb86519352",
+    "policy_version": 7,
+    "prompt_version": 8
+  },
+  "sources": {
+    "crates/dictation-core/src/refinement/correction.rs": "ae088b75364927f0cf27734c85b950213887c2e5e3f46b93b5d0f0411972ea70",
+    "crates/dictation-core/tests/refinement_candidates.rs": "b30014331fb4d4923ce4daba5f3d4d214903d64b86ef3bcef9f8881b21a532d1",
+    "crates/dictation-core/tests/refinement_contract.rs": "5e152600350ddda64116c0e6382ef8575acd7d910a9419b388454c6a23365869",
+    "crates/text-refinement-protocol/src/lib.rs": "c25fe1fb870f8f92d0da3d904bc876e8d6f44da944246bb3275fca79f5ab1e36",
+    "crates/text-refinement-worker/src/prompt.txt": "a913b985dab1a3d5d58d5d7152282ea127c4de4486a2f9d270e2f949769c7ca1"
+  },
+  "previousLongRun": {
+    "workerSha256": "449038280c4d949ea1ec44e8d97b67d8a2b0f179c7ccd4a051f5d925b5c722d0",
+    "cases": [
+      {
+        "id": "long-de-multiple-corrections-v1",
+        "accepted": false,
+        "requiredCorrectionsComplete": false
+      },
+      {
+        "id": "long-en-multiple-corrections-v1",
+        "accepted": true,
+        "requiredCorrectionsComplete": false
+      }
+    ]
+  },
+  "quality": {
+    "cases": 66,
+    "completed": 66,
+    "accepted": 66,
+    "originalOracleMatches": 64,
+    "correctedOracleMatches": 66,
+    "unchangedExistingCases": 64,
+    "initialCorpusSha256": "b55c0c9f04b134e16478bdddd8d5919e09952c1c41edba9e27089c412b11fe32",
+    "correctedCorpusSha256": "9275d76fe77a6f780e01870ba2976e7ee1da7a172421e73ed1aac4153a5d3d47",
+    "oracleCorrection": "Only sentence-initial capitalization after filler removal in the two added long cases. Inputs and all 64 earlier expectations unchanged. Corrected after diagnostic output was observed; not a blind oracle. Original mismatch record preserved.",
+    "longCases": [
+      {
+        "id": "long-de-multiple-corrections-v1",
+        "language": "german",
+        "original": "Ähm, die technische Besprechung beginnt am Mittwoch, nein, am Freitag um neun Uhr. Wir prüfen zuerst die Messwerte aus dem abgeschlossenen Versuch. Die Namen Mira, Jonas und Lenz bleiben in der angegebenen Reihenfolge stehen. Eine neue Auswertung darf die alten Rohdaten nicht ersetzen. Die Kennung AB-204 bezeichnet weiterhin genau denselben Prüfstand. Alle Beobachtungen müssen nachvollziehbar sein und erhalten einen eigenen Eintrag im Protokoll.\n\nDie Unterlagen enthalten eine Beschreibung des Aufbaus und der verwendeten Geräte. Bitte vergleiche die Ergebnisse nur unter denselben Bedingungen. Änderungen an den Einstellungen werden einzeln festgehalten. Äh, die geplante Menge beträgt sechzig, Entschuldigung, sechzehn Kartons. Davon sind vier für die erste Prüfung vorgesehen. Die übrigen Kartons bleiben bis zur Freigabe im Lager. Niemand darf eine fehlende Messung durch eine Schätzung ersetzen.\n\nIm letzten Abschnitt steht das Zitat „Die Nummer 42 bleibt unverändert“. Dieses Zitat gehört vollständig zum Bericht. Ein offener Punkt ist noch keine bestätigte Ursache. Wir prüfen zunächst die bekannte Abweichung und entscheiden erst danach über weitere Versuche. Falls die zweite Messung scheitert, bleibt auch dieser Versuch sichtbar. Die Entscheidung wird gemeinsam dokumentiert und am Ende mit dem ursprünglichen Auftrag verglichen.",
+        "originalExpectation": "die technische Besprechung beginnt am Freitag um neun Uhr. Wir prüfen zuerst die Messwerte aus dem abgeschlossenen Versuch. Die Namen Mira, Jonas und Lenz bleiben in der angegebenen Reihenfolge stehen. Eine neue Auswertung darf die alten Rohdaten nicht ersetzen. Die Kennung AB-204 bezeichnet weiterhin genau denselben Prüfstand. Alle Beobachtungen müssen nachvollziehbar sein und erhalten einen eigenen Eintrag im Protokoll.\n\nDie Unterlagen enthalten eine Beschreibung des Aufbaus und der verwendeten Geräte. Bitte vergleiche die Ergebnisse nur unter denselben Bedingungen. Änderungen an den Einstellungen werden einzeln festgehalten. die geplante Menge beträgt sechzehn Kartons. Davon sind vier für die erste Prüfung vorgesehen. Die übrigen Kartons bleiben bis zur Freigabe im Lager. Niemand darf eine fehlende Messung durch eine Schätzung ersetzen.\n\nIm letzten Abschnitt steht das Zitat „Die Nummer 42 bleibt unverändert“. Dieses Zitat gehört vollständig zum Bericht. Ein offener Punkt ist noch keine bestätigte Ursache. Wir prüfen zunächst die bekannte Abweichung und entscheiden erst danach über weitere Versuche. Falls die zweite Messung scheitert, bleibt auch dieser Versuch sichtbar. Die Entscheidung wird gemeinsam dokumentiert und am Ende mit dem ursprünglichen Auftrag verglichen.",
+        "accepted": "Die technische Besprechung beginnt am Freitag um neun Uhr. Wir prüfen zuerst die Messwerte aus dem abgeschlossenen Versuch. Die Namen Mira, Jonas und Lenz bleiben in der angegebenen Reihenfolge stehen. Eine neue Auswertung darf die alten Rohdaten nicht ersetzen. Die Kennung AB-204 bezeichnet weiterhin genau denselben Prüfstand. Alle Beobachtungen müssen nachvollziehbar sein und erhalten einen eigenen Eintrag im Protokoll.\n\nDie Unterlagen enthalten eine Beschreibung des Aufbaus und der verwendeten Geräte. Bitte vergleiche die Ergebnisse nur unter denselben Bedingungen. Änderungen an den Einstellungen werden einzeln festgehalten. Die geplante Menge beträgt sechzehn Kartons. Davon sind vier für die erste Prüfung vorgesehen. Die übrigen Kartons bleiben bis zur Freigabe im Lager. Niemand darf eine fehlende Messung durch eine Schätzung ersetzen.\n\nIm letzten Abschnitt steht das Zitat „Die Nummer 42 bleibt unverändert“. Dieses Zitat gehört vollständig zum Bericht. Ein offener Punkt ist noch keine bestätigte Ursache. Wir prüfen zunächst die bekannte Abweichung und entscheiden erst danach über weitere Versuche. Falls die zweite Messung scheitert, bleibt auch dieser Versuch sichtbar. Die Entscheidung wird gemeinsam dokumentiert und am Ende mit dem ursprünglichen Auftrag verglichen."
+      },
+      {
+        "id": "long-en-multiple-corrections-v1",
+        "language": "english",
+        "original": "Um, the technical meeting begins on Wednesday, no, Friday at nine. We first examine the measurements from the completed experiment. The names Mira, Jonas and Lenz remain in the stated order. A new evaluation must not replace the original raw data. The identifier AB-204 continues to refer to exactly the same test station. Every observation must be traceable and receives a separate entry in the report.\n\nThe documents contain a description of the setup and the equipment used. Please compare results only under the same conditions. Changes to the settings are recorded individually. Uh, the planned quantity is sixty, sorry, sixteen boxes. Four of them are reserved for the first inspection. The other boxes stay in storage until approval. Nobody may replace a missing measurement with an estimate.\n\nThe final section contains the quotation “The number 42 remains unchanged”. This quotation belongs in the report in full. An open question is not a confirmed cause. We first examine the known discrepancy and only then decide whether more experiments are needed. If the second measurement fails, that attempt must remain visible too. The decision is documented together and finally compared with the original assignment.",
+        "originalExpectation": "the technical meeting begins on Friday at nine. We first examine the measurements from the completed experiment. The names Mira, Jonas and Lenz remain in the stated order. A new evaluation must not replace the original raw data. The identifier AB-204 continues to refer to exactly the same test station. Every observation must be traceable and receives a separate entry in the report.\n\nThe documents contain a description of the setup and the equipment used. Please compare results only under the same conditions. Changes to the settings are recorded individually. the planned quantity is sixteen boxes. Four of them are reserved for the first inspection. The other boxes stay in storage until approval. Nobody may replace a missing measurement with an estimate.\n\nThe final section contains the quotation “The number 42 remains unchanged”. This quotation belongs in the report in full. An open question is not a confirmed cause. We first examine the known discrepancy and only then decide whether more experiments are needed. If the second measurement fails, that attempt must remain visible too. The decision is documented together and finally compared with the original assignment.",
+        "accepted": "The technical meeting begins on Friday at nine. We first examine the measurements from the completed experiment. The names Mira, Jonas and Lenz remain in the stated order. A new evaluation must not replace the original raw data. The identifier AB-204 continues to refer to exactly the same test station. Every observation must be traceable and receives a separate entry in the report.\n\nThe documents contain a description of the setup and the equipment used. Please compare results only under the same conditions. Changes to the settings are recorded individually. The planned quantity is sixteen boxes. Four of them are reserved for the first inspection. The other boxes stay in storage until approval. Nobody may replace a missing measurement with an estimate.\n\nThe final section contains the quotation “The number 42 remains unchanged”. This quotation belongs in the report in full. An open question is not a confirmed cause. We first examine the known discrepancy and only then decide whether more experiments are needed. If the second measurement fails, that attempt must remain visible too. The decision is documented together and finally compared with the original assignment."
+      }
+    ],
+    "humanReview": "pending"
+  },
+  "checks": {
+    "focusedRefinementTests": 57,
+    "portableProtocolWorkerTests": 60,
+    "ignoredPortableTests": 1,
+    "coreLineCoverage": 97.3887240356083,
+    "frontendLineCoverage": 96.77
+  },
+  "limits": [
+    "Finite synthetic text cases, no statistical generalization.",
+    "Raw worker was freshly built; final signed application packaging remains separate.",
+    "No new actual recipient, OS pressure or speed comparison proven."
+  ]
+}
