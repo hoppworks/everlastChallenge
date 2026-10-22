@@ -312,10 +312,14 @@ test("denied microphone explains recovery while accessibility retains its explic
   p.permissions = { microphone: "denied", accessibility: "denied" };
   render(<SettingsView {...p} />);
   expect(
-    screen.getByText(/System Settings → Privacy & Security → Microphone/),
+    screen.getByText(
+      /Systemeinstellungen → Datenschutz & Sicherheit → Mikrofon/,
+    ),
   ).toBeDefined();
   expect(
-    screen.getByText(/System Settings → Privacy & Security → Accessibility/),
+    screen.getByText(
+      /Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen/,
+    ),
   ).toBeDefined();
   expect(
     screen.getAllByText(/aktiviere Everlast Coding Challenge/),
@@ -375,7 +379,9 @@ test("opens missing permissions first and offers the existing explicit AX reques
   render(<SettingsView {...p} />);
   expect(screen.queryByRole("combobox", { name: "Mikrofon" })).toBeNull();
   expect(
-    screen.getByText(/System Settings → Privacy & Security → Accessibility/),
+    screen.getByText(
+      /Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen/,
+    ),
   ).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "Freigabe anfragen" }));
   expect(p.onAccessibility).toHaveBeenCalledOnce();

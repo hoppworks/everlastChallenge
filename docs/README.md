@@ -4,6 +4,10 @@ Der [Projektüberblick](../README.md) führt durch Installation und Bedienung.
 Die folgenden Einstiege sind nach Leserinteresse geordnet; zum Ausprobieren der
 App muss niemand die einzelnen Versuchsprotokolle durcharbeiten.
 
+Dokumentation und Oberfläche sind auf Deutsch. Code, Kommentare, Dateinamen
+und technische Bezeichner bleiben Englisch. Originalzitate, Befehle,
+Lizenztexte und maschinenlesbare Schemafelder werden nicht übersetzt.
+
 | Interesse | Einstieg |
 |---|---|
 | App installieren und ausprobieren | [Download, Voraussetzungen und Bedienung](../README.md#download-für-macos) |

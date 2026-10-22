@@ -1,88 +1,90 @@
-# Temporary installed-app hotkey diagnosis
+# Zeitweilige Diagnose der installierten Tastenkürzel
 
-Status: investigation, **not a fix or a passed acceptance test**.
+Historische Untersuchung vom 21.10.2026. Die anfängliche Beobachtung war noch
+keine Fehlerkorrektur oder bestandene Abnahme; Ergebnis und Abbau stehen unten.
 
-The installed app initially passed the user's Option+D stop test, but Escape did
-not cancel (the foreground application is unknown). During a later attempted
-physical check the user also reported Option+D unavailable. A targeted process
-sample showed a responsive main event loop and desktop owner; only one installed
-challenge process was found. These observations do not identify a root cause.
+Die installierte App bestand zunächst den berichteten Stopptest mit Option+D.
+Escape wurde als nicht funktionierender Abbruch gemeldet; die Vordergrund-App
+war unbekannt. Später wurde auch Option+D als nicht verfügbar beschrieben.
+Eine gezielte Prozessstichprobe zeigte ansprechbaren Haupt-Eventloop und
+Desktopbesitzer sowie nur einen installierten Produktprozess. Eine Ursache
+war daraus nicht ableitbar.
 
-Automated checks can start a recording and cancel it with Escape while the app
-is foreground. With TextEdit foreground the automation did not deliver Escape;
-automated Option+D also did not trigger. Consequently synthetic input is not
-accepted as evidence about real global keyboard delivery.
+Automatisierte Eingaben konnten bei fokussierter App Aufnahme und Escape-Abbruch
+auslösen. Mit TextEdit im Vordergrund kam Escape nicht an; automatisiertes
+Option+D löste ebenfalls nichts aus. Synthetische Eingaben sind damit kein
+Beleg für physische globale Tastaturzustellung.
 
-## Opt-in tracing
+## Ausdrücklich aktivierte Protokollierung
 
-Explicitly authorized by the user on 2026-10-21. Create the empty file
+Die Diagnose wurde am 21.10.2026 aktiviert. Vor dem Start des damaligen
+Diagnosebuilds wurde die leere Datei
 `~/Library/Application Support/de.hoppworks.everlast-dictation/hotkey-diagnostics.enabled`
-before launching the diagnostic build. Each hotkey-owner installation creates a
-new `hotkey-diagnostics-<pid>-<time>.log` in that directory, with mode 0600.
-Remove the marker and restart to disable tracing. This is temporary diagnostic
-code to remove after the failure has been understood.
+angelegt. Jede Installation des Hotkeybesitzers erzeugte dort eine neue
+`hotkey-diagnostics-<pid>-<time>.log` mit Modus 0600. Entfernen der Markierung
+und Neustart deaktivierten die Protokollierung. Die Instrumentierung war
+vorübergehend und wurde nach der Diagnose entfernt.
 
-Only elapsed microseconds, `toggle`/`cancel` and fixed technical stage names are
-written: registration, native press/release, gate accepted/ignored, main-thread
-queue/callback, revocation and errors. No audio, transcription, arbitrary pressed
-keys, application title or target process identity is recorded.
+Erfasst wurden nur vergangene Mikrosekunden, `toggle`/`cancel` und feste
+technische Stufen: Registrierung, nativer Tastendruck/-freigabe, angenommene/
+ignorierte Ereignisse, Hauptthread-Warteschlange/-Callback, Widerruf und Fehler.
+Audio, Transkript, beliebige Tasten, Fenstertitel und Zielprozessidentität
+wurden nicht gespeichert.
 
-The native callback performs no file IO and never waits for the diagnostic lock.
-Its preallocated queue holds at most 128 records; total event output is capped at
-2048 records. Dropped events or saturation produce one additional
-`diagnostic / incomplete` line: such a trace must not be used to conclude that an
-absent line proves an absent native event. The background owner drains the queue
-and performs a final drain at shutdown. Open/write errors are surfaced through
-the existing application error path.
+Der native Callback führte keine Datei-I/O aus und wartete nicht auf die
+Diagnosesperre. Die vorab angelegte Warteschlange fasste 128 Einträge;
+die Gesamtausgabe war auf 2048 begrenzt. Bei verlorenen Ereignissen oder
+Sättigung erschien zusätzlich `diagnostic / incomplete`. In einem solchen
+Trace beweist eine fehlende Zeile kein fehlendes natives Ereignis. Der
+Hintergrundbesitzer leerte die Warteschlange auch abschließend beim Shutdown.
+Öffnungs-/Schreibfehler erschienen im bestehenden App-Fehlerpfad.
 
-## Verification scope
+## Prüfumfang
 
-A standalone Rust test checks opt-in, bounded output, saturation reporting and
-fresh log creation on reinstall. Source guardrails and a complete diagnostic
-app build are required before installation. No ASR corpus, timing campaign or
-model comparison needs repeating because of these diagnostic-only changes.
-A new trace and a known physical keypress are still needed to identify the
-reported global failure.
+Ein eigenständiger Rust-Test prüfte ausdrückliche Aktivierung, begrenzte Ausgabe,
+Sättigungsmeldung und neue Logdatei bei erneuter Installation. Quellenregeln
+und vollständiger Diagnosebuild waren vor der Installation erforderlich.
+ASR-Korpus, Zeitkampagne und Modellvergleich wurden nicht wiederholt.
+Zur Diagnose der globalen Zustellung waren frischer Trace und bekannter
+physischer Tastendruck nötig.
 
-## Installed candidate and initial observation
+## Installierter Kandidat und erste Beobachtung
 
-Diagnostic source commit: `e4ea631beb737adc82148ce051e5c7df99d40181`.
-Installed executable SHA-256:
+Diagnosequelle: `e4ea631beb737adc82148ce051e5c7df99d40181`.
+Executable-SHA-256:
 `f8e27c8f7b825c4aed2e90d5e94cbbd817cc58e9bd48df6c9291ec7693d2c1d7`.
-The prior installed bundle is retained at
-`artifacts/hotkey-diagnosis-2026-10-21/before-diagnostics.app`.
-The signed bundle passed strict signature verification. The diagnostic unit test,
-`check:fast`, and release-target library Clippy with `-D warnings` passed.
-Independent review found no remaining blocking issue after its corrections.
+Die vorherige App blieb unter
+`artifacts/hotkey-diagnosis-2026-10-21/before-diagnostics.app` erhalten.
+Strikte Signaturprüfung, Diagnosetest, `check:fast` und Release-Clippy mit
+`-D warnings` bestanden. Nach Korrekturen fand der unabhängige Review keinen
+verbleibenden blockierenden Befund.
 
-The initial installed trace records successful toggle registration, followed by
-Escape registration and arming during a UI-started recording, then removal after
-an in-app Escape cancellation. The synthetic Option+D and Escape actions did
-not generate `native_pressed` records, and the trace has no `incomplete` marker.
-This confirms that this automation route does not exercise the global shortcut
-callback. It does **not** prove how a physical keypress behaves. The test recording
-was cancelled; the installed app was left idle with diagnostics enabled.
+Der erste Trace zeigte erfolgreiche Toggle-Registrierung, dann Registrierung
+und Scharfschaltung von Escape während einer per UI gestarteten Aufnahme,
+anschließend Entfernung nach lokalem Escape-Abbruch. Synthetisches Option+D
+und Escape erzeugten kein `native_pressed`; eine `incomplete`-Markierung fehlte.
+Damit übte dieser Automationsweg den globalen Callback nicht aus. Physische
+Tasten waren dadurch nicht geprüft. Die Aufnahme wurde verworfen; die App
+blieb idle mit aktivierter Diagnose.
 
-Detailed local receipts and the initial trace are retained under
-`artifacts/hotkey-diagnosis-2026-10-21/`. The earlier delivery ZIP remains the
-previous release candidate and has not been relabeled as a hotkey-fixed release.
+Lokale Belege liegen unter `artifacts/hotkey-diagnosis-2026-10-21/`.
+Das vorherige ZIP wurde nicht als korrigierter Hotkey-Release umbenannt.
 
-## Physical result and removal
+## Physisches Ergebnis und Abbau
 
-The user subsequently confirmed that Option+D still starts/stops. The physical
-trace contains both complete toggle callbacks and a complete Escape press,
-acceptance and callback, followed by release and unregistration. There is no
-`incomplete` marker. The live UI read-back showed **Diktat abgebrochen**. The user
-reported that Escape did not insert into Notes. That is the specified cancellation
-behavior, not evidence of a failure: the second Option+D ends a recording for
-transcription/insertion; Escape discards the current recording.
+Anschließend wurde bestätigt, dass Option+D weiterhin startet/stoppt. Der
+physische Trace enthielt vollständige Toggle-Callbacks sowie Escape-Druck,
+Annahme, Callback, Freigabe und Deregistrierung ohne `incomplete`.
+Die sichtbare UI zeigte **Diktat abgebrochen**. Laut Rückmeldung fügte Escape
+nichts in Notes ein. Das entspricht dem Abbruchvertrag: Zweites Option+D
+beendet zur Erkennung/Übergabe, Escape verwirft.
 
-The initial report was misinterpreted as Escape failing to cancel. This observed
-sequence establishes that global delivery and cancellation worked. It does not
-establish every possible shortcut scenario or independently inspect Notes.
-The structured result and log hash are in `physical-result.json`; the private raw
-technical trace is retained in the ignored local artifact directory.
+Die erste Meldung war als fehlender Abbruch missverstanden worden. Diese
+Sequenz belegt funktionierende globale Zustellung und Abbruch für den
+beobachteten Fall, nicht alle Szenarien oder eine unabhängige Notes-Prüfung.
+`physical-result.json` enthält Ergebnis und Loghash; der technische Rohtrace
+bleibt im ignorierten lokalen Artefaktverzeichnis.
 
-The opt-in marker and temporary instrumentation have now been removed. The
-runtime code is restored to its pre-diagnosis version. The diagnostic commits and
-this result remain in history rather than being squashed or rewritten.
+Markierungsdatei und Instrumentierung wurden entfernt. Der Laufzeitcode wurde
+auf den Zustand vor der Diagnose zurückgesetzt. Diagnosecommits und Ergebnis
+bleiben in der Historie erhalten.

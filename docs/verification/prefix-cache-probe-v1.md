@@ -1,83 +1,85 @@
-# Prepared-prefix cache developer diagnostic
+# Entwicklerdiagnose für den vorbereiteten Präfix-Cache
 
-Prospective measurement-only probe. Production Engine loading and application
-starts do not select this decoder. No cache, quality, latency or resource
-qualification follows from building this program.
+Historische prospektive Messprobe. Normale Engine- und App-Starts wählen diesen
+Decoder nicht. Ihr Build belegt weder Cachefunktion noch Qualität, Latenz oder
+Ressourcenverhalten.
 
-## Invocation and input contract
+## Aufruf und Eingabevertrag
 
-`prefix_cache_probe MODEL MANIFEST NEW_OUTPUT` selects the pinned reference
-model, with the pinned VAD sibling. The manifest uses the existing bounded
-corpus schema and contains exactly two or four cases in consecutive
-prefix/whole pairs. Each pair has one language, nonempty PCM16 mono16k input,
-and a prefix no longer than the whole file. Every prefix f32 sample must match
-the corresponding whole sample bit for bit after the common WAV reader; no
-normalization, splice, resampling, transcription or inferred partial reference
-is introduced. Extra manifest reference fields are not used as a semantic
-oracle; the prefix relation is an independently checked audio property.
+`prefix_cache_probe MODEL MANIFEST NEW_OUTPUT` wählt das gepinnte Referenzmodell
+und dessen VAD-Nachbardatei. Das begrenzte Korpusschema enthält genau zwei oder
+vier Fälle als aufeinanderfolgende Präfix-/Gesamtpaare. Jedes Paar hat eine
+Sprache, nicht leere PCM16-Mono-16-kHz-Daten und ein Präfix, das nicht länger
+als die Gesamtdatei ist. Nach dem gemeinsamen WAV-Leser muss jedes f32-Sample
+des Präfixes bitgleich dem Gesamtsample sein. Keine Normalisierung, Verbindung,
+Neuabtastung, Transkription oder abgeleitete Teilreferenz kommt hinzu.
+Zusätzliche Referenzfelder im Manifest dienen nicht als inhaltliche Wahrheit;
+die Präfixbeziehung ist eine unabhängig geprüfte Audioeigenschaft.
 
-Each pair owns a fresh PrefixCacheDecoder and serial InferenceService. It
-submits prefix then whole with the same session/generation/WorkToken, then the
-identical whole with a fresh session and fresh token. Job IDs increase globally.
-The middle job may hit or miss: the probe does not force an expected cache hit.
-A fresh-session whole job must report a true native decode, not a reused result.
+Jedes Paar besitzt einen frischen PrefixCacheDecoder und seriellen
+InferenceService. Präfix und Gesamtaudio teilen Sitzung, Generation und
+WorkToken; danach wird dasselbe Gesamtaudio mit neuer Sitzung und neuem Token
+übergeben. Auftrags-IDs steigen global. Der mittlere Auftrag darf den Cache
+treffen oder verfehlen. Der Auftrag mit neuer Sitzung muss echtes natives
+Decodieren melden, keine wiederverwendete Ausgabe.
 
-The model is loaded explicitly on the developer process's main thread, then
-moved into InferenceService's actual worker. This differs from the asynchronous
-production initializer and cannot establish cold-start latency equivalence.
-No pacing, microphone, native text delivery or realtime-L claim is made.
+Das Modell wird auf dem Hauptthread des Diagnoseprozesses geladen und danach
+in den tatsächlichen InferenceService-Worker verschoben. Das unterscheidet
+sich von der asynchronen Produktinitialisierung und belegt keine gleiche
+Kaltstartlatenz. Getaktete Eingabe, Mikrofon, native Übergabe und Echtzeit-L
+werden nicht geprüft.
 
-## Evidence contract
+## Nachweisvertrag
 
-One private atomically published no-replace JSON contains all planned three/six
-rows, errors/unavailable rows included. It exports only text SHA256/UTF8 byte
-length, never raw text or PCM. Actual current-job/session/generation and
-original cached-job identity come from worker receipts, not assumed hits.
-Worker evidence includes the real serial-worker thread tag and raw input PCM
-fingerprint; prepared frame/hash evidence comes from the actual decoder.
-Cleanup join is observed before successful final publication. Source hashes,
-model/VAD/binary/manifest/input bindings and declared fixed parameters are
-recorded, including the actual `ObservationSink` implementation in
-`transcription/observation.rs` and deployment-target build configuration `.cargo/config.toml`; a separate prospective run freeze and independent review are required
-before Root may run actual fixtures. No measurement is authorized here.
+Eine private, atomar und ohne Überschreiben veröffentlichte JSON-Datei enthält
+alle drei/sechs vorgesehenen Zeilen, auch Fehler oder nicht verfügbare Werte.
+Exportiert werden Text-SHA256 und UTF-8-Länge, nie Rohtext oder PCM. Aktuelle
+Auftrags-/Sitzungs-/Generationskennung und ursprünglicher Cacheauftrag stammen
+aus Workerbestätigungen. Der Worker liefert Threadkennung und PCM-Fingerabdruck;
+vorbereitete Frames/Hashes stammen aus dem Decoder. Ein erfolgreicher Abschluss
+verlangt beobachteten Cleanup-Join.
 
-## Model-free verification
+Gebunden werden Quellen, Modell/VAD, Binary, Manifest, Eingaben und feste
+Parameter einschließlich `ObservationSink` in `transcription/observation.rs`
+und Deploymentkonfiguration `.cargo/config.toml`. Vor einem nativen Lauf sind
+ein eigener eingefrorener Messstand und unabhängiger Review erforderlich.
+Dieser Bericht bestätigt keine tatsächliche Messung.
 
-Actual TDD commands used the measurement-only Example target:
+## Modellfreie Prüfung
+
+TDD-Befehl für das reine Messbeispiel:
 
 `cargo test -p everlast-dictation --example prefix_cache_probe --features measurement --locked`
 
-- CLI stub: exit101, one test failed with "not implemented"; then one passed.
-- Receipt/prefix relation stubs: exit101, two failed; then four passed.
-- Actual serial-worker seam stub: exit101, failed cleanup/row assertion; then
-  ten passed including inherited input tests.
-- Initial integrated Example:13 passed (0.03s).
-- Independent review found a final-receipt evidence error: skipping a later
-  Completed with no receipt incorrectly returned an older prefix receipt.
-  The controlled missing-receipt test failed at `final_receipt.is_none()`
-  (exit101), then passed after selecting the last actual Completed before
-  taking its optional receipt. No older-receipt fallback remains.
-- Final integrated Example: **14 passed**, zero failed/ignored (0.02s).
+- CLI-Gerüst: Exit 101, ein Test mit „not implemented“; anschließend einer bestanden.
+- Bestätigungs-/Präfixgerüste: Exit 101, zwei fehlgeschlagen; anschließend vier bestanden.
+- Serieller Worker: zunächst fehlgeschlagene Cleanup-/Zeilenprüfung, danach zehn bestanden.
+- Erste Gesamtprüfung: 13 bestanden (0.03s).
+- Unabhängiger Review fand einen falschen abschließenden Beleg: Ein späteres
+  Completed ohne Bestätigung wurde übersprungen und gab einen älteren
+  Präfixbeleg zurück. Der Test `final_receipt.is_none()` scheiterte mit Exit 101.
+  Danach wurde zuerst das letzte tatsächliche Completed und erst dann seine
+  optionale Bestätigung ausgewählt. Kein Rückgriff auf ältere Belege bleibt.
+- Abschließende Gesamtprüfung: **14 bestanden**, keine Fehler/ignorierten Tests (0.02s).
 - `cargo clippy -p everlast-dictation --example prefix_cache_probe --features measurement --locked -- -D warnings`:
-  exit0. Owned Rust sources formatted with rustfmt; no foreign source formatted
-  or edited by this task.
+  Exit 0. Eigene Rustquellen wurden formatiert, Fremdquellen nicht verändert.
 
-Controlled tests use the real InferenceService worker with a synthetic Decoder
-and receipt source to verify current tags, off-caller thread, bit fingerprint,
-three-row retention, failure propagation, no text serialization and actual join.
-They are not native Whisper/cache-hit or GPU-kernel evidence. Hash/format/path
-bounds and private no-overwrite output are independently exercised. A report is
-limited to1MiB; the diagnostic may preload at most four bounded input vectors
-(76,800,000 PCM payload bytes), which is not a production buffer-budget claim.
+Kontrollierte Tests verwenden den echten Worker mit synthetischem Decoder und
+Belegquelle. Sie prüfen aktuelle Kennungen, fremden Workerthread, Bitfingerabdruck,
+drei erhaltene Zeilen, Fehlerweitergabe, keine Textserialisierung und echten
+Join. Sie belegen keine nativen Whisper-/Cachetreffer oder GPU-Kernel.
+Hash-, Format-, Pfadgrenzen und Ausgabe ohne Überschreiben sind separat geprüft.
+Berichte sind auf 1 MiB, vorab geladene Eingaben auf vier begrenzte Vektoren
+mit insgesamt 76.800.000 PCM-Nutzbytes begrenzt; das ist kein Produktpufferbudget.
 
-A120s result/readiness budget and a separate120s cleanup observation budget
-never claim a forced native interrupt. Unverified cleanup is a failure and
-prevents later model loads. The exported final receipt is the last actual
-Completed receipt retained through owner join, not a new cache inspection after
-shutdown. Decoder elapsed time includes the diagnostic worker wrapper and is
-not pure native/cache cost or Runtime stop-to-text latency.
+120 Sekunden Ergebnis-/Bereitschaftsbudget und separate 120 Sekunden für
+Cleanup sind keine harte native Unterbrechung. Unbestätigtes Cleanup verhindert
+weitere Modellladungen. Der abschließende Beleg ist das letzte tatsächliche
+Completed vor Besitzer-Join, keine neue Cacheabfrage nach Shutdown.
+Die Decoderzeit enthält den Diagnosewrapper, also weder reine Cachekosten
+noch die Runtime-Zeit vom Stoppen bis zum Text.
 
-No model job, application, permission, scheduling-policy action, bundle/release
-build or actual diagnostic run has been performed by this task. Root must bind
-the then-current source revision, binary, fixed parameters, pinned model/VAD,
-manifest and inputs in a separate prospective freeze before any native run.
+In diesem Versuch wurden kein Modellauftrag, Appstart, Rechtewechsel,
+Schedulingwechsel, Bundle-/Releasebuild oder tatsächlicher Diagnoselauf
+vorgenommen. Ein nativer Lauf benötigt neue Bindungen der dann aktuellen
+Quelle, Binary, Parameter, Modelle, des Manifests und der Eingaben.

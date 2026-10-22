@@ -1,12 +1,13 @@
-# Public, untrusted TLS fixture
+# Öffentliche, nicht vertrauenswürdige TLS-Prüfdaten
 
-The certificate and PKCS#8 key were generated locally for loopback-only download
-regression tests. The key is deliberately public test data, not a credential.
-Nothing trusts this certificate outside the explicit positive-control test
-client. It is never installed in a system trust store or shipped in the app.
+Zertifikat und PKCS#8-Schlüssel wurden lokal für Download-Regressionstests über
+die Loopback-Schnittstelle erzeugt. Der Schlüssel ist absichtlich öffentliches
+Testmaterial, kein Zugangsschlüssel. Nur der Testclient für die positive
+Kontrolle vertraut diesem Zertifikat. Es wird weder im System als
+vertrauenswürdig installiert noch mit der App ausgeliefert.
 
-The certificate has DNS localhost and IP 127.0.0.1 SANs and serverAuth usage.
-Tests first show that the ordinary product client rejects it before publishing
-any bytes, then explicitly trust this exact certificate in a test-only client to
-show that the same server and model body otherwise succeed. This guards against
-silently disabling certificate verification.
+Das Zertifikat enthält die SAN-Einträge DNS localhost und IP 127.0.0.1 sowie die
+Verwendung serverAuth. Die Tests zeigen zunächst, dass der normale Produktclient
+es vor der Veröffentlichung von Bytes ablehnt. Anschließend vertraut ein reiner
+Testclient genau diesem Zertifikat und bestätigt den erfolgreichen Download vom
+selben Server. Das schützt davor, die Zertifikatsprüfung unbemerkt abzuschalten.

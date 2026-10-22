@@ -586,7 +586,9 @@ test("permission denial replaces the request with recovery guidance and follows 
     screen.getByRole("button", { name: "Freigabe anfragen" }),
   ).toBeDefined();
   expect(
-    screen.getByText(/System Settings → Privacy & Security → Microphone/),
+    screen.getByText(
+      /Systemeinstellungen → Datenschutz & Sicherheit → Mikrofon/,
+    ),
   ).toBeDefined();
   expect(screen.getByText(/Kehre nach der Änderung/)).toBeDefined();
   expect(ipc.command).toHaveBeenCalledTimes(1);
@@ -595,7 +597,9 @@ test("permission denial replaces the request with recovery guidance and follows 
     revision: 3,
     permissions: { microphone: "granted", accessibility: "granted" },
   });
-  expect(screen.queryByText(/System Settings → Privacy & Security/)).toBeNull();
+  expect(
+    screen.queryByText(/Systemeinstellungen → Datenschutz & Sicherheit/),
+  ).toBeNull();
   expect(ipc.command).toHaveBeenCalledTimes(1);
 });
 

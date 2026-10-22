@@ -1,10 +1,13 @@
-# Product
+# Produkt
 
 <!-- impeccable:product-schema 1 -->
 
 ## Platform
 
-Native macOS desktop app (Tauri 2, React/TypeScript UI)
+web
+
+Dieses Schema bezeichnet mit `web` die React-/TypeScript-Oberfläche. Das Produkt
+ist eine native macOS-App; Aufnahme und Inferenz laufen nicht im Browser.
 
 ## Users
 

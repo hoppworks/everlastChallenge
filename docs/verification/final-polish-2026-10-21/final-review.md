@@ -1,62 +1,123 @@
-# Independent final source and evidence review — 21 October 2026
+# Unabhängiger Quellen- und Nachweisreview · 21.10.2026
 
-Reviewer: independent Codex subagent in the same local execution environment. No product code, tests, build configuration, or runtime state changed by this review. This report is the only written artifact.
+Prüfung durch einen unabhängigen Codex-Subagenten in derselben lokalen Umgebung.
+Produktcode, Tests, Buildkonfiguration und Laufzeitzustand wurden dabei nicht
+geändert; dieser Bericht war das einzige geschriebene Artefakt.
 
-## Scope and conclusion
+## Umfang und Ergebnis
 
-Reviewed the coherent completion package over integration base `e7cabfb`, including native fix `4ac9c55`, experimental controller/decoder isolation `ac78ecc`, display-name change `d1602b5`, and the pending guardrail/coverage/documentation changes at HEAD `6599669342ad7892f6a0d3ebb1516bf52760a235`. The hash inventory below binds the material implementation files read at this review. Original external review target `2d5d0a1` is older Main, not this integrated source.
+Geprüft wurde das zusammenhängende Änderungspaket auf Basis `e7cabfb` mit
+nativer Korrektur `4ac9c55`, experimenteller Controller-/Decodertrennung
+`ac78ecc`, Anzeigenamen `d1602b5` und den damaligen Guardrail-/Abdeckungs-/
+Dokumentationsänderungen bei `6599669342ad7892f6a0d3ebb1516bf52760a235`.
+Die Hashliste bindet die gelesenen wesentlichen Implementierungsdateien.
+Das ursprüngliche externe Reviewziel `2d5d0a1` ist ein älterer Main-Stand.
 
-**No remaining blocking source finding in the reviewed package.** This is a source/evidence review, not a claim that the pending final integrated check, fresh release, Main merge, installation, or physical application acceptance has completed.
+**Kein verbleibender blockierender Quellenbefund im geprüften Paket.**
+Diese Quellen-/Nachweisprüfung bestätigt weder den damals ausstehenden
+Gesamttest noch einen frischen Release, Merge, eine Installation oder physische
+Produktabnahme.
 
-## Standards axis
+## Projektregeln
 
-- Rust ownership remains explicit: native clipboard state stays on the application main thread; waiting happens on the native worker. No new application unsafe block or detached cleanup worker is introduced.
-- FullPrefix controller/decoder paths are excluded from ordinary builds. The retained audio helper and historical measurement programs mean this is not a claim that every experimental helper was removed.
-- Typed ESLint rules reject floating/misused promises and explicit any. Existing strict TypeScript, Oxlint and generated-contract checks remain present. The source guard now inspects application scripts as well as Rust/TypeScript source, with rule fixtures excluded intentionally.
-- The architecture graph rejects reverse frontend dependencies and cycles. Core dependency restrictions include build dependencies. The production feature traversal follows local aliases, cycles, incoming workspace dependency feature requests and cross-crate feature edges; the earlier direct-feature and alias bypass findings were corrected.
-- Native source changes are checked against the pinned upstream inventory; the same input list is consumed by the guard and the build-script synchronization step. No further mismatch between current four changed native inputs and build ownership was found.
-- CI separates portable checks from the explicitly configured native runner. Actions are pinned to real verified commits, credentials are not persisted, permissions are read-only, and secret scanning is included. Comprehensive local verification and optional native CI now include host coverage. Neither this YAML nor local evidence proves a remote CI run or GitHub branch protection.
+- Rust-Besitz bleibt ausdrücklich geregelt: Clipboardzustand auf dem
+  App-Hauptthread, Warten auf dem nativen Worker. Keine neuen unsafe-Blöcke
+  oder losgelösten Aufräum-Worker im Anwendungscode.
+- FullPrefix-Controller/-Decoder sind aus normalen Builds ausgeschlossen.
+  Verbliebene Audiohelfer und historische Messprogramme wurden nicht entfernt.
+- Typinformierte ESLint-Regeln lehnen verlorene/falsch verwendete Promises
+  und explizites `any` ab. Striktes TypeScript, Oxlint und Vertragsgenerierung
+  bleiben erhalten. Die Quellenprüfung erfasst auch Anwendungsskripte;
+  negative Regelfixtures sind bewusst ausgeschlossen.
+- Der Architekturgraph verbietet Rückabhängigkeiten zum Frontend und Zyklen.
+  Kernregeln erfassen Buildabhängigkeiten. Die Produkt-Featureprüfung folgt
+  lokalen Aliasen, Zyklen, Workspace-Anforderungen und Crate-Übergängen;
+  vorherige Umgehungen durch direkte Features/Aliase wurden korrigiert.
+- Native Quellen werden gegen das gepinnte Upstream-Inventar geprüft. Dieselbe
+  Eingangsliste steuert Quellenprüfung und Buildkopie. Bei den vier geänderten
+  nativen Eingaben wurde kein weiterer Unterschied gefunden.
+- CI trennt portable Prüfungen vom ausdrücklich konfigurierten Mac-Runner.
+  Actions sind an geprüfte Commits gebunden, Zugangsdaten werden nicht
+  gespeichert, Rechte bleiben lesend und Secret-Scans sind enthalten.
+  Lokale Gesamtprüfung und optionale native CI erfassen Host-Abdeckung.
+  YAML und lokale Belege beweisen weder einen Remote-Lauf noch Branchschutz.
 
-## Spec and correctness axis
+## Anforderungen und Korrektheit
 
-The reviewed package keeps Rust/Tauri 2 with an actual TypeScript/React surface and native microphone/hotkey/paste behavior. Display name becomes Everlast Coding Challenge; the bundle identifier remains `de.hoppworks.everlast-dictation`.
+Rust/Tauri 2, sichtbare React-/TypeScript-Oberfläche und native Aufnahme,
+Tastenkürzel und Übergabe bleiben erhalten. Der Anzeigename lautet
+Everlast Coding Challenge; die Bundle-ID bleibt
+`de.hoppworks.everlast-dictation`.
 
-The native timeout defect is corrected at the relevant ownership seam. `SentPaste` timestamps the 500 ms interval after the actual event posts. Early cleanup returns a deferred deadline without taking the native entry. `NativeBackend::cleanup` waits off-main and retries, preserving shutdown ownership. Abandoned successful sends and deferred cleanups do not execute premature direct cleanup. Normal replies still get delivered: an initial implementation accidentally skipped them, was reported during review, and is corrected with an explicit successful/deferred-reply regression.
+Der Timeoutfehler wird an der Besitzgrenze korrigiert: `SentPaste` startet die
+500-ms-Frist nach dem tatsächlichen Ereignisversand. Frühes Aufräumen gibt eine
+aufgeschobene Frist zurück und übernimmt den nativen Eintrag nicht.
+`NativeBackend::cleanup` wartet außerhalb des Hauptthreads und versucht es
+später erneut; der Shutdownbesitz bleibt erhalten. Verlassene erfolgreiche
+Versandaufträge räumen nicht vorzeitig auf. Normale Antworten werden weiter
+zugestellt: Eine erste fehlerhafte Auslassung wurde im Review erkannt und durch
+einen gezielten Test normaler/aufgeschobener Antworten korrigiert.
 
-The retained tests exercise the actual completion/abandonment logic with controlled ordering across the timeout, plus the actual cleanup gate before and at its deadline. They do not claim an actual keyboard/clipboard OS run. A stalled GUI beyond the request timeout can still yield an explicit failure; the change does not promise successful external receipt or hard cancellation of native inference.
+Tests ordnen tatsächlichen Abschluss/Abbruch und Aufräumen kontrolliert um den
+Timeout und seine exakte Frist. Sie belegen keinen realen Tastatur-/Clipboard-
+OS-Lauf. Eine über das Zeitlimit blockierte GUI kann weiterhin sichtbar
+fehlschlagen. Externer Empfang und harte Inferenzunterbrechung werden nicht versprochen.
 
-## Evidence read back
+## Gelesene Nachweise
 
-- `paste-green.log`: 12 native-service tests passed, including timeout-after-commit and normal/deferred acknowledgment.
-- `read-window-tests.log`: both native main-delivery tests passed; the gate fixture verifies early cleanup does not consume its lease and cleanup is permitted at the exact deadline.
-- `frontend-coverage.log`: 98.18% statements, 95.58% branches, 98.91% functions, 98.97% lines. This is frontend coverage only.
-- `coverage/host/cargo-output.jsonl`: 345 tests passed, 3 ignored, no failure; runtime 35.97 seconds. `host-coverage-final.log` agrees with the selected summary below and all configured floors pass.
+- `paste-green.log`: zwölf native Diensttests bestanden, einschließlich
+  Timeout nach Versand und normaler/aufgeschobener Bestätigung.
+- `read-window-tests.log`: beide nativen Hauptübergabetests bestanden.
+  Frühes Aufräumen verbraucht den Besitz nicht; an der Frist ist es zulässig.
+- `frontend-coverage.log`: 98.18 % Anweisungen, 95.58 % Zweige, 98.91 % Funktionen,
+  98.97 % Zeilen; ausschließlich Frontendabdeckung.
+- `coverage/host/cargo-output.jsonl`: 345 Tests bestanden, drei ignoriert,
+  kein Fehler, 35.97 Sekunden. `host-coverage-final.log` bestätigt die folgenden
+  Werte und eingehaltenen Untergrenzen.
 
-| Host file | Observed line coverage | Covered/total lines |
+| Hostdatei | Zeilenabdeckung | Erfasst/gesamt |
 |---|---:|---:|
-| `native_service.rs` | 70.1308% | 965/1376 |
-| `controller.rs` | 95.2199% | 498/523 |
-| `runtime.rs` | 89.2086% | 1984/2224 |
-| `setup.rs` | 78.4491% | 870/1109 |
-| `desktop.rs` | 59.9905% | 1264/2107 |
+| `native_service.rs` | 70.1308 % | 965/1376 |
+| `controller.rs` | 95.2199 % | 498/523 |
+| `runtime.rs` | 89.2086 % | 1984/2224 |
+| `setup.rs` | 78.4491 % | 870/1109 |
+| `desktop.rs` | 59.9905 % | 1264/2107 |
 
-These initial per-file regression floors are 70/95/89/78/59 percent. Instrumentation includes inline test code and uses measurement/test-control features. It is not production-only branch coverage, coverage of all dependencies, or a safety proof. Removing forced link-dead-code fixed an unused Swift-FFI linker problem in instrumented Tauri build helpers; the preserved first failure is not represented as a passing run.
+Die damaligen dateibezogenen Untergrenzen waren 70/95/89/78/59 Prozent.
+Instrumentierung enthält Inline-Tests und verwendet measurement/test-control.
+Das ist weder reine Produktcode-Zweigabdeckung noch ein Sicherheitsbeweis oder
+Abdeckung sämtlicher Abhängigkeiten. Das Entfernen von erzwungenem
+link-dead-code korrigierte einen Linkerfehler ungenutzter Swift-FFI in
+instrumentierten Tauri-Buildhelfern; der vorherige Fehlschlag bleibt erhalten.
+Portable und Werkzeugnachweise wurden begrenzt übernommen. Der Gesamtlauf war
+zum Reviewzeitpunkt noch nicht beendet. Builds, Produkt-, Mikrofon- und
+Tastenkürzeltests wurden durch diesen Review nicht erneut ausgeführt.
 
-Portable/tooling receipts were read as scoped prior evidence. The integrated check was not complete at the time of this review. This review did not rerun builds, product tests, microphone tests, or hotkeys.
+## Ergänzender reiner MLX-Versuch
 
-## Pure-MLX follow-up evidence
+Unabhängig geprüft wurden eingefrorener Probehash, beide Korpushashes, alle
+sechs WAV-Hashes, Ergebnisse, Zeit-/Speichernachweise und die exakte
+Neuberechnung beider Qualitätsdateien mit dem gepinnten Auswerter.
+Vier deutsche Ausgaben sind identisch; bei der fünften sinken die Wortfehler
+von elf auf zehn bei 119 Referenzwörtern. Englisch steigt von null auf zwei
+Fehler bei 34 Wörtern; „decertification“ wird zu „the certification“.
 
-Independently verified the frozen probe SHA, both metadata corpus hashes, all six retained WAV hashes, all result texts, time/RSS receipts, and exact recomputation of both quality JSONs from the pinned evaluator. Four German outputs are identical; the fifth changes German edits from 11 to 10 over 119 reference words. English changes from 0 to 2 errors over 34 reference words, including decertification becoming the certification.
+Einmalige Prozesszeiten: Hybrid 4.053284459 s, MLX 2.955995417 s.
+Maximaler RSS: 1,343,356,928 beziehungsweise 1,736,900,608 Byte. Profile und
+Checkpoints unterscheiden sich, Reihenfolge ist fest und OS-Caches können
+abweichen. Reines ASR-MLX hat keinen CPP-ASR-Fallback, teilt aber native Silero-VAD.
+Der Hybrid bleibt Produktpfad; universelle Geschwindigkeits-, Speicher-,
+Qualitäts- oder neue finale Buildlatenz-Aussagen folgen daraus nicht.
 
-Total single-run process times are 4.053284459 s (hybrid) and 2.955995417 s (MLX); maximum RSS is 1,343,356,928 and 1,736,900,608 bytes. Profiles and checkpoints differ; order is fixed; OS caches may differ. The pure-ASR profile has no CPP ASR fallback but still shares native Silero VAD. The report correctly retains the hybrid as product and makes no universal speed, memory, semantic-quality, or new final-build latency guarantee.
+## Grenzen
 
-## Scope limits
+Diese Quellenprüfung belegt keine späteren Gesamttests oder Paketprüfungen.
+GUI- und physische Tastennachweise gelten nur für ihre jeweils benannten
+Binärdateien.
 
-This source review does not establish the result of later integrated checks or package verification. GUI and physical-key observations apply only to the binaries identified in their respective reports.
+## Hashes der geprüften Dateien
 
-## Reviewed file hashes
-
-| File | SHA-256 |
+| Datei | SHA-256 |
 |---|---|
 | `crates/macos-integration/src/main_delivery.rs` | `4dc8b402d10f284a5546f5e0a38755b560cf90a4a7594b9fcf6d685d68a34b5d` |
 | `crates/macos-integration/src/paste.rs` | `4ca640e59abd6c3c31a40d7ceb5e96fb2375cea96dd87608c5436f8a53d1c714` |

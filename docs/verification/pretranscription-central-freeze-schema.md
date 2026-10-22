@@ -1,129 +1,144 @@
-# Prospective P06 central paired launcher — off-host preparation
+# Prospektiver zentraler P06-Paarstarter · externe Vorbereitung
 
-Developer tooling only. The current candidate failed the quality gate and must
-not receive a positive quality decision or be launched for qualification.
+Historisches Entwicklerwerkzeug. Der damalige Kandidat bestand die
+Qualitätsprüfung nicht und darf daraus keine positive Qualitätsentscheidung
+oder qualifizierende Ausführung ableiten.
 
-## Fixed execution unit
+## Feste Ausführungseinheit
 
-The existing paced_reference_probe runs one warm model/context process, exactly
-one labelled DE5 warmup and six canonical cases with30 measured runs each:
-181 slots per block. No Engine/Runtime/decoder/pacing change is introduced.
+`paced_reference_probe` führt einen warmen Modell-/Kontextprozess, genau einen
+markierten DE5-Aufwärmlauf und sechs kanonische Fälle mit jeweils 30 Messungen
+aus: 181 Plätze pro Block. Engine, Runtime, Decoder und Eingabetakt bleiben gleich.
 
-Two independently scheduled, indivisible pair roles:
-- ref-cand: reference then candidate;
-- cand-ref: candidate then reference.
+Zwei getrennt geplante, unteilbare Paarrollen:
 
-Each pair may have a separate time window. No fragments, resumed slots, retries
-or adopted measurements. A failed first block prevents the second, retaining
-both181-slot projections. Compare each pair separately; never average ABBA L.
-Complete pairs report relative10% improvement and the candidate's six absolute
-median/p95 limits. Full qualification still needs separate quality, resource,
-cancel and maximum-duration evidence. Repeats add no lexical coverage.
+- `ref-cand`: Referenz, danach Kandidat;
+- `cand-ref`: Kandidat, danach Referenz.
 
-## Freeze JSON
+Jedes Paar darf ein eigenes Zeitfenster haben. Teilblöcke, fortgesetzte Plätze,
+Wiederholungen oder übernommene Messungen sind ausgeschlossen. Scheitert der
+erste Block, entfällt der zweite; beide Projektionen mit je 181 Plätzen bleiben
+erhalten. Paare getrennt vergleichen, ABBA-L nicht mitteln. Vollständige Paare
+weisen relative 10-%-Verbesserung und sechs absolute Median-/p95-Grenzen aus.
+Gesamtqualifikation benötigt zusätzlich Qualität, Ressourcen, Abbruch und
+Maximaldauer. Wiederholungen erhöhen nicht die sprachliche Fallabdeckung.
 
-Required: schemaVersion1, kind prospective-pretranscription-central-pairs-v1,
-sourceRevision (full immutable Git commit), and these bindings:
+## Eingefrorene JSON-Konfiguration
 
-- binary: target/release/examples/paced_reference_probe;
-- parameters: object with reference and candidate bindings for the exact
-  printed CENTRAL templates (--print-pretrans-reference-parameters and
-  --print-pretrans-candidate-parameters), not single-case templates;
-- manifest: unchanged central six-case manifest;
-- inputs: exactly six audio bindings matching that manifest;
-- model and vad: known pinned ASR/VAD hashes/bytes, model id, fixed sibling names;
-- sources: unique bindings for every recursive compiled parameter source pin,
-  this script/test/schema and reused scripts/run-paced-remainder.py and
-  scripts/run-pretranscription-screening.py. Additional sources are allowed
-  and checked identically; no generic transitive-closure claim;
-- qualityDecision: binding described below;
-- outputDirectory: root strictly below actual ignored artifacts/.
+Erforderlich sind `schemaVersion` 1, `kind` prospective-pretranscription-central-pairs-v1,
+`sourceRevision` als vollständiger unveränderlicher Git-Commit und diese Bindungen:
 
-Each binding: path, bytes, sha256, mode (actual oct(stat.S_IMODE(...)) string).
-Paths are bounded repository-relative paths without traversal. Reads reject
-final symlinks/nonregular files. Sources must equal both current bytes and the
-immutable revision. Compiled source hashes must agree. Before each launch all
-preflight fingerprints are rechecked; ordinary mutation detection, not hostile
-same-user concurrent-writer defence.
+- `binary`: target/release/examples/paced_reference_probe;
+- `parameters`: Referenz-/Kandidatenobjekt der genauen zentralen Vorlagen aus
+  `--print-pretrans-reference-parameters` und `--print-pretrans-candidate-parameters`,
+  keine Einzelfallvorlagen;
+- `manifest`: unverändertes zentrales Sechs-Fälle-Manifest;
+- `inputs`: genau sechs dazu passende Audiobindungen;
+- `model` und `vad`: bekannte gepinnte Hashes/Größen, Modell-ID und Nachbardateinamen;
+- `sources`: eindeutige Bindungen aller rekursiv kompilierten Parameterquellen,
+  von Skript/Test/Schema sowie scripts/run-paced-remainder.py und
+  scripts/run-pretranscription-screening.py. Zusatzquellen werden gleich geprüft;
+  keine pauschale transitive Vollständigkeit wird behauptet;
+- `qualityDecision`: nachfolgend beschriebene Bindung;
+- `outputDirectory`: strikt unterhalb des tatsächlichen ignorierten artifacts/.
 
-The parameter pair may differ only in configurationId,
-pretranscription.candidate, measurement.variant and preprocessing.mode labels.
-All Runtime/FullParams/models/publisher settings remain equal. Required:
-audio_ctx0, no_timestampsfalse, suppress_nstfalse, flash_attnfalse; TC publisher;
-1warmup/30percase/181total,20ms chunks,10ms jitter,1ms maximum sleep,250us spin.
-The binary itself checks its entire compiled parameter document before model IO.
+Jede Bindung enthält `path`, `bytes`, `sha256` und `mode` als tatsächliche
+`oct(stat.S_IMODE(...))`-Zeichenkette. Pfade sind begrenzt, repositoryrelativ und
+ohne Traversierung. Finale Symlinks und nicht reguläre Dateien werden abgelehnt.
+Quellen müssen gleichzeitig aktuellen Bytes und unveränderlicher Revision
+entsprechen. Kompilierte Quellhashes müssen passen. Vor jedem Start werden
+alle Vorabfingerabdrücke neu geprüft. Das erkennt gewöhnliche Änderungen,
+ist aber kein Schutz gegen einen feindlichen gleichzeitigen Schreiber desselben
+Benutzerkontos.
 
-## Bound external quality prerequisite
+Das Parameterpaar darf sich nur in `configurationId`, `pretranscription.candidate`,
+`measurement.variant` und `preprocessing.mode` unterscheiden. Alle Runtime-/
+FullParams-/Modell-/Herausgebereinstellungen bleiben gleich. Verlangt werden
+`audio_ctx` 0, `no_timestamps` false, `suppress_nst` false, `flash_attn` false,
+TC-Publisher, ein Aufwärmlauf, 30 Messungen pro Fall, insgesamt 181 Plätze,
+20-ms-Blöcke, 10-ms-Jitter, höchstens 1 ms Schlafen und 250 µs aktives Warten.
+Das Binary prüft seine gesamte kompilierte Parameterdatei vor Modell-I/O.
 
-qualityDecision JSON:
-- kind: pretranscription-quality-decision-v1;
-- passed: true;
-- productionActivated: false;
-- screeningFreeze, screeningCompletion, qualityReport: bindings;
-- runtime: exact reference Central runtime object;
-- candidatePretranscription: exact candidate pretranscription object.
+## Gebundene externe Qualitätsvoraussetzung
 
-This record is authored only after independent quality acceptance. The launcher
-verifies its three evidence bindings and requires completedtrue, four blocks of
-100 cases, each caseok with exactly two rows statusok/validatedtrue. It rejects
-passedfalse, incomplete/changed evidence and mismatched parameters. It does not
-recompute WER/semantics. The bound public qualityReport must use schemaVersion1,
-kind pretranscription-quality-screening-decision-v1, decision.numericalScreenPassed
-true and decision.candidateRejectedfalse. Missing, unknown or explicitly rejecting
-reports fail closed even if the external decision says passedtrue. The public
-report must keep productionPretranscriptionEnabledfalse, performanceRunStartedfalse,
-qualifiedfalse and Lnull. Overall semantic/anchor approval remains the external
-decision.passed authority; no invented semantic-report field is introduced.
-Successful inference alone is no quality approval.
-The current failed candidate must stay rejected.
+Die JSON-Datei `qualityDecision` enthält:
 
-## Commands
+- `kind`: pretranscription-quality-decision-v1;
+- `passed`: true;
+- `productionActivated`: false;
+- `screeningFreeze`, `screeningCompletion`, `qualityReport`: Bindungen;
+- `runtime`: exaktes zentrales Referenzobjekt;
+- `candidatePretranscription`: exaktes Kandidatenobjekt.
 
-From repository root:
+Dieser Datensatz entsteht erst nach unabhängiger Qualitätsabnahme. Der Starter
+prüft seine drei Nachweisbindungen und verlangt `completed` true, vier Blöcke
+mit 100 Fällen, alle Fälle `ok` mit genau zwei Zeilen und `status` ok sowie
+`validated` true. `passed` false, unvollständige/geänderte Belege und abweichende
+Parameter werden abgelehnt. WER oder Semantik werden dabei nicht neu berechnet.
+
+Der öffentliche Qualitätsbericht verlangt `schemaVersion` 1, `kind`
+pretranscription-quality-screening-decision-v1, `decision.numericalScreenPassed`
+true und `decision.candidateRejected` false. Fehlende, unbekannte oder ablehnende
+Berichte stoppen den Lauf auch bei einer extern positiven Entscheidung.
+`productionPretranscriptionEnabled`, `performanceRunStarted` und `qualified`
+bleiben false, `L` bleibt null. Semantische/Ankerabnahme bleibt die externe
+`decision.passed`; es wird kein zusätzliches Semantikfeld erfunden. Erfolgreiche
+Inferenz ist keine Qualitätsabnahme. Der gescheiterte Kandidat bleibt abgelehnt.
+
+## Historische Befehle
+
+Ab Repositorywurzel:
+
     python3 scripts/run-pretranscription-central.py FREEZE --pair ref-cand
     python3 scripts/run-pretranscription-central.py FREEZE --pair ref-cand --execute
-In another approved time window:
+
+In einem getrennten passenden Zeitfenster:
+
     python3 scripts/run-pretranscription-central.py FREEZE --pair cand-ref
     python3 scripts/run-pretranscription-central.py FREEZE --pair cand-ref --execute
 
-Default is preflight only. Execute requires an explicit pair. The other pair
-directory may exist; the selected directory/active-pair lock is never replaced
-or resumed. Internally constructed argv (no shell):
+Standardmäßig erfolgt nur die Vorabprüfung. Ausführung verlangt ein benanntes
+Paar. Das andere Paarverzeichnis darf existieren; gewähltes Verzeichnis und
+Sperre werden weder ersetzt noch fortgesetzt. Intern entsteht ohne Shell:
+
     /usr/bin/time -l BINARY MODEL reference MANIFEST VARIANT_PARAMS NEW_RESULT
-No run override, reference text, expect-empty or arbitrary command.
 
-Owned process groups/watchdog/kill/reap/group-ended proof reuse the reviewed
-screening launcher.7200s is liveness only, not an L threshold. A live owned
-idle-sleep assertion and AC snapshot are required before each block, AC checked
-again afterward. No continuous power/lid guarantee; keep lid open, power
-connected, and all other model work stopped. Wrapper PID and actual metadata
-processId are separate evidence.
+Kein Überschreiben des Laufmodus, Referenztext, expect-empty oder beliebiger
+Befehl wird akzeptiert. Prozessgruppen, Überwachung, Beendigung, Einsammeln und
+Beendigungsnachweis verwenden den geprüften Screening-Starter. 7200 Sekunden
+sind nur eine Lebensdauergrenze, keine L-Schwelle. Vor jedem Block sind eigene
+aktive Schlafunterdrückung und Netzstrombeobachtung erforderlich; danach wird
+Netzstrom erneut geprüft. Durchgehender Strom oder offener Deckel werden nicht
+bewiesen. Wrapper-PID und tatsächliche `processId` sind getrennte Belege.
 
-Pair directory0700; raw result/metadata/log and exclusive atomic publications
-0600. Pair completion preserves362 slots, raw bindings, actual process IDs,
-statistics and errors. Hypothesis texts remain only in private raw results.
-A missing/error/SHA-null raw binding invalidates the block, clears its
-validated-row flags/statistics, prevents the next block, and makes pair comparison
-null while preserving raw statuses and all362 slots.
-File publication is not a multi-file transaction. A separate final
-supervisor-completion.json binds pair completion and proves idle assertion
-ended; accepting the process archive requires it too.
+Paarverzeichnis: 0700; Rohdaten, Metadaten, Logs und exklusive atomare Ausgaben:
+0600. Der Abschluss erhält 362 Plätze, Rohbindungen, tatsächliche PIDs,
+Statistiken und Fehler. Hypothesentexte bleiben privat. Fehlende, fehlerhafte
+oder SHA-null-Rohbindungen machen den Block ungültig, löschen seine
+Validierungsflags/Statistiken, verhindern den Folgeblock und setzen den
+Paarvergleich auf null, während Rohzustände und alle 362 Plätze erhalten bleiben.
+Dateiveröffentlichung ist keine Transaktion mehrerer Dateien. Eine separate
+`supervisor-completion.json` bindet den Paarabschluss und belegt das Ende der
+Schlafunterdrückung; ohne sie wird das Prozessarchiv nicht akzeptiert.
 
-Each of181 rows requires canonical slot/order/warmup/session; source, manifest,
-reference, model, parameter, PID bindings; TC snapshots/owned publisher join;
-all publication/stop timings; actual Engine timing; final nonempty text;
-contiguous global timeline/local storage agreement; independently reconstructed
-published-input proofs; worker settlement/adoption; cross-session monotone jobs;
-unchanged postjoin trace; Runtime cleanup join. Independently recompute all180
-latencies: median middle-pair mean, p95 position29/30, unweighted six-median L.
-Compare with reported statistics; no subset statistics.512MiB metadata and16MiB
-separate text bounds.
+Jede der 181 Zeilen benötigt kanonischen Platz/Reihenfolge/Aufwärmstatus/Sitzung,
+Quell-, Manifest-, Referenz-, Modell-, Parameter- und PID-Bindungen, TC-Snapshots,
+Publisher-Join, Veröffentlichungs-/Stoppzeiten, tatsächliche Enginezeit,
+abschließenden nicht leeren Text, zusammenhängende globale Zeitachse und
+passenden lokalen Speicher. Hinzu kommen rekonstruierte veröffentlichte
+Eingaben, Workerabschluss/-übernahme, monotone sitzungsübergreifende Aufträge,
+unveränderter Trace nach Join und Runtime-Join.
 
-## Honest preparation status
+Alle 180 Latenzen werden unabhängig berechnet: Median als Mittel des mittleren
+Paars, p95 an Position 29 von 30, L als ungewichtetes Mittel der sechs Mediane.
+Keine Teilstatistiken. Metadaten sind auf 512 MiB, separater Text auf 16 MiB begrenzt.
 
-Public source baseline74ffe2d, remote Python3.14 synthetic checks only.
-Nine tests cover both181-row modes,12 corruptions, parameter deltas, complete
-quality bindings, separate windows, lock/no-resume and exact argv. Actual REDs
-preceded GREEN. No Mac import/build, actual audio/hypothesis transfer, models,
-real process measurement, OS policy mutation or ASR run. Remote Python is not
-canonical Unicode13 quality evaluation. No qualification/activation claim.
+## Tatsächlicher Vorbereitungsstand
+
+Öffentliche Quellbasis: 74ffe2d. Ausgeführt wurden nur synthetische Remote-Tests
+unter Python 3.14: neun Tests für beide 181-Zeilen-Modi, zwölf Beschädigungen,
+Parameterunterschiede, vollständige Qualitätsbindungen, getrennte Zeitfenster,
+Sperre, fehlende Teilfortsetzung und exaktes argv. RED ging GREEN voraus.
+Kein Mac-Import/-Build, keine tatsächliche Audio-/Hypothesenübertragung, Modelle,
+Prozessmessung, OS-Prioritätsänderung oder ASR. Remote-Python ist nicht die
+kanonische Unicode-13-Qualitätsauswertung. Keine Qualifikation/Aktivierung.

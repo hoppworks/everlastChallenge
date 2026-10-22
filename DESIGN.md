@@ -1,6 +1,6 @@
 ---
 name: Everlast Coding Challenge
-description: Compact native dictation palette with progressive disclosure
+description: Kompakte native Diktierpalette mit schrittweise eingeblendeten Details
 colors:
   text: "light-dark(#252824, #f3f7f1)"
   background: "light-dark(#fbfcfa, #252d29)"
@@ -61,82 +61,89 @@ components:
     height: "44px"
 ---
 
-# Design System: Everlast Coding Challenge
+# Designsystem: Everlast Coding Challenge
 
-## Overview
+## Überblick
 
-The approved direction is a small dictation palette: microphone level, current
-status and main action form a vertically centered primary row. Transcript, recording details and
-advanced settings appear when needed. Preserve the existing macOS system font.
-This records the implementation in `src/features/app/styles.css`, `AppView.tsx`,
-`LevelVisual.tsx` and `src/features/settings/styles.css`; it is not a claim of
-completed native capture, build verification or technical acceptance.
+Die Oberfläche ist eine kompakte Diktierpalette. Mikrofonpegel, Status und
+Hauptaktion stehen in einer vertikal zentrierten Zeile. Transkript,
+Aufnahmedetails und erweiterte Einstellungen erscheinen bei Bedarf. Die
+macOS-Systemschrift bleibt erhalten.
 
-## Colors
+Dieses Dokument beschreibt `src/features/app/styles.css`, `AppView.tsx`,
+`LevelVisual.tsx` und `src/features/settings/styles.css`. Es ersetzt keine
+Prüfung von Aufnahme, Build oder nativer Funktion.
 
-Muted green neutrals support a restrained utility. Accent identifies the main
-action; signal colors the microphone indicator and focus outline. Danger marks
-Stop while recording. Surface, soft and line distinguish controls and sections.
-The canonical values above preserve CSS `light-dark()` pairs and the root
-`color-scheme: light dark`; the OS supplies the active appearance. Higher-contrast
-preferences strengthen muted text, dividers and button borders in source.
+## Farben
 
-## Typography
+Zurückhaltende Grün- und Neutraltöne prägen das Werkzeug. Die Akzentfarbe
+kennzeichnet die Hauptaktion, die Signalfarbe Mikrofonpegel und Fokus.
+Die Gefahrenfarbe markiert das Stoppen während einer Aufnahme. Flächen,
+Linien und dezente Hintergründe trennen Bedienelemente und Abschnitte.
 
-Use system typography throughout. Status titles use the status role; compact
-metadata uses the label role. Body and transcript text remain readable at the
-body size, with the transcript using a line height of 1.65. Timers use tabular
-numerals. Do not introduce display fonts or decorative headings.
+Die Werte im Metadatenblock erhalten die CSS-Paare aus `light-dark()` und
+`color-scheme: light dark`. macOS bestimmt die aktive Darstellung. Bei
+erhöhtem Kontrast werden Sekundärtext, Trennlinien und Buttonränder verstärkt.
+
+## Typografie
+
+Durchgehend Systemschrift verwenden. Statusüberschriften nutzen die Rolle
+`status`, kompakte Angaben die Rolle `label`. Fließtext und Transkript
+verwenden `body`; das Transkript hat einen Zeilenabstand von 1,65.
+Zeitangaben nutzen gleich breite Ziffern. Keine dekorativen Schriften ergänzen.
 
 ## Layout
 
-The app fills its native content area, with internal scrolling and main padding
-(12px 20px 16px). The primary row uses a 16px gap and a fixed 44px level indicator;
-status and actions are vertically centered against the indicator, including
-single-line outcomes such as cancellation. Status titles have no outer margin.
-The OS titlebar provides the app name; the content header contains only the
-settings control, without a duplicate Everlast label.
-At widths up to 460px, the row wraps and actions move below the status; side
-padding becomes 16px. The transcript expands below a divider. Settings use a
-separate scrolling content area, a persistent header/navigation and 24px padding
-(16px at widths up to 400px), with a maximum width of 680px.
+Der Inhalt füllt das native Fenster und scrollt bei Bedarf. Der Innenabstand
+beträgt 12px 20px 16px. Die Hauptzeile hat 16px Abstand und eine feste
+44px-Pegelanzeige. Status und Aktionen sind daran vertikal ausgerichtet,
+auch bei einzeiligen Ergebnissen wie einem Abbruch. Statusüberschriften haben
+keinen Außenabstand. Der Appname steht in der OS-Titelleiste; im Inhaltskopf
+erscheint nur die Einstellungsaktion.
 
-## Elevation & Depth
+Bis 460px Breite bricht die Zeile um und stellt Aktionen unter den Status;
+der seitliche Innenabstand sinkt auf 16px. Das Transkript öffnet sich unter
+einer Trennlinie. Einstellungen haben einen eigenen Scrollbereich, einen
+festen Navigationskopf und 24px Innenabstand, bis 400px Breite 16px.
+Die maximale Breite beträgt 680px.
 
-The app CSS uses flat tonal surfaces and dividers, with no custom shadows.
-Native window framing belongs to the OS shell. Do not copy the browser study's
-mock desktop, traffic lights or drop shadows into content.
+## Flächen und Formen
 
-## Shapes
+Die Oberfläche verwendet flache Farbflächen und Trennlinien ohne eigene
+Schatten. Der native Fensterrahmen gehört zur OS-Darstellung. Dekorative
+Desktopflächen, Fensterampeln oder Schatten aus Browserentwürfen gehören
+nicht in den App-Inhalt.
 
-Controls are gently rounded; the larger radius on the level indicator gives it
-a distinct compact silhouette. Transcript fields use their own radius. Keep
-divider sections flat instead of wrapping every section in a card.
+Bedienelemente sind leicht abgerundet. Die stärkere Rundung der Pegelanzeige
+macht sie als kompaktes Element erkennbar. Transkriptfelder haben eine eigene
+Rundung; Abschnitte werden durch Linien statt durch verschachtelte Karten getrennt.
 
-## Components
+## Komponenten
 
-- **Actions:** one prominent recording action; recording Stop uses danger.
-  Secondary controls use surface and a visible border. Hover darkens the primary
-  action through brightness; disabled actions remain visibly unavailable.
-- **Level:** seven shaped bars derive from a single clamped native RMS value.
-  The bar container is 26px square, with 2px bars and 2px gaps inside the 44px
-  indicator. It is a level display, not a frequency spectrum or random animation.
-  An accessible meter exposes the value; idle state shows the microphone icon.
-- **Transcript:** a disclosure opens a read-only, selectable text area with Copy
-  and Delete. New text opens the section; telemetry does not reopen it.
-- **Settings:** navigation buttons reveal focused settings sections. Selects and
-  modifier inputs use native controls; advanced details remain disclosed on demand.
-  A back arrow at the top left precedes the Einstellungen title and returns to
-  dictation; there is no separate right-hand Close button.
-- **Feedback:** permission notices and errors remain visible when needed.
-  Focus outlines use 3px with a 3px offset; errors use the source's paired warm
-  background and text colors. State labels distinguish sending a paste command
-  from observing text in the target application.
+- **Aktionen:** eine hervorgehobene Aufnahmeaktion; Stoppen verwendet die
+  Gefahrenfarbe. Sekundäre Aktionen haben eine Fläche mit sichtbarem Rand.
+  Hover dunkelt die Hauptaktion ab; deaktivierte Aktionen bleiben erkennbar.
+- **Pegel:** sieben Balken werden aus einem begrenzten nativen RMS-Wert
+  abgeleitet. Der Balkenbereich ist 26px groß, mit 2px breiten Balken und
+  2px Abstand innerhalb der 44px-Anzeige. Er zeigt den Pegel, kein Spektrum
+  und keine Zufallsanimation. Eine zugängliche Pegelanzeige stellt den Wert
+  bereit; im Ruhezustand erscheint das Mikrofonsymbol.
+- **Transkript:** ein aufklappbarer Abschnitt zeigt auswählbaren, nicht
+  editierbaren Text mit Kopieren und Löschen. Neue Ergebnisse öffnen den
+  Abschnitt; reine Telemetrieänderungen öffnen ihn nicht erneut.
+- **Einstellungen:** Navigation zeigt einzelne Bereiche. Auswahllisten und
+  Modifikatortasten verwenden Standard-Bedienelemente. Erweiterte Details
+  bleiben zunächst zugeklappt. Ein Zurück-Pfeil links neben „Einstellungen“
+  führt zum Diktat; rechts gibt es keinen zusätzlichen Schließen-Button.
+- **Rückmeldung:** Berechtigungsbedarf und Fehler bleiben sichtbar.
+  Fokusmarkierungen sind 3px stark und haben 3px Abstand. Fehler nutzen die
+  zusammengehörigen warmen Vorder- und Hintergrundfarben. Statusmeldungen
+  unterscheiden einen versandten Einfügebefehl vom beobachteten Textempfang.
 
-## Do's and Don'ts
+## Gestaltungsregeln
 
-- **Do** keep dictation primary and reveal supporting detail progressively.
-- **Do** preserve light/dark pairs and honor system contrast preferences.
-- **Do** keep errors, permission needs and keyboard focus visible.
-- **Don't** present RMS bars as spectral analysis or animate invented telemetry.
-- **Don't** treat browser fixtures or screenshots as proof of native behavior.
+- Diktieren bleibt die Hauptaufgabe; unterstützende Details erscheinen bei Bedarf.
+- Hell-/Dunkelpaare und die Kontrasteinstellung des Systems beachten.
+- Fehler, Berechtigungsbedarf und Tastaturfokus sichtbar halten.
+- RMS-Balken nicht als Spektrum ausgeben oder erfundene Telemetrie animieren.
+- Browser-Fixtures und Screenshots nicht als Beleg nativer Funktion ausgeben.

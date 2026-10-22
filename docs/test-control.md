@@ -1,46 +1,69 @@
-# Local developer test control
+# Lokale Entwickler-Teststeuerung
 
-This is an explicit developer test interface, not a production command surface or evidence that a physical/global shortcut works. The Cargo feature `test-control` is **off by default** and propagates only to the matching native test boundary. Without that feature there is no endpoint; with it but without `EVERLAST_TEST_CONTROL_DIR`, there is still no endpoint or polling thread.
+Dies ist eine ausdrückliche Entwicklerschnittstelle, keine Produktschnittstelle
+und kein Nachweis physischer/globaler Tastenkürzel. Das Cargo-Feature
+`test-control` ist **standardmäßig deaktiviert**. Ohne Feature gibt es keinen
+Endpunkt; mit Feature, aber ohne `EVERLAST_TEST_CONTROL_DIR`, ebenfalls weder
+Endpunkt noch Abfragethread.
 
-## Enable deliberately
+## Gezielt aktivieren
 
-Use an explicitly selected, separately built/signed developer app with `test-control` enabled; preserve the ordinary build before an authorized installation change. Set `EVERLAST_TEST_CONTROL_DIR` in that app process's startup environment to an **existing canonical absolute directory** owned by the same user, mode `0700`.
+Eine separat gebaute und signierte Entwickler-App mit `test-control` verwenden.
+Die normale App-Kopie vor einem Austausch erhalten. Im gestarteten Prozess
+`EVERLAST_TEST_CONTROL_DIR` auf ein **vorhandenes kanonisches absolutes
+Verzeichnis** desselben Benutzers mit Modus `0700` setzen.
 
-Before launch, create `config.json` as an owned regular file, mode `0600`, at most 256 bytes:
+Vor dem Start darin `config.json` als eigene reguläre Datei mit Modus `0600`
+und höchstens 256 Byte anlegen:
 
 ```json
 {"recipientPid":12345}
 ```
 
-Replace `12345` with the positive PID of the independently launched, disposable native recipient. Unknown config keys are rejected. No executable, text, bundle identifier, microphone device, or arbitrary command can be supplied through this file. The server requires a fresh `control.sock`; it never overwrites an existing socket or file. The socket is mode `0600`. Symlink/noncanonical directories and symlink config files are rejected.
+`12345` durch die positive PID eines separat gestarteten eigenen
+Testempfängers ersetzen. Unbekannte Schlüssel werden abgelehnt. Die Datei
+akzeptiert weder Programm noch Text, Bundle-ID, Mikrofon oder beliebigen Befehl.
+Der Server verlangt einen neuen `control.sock`, überschreibt keine Datei und
+setzt den Socket auf `0600`. Symlinks und nicht kanonische Verzeichnisse sind
+unzulässig.
 
-Start admission additionally requires that the actual frontmost application's PID equals `recipientPid` and its actual bundle identifier is one of:
+Beim Aufnahmestart muss die tatsächliche Vordergrund-PID `recipientPid`
+entsprechen. Zulässig sind nur diese tatsächlichen Bundle-IDs:
 
 - `de.hoppworks.everlast-native-recipient-hotkey-v1`
 - `de.hoppworks.everlast-native-test-recipient`
 - `de.hoppworks.everlast-native-autonomous-recipient`
 
-The check obtains native process identity; the configured PID alone is not target authority. It does not activate any app. Setup must be ready, the runtime idle, existing microphone and Accessibility permissions granted, Secure Input inactive, and the configured device the **system-default microphone**. Permission dialogs, OS settings changes, arbitrary foreign targets, configuration updates, text injection, and generic UI/AX commands are absent from this API. The ordinary capture/target/delivery checks still run.
+Die konfigurierte PID allein ist keine Zielberechtigung; die native
+Prozessidentität wird geprüft. Es wird keine App aktiviert. Einrichtung und
+Runtime müssen bereit beziehungsweise idle sein, Mikrofon und Bedienungshilfen
+bereits freigegeben, Secure Input inaktiv und das Mikrofon auf
+**Systemstandard** gestellt. Die API bietet keine Berechtigungsdialoge,
+Systemänderungen, beliebigen Fremdziele, Konfigurationsänderungen, Texteinspeisung
+oder allgemeinen UI-/AX-Befehle. Die normalen Aufnahme-/Ziel-/Übergabeprüfungen
+bleiben aktiv.
 
-## Manual build and launch on this Mac
+## Historisches Beispiel für Build und Start
 
-This sequence requires a prepared Mac with the
-[development prerequisites](development.md), including `npm run setup`.
-A fresh checkout does not contain a signing certificate, model cache or system
-permissions. The local Code Signing identity and `.everlast-signing.json` must
-already exist; this sequence creates/imports no identity and changes no trust.
-The existing model cache and OS permissions remain necessary.
+Die folgenden Befehle dokumentieren die ursprüngliche Testumgebung vor dem
+aktuellen MLX-Paketierungsweg. Insbesondere der frühere Appname und der direkte
+Tauri-Build sind keine aktuelle vollständige Hybrid-Buildanleitung.
+Der aktuelle normale Build steht unter [Entwicklung](development.md).
+Für einen Teststeuerungs-Build müssen zusätzlich Feature, Metal-Bibliothek,
+Signatur, Modellcache und bereits gewährte Systemrechte zusammenpassen.
 
-Normal `npm run release` and `npm run release:local` leave `test-control` off.
-The following commands explicitly build it in a **new private target directory**.
-Run the blocks in the same terminal from the repository root; stop immediately
-if any command fails. Before launching
-the developer app, quit the currently running Everlast normally through its
-menu or **⌘Q**. Closing its window is insufficient: the process would retain
-the global hotkey. Keep the installed app and historical ZIP untouched; this
-sequence launches its new bundle directly instead of copying it to `/Applications`.
+Das Beispiel verlangt einen vorbereiteten Mac. Ein frischer Checkout enthält
+weder Zertifikat noch Modelle oder Rechte. Die lokale Signieridentität und
+`.everlast-signing.json` müssen vorhanden sein; die Befehle erzeugen keine
+Identität und ändern kein Systemvertrauen. Normale `release`-/`release:local`-
+Befehle aktivieren `test-control` nicht.
 
-Create a private workspace and build the disposable recipient:
+Alle Blöcke liefen aus derselben Shell ab Repositorywurzel. Bei einem Fehler
+abbrechen. Eine laufende Everlast-App zuvor über Menü oder **⌘Q** beenden;
+Fensterschließen allein gibt den globalen Hotkey nicht frei. Installierte App
+und vorhandene ZIPs bleiben erhalten.
+
+Privaten Arbeitsbereich und eigenen Empfänger erzeugen:
 
 ```sh
 umask 077
@@ -70,8 +93,7 @@ codesign --force --sign "$signing_id" --timestamp=none --options runtime "$recip
 codesign --verify --deep --strict "$recipient_app"
 ```
 
-Build and sign the developer app. The explicit feature switch is the difference
-from the normal release commands:
+Historische Entwickler-App mit ausdrücklich aktiviertem Feature bauen/signieren:
 
 ```sh
 CARGO_TARGET_DIR="$dev_root/target" MACOSX_DEPLOYMENT_TARGET=27.0 npm run tauri -- build \
@@ -80,10 +102,10 @@ dev_app="$dev_root/target/aarch64-apple-darwin/release/bundle/macos/Everlast Dic
 node scripts/sign-local-bundle.mjs "$dev_app"
 ```
 
-Start only the newly built recipient, record its actual PID, then start the
-new developer app with the endpoint directory in **its own process environment**.
-The short canonical `/private/tmp` path avoids the macOS Unix-socket path limit;
-it is newly created, private, and contains only this test session's control files:
+Nur den neuen Empfänger starten, seine tatsächliche PID erfassen und danach
+die Entwickler-App mit dem Steuerverzeichnis in **ihrer eigenen Umgebung**
+starten. Der kurze kanonische `/private/tmp`-Pfad vermeidet das macOS-Pfadlimit
+für Unix-Sockets. Er ist neu, privat und enthält nur diese Testkonfiguration:
 
 ```sh
 EVERLAST_RECIPIENT_REPORT_DIR="$dev_root/recipient-report" \
@@ -99,40 +121,41 @@ EVERLAST_TEST_CONTROL_DIR="$control_dir" \
 dev_pid=$!
 ```
 
-Wait for the developer app to finish setup and expose `control.sock`, then:
+Auf abgeschlossene Einrichtung und `control.sock` warten, dann Status lesen:
 
 ```sh
 node scripts/test-control.mjs --control-dir "$control_dir" status
 ```
 
-Setting `EVERLAST_TEST_CONTROL_DIR` only on this **Node client** cannot activate
-an endpoint in an already running app. Finder/`open` launch is deliberately not
-used above: the direct executable receives the specified environment and gives
-an unambiguous process PID. If either process exits, inspect its private log;
-do not reuse its PID or a stale socket. Quit both test apps normally after the
-session; keep the private directory as evidence if needed.
+Die Variable nur beim **Node-Client** zu setzen aktiviert keinen Endpunkt in
+einer laufenden App. Der direkte Programmstart statt Finder/`open` stellt eine
+eindeutige PID und die richtige Prozessumgebung sicher. Bei Prozessende private
+Logs prüfen, weder PID noch Socket wiederverwenden. Nach dem Test beide Apps
+normal beenden; benötigte Nachweise privat erhalten.
 
-For a real start, click the recipient's editable field and confirm its own
-report has `frontmostIsSelf=true`; local `applicationActive`/`windowKey` alone
-are insufficient. Typing a command in Terminal moves the foreground away from
-the recipient. One manual way to allow the click before the command is:
+Vor einem echten Start in das bearbeitbare Empfängerfeld klicken und dessen
+Bericht auf `frontmostIsSelf=true` prüfen. `applicationActive`/`windowKey`
+allein reichen nicht. Ein Terminalbefehl verlagert den Vordergrund. Eine kurze
+Verzögerung lässt Zeit, das Empfängerfeld vor dem Befehl zu fokussieren:
 
 ```sh
 (sleep 5; node scripts/test-control.mjs --control-dir "$control_dir" start \
   > "$dev_root/start.json") &
 ```
 
-During those five seconds click the recipient field. Afterwards query `status`
-and use only its non-null `controlledSessionId` for `stop` or `cancel`, never
-a guessed `sessionId`. Terminal focus must again be returned to the recipient
-before an intended delivery; the same five-second delay can be used for a
-single `stop SID` command. No automatic retry follows a rejected start. This
-manual sequence does not claim a successful recording, foreground assignment,
-or delivery, and does not replace the separate physical-hotkey acceptance.
+Danach nur die tatsächlich gemeldete, nicht leere `controlledSessionId` für
+Stop/Cancel verwenden. Keine `sessionId` erraten. Vor beabsichtigter Übergabe
+muss erneut der Empfänger fokussiert sein; dieselbe Verzögerung kann für einen
+einzelnen `stop SID`-Befehl dienen. Abgelehnte Starts werden nicht automatisch
+wiederholt. Dieses Beispiel belegt für sich weder Aufnahme, Fokus noch
+Textempfang und ersetzt keinen physischen Tastentest.
 
-## Commands and replies
+## Befehle und Antworten
 
-Each connection carries one UTF-8 newline-terminated JSON request (maximum 1,024 bytes including newline), then one newline-terminated JSON reply and EOF. Requests deny unknown keys and duplicate fields. `schemaVersion` must be `1`.
+Jede Verbindung trägt eine UTF-8-JSON-Anfrage mit abschließendem Zeilenumbruch,
+höchstens 1.024 Byte einschließlich Umbruch. Es folgen genau eine ebenso
+abgeschlossene JSON-Antwort und EOF. Unbekannte Schlüssel und doppelte Felder
+werden abgelehnt. `schemaVersion` muss `1` sein.
 
 ```json
 {"schemaVersion":1,"op":"status"}
@@ -141,7 +164,9 @@ Each connection carries one UTF-8 newline-terminated JSON request (maximum 1,024
 {"schemaVersion":1,"op":"cancel","session":7}
 ```
 
-`session` is required and positive only for `stop` and `cancel`; it is forbidden for `status` and `start`. The Node client also requires a JavaScript-safe integer.
+`session` ist ausschließlich für `stop` und `cancel` erforderlich und positiv;
+bei `status` und `start` ist es verboten. Der Node-Client verlangt außerdem
+eine in JavaScript exakt darstellbare ganze Zahl.
 
 ```sh
 node scripts/test-control.mjs --control-dir /absolute/private/directory status
@@ -150,88 +175,120 @@ node scripts/test-control.mjs --control-dir /absolute/private/directory stop 7
 node scripts/test-control.mjs --control-dir /absolute/private/directory cancel 7
 ```
 
-The client can instead read the directory from `EVERLAST_TEST_CONTROL_DIR`; `--timeout-ms` defaults to 3,000 (accepted range 10–30,000). It does not automatically retry. A missing reply/connection timeout leaves the command's outcome unknown: inspect status before deciding on a subsequent action.
+Alternativ liest der Client das Verzeichnis aus `EVERLAST_TEST_CONTROL_DIR`.
+`--timeout-ms` hat den Standard 3.000, zulässig sind 10–30.000. Keine automatische
+Wiederholung. Ohne Antwort oder bei Verbindungs-Timeout ist das Ergebnis
+unbekannt: vor einem weiteren Befehl den Status prüfen.
 
-A successful envelope is `{ "schemaVersion":1, "ok":true, "op":"status", "snapshot":{...}, "error":null }`. Rejection uses `ok:false`, `snapshot:null`, and an error string; malformed requests may use `op:"invalid"`. The CLI sanitizes server error strings and returns a nonzero exit status on rejection or protocol/transport failure.
+Erfolg: `{ "schemaVersion":1, "ok":true, "op":"status", "snapshot":{...}, "error":null }`.
+Ablehnung: `ok:false`, `snapshot:null` und eine Fehlerzeichenkette; fehlerhafte
+Anfragen dürfen `op:"invalid"` liefern. Die CLI bereinigt Serverfehlermeldungen
+und endet bei Ablehnung oder Protokoll-/Transportfehler mit einem Fehlercode.
 
-The snapshot contains exactly these scalar fields:
+Der Snapshot enthält genau diese skalaren Felder:
 
-| Field | Meaning |
-| --- | --- |
-| `setupReady`, `microphoneGranted`, `accessibilityGranted` | Current readiness/permission booleans; not permission requests. |
-| `phase` | `Idle`, `Starting`, `Recording`, `Finalizing`, `Delivering`, or `Cancelling`. |
-| `sessionId` | Current positive runtime SID, or null. |
-| `controlledSessionId` | SID belonging to this endpoint's actual admitted start, and still matching the current session; otherwise null. |
-| `controlledStartPending` | The endpoint's asynchronous start receipt is outstanding. |
-| `outcome` | null, `local`, `empty`, `sent`, `cancelled`, `held`, or `failed`. |
-| `publicSentenceMatches` | Whether whitespace-collapsed transcript equals the fixed public FLEURS sentence below. |
-| `transcriptCharacters` | Character count, not transcript content. |
-| `actionError` | Whether a visible action error exists, not its contents. |
+| Feld | Bedeutung |
+|---|---|
+| `setupReady`, `microphoneGranted`, `accessibilityGranted` | Aktuelle Bereitschaft/Rechte, keine Rechteanforderung |
+| `phase` | `Idle`, `Starting`, `Recording`, `Finalizing`, `Delivering` oder `Cancelling` |
+| `sessionId` | Aktuelle positive Runtime-Sitzungs-ID oder null |
+| `controlledSessionId` | ID des tatsächlich angenommenen Starts dieses Endpunkts, sofern sie noch übereinstimmt; sonst null |
+| `controlledStartPending` | Die asynchrone Startbestätigung steht aus |
+| `outcome` | null, `local`, `empty`, `sent`, `cancelled`, `held` oder `failed` |
+| `publicSentenceMatches` | Der Text entspricht nach Zusammenfassen von Leerraum dem festen öffentlichen Satz |
+| `transcriptCharacters` | Zeichenanzahl, kein Textinhalt |
+| `actionError` | Sichtbarer Aktionsfehler vorhanden, ohne Fehlerinhalt |
 
-Fixed public sentence: “Forschung im Bereich KI umfasst die Herstellung von Maschinen zur Automatisierung von Aufgaben, die intelligentes Verhalten erfordern.” No raw transcript or arbitrary expected text is accepted/exported. A transcript match is not proof of target receipt; inspect the independently controlled recipient's own telemetry for that separate observation.
+Der feste öffentliche Satz lautet: „Forschung im Bereich KI umfasst die
+Herstellung von Maschinen zur Automatisierung von Aufgaben, die intelligentes
+Verhalten erfordern.“ Es wird weder Rohtranskript noch beliebiger Vergleichstext
+angenommen/ausgegeben. Textgleichheit beweist keinen Empfang; dafür ist die
+eigene Telemetrie des unabhängigen Empfängers gesondert zu prüfen.
 
-## Ownership and bounded end
+## Besitz und begrenztes Ende
 
-Start is asynchronous acceptance, never a toggle. Poll status until the **controlled** SID is observed; do not infer ownership merely from a changed current SID. The Runtime actor returns the exact admitted SID before processing the next request. Desktop keeps pending/closed/session in one shared Mutex snapshot, so expiry and receipt cannot miss each other. Shutdown closes admission synchronously; a late successful receipt cancels that same SID.
+Start ist eine asynchrone Annahme, kein Umschalten. Status abfragen, bis die
+**kontrollierte** Sitzungs-ID vorliegt; eine geänderte aktuelle ID allein beweist
+keinen Besitz. Der Runtime-Actor bestätigt die ID vor der nächsten Anfrage.
+Desktop verwaltet pending/closed/session in einem gemeinsamen Mutex-Zustand.
+Ablauf und Bestätigung können sich dadurch nicht verpassen. Shutdown schließt
+die Annahme synchron; eine späte erfolgreiche Bestätigung beendet dieselbe Sitzung.
 
-Duplicate/overlapping starts are rejected. An asynchronously rejected start clears pending/deadline and permits a new **explicit** attempt; there is no automatic retry. Stop/cancel must name the endpoint-owned SID and also pass existing runtime stale-session checks. They cannot cancel an unrelated manually started session.
+Doppelte/überlappende Starts werden abgelehnt. Ein asynchron abgelehnter Start
+löscht pending/deadline und erlaubt einen neuen **ausdrücklichen** Versuch.
+Stop/Cancel müssen die eigene ID nennen und zusätzlich die Runtime-Prüfung
+gegen veraltete Sitzungen bestehen. Fremde manuell gestartete Sitzungen sind
+nicht abbrechbar.
 
-The endpoint expires after 15 minutes. A successful start has a 60-second limit measured from acceptance, including time waiting for its receipt. Expiry or that limit permanently closes test-start admission and requests cancellation of the owned session (including a late receipt); ordinary app shutdown does likewise. These are main-thread, event-loop-serviced deadlines, not hard real-time audio interruption guarantees. After the 60-second limit, status can remain readable until the endpoint's 15-minute expiry, but no new start is allowed. The socket is unlinked on expiry/cleanup only if its inode still matches the server's own socket. A crash may leave a stale socket; use a fresh private directory instead of overwriting it.
+Der Endpunkt endet nach 15 Minuten. Ein angenommener Start hat ab Annahme
+60 Sekunden einschließlich der Bestätigungswartezeit. Ablauf schließt weitere
+Starts dauerhaft und fordert den Abbruch der eigenen Sitzung an, auch bei
+später Bestätigung; reguläres App-Ende ebenso. Dies sind vom Hauptthread und
+Eventloop bediente Fristen, keine harten Echtzeit-Unterbrechungen nativer Arbeit.
+Nach 60 Sekunden kann der Status bis zum 15-Minuten-Ende lesbar bleiben.
+Der Socket wird nur entfernt, solange seine Inode zur eigenen passt. Nach einem
+Absturz einen neuen privaten Pfad verwenden, keinen alten Socket überschreiben.
 
-Background I/O has a 250-ms whole-request read deadline, a bounded single pending channel, a 2-second main-response deadline, and 250-ms write timeout. Main-thread polling never waits on a client. No recording starts merely because the app or endpoint starts.
+Hintergrund-I/O hat eine 250-ms-Lesefrist für die gesamte Anfrage, einen
+begrenzten Kanal mit einer wartenden Anfrage, zwei Sekunden für die
+Hauptthreadantwort und 250 ms Schreibfrist. Hauptthreadabfragen warten nicht
+auf Clients. Der Start von App oder Endpunkt allein beginnt keine Aufnahme.
 
-## Evidence boundary
+## Nachweisgrenze
 
-Focused transport tests exercise actual local Unix sockets, permissions/collisions, malformed requests, privacy projection, exact session ownership, failed asynchronous admission/retry, and bounded expiry with a controlled handler. Separate Desktop/Runtime tests cover the actor receipt and shutdown handshake. These tests do not claim microphone capture, foreign AX success, physical hotkey dispatch, or delivered target text. Actual signed-app runs, source/binary binding, recipient observations, and native acceptance remain separate evidence.
+Transporttests verwenden echte lokale Unix-Sockets für Rechte, Kollisionen,
+fehlerhafte Anfragen, Datenschutzprojektion, Sitzungsbesitz, asynchrone
+Ablehnung/erneuten Start und begrenzten Ablauf mit kontrolliertem Handler.
+Desktop-/Runtime-Tests prüfen Actor-Bestätigung und Shutdown. Das belegt keine
+Mikrofonaufnahme, fremde AX-Ziele, physische Tastenkürzel oder Textempfang.
+Signierte App-Läufe und ihre Quellen-/Binärbindungen bleiben getrennte Nachweise.
 
-## Read-only field inspection
+## Nur lesende Feldprüfung
 
 ```sh
 node scripts/test-control.mjs --control-dir /absolute/private/directory inspect
 ```
 
-`inspect` accepts no session or target argument. It uses only the configured
-recipient PID, verifies its kernel identity and one of the three existing
-own-recipient bundle identifiers before and after reading, and requires the
-already granted Accessibility permission. It does not require that recipient
-to be frontmost. It never starts a recording, activates a window, captures a
-delivery target, changes settings, or creates an approval. Results are diagnostic
-observations only and cannot be replayed as delivery authority.
+`inspect` akzeptiert weder Sitzung noch Ziel. Es verwendet nur die konfigurierte
+PID und prüft davor und danach Kernelidentität sowie eine der drei eigenen
+Bundle-IDs. Bedienungshilfen müssen bereits freigegeben sein; Vordergrund ist
+nicht erforderlich. Es startet keine Aufnahme, aktiviert kein Fenster, erfasst
+kein Übergabeziel, ändert keine Einstellung und erteilt keine Berechtigung.
+Diagnoseergebnisse können nicht als spätere Übergabeberechtigung wiederverwendet
+werden.
 
-The `snapshot` contains 17 fixed scalar fields: kind, PID, a four-value role,
-role/subrole/enabled read statuses and integer error codes, the interpreted
-secure/enabled flags, the `AXValue` and `AXSelectedText` replacement capabilities
-with error codes, and the current eligibility result/reason. It does not read
-`AXValue`, selected text, titles or arbitrary strings. Unknown types/statuses
-and extra client-response fields fail validation. The transport projection
-cannot disclose additional internal fields. Reads are bounded and the existing
-15-minute endpoint lifetime still applies.
+Der Snapshot hat 17 feste skalare Felder: Typ, PID, Rolle mit vier möglichen
+Werten, Lesezustände für Rolle/Unterrolle/Aktivierung, ganzzahlige Fehlercodes,
+interpretierte secure/enabled-Flags, Ersetzungsfähigkeiten für `AXValue` und
+`AXSelectedText` samt Fehlercodes sowie Eignung und Grund. Werte, ausgewählter
+Text, Titel und beliebige Zeichenketten werden nicht gelesen. Unbekannte Typen,
+Zustände oder Zusatzfelder werden abgelehnt. Die Projektion gibt keine weiteren
+internen Felder frei. Lesezugriffe sind begrenzt; die 15-Minuten-Frist bleibt.
 
-The production field policy accepts a known ordinary text role with a positive
-value or selected-text replacement capability when no explicit disabled state
-is reported. A writable selection range alone never establishes editability.
-Actual permission failures, secure fields, foreign processes, explicit negative
-editability and wholly unknown capability remain rejected. This diagnostic is
-separate from the new bounded production post-send content check: its optional
-snapshot stays solely in the AX owner memory and is never part of this endpoint.
+Die Produktprüfung akzeptiert eine bekannte gewöhnliche Textrolle mit positiver
+Wert- oder Auswahlersetzungsfähigkeit ohne ausdrücklichen deaktivierten Zustand.
+Ein beschreibbarer Auswahlbereich allein beweist keine Bearbeitbarkeit.
+Rechtefehler, geschützte Felder, Fremdprozesse, ausdrückliche Negativbefunde und
+vollständig unbekannte Fähigkeiten bleiben abgelehnt. Die optionale spätere
+Produktprüfung des Textempfangs bleibt davon getrennt: ihr Snapshot lebt nur
+im AX-Besitzer und wird über diesen Endpunkt nicht ausgegeben.
 
-## Confirm independent recipient receipt
+## Unabhängigen Textempfang bestätigen
 
-Actor Idle/outcome=sent is not itself recipient confirmation. The recipient's
-250-ms publication may still precede that actor response. After a completed
-controlled run, the optional read-only diagnostic below polls for a later
-sequence and post-terminal timestamp from the same recipient:
+Actor-Zustand Idle mit `outcome=sent` ist keine Empfangsbestätigung. Die
+250-ms-Veröffentlichung des Empfängers kann noch vor der Actor-Antwort liegen.
+Nach einem kontrollierten Lauf wartet diese optionale Lesediagnose auf eine
+spätere Sequenz und einen Zeitstempel nach dem Abschluss desselben Empfängers:
 
 ```sh
 node scripts/recipient-delivery.mjs /absolute/recipient/snapshot.json /absolute/attempt.json
 ```
 
-The attempt is the preserved own-run record containing recipientPid, the
-last recipient sequence, endedAtUtc and the completed actor snapshot. The
-reader accepts bounded owned regular files and emits only fixed diagnostic
-fields, boundaries and hashes. It starts no recording and grants no target
-approval. Keep an exact copy of relevant telemetry if byte-for-byte future
-readback is needed: the publisher replaces its current snapshot periodically.
-An [actual successful run](verification/native-delivery-success-2026-10-19.md)
-separates public-sentence recognition, one-time receiver text and global-hotkey
-acceptance; only the first two were proved in that controlled run.
+Der Versuchsnachweis enthält recipientPid, letzte Empfängersequenz, endedAtUtc
+und abgeschlossenen Actor-Snapshot. Der Leser akzeptiert begrenzte eigene
+reguläre Dateien und gibt nur feste Diagnosefelder, Grenzen und Hashes aus.
+Er startet keine Aufnahme und erteilt keine Zielberechtigung. Benötigte
+Telemetrie bytegenau kopieren, da der Herausgeber den Snapshot regelmäßig ersetzt.
+Ein [tatsächlich erfolgreicher Lauf](verification/native-delivery-success-2026-10-19.md)
+trennt Erkennung des öffentlichen Satzes, einmaligen Textempfang und globale
+Tastenkürzel; in diesem Lauf wurden nur die ersten beiden belegt.

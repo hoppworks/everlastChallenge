@@ -1,39 +1,59 @@
-# Own native Preferences close contract — 2026-10-19
+# Schließvertrag eigener nativer Einstellungen · 19.10.2026
 
-The focused AppKit contract did **not** reproduce hiding or losing the separately owned main window when closing Preferences. This is not a conclusion about the installed Tauri application's window lifecycle or CUA's window discovery.
+Der gezielte AppKit-Vertrag reproduzierte **kein** Verbergen oder Verlieren des
+separat besessenen Hauptfensters beim Schließen der Einstellungen. Das ist keine
+Aussage über den Lebenszyklus des installierten Tauri-Fensters oder die
+Fenstererkennung durch CUA.
 
-## Executed boundary
+## Ausgeführte Grenze
 
-`crates/macos-integration/tests/native_preferences_close_contract.rs` runs on the actual main thread with a fresh `NSApplication`, a retained own `NSWindow`, and the actual `NativePreferences` component. Its controlled state contains no model/audio operation. It shows the own main window, then performs three Preferences show → native close-button `performClick` cycles. Each cycle asserts Preferences is no longer visible while the main window remains visible and present in `NSApplication.windows`. A separate `NativePreferences::close()` and `detach()` leave the main window visible as well. The harness finally closes its own main window.
+`crates/macos-integration/tests/native_preferences_close_contract.rs` läuft auf
+dem tatsächlichen Hauptthread mit frischer `NSApplication`, eigener gehaltener
+`NSWindow` und der echten `NativePreferences`-Komponente. Der kontrollierte
+Zustand enthält keine Modell-/Audiooperation. Nach Anzeigen des Hauptfensters
+folgen drei Zyklen aus Einstellungen anzeigen und nativem Schließen per
+`performClick`. Nach jedem Zyklus sind die Einstellungen unsichtbar, während
+das Hauptfenster sichtbar und in `NSApplication.windows` enthalten bleibt.
+Auch `NativePreferences::close()` und `detach()` erhalten es. Abschließend
+schließt der Test sein eigenes Hauptfenster.
 
-Observed output for all three cycles:
+Beobachtung in allen drei Zyklen:
 
 ```text
 preferencesVisible=false; mainVisible=true; mainInOwnWindows=true
 ```
 
-Recorded command:
+Ausgeführter Befehl:
 
 ```sh
 cargo test --locked --offline -p macos-integration --test native_preferences_close_contract
 ```
 
-The author execution handle `38169` completed with exit `0`. The saved log records successful compilation and the three observations. A focused strict Clippy check also completed with exit `0`; that statement is the author's tool result, not a separate independent native run.
+Ausführung 38169 endete mit Exit 0. Das gespeicherte Log enthält erfolgreichen
+Build und drei Beobachtungen. Die gezielte strikte Clippy-Prüfung endete
+ebenfalls mit Exit 0; sie ist kein zweiter unabhängiger nativer Lauf.
 
-## Bound evidence
+## Gebundene Nachweise
 
-| File | SHA-256 |
-| --- | --- |
+| Datei | SHA-256 |
+|---|---|
 | `crates/macos-integration/tests/native_preferences_close_contract.rs` | `09c2b8e3160bc362c997e8dc226d44db0a55559598d4a29e925dcc26bfedfbe3` |
 | `artifacts/offline-continuation-v1/preferences-close-contract.log` | `c5bfae3cac1ab7f27aeb7ed18acc5ffbbc294a5799d7c7b05b656cb163835689` |
 
-The harness is registered as an independent `harness = false` native test in the native crate manifest. These hashes identify the test/log read for this report; they do not identify an installed app binary.
+Der Test ist als eigener nativer Test mit `harness = false` registriert.
+Die Hashes identifizieren gelesene Test-/Logdateien, keine installierte App.
 
-## What remains distinct
+## Abgrenzung
 
-- The harness uses own AppKit windows, not the Tauri/Wry main window, installed bundle, or a running product's AppKit/Tauri delegate interaction.
-- The close is an in-process action on the own native button. No CUA action, foreign Accessibility query, external app activation, keyboard injection, microphone, permission prompt, or model is involved.
-- It does not test CUA timeouts, application reachability after an external close request, Window-menu reopening, or every installed-app close/hide route.
-- Source inspection found the Tauri close-request/hide handler attached to the Tauri main window; this does not establish that a particular CUA event selected that window. No product fix is justified solely by this passing isolated contract.
+- Eigene AppKit-Fenster ersetzen weder Tauri/Wry-Hauptfenster noch die
+  Zusammenarbeit der Delegates im installierten Produkt.
+- Der Klick erfolgt im eigenen Prozess. CUA, fremde AX-Abfragen, Aktivierung,
+  Tastatureinspeisung, Mikrofon, Berechtigungsdialoge und Modell fehlen.
+- CUA-Zeitüberschreitungen, Wiedererreichbarkeit, Fenstermenü und alle möglichen
+  Schließen-/Verbergen-Wege werden nicht geprüft.
+- Der Tauri-Schließhandler ist am Tauri-Hauptfenster registriert; daraus folgt
+  nicht, welches Fenster eine konkrete CUA-Aktion ausgewählt hat.
 
-The original report of an installed app becoming unreachable through CUA remains an integration observation requiring its own controlled reproduction. This contract narrows the hypothesis; it does not dismiss that observation or mark a full native acceptance gate passed.
+Die ursprüngliche Unerreichbarkeit über CUA bleibt eine gesondert zu
+reproduzierende Integrationsbeobachtung. Dieser Vertrag grenzt die Hypothese
+ein, widerlegt die Beobachtung aber nicht und belegt keine vollständige Abnahme.
