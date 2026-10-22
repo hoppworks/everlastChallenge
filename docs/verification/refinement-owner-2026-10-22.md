@@ -1,7 +1,7 @@
 # Asynchronous local text-worker owner
 
 This package adds a runtime-facing service around the existing process
-supervisor after `c25d38a`. It does not yet connect text refinement to the
+supervisor after `db1857c`. It does not yet connect text refinement to the
 controller, settings, IPC or UI. The model-quality failures in earlier reports
 remain open.
 

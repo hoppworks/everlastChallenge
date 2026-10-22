@@ -1,5 +1,5 @@
 {
-  "baseCommit": "84b32fd5c854a3d7cefaff724d5abe40e0010d10",
+  "baseCommit": "c847172375c66e84464c0cc62c142c5ac907c2b5",
   "sourceFiles": [
     {
       "path": "src-tauri/build.rs",

@@ -1,6 +1,6 @@
 # Retained originals and controller refinement contracts
 
-This change follows `6bbcd8e`. It adds refinement to the session controller's
+This change follows `361269f`. It adds refinement to the session controller's
 finalization contract. It is not yet a working product feature: the runtime
 still reports the refinement service as unavailable, and current desktop
 settings start sessions with refinement disabled. Owner dispatch, setup, IPC

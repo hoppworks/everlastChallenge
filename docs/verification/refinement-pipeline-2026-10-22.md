@@ -1,6 +1,6 @@
 # Two-stage local text refinement
 
-This integration follows `52d81cd`. Protocol 2 carries separate structural and
+This integration follows `3bad700`. Protocol 2 carries separate structural and
 punctuation proposals. The worker and desktop host both validate the complete
 result against the original dictation; a failed second stage cannot release the
 first stage as a successful result.

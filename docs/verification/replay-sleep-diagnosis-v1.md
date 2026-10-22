@@ -3,7 +3,7 @@
 Ausgangspunkt ist der erhaltene zentrale v3-Lauf: ein1ms-Schlafintervall misst
 12,736750ms, danach ist die Publikation10,234042ms zu spät. Der eigentliche
 Publish dauert2083ns; kein finaler Spin wurde in diesem Wait betreten.
-[Phasenevidenz und Grenzen](paced-six-reference-v3.md).
+Phasenevidenz und Grenzen.
 
 Die Aussage betrifft das gemessene Intervall um den Aufruf. Es kann auch
 Descheduling unmittelbar vor/nach dem eigentlichen Kernelwarten enthalten;

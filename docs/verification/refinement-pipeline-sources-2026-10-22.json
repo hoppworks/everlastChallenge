@@ -1,5 +1,5 @@
 {
-  "baseCommit": "52d81cd5692a759d43fde6b64c398408d2bf5a52",
+  "baseCommit": "3bad700c7c4ba4d1ee4e3475cb5f0ab42fc2432e",
   "sourceFiles": [
     {
       "path": "crates/dictation-core/src/refinement/candidates.rs",

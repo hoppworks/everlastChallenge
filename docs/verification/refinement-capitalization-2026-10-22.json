@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "date": "2026-10-22",
-  "priorRevision": "70031cfe6fe339a3c1974c4db9beba306438b4a0",
+  "priorRevision": "ff96f336e767ef90da0d88306dccf3d1b52e3ea7",
   "policyVersion": 8,
   "promptVersion": 9,
   "sourceHashes": {
@@ -30,7 +30,7 @@
     "newVariantsValidatedReportSha256": "372996ac5603d987ab209e51ad594dbfe38f95232b750f7ae1ea22c1ca785fd1"
   },
   "nativeUpdatedPackage": {
-    "revision": "ca56a99fdab898e53e944f309d3c328d25548667",
+    "revision": "c480c485151c2e5feeaec693f69f14a7dc46e514",
     "sourceTree": "f59666da5c2f0067ec38b1114c6543dcb294f7cb",
     "bundleFileCount": 346,
     "appExecutableSha256": "a8840c871dc224071443c3560b1093ea04a09fe99ba9e448639dbc4741498aa1",

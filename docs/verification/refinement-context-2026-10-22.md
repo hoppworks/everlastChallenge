@@ -1,6 +1,6 @@
 # Context-bound self-corrections
 
-This change follows `e586edb` and advances the text policy to version 6.
+This change follows `ef815d6` and advances the text policy to version 6.
 An independently authored German/English extension exposed three failures in
 23 cases: a numeric correction was withheld, and two explicit restatements
 produced incorrect sentence fragments. The corpus was frozen before inference.

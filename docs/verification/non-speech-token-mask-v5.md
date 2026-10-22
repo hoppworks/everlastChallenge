@@ -1,6 +1,6 @@
 # Legitime Bruchnotation durch Decoder-Tokensperre beschädigt
 
-Stand 17.10.2026. Die historische [Ankerprüfung](reference-anchor-review-v1.md)
+Stand 17.10.2026. Die historische Ankerprüfung
 ließ EN1682 bei beiden Modellen numerisch unklar. Dieser Befund wird nicht
 rückwirkend geändert. Ein enger Diagnosevergleich mit dem Referenzmodell zeigt
 jetzt einen korrigierbaren Einfluss der aktiven Tokensperre.

@@ -11,7 +11,7 @@ Andere Geräte sowie reales Sleep/Wake wurden hier nicht geprüft.
 | A06 | Synthetische Raten-/Kanal-, Frequenz-, Impuls-, Rundungs-/Flush-Prüfungen; vorhandene reale Standardmikrofonaufnahme |
 | A09 | Vorhandene DSP-, Pausen-/Rand- und Flushverträge |
 | A13 | Neuer kontrollierter CPAL-Fehlercallback durch echten RecordingOwner, CpalAudio-Poll/Join und Runtime-Actor |
-| A14 | Überlauf-/Journal-/Besitzverträge, [Pufferbudget](audio-buffer-budget-v1.md), [gemischter Ressourcenlauf](runtime-resource-v2.md) |
+| A14 | Überlauf-/Journal-/Besitzverträge, [Pufferbudget](audio-buffer-budget-v1.md), gemischter Ressourcenlauf |
 | Wiederholungen | [100 native Start/Cancel-Folgen](native-lifecycle-2026-10-19.md) plus separater gemischter 100er-Ressourcenlauf; keine Umdeutung zu 100 nativen Stop-Diktaten |
 
 ## Geschlossene A13-Testlücke

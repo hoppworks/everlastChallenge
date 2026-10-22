@@ -16,8 +16,7 @@
     "scripts/test-control.mjs": "e167544e9571c210bad76439c2728a290b270886d915d0ee9b7c75a01ea0cb17",
     "artifacts/host-start-actual-v2/environment-readback.json": "856b47fb7e710e9e78d6d9e0ce9163824e894b614fa92c7882b449233c503acf",
     "artifacts/host-start-actual-v2/native-start-shutdown.json": "8d7c73c2111a6e093b0b8422978c68536cfe10261f14a5a8afc93ef64b442256",
-    "artifacts/single-press-developer-measurement-build.log": "2c4b402ed071b5600f989c6eaa94e6372386701f338714defd27de814ce97bd4",
-    "config/release-transcription.json": "443ba75e420fc44eff870e31fc0a9333fc4e5fbb8b65d96a40ac7e4608a0eb52"
+    "artifacts/single-press-developer-measurement-build.log": "2c4b402ed071b5600f989c6eaa94e6372386701f338714defd27de814ce97bd4"
   },
   "originalCampaignBindings": {
     "recipientPid": 3176,
@@ -235,7 +234,6 @@
     },
     "recordedModelBytesRehashedByThisReview": false,
     "referencedFileHashesCheckedAtReview": {
-      "config/release-transcription.json": true,
       "artifacts/developer-measurement-build-v1/testversion-build-v1/target/aarch64-apple-darwin/release/bundle/macos/Everlast Dictation.app/Contents/MacOS/everlast-dictation": true,
       "artifacts/single-press-developer-measurement-build.log": true,
       "artifacts/host-start-actual-v2/native-start-shutdown.json": true
@@ -253,5 +251,6 @@
     "counterError": false,
     "observerContentionOrPoison": false,
     "qualificationFlagRemainsFalse": true
-  }
+  },
+  "publicExcerpt": "Historical report references omitted; hashes describe their stated original observations."
 }

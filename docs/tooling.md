@@ -9,7 +9,6 @@ unter `vendor/` enthalten weiterhin deren ursprüngliche Hilfsprogramme.
 |---|---|
 | WER und stille Ausgaben auswerten | `scripts/quality.ts MANIFEST RESULTS --output NEW_REPORT` |
 | Modellpaare einschließlich menschlicher Inhaltsprüfung vergleichen | `scripts/compare-mlx-quality.ts MANIFEST BASELINE CANDIDATE --reviews REVIEWS --output NEW_REPORT` |
-| Historischen Helper-Vergleich nachrechnen | `tools/measurement/summarize-helper-comparison.ts` |
 | FLEURS-Korpus erzeugen | `scripts/corpus.ts --source DIRECTORY --manifest NEW_MANIFEST` |
 | Natürliche kurze Ziffern ergänzen | `scripts/short-corpus.ts BASE --source ARCHIVE --output NEW_MANIFEST` |
 | Kalibrierung ergänzen | `scripts/calibration.ts --source-manifest BASE --room-source AUDIO --output NEW_MANIFEST` |
@@ -46,16 +45,11 @@ neue Messungen brauchen neue, zu ihren Quellen passende Parameterdateien.
 Der Modellpaarvergleich verwendet dafür ausdrücklich Schema 2 und neue
 `pairSha256`-Werte. Alte menschliche Review-Quittungen gelten nicht automatisch.
 
-Die früheren einzelnen P06-Kampagnenstarter und ihre nur dafür zuständigen
-Adaptertests wurden stillgelegt. Ihre Quellen sind im
-[historischen Stand](https://github.com/hoppworks/everlastChallenge/tree/b83d35b/scripts)
-erhalten. Alte Messberichte dokumentieren genau diesen damaligen Code und seine
-Python-Umgebung. Für neue Messungen gibt es einen gemeinsamen Prozessowner;
-er führt nur das ausdrücklich angegebene Kommando aus. Zeitlimit, Abbruch,
-Prozessgruppen-Abwesenheit und Stromquelle werden getrennt protokolliert.
-Eine fehlgeschlagene oder erzwungen beendete Messung bleibt sichtbar und wird
-nicht als qualifiziert ausgegeben. Der Owner ersetzt keine statistische
-Versuchsplanung oder inhaltliche Qualitätsprüfung.
+Für neue Messungen führt der gemeinsame Prozessowner nur das ausdrücklich
+angegebene Kommando aus. Zeitlimit, Abbruch, Prozessgruppen-Abwesenheit und
+Stromquelle werden getrennt protokolliert. Eine fehlgeschlagene oder erzwungen
+beendete Messung wird nicht als qualifiziert ausgegeben. Der Owner ersetzt
+keine statistische Versuchsplanung oder inhaltliche Qualitätsprüfung.
 
 ## Prüfungen
 

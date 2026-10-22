@@ -1,6 +1,6 @@
 # Bundled local text worker
 
-This package follows `9a5b1b1`. The release builder now includes the text worker
+This package follows `cb6e7c9`. The release builder now includes the text worker
 beside the application executable. It builds both native targets from the locked
 workspace and requires identical Metal kernel bytes before packaging. Runtime
 and model-quality acceptance remain separate from this packaging check.

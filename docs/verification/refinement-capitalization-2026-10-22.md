@@ -24,7 +24,7 @@ unless a sentence boundary precedes them; lowercase German nouns can therefore
 remain lowercase. This conservative restriction protects names and identifiers.
 
 The implementation and regression were AI-assisted and independently reviewed.
-A fresh signed package at `ca56a99` also completed native microphone capture,
+A fresh signed package at `c480c48` also completed native microphone capture,
 local refinement and actual target receipt: “Der Termin ist am Donnerstag um
 10 Uhr.” Its ASR output already used title case, so the exact lowercase failure
 is covered by the separate worker replay. The recipient closed cleanly, and

@@ -1,10 +1,9 @@
 # Native Prüfung von Version 0.3.0
 
-Das geprüfte macOS-arm64-Paket wurde aus
-`dd4dd5974bef3466b07865e226520d78c63939c8` gebaut. Es enthält den lokalen
+Das geprüfte macOS-arm64-Paket enthält den lokalen
 MLX-Hybrid für Spracherkennung und den optionalen, gebündelten MLX-Textworker.
 Die App verwendet weiterhin ausschließlich native Mikrofon- und Systemzugriffe.
-Der entsprechende Laufzeit-Quellstand in der aktuellen Historie ist
+Der zugehörige Laufzeit-Quellstand ist
 `3867d8b5580bf2ef76cf34914ddc4961ceb5802b`; sämtliche Laufzeitdateien sind bytegleich.
 Spätere Änderungen betreffen ausschließlich Dokumentation und Nachweise.
 

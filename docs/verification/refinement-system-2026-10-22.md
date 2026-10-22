@@ -1,6 +1,6 @@
 # Packaged refinement: system observations
 
-These checks use source revision `6365c00` and its locally signed macOS bundle.
+These checks use source revision `5be1a62` and its locally signed macOS bundle.
 They extend the [model and supervisor checks](refinement-context-2026-10-22.md).
 They do not establish comparative speed or complete product acceptance.
 The [observation record](refinement-system-2026-10-22.json) binds the binaries,

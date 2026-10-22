@@ -5,8 +5,7 @@
     "scripts/*.mjs",
     "*.config.{ts,mjs}",
     "scripts/*.ts",
-    "tests/tooling/**/*.test.ts",
-    "tools/**/*.ts"
+    "tests/tooling/**/*.test.ts"
   ],
   "project": [
     "src/**/*.{ts,tsx}",
@@ -14,7 +13,6 @@
     "*.config.{ts,mjs}",
     "scripts/**/*.ts",
     "tests/tooling/**/*.ts",
-    "tools/**/*.ts",
     "tests/fixtures/browser-fields/**/*.ts"
   ],
   "ignoreBinaries": ["gitleaks", "mkfifo"]

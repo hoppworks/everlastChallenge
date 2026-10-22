@@ -1,6 +1,6 @@
 # Text-model provisioning and preference migration
 
-This package follows `508b44e`. The application owns a separate text-model setup
+This package follows `ce9eb46`. The application owns a separate text-model setup
 service and prepares the lazy text worker. It does not yet expose setup or the
 refinement preference through the UI. Existing desktop sessions still request
 refinement disabled. The release bundle has not yet been updated or qualified

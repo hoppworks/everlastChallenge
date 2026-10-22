@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "date": "2026-10-22",
-  "baseRevision": "a1b9d12",
+  "baseRevision": "3bd303a",
   "sources": {
     "config/coverage.json": "e0201717e5144a67c6a9ef00d8012dc8fb822bf54e4539365559f6e6d169bd8b",
     "src-tauri/src/application.rs": "c0a660be32d7667662b1e87933729a854604536fe478e64b156dc29bed78bddc",

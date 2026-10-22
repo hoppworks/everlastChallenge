@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceRevision": "6365c00a55a75c5c5884bc6a1269b814c25bba78",
+  "sourceRevision": "5be1a62ecee7c68fa5e3caa9a780787fd51e1480",
   "sourceTree": "6ce9673dde363e6509812da395feb93c434f581a",
   "history": {
     "commitCount": 416,
@@ -1749,7 +1749,7 @@
     "appleNotarized": false
   },
   "offline": {
-    "revision": "6365c00",
+    "revision": "5be1a62",
     "launch": "sandbox-exec deny network*",
     "profileSha256": "5c358b8d847211333e7ba22df82d84f796b5f30a41a2682209a949d783adbd08",
     "parentConnectCheck": "1",
@@ -1860,7 +1860,7 @@
     "os-pressure-observation.json": "0a3267afb0972f9d85cdf26822b002bc4ee1af491e1e3326d5e3bb76246d2e3b",
     "native-parentloss-build.log": "833d0eea3291ae8eccb06260d83f97ceac9bda6f4ae8ff3be138af1ddf9ad93c",
     "native-parentloss-build-retry.log": "0113983dd7d31b65ae741416e92a7d0d139760e6ff00d6732c64f52acd5c988e",
-    "full-verify-6365c00.log": "a3aee2bb65838365a6de8b03935eca305c1a4f8a5e4042e10027fe1f45c521b6",
+    "full-verify-5be1a62.log": "a3aee2bb65838365a6de8b03935eca305c1a4f8a5e4042e10027fe1f45c521b6",
     "cargo-deny-0.20.2.log": "c94717f14c6dc41d14af09db8c7348bb9dd9eb6f17631b8ed897ff00f7e8c3b3",
     "paste-policy-negative.log": "f9f6f932e931dc1ea6decfcd504be1ab804d6e5815b8fa8206a132374f00bf26",
     "npm-audit-after-full-verify.log": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
@@ -1874,7 +1874,7 @@
     "Human linguistic acceptance not established."
   ],
   "softwareChecks": {
-    "sourceRevision": "6365c00a55a75c5c5884bc6a1269b814c25bba78",
+    "sourceRevision": "5be1a62ecee7c68fa5e3caa9a780787fd51e1480",
     "fullVerify": {
       "command": "npm run verify",
       "exitCode": 1,
@@ -1910,7 +1910,7 @@
     }
   },
   "externalBundleRun": {
-    "sourceRevision": "6365c00a55a75c5c5884bc6a1269b814c25bba78",
+    "sourceRevision": "5be1a62ecee7c68fa5e3caa9a780787fd51e1480",
     "bundleOutsideRepository": true,
     "allBundleFilesMatchSignedManifest": true,
     "recordingStart": "application window",

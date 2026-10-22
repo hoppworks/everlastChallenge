@@ -1,6 +1,6 @@
 # Local verification gates
 
-`npm run verify` completed successfully on revision `bce2ae0`. The
+`npm run verify` completed successfully on revision `e87bb07`. The
 [record](local-gates-2026-10-22.json) binds the source tree, lockfiles, toolchain,
 macOS version and complete log hash. This is a local execution result, not a
 GitHub Actions result.

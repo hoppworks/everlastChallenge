@@ -1,6 +1,6 @@
 # Asynchronous refinement in the runtime
 
-This package follows `b7e348c`. The runtime now accepts an optional text owner,
+This package follows `429533c`. The runtime now accepts an optional text owner,
 submits complete transcripts without waiting for GPU work and consumes validated
 results through the existing controller. The desktop setup does not yet supply
 that owner, and desktop sessions still disable refinement. This is an integration

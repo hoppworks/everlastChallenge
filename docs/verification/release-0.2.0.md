@@ -1,7 +1,7 @@
 # Native Prüfung von Version 0.2.0
 
 Der lokal signierte Releasebuild wurde aus
-`61431cc344c3e538690d4123a41f40101070dec6` mit dem aktualisierten npm-Lockfile
+`87c1986cc9691e27cee03505ba1657615253ee1c` mit dem aktualisierten npm-Lockfile
 gebaut. `Info.plist` meldet 0.2.0; Bundle-Signatur und Mikrofonentitlement wurden
 geprüft. Plattform: Apple Silicon, macOS 27.0.1. Eine Apple-Notarisierung liegt
 nicht vor.
@@ -38,12 +38,11 @@ vorhandener Modellcache als Download ausgegeben.
 
 Drei öffentliche deutsche FLEURS-Fixtures (1736, 1663, 1668; 5/10/15 Sekunden)
 wurden mit dem tatsächlichen Hybridpfad verarbeitet. Alle drei Aufträge endeten
-mit `ok`; ihre Transkript-Hashes stimmen mit allen zugehörigen Zeilen des
-[historischen Helfervergleichs](../benchmarks/helper-comparison-2026-10-20.json)
-überein. Die dort bekannten Wortfehler bleiben damit ebenfalls erhalten.
+mit `ok`. Diese endlichen Modellproben sind kein Nachweis fehlerfreier
+Erkennung oder eines Geschwindigkeitsvorsprungs.
 
 Diese Modellproben stammen aus dem aktualisierten nativen Quellstand
-`787587b042e8a33ffb68cc5b5bd2ae14bd8ec31c`. Cargo-Lockfile, Rustquellen,
+`f8efa1494666d75203a8efe33d66cd3e8b4cb5af`. Cargo-Lockfile, Rustquellen,
 Vendorquellen, Modellkonfiguration und Rust-Toolchain sind gegenüber dem oben
 benannten Release-Quellstand unverändert. Das wurde per Git-Diff überprüft.
 Das spätere npm-Update erforderte einen frischen Frontend-/Releasebuild, keinen

@@ -1,6 +1,6 @@
 # Text refinement under memory pressure
 
-This change follows `0e648b3`. The app observes the public libdispatch memory
+This change follows `e576538`. The app observes the public libdispatch memory
 pressure source. Warning and Critical events unload the local text worker;
 Normal permits later refinement again. The observer does not allocate memory to
 probe the system or infer a minimum RAM requirement.

@@ -53,5 +53,5 @@ or safely repair an unrelated ASR substitution.
 The record qualifies these exact worker sources and model assets. It does not
 prove native microphone capture, app-package integration, target receipt,
 offline delivery or a performance improvement. Earlier package and
-[comparison results](native-comparison-2026-10-22.md) remain bound to their own
+comparison results remain bound to their own
 revisions. This change does not reinterpret or extend that comparison campaign.

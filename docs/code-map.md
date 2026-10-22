@@ -104,10 +104,10 @@ historische Belege ihrer dort gebundenen Capture-/Settings-Verträge.
   [technische Kurztest](verification/release-fixes-2026-10-21.md) ergänzt echten Empfang
   in Notes; der [Palette-Test](verification/palette-2026-10-21.md) die aktuelle UI.
   Eine vollständige Sleep/Wake- oder Bluetooth-Wechselmatrix wird nicht behauptet.
-- [Qualität](verification/acceptance-reference-v1.md),
+- Qualität,
   [Inferenz-Lifecycle](verification/inference-lifecycle.md),
-  [Runtime-Ressourcen](verification/runtime-resource.md) und
-  [Echtzeitprotokoll](verification/paced-reference-protocol.md) enthalten die
+  Runtime-Ressourcen und
+  Echtzeitprotokoll enthalten die
   jeweiligen Laufbelege und Grenzen. Die private Audiodatei wird nicht als
   unabhängige Goldreferenz ausgegeben.
 

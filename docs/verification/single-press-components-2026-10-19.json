@@ -7,8 +7,7 @@
     "scripts/single-press-runner.test.mjs": "4da24e9aea06647f98563614a73a9af9eb3a7b909cbd010a24fbeea997b40691",
     "scripts/single-press-playback.mjs": "c677607e8ec1206498fba16d5c24609bc9c614ff6c4662fa46e192e9a995315d",
     "scripts/single-press-playback.test.mjs": "9880d0952550d9fff1314d68ea58b6e8756ec73a53b477cccbf1d73d59227188",
-    "crates/macos-integration/examples/single_press_watchdog.rs": "4db61cc2eabb034f9c5647128f3c0eff9434ba260d6ade819005eb84e6765ab6",
-    "config/release-transcription.json": "b8d8c70dbec5a88b3d239dbe97c6ff648a6c00479a7b814b44839c868f5f0b0e"
+    "crates/macos-integration/examples/single_press_watchdog.rs": "4db61cc2eabb034f9c5647128f3c0eff9434ba260d6ade819005eb84e6765ab6"
   },
   "tests": {
     "runner": 15,
@@ -44,5 +43,6 @@
     "watchdogAdapterLog": "artifacts/single-press-watchdog-adapter-tests.log",
     "watchdogAdapterLogSha256": "458a2676708704d7c2e6a5290fbed83cae518709711b00c7caafa7e4a82ad9fe",
     "independentReview": "approved after atomic optional fixture publisher correction"
-  }
+  },
+  "publicExcerpt": "Historical report references omitted; hashes describe their stated original observations."
 }

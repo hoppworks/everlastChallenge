@@ -27,13 +27,6 @@
       "sha256": "1b7bb1b9e09e715eb1c9786ed36f204798a555ca5a2c23ae19dd86a84423d0e5"
     },
     {
-      "scenario": "Kurzsprache und Stille",
-      "evidenceKind": "F – festes Referenzkorpus",
-      "observedScope": "Qualifizierte Referenz einschließlich festgelegter kurzer Sprache und Empty/Room-Fälle; keine erneute Messung für unveränderten Decoderinput.",
-      "path": "docs/verification/p05-reference-qualification-v1.md",
-      "sha256": "49d357f84af42c4de107c86137e43081f8aa0e66a7498ac6bdec14cbc9507cb6"
-    },
-    {
       "scenario": "Kopieren und native Befehle",
       "evidenceKind": "N – eigene AppKit-Objekte",
       "observedScope": "⌘R Start/Stop, Esc Cancel, ⌘, Einstellungen, ⌘⇧C bewusste Kopieraktion; gewöhnliches⌘C verbleibt beim Textauswahlresponder.",
@@ -79,10 +72,7 @@
     {
       "path": "docs/verification/native-private-clipboard-2026-10-19.md",
       "sha256": "d9b5358e61cd53f09bd9fd8584918a52fafec276aa6872776bcaf28f4b06024f"
-    },
-    {
-      "path": "docs/verification/long-noise-isolation-2026-10-19.md",
-      "sha256": "b3f003a1721cf8a1e8e3e961ea245d7a56f541891a9af1476e4dd3cfb04ce6a5"
     }
-  ]
+  ],
+  "publicExcerpt": "Historical report references omitted; hashes describe their stated original observations."
 }

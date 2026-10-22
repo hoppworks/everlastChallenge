@@ -103,5 +103,5 @@ Dateiinhalte werden nicht überschrieben. Die Parameterdateien dokumentieren
 den jeweiligen Codezustand und sind keine vom Probeprogramm eingelesenen
 Laufzeitoptionen. Zur Wiederholung einer historischen Messung ist daher auch
 die im Messbericht genannte Quellrevision zu verwenden. Die
-[Kalibrierungsberichte](../../../docs/verification/calibration-v2.md) weisen
+Kalibrierungsberichte weisen
 negative Kontrollresultate ausdrücklich aus; eingefroren bedeutet nicht abgenommen.

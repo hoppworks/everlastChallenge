@@ -19,24 +19,17 @@ Lizenztexte und maschinenlesbare Schemafelder werden nicht übersetzt.
 | Gestaltung nachvollziehen | [Produkt](../PRODUCT.md), [Designsystem](../DESIGN.md) |
 | Herkunft und KI-Nutzung prüfen | [Lizenzen](licenses/third-party/README.md), [KI-gestützte Arbeit und Verifikation](ai-review.md) |
 
-## Historische Versuche lesen
+## Nachweise einordnen
 
-Die datierten Dateien unter `verification/` sind technische Versuchsprotokolle.
-Sie bewahren auch Fehler, verworfene Varianten und frühere Oberflächen. Ihre
-Ergebnisse gelten ausschließlich für die jeweils genannten Quellen,
-Binärdateien, Modelle und Messbedingungen. Ein damaliges „offen“ ist kein
-aktueller Statusbericht; ein damaliges „bestanden“ ist keine pauschale Aussage
-über spätere Versionen.
+Technische Prüfberichte gelten für die jeweils genannten Quellen,
+Binärdateien, Modelle und Bedingungen. Aktuelle Leistungswerte stehen im
+[Vergleich](comparison.md); funktionale Tests und Coverage belegen ihre
+jeweiligen Verträge, keine allgemeine Erkennungs- oder Latenzgarantie.
 
-`P01` bis `P06` und `A…` sind historische Kennungen von Versuchen und
-Prüfkriterien. Sie sind keine Fortschrittsanzeige des aktuellen Produkts.
-Die aktuelle Oberfläche ist die kompakte React-/TypeScript-Palette in Tauri;
-frühere AppKit-Oberflächen sind in ihren datierten Berichten dokumentiert.
-Eigene aktive Werkzeuge verwenden TypeScript. Frühere Python-Kommandos in
-Versuchsprotokollen gehören zu deren ursprünglicher Git-Revision; die heutigen
-Kommandos stehen in [tooling.md](tooling.md).
+Rohaufnahmen und lokale Transkripte werden nicht veröffentlicht. Hashberichte
+binden lokale Belege, ersetzen aber nicht deren vollständige öffentliche
+Reproduktion. Die Grenzen stehen bei den jeweiligen Ergebnissen.
 
-Rohaufnahmen und lokale Transkripte werden nicht veröffentlicht. Wo nur
-inhaltfreie Hashberichte vorliegen, ist deren Nachweisgrenze im jeweiligen
-Bericht benannt. Die veröffentlichten Vergleichszahlen dürfen deshalb nur mit
-den zugehörigen Einschränkungen übernommen werden.
+Quellrevisionen bezeichnen den entsprechenden Laufzeit-Quellstand in der
+veröffentlichten Historie. Prüfsummen der Messdaten bleiben eigenständige
+Nachweise; ein Quellverweis allein reproduziert keine vergangene Laufzeit.

@@ -1,36 +1,22 @@
 # Leistung und Messgrenzen
 
-Der ausgelieferte Pfad nutzt einen MLX-Encoder mit vollständigem whisper.cpp-Decoder.
-Die Verarbeitung erfolgt lokal. Eine universelle Latenzgarantie wird nicht gegeben.
+Der Produktpfad verwendet einen MLX-Encoder und whisper.cpp-Decoder. Lange
+Aufnahmen werden vollständig vom nativen whisper.cpp-Pfad verarbeitet. Die
+optionale Textbereinigung läuft ebenfalls lokal; eindeutige Korrekturen können
+ohne Modellaufruf in Rust abgeschlossen werden.
 
-## Vergleich mit Voicely
+Der [aktuelle Vergleich](comparison.md) enthält vier einzelne Fallpaare bis
+zum tatsächlich beobachteten Textempfang. Drei kurze Fälle sind schneller,
+der lange Fall ist langsamer. Die vollständige Inhaltsprüfung besteht nicht
+durchgehend. Daraus folgt weder ein allgemeiner Geschwindigkeitsvorsprung noch
+eine isolierte Aussage über die Geschwindigkeit der Textbereinigung.
 
-Der [separate Vergleichsbericht](comparison.md) erläutert den historischen
-Datei-/CLI-Vergleich: 36,4–39,1 % kürzere Prozessmediane auf drei deutschen
-Aufnahmen, einschließlich Laden und Aufräumen. Er enthält die 30 Messzeilen,
-Nachrechnung und Grenzen. Das ist kein End-to-End-Vergleich der aktuellen Apps.
+Die [Messwerte](benchmarks/native-comparison-0.3.0.json) benennen Fall,
+Quellstand, Zeitintervall und Grenzen. Akustische Wiedergabe, bekannte deutsche
+Testtexte und nur eine Beobachtung pro Seite begrenzen die Aussagekraft.
+Beobachtungsintervalle sind keine statistischen Konfidenzintervalle.
 
-Der [aktuelle Vergleich](comparison.md#aktueller-kandidat-030) enthält vier
-einzelne Fallpaare bis zum tatsächlichen Textempfang. Drei kurze Fälle sind
-schneller, der lange Fall ist langsamer; die vollständige Inhaltsprüfung
-besteht nicht durchgehend. Die Beobachtungen erlauben keine allgemeine
-Speedup-Behauptung und keine Zuordnung des Rückstands zur Textbereinigung.
-Der frühere native 24-Ausgaben-Bericht bleibt getrennt als historischer Beleg.
-
-## Weitere Messstrecken
-
-- [Getakteter Sechs-Fälle-Lauf](verification/paced-six-reference-v4.json)
-  und [Qualitätsauswertung](verification/paced-six-reference-v4-quality.md).
-- [Ressourcenmessung](verification/runtime-resource-v2.json): die genannte
-  Prozess-/Speicherkennzahl ist keine gleichbedeutende Footprint-Garantie.
-- [Audio-/Inferenzverträge](autonomous-testing.md): feste Samples, Parameter,
-  Zeitgrenzen und getrennte Software-/OS-Nachweise.
-- [Messwerkzeuge](../tools/measurement/README.md) für erneute kontrollierte Läufe.
-
-Messwerte gelten für ihre dokumentierte Revision, Modellwahl und Maschine.
-Start eines neuen Prozesses, Modellbereitschaft, warme Transkription und
-Ende-zu-Ende-Zeit bis zum sichtbaren Text sind verschiedene Größen.
-
-Die jüngste UI-Änderung wurde durch [native Bedienungstests](verification/palette-2026-10-21.md)
-verifiziert. Dafür wurde keine neue ASR-Leistungskampagne behauptet. Der öffentliche Vergleich enthält einen bewusst begrenzten, nachvollziehbaren
-Datenauszug. Interne Analyseunterlagen bleiben ausgeschlossen.
+Erststart, Modellladen, Verarbeitung einer fertigen Audiodatei und die Zeit vom
+Stopp bis zum sichtbaren Zieltext sind unterschiedliche Messgrößen. Die
+[Softwareprüfungen](autonomous-testing.md) belegen ihre jeweiligen Verträge,
+keine allgemeine Latenz- oder Genauigkeitsgarantie.

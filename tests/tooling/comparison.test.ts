@@ -7,7 +7,6 @@ import { spawnSync } from "node:child_process";
 import { sha256 } from "../../scripts/tooling/files.ts";
 import { test } from "node:test";
 import { compare } from "../../scripts/compare-mlx-quality.ts";
-import { summarize } from "../../tools/measurement/summarize-helper-comparison.ts";
 await test("quality comparison requires a current pair-bound semantic review even for an automatic improvement", () => {
   const cases = [
     {
@@ -38,22 +37,6 @@ await test("quality comparison requires a current pair-bound semantic review eve
   );
   assert.equal(compare(cases, after, before).automaticGatePassed, false);
 });
-await test("published comparison recomputes its three historical medians and rejects incomplete rows", () => {
-  const raw = readFileSync(
-    new URL(
-      "../../docs/benchmarks/helper-comparison-2026-10-20.json",
-      import.meta.url,
-    ),
-    "utf8",
-  );
-  const result = summarize(raw);
-  assert.equal(result.cases.length, 3);
-  assert.equal(result.cases[0]!.everlast!.medianMs, 720.1375830000005);
-  assert.throws(() =>
-    summarize(raw.replace('"status": "ok"', '"status": "failed"')),
-  );
-});
-
 await test("unchanged comparison CLI still binds every exact input", () => {
   const dir = mkdtempSync(path.join(os.tmpdir(), "comparison-cli-"));
   try {
