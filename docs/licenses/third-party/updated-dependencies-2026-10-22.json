@@ -8474,7 +8474,7 @@
     },
     {
       "inclusion": "build-injected runtime helper provider",
-      "integrity": "sha512-eTBTTqMR6uHKLgcUqpJP8ntzDI6V4LYA8negAMBEI7gkgVvOdrx6VsvS2Ym+83KhOPdLCHWJu0w7UQFJZhHKNw==",
+      "integrity": "sha512-6odND+fel5zVw3I4Yc2e69gvguDnX0CAAGiNDZSq4ik5WUcaLrkD2GLuog0XcODbor31hZ5ayEMgVDno+KPV5g==",
       "license": "MIT",
       "name": "rolldown",
       "texts": [
@@ -8485,7 +8485,7 @@
           "sha256": "23ecfff35a5a2e80d92142f75228912c3b1abc4b5a8337a821ff4397e2f9f734"
         }
       ],
-      "version": "1.2.14"
+      "version": "1.2.15"
     },
     {
       "inclusion": "production dependency",
@@ -8518,7 +8518,7 @@
       "version": "8.3.5"
     }
   ],
-  "packageLockSha256": "05eb17cf989e1289f2857dff5e68d3b82aa4d05dc51b61bd99b4d53b582f6d77",
+  "packageLockSha256": "961e42d6e631bf058be51124364612e01a68bd9b331f31d980310e161f541625",
   "schemaVersion": 1,
   "supplements": [
     "license-completion.json",

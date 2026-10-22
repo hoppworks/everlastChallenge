@@ -3,8 +3,41 @@
 Die direkten npm- und Cargo-Abhängigkeiten sind exakt in den Manifesten und
 Lockfiles gebunden. Der Aktualisierungsstand vom 22.10.2026 umfasst unter anderem
 CPAL 0.18.2, rtrb 0.4.0, Rubato 5.0.1, reqwest 0.13.5, sha2 0.11.1,
-ts-rs 12.0.1 und Tauri 2.12.5. Vendorte, lokal angepasste Quellen bleiben auf
-ihren dokumentierten Ständen; ein Registry-Update würde ihre Patches umgehen.
+ts-rs 12.0.1 und Tauri 2.12.5. Maßstab sind veröffentlichte stabile Versionen,
+die im gewählten Abhängigkeitsgraphen zusammen auflösbar sind. Vorabversionen
+werden nicht ausgewählt. Lokale Patches bleiben mitsamt Herkunft erhalten.
+
+### Konkrete Versionsbindungen
+
+Die Registry-Prüfung vom 22.10.2026 bestätigt die stabilen Wrapperversionen
+`whisper-rs 0.16.0`, `whisper-rs-sys 0.15.0`, `mlxrs 0.2.0`,
+`mlxrs-sys 0.2.0` und `tokenizers 0.23.2`. Tokenizers `1.0.0-rc.3` ist eine
+Vorabversion. Die folgenden älteren Stände sind durch veröffentlichte
+Abhängigkeiten gebunden, nicht durch eine pauschale Update-Ausnahme:
+
+| Bestandteil | Verwendet / neuer verfügbar | Bindung |
+|---|---|---|
+| global-hotkey | 0.8.0 / 0.9.0 | Der stabile `tauri-plugin-global-shortcut 2.4.1` verlangt `^0.8`. Der vorhandene macOS-Besitzpatch bleibt auf dieser Basis. |
+| generic-array | 0.14.7 / 0.14.9 innerhalb derselben Reihe | `crypto-common 0.1.7` verlangt exakt `=0.14.7`, über `digest 0.10.7` und `sha2 0.10.9` im Tauri-Codegenerator. Die eigene Hashimplementierung nutzt bereits `sha2 0.11.1`. |
+| brotli-decompressor | 6.0.1 / 6.1.1 | `brotli 9.0.0` verlangt `~6.0`; verwendet durch Tauri. |
+| toml / toml_edit / toml_datetime | 0.8.2 / 0.20.2 / 0.6.3 | Im plattformübergreifenden Lockfile bindet der GTK-Pfad über `glib-macros 0.18.5` und `proc-macro-crate 2.0.2` `toml_datetime` exakt auf 0.6.3. Die neueren kompatiblen Reihen lassen sich damit nicht gemeinsam auflösen. Dieser GTK-Pfad wird für die macOS-App nicht gebaut. |
+
+`cargo update --dry-run` löst danach keine weitere Aktualisierung auf. Ein
+gezielter Versuch mit `toml 0.8.23` scheitert am genannten exakten Pin.
+Die npm-Lockauflösung wurde zusätzlich mit `npm update` aktualisiert, darunter
+Rolldown, PostCSS und die DOM-Testabhängigkeiten. `npm outdated` prüft die
+direkten Pakete; dies ist keine Behauptung, jede transitive Hauptversion sei
+die global neueste.
+
+Native Unterbibliotheken folgen ebenfalls der veröffentlichten Wrapperbasis:
+`mlxrs-sys 0.2.0` bindet MLX 0.32.2, obwohl MLX 0.32.4 veröffentlicht ist;
+`whisper-rs-sys 0.15.0` enthält seinen festgelegten whisper.cpp-Quellstand,
+nicht das separat veröffentlichte whisper.cpp 1.9.5. Die nativen MLX-Buildinputs
+binden JSON 3.11.3 und fmt 12.1.0, obwohl 3.12.0 beziehungsweise 12.2.0
+veröffentlicht sind. Diese Inputs einzeln auszutauschen wäre eine zusätzliche
+Wrappermigration mit neuer ABI-/Inferenzprüfung. Sie werden hier nicht als
+aktualisierte Versionen ausgegeben. Die Quell- und Archivpins stehen in
+`config/mlx-build-inputs.json` und den Vendorreceipts.
 
 TypeScript 7.0.2 prüft die Anwendung und Werkzeuge. Der Paketalias
 `@typescript/native` stellt dessen `tsc` bereit. ESLint und die AST-Guardrails

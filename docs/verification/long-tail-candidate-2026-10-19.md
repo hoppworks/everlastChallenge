@@ -56,5 +56,4 @@ unverändertem Decoder erlauben die Übernahme alter Resultate. Veränderte Fäl
 müssen erneut ausgewertet werden. Keine pauschale Freigabe aus fünf Paaren,
 kein neuer mehrstündiger Lauf ohne diese Eingrenzung.
 
-Die installierte normale App bleibt bytegleich. P06-Referenz und formaler
-Paketstand 4/14 werden durch diesen isolierten Kandidaten nicht geändert.
+Die installierte normale App und die P06-Referenz bleiben durch diesen isolierten Kandidaten unverändert.

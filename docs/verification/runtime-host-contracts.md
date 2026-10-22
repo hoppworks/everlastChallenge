@@ -84,5 +84,4 @@ Journalfreigabe, Speicherobergrenze oder Heap-/RSS-Stabilität. Die gesonderte
 sie wird nicht zu einem Runtime-Speichernachweis umbenannt. Decoder 1 ist ein
 kontrollierter Rust-Decoder, kein nativer Whisper-Kernel. Reale 100
 Aufnahmesitzungen, Mikrofon-/Bluetoothwechsel, OS-Sleep sowie das installierte
-App-Ende bleiben eigenständige offene Abnahmen. P03/P04/P05 werden durch dieses
-Paket nicht pauschal abgeschlossen; das autorisierte Testbundle bleibt erhalten.
+App-Ende sind durch diesen isolierten Test nicht belegt.

@@ -4,7 +4,7 @@
 
 ## Platform
 
-web
+Native macOS desktop app (Tauri 2, React/TypeScript UI)
 
 ## Users
 
@@ -19,8 +19,8 @@ Kompakte Bedienung und Progressive Disclosure begrenzen die sichtbare Komplexit�
 ## Operating Context
 
 Die Oberfläche läuft produktiv in einer nativen Rust-/Tauri-2-App auf Apple Silicon
-und macOS 27. `web` bezeichnet hier die React-/TypeScript-Oberfläche und ihre
-Browser-Entwürfe; es ist keine Freigabe für eine browserbasierte Audio-Pipeline.
+und macOS 27. Die WebView zeigt die React-/TypeScript-Oberfläche;
+Mikrofonaufnahme, Inferenz und Einfügen laufen im nativen Prozess.
 
 ## Capabilities and Constraints
 
@@ -34,7 +34,7 @@ bleiben Simulationen. Der tatsächliche Prüfstand und seine Grenzen stehen in
 Produktname: Everlast Coding Challenge. Sehr simple Hauptansicht; Einstellungen,
 Modelldetails und Diagnose werden erst bei Bedarf offengelegt. Die native Palette verwendet
 Hell-/Dunkelmodus nach Systemeinstellung und bestehender macOS-Systemschrift.
-Diese Freigabe ersetzt keine technische Abnahme des Implementierungskandidaten.
+Die Testgrenzen stehen in den jeweils versionsgebundenen Prüfberichten.
 
 ## Evidence on Hand
 
@@ -46,4 +46,4 @@ README.md, docs/code-map.md, src/App.tsx, src/features/app/AppView.tsx und die a
 - Diktieren ist die Hauptaufgabe.
 - Details dürfen erst bei Bedarf erscheinen, Fehler müssen dennoch sichtbar sein.
 - Oberfläche und native Funktionen behalten klare Zuständigkeiten.
-- Varianten werden vor der Umsetzung in die produktive App verglichen.
+- Die Gestaltung bleibt auf die Diktieraufgabe konzentriert.

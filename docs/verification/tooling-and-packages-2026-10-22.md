@@ -30,10 +30,11 @@ Parameter wurden nicht als Ergebnisse des neuen Paketstands ausgegeben.
   ausdrücklich `--ignoreConfig`, die Projektprüfungen ihre `tsconfig`-Dateien.
 
 Direkte Versionen und transitive Auflösung stehen in den Manifesten und Lockfiles.
-`generic-array` 0.14.7 bleibt wegen des exakten Pins in `crypto-common` 0.1.7 im
-Tauri-Buildgraphen; 0.14.9 lässt sich innerhalb dieses Graphen nicht auswählen.
-Die eigenen direkten Abhängigkeiten wurden aktualisiert. Die lokal gepatchten
-Vendorquellen blieben unverändert. [Inventar und Originaltexte](../licenses/third-party/updated-dependencies-2026-10-22.json)
+Die [konkreten Versionsbindungen](../dependencies.md#konkrete-versionsbindungen)
+beschreiben auch die unveränderten transitiven und nativen Quellen. Die eigenen
+direkten Abhängigkeiten und auflösbaren npm-Unterabhängigkeiten wurden
+aktualisiert. Die lokal gepatchten Vendorquellen blieben unverändert.
+[Inventar und Originaltexte](../licenses/third-party/updated-dependencies-2026-10-22.json)
 bleiben von einer behaupteten exakten Linkclosure getrennt.
 
 ## Ausgeführte Softwareprüfungen
@@ -62,6 +63,11 @@ Rustls-Initialisierung, die isolierte TLS-Testkontrolle, Compiler-Dateifixtures
 und die gemeinsam genutzte Hashformatierung. Spezielle Dateitypen werden vor
 dem Lesen abgelehnt; ein FIFO-Test bestätigt, dass dabei nicht auf einen
 Schreiber gewartet wird. Die Schwellen wurden nicht gesenkt.
+
+Nach der zusätzlichen npm-Lockfile-Aktualisierung wurden die betroffenen
+Frontend- und Werkzeugpfade erneut geprüft: 227 React-/IPC-Tests, 158 bestehende
+Node-Tests (eine optionale Probe übersprungen), 36 TypeScript-Werkzeugtests und
+`check:fast` bestanden. Die unveränderten nativen Tests wurden übernommen.
 
 Die neue Unicode-Auswertung stimmt mit den eingefrorenen Ausgaben des früheren
 Unicode-13-Auswerters überein. Alle drei unabhängigen Mel-DFT-Fälle stimmen

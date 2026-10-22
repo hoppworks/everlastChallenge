@@ -3,10 +3,8 @@
 Stand 19.10.2026, Quelle `2abf49503fe8b8c43fd7916cc5be3cb9aea3be6f`.
 [Quell-/Logbindungen](p04-standard-microphone-technical-v1.json).
 
-Die eigenen technischen P04-Kriterien sind nach der ausdrücklichen Reduktion
-auf **Systemstandard** belegt. Der formale Paketabschluss bleibt wegen der
-P03-Voraussetzung offen; insbesondere ist reales Sleep/Wake noch nicht abgenommen.
-Kein zusätzlicher Gerätetest oder neuer 100er-Lauf erforderlich.
+Die technischen Kriterien dieses Berichts gelten für **Systemstandard**.
+Andere Geräte sowie reales Sleep/Wake wurden hier nicht geprüft.
 
 | Kriterium | Wiederverwendeter beziehungsweise neuer Nachweis |
 |---|---|

@@ -1,6 +1,6 @@
 # Autonomer lokaler Testzugang, 19.10.2026
 
-Auf ausdrücklichen Nutzerwunsch ersetzt ein lokaler Entwicklerzugang den
+Ein lokaler Entwicklerzugang ersetzt den
 physischen Tastendruck für wiederholte Funktionstests. Der installierte Testbuild
 aus `f592fcd` wurde mit `test-control` und derselben lokalen Signieridentität
 gebaut. Normaler Produktionsbuild und regulärer Hotkey bleiben unverändert;

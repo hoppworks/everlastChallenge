@@ -42,7 +42,7 @@ The retained tests exercise the actual completion/abandonment logic with control
 
 These initial per-file regression floors are 70/95/89/78/59 percent. Instrumentation includes inline test code and uses measurement/test-control features. It is not production-only branch coverage, coverage of all dependencies, or a safety proof. Removing forced link-dead-code fixed an unused Swift-FFI linker problem in instrumented Tauri build helpers; the preserved first failure is not represented as a passing run.
 
-Portable/tooling receipts were read as scoped prior evidence; the parent is still running the stable final integrated check. This review did not rerun builds, product tests, microphone tests, or hotkeys.
+Portable/tooling receipts were read as scoped prior evidence. The integrated check was not complete at the time of this review. This review did not rerun builds, product tests, microphone tests, or hotkeys.
 
 ## Pure-MLX follow-up evidence
 
@@ -50,9 +50,9 @@ Independently verified the frozen probe SHA, both metadata corpus hashes, all si
 
 Total single-run process times are 4.053284459 s (hybrid) and 2.955995417 s (MLX); maximum RSS is 1,343,356,928 and 1,736,900,608 bytes. Profiles and checkpoints differ; order is fixed; OS caches may differ. The pure-ASR profile has no CPP ASR fallback but still shares native Silero VAD. The report correctly retains the hybrid as product and makes no universal speed, memory, semantic-quality, or new final-build latency guarantee.
 
-## Remaining completion gates, not source findings
+## Scope limits
 
-Read back the final integrated checks and build/packaging receipts before shipping. Merge and installation must preserve full history, settings, and bundle identity as authorized. Record the actual final revision; do not transfer old GUI/physical-key acceptance to a new binary without identifying its limits. The candidate's own personal code explanation remains a human requirement.
+This source review does not establish the result of later integrated checks or package verification. GUI and physical-key observations apply only to the binaries identified in their respective reports.
 
 ## Reviewed file hashes
 

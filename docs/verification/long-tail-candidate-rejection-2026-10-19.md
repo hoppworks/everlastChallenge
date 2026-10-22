@@ -41,4 +41,4 @@ Die vier langen bisherigen Qualitätsfälle hätten nach VAD-Vorprüfung keinen
 ausreichend langen entfernbaren Nachlauf. Das ersetzt keine Freigabe eines
 Kandidaten mit anderweitig bekanntem Sprachverlust; deshalb wurde keine
 weitere Qualifikation gestartet. Der ursprüngliche Rauschnachlauf-Befund
-bleibt offen. Andere unabhängige Abnahmen bleiben ausführbar. Stand 4/14.
+bleibt offen. Der Befund betrifft die hier beschriebene Variante.

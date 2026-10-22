@@ -56,4 +56,4 @@ Die unveränderte ursprüngliche CPP100-Referenz hat SHA `5753da227ac32a3c58b7a0
 
 Die Metadaten enthalten `sourceRevision=null`; es wird daher kein zusätzlicher Git-Revisionsbeweis behauptet. Die Identität wird hier durch die genannten eingefrorenen Source-/Build-/Inputbindungen belegt.
 
-Dieser Nachweis erlaubt den nächsten separat autorisierten Qualitäts-/Bestätigungsschritt. Er ist keine neue prospektive Bestätigung, kein gepaceter L-/p95-Nachweis, keine vollständige Resourceprüfung und keine Produktfreigabe. Keine Modelle, Builds oder Produktionsquellen wurden von diesem Reviewer ausgeführt oder geändert.
+Dieser Nachweis ist keine neue prospektive Bestätigung, kein gepaceter L-/p95-Nachweis, keine vollständige Resourceprüfung und keine Produktfreigabe. Keine Modelle, Builds oder Produktionsquellen wurden von diesem Reviewer ausgeführt oder geändert.

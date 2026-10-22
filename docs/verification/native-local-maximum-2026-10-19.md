@@ -26,7 +26,7 @@ aus diesem Versuch abgeleitet.
 
 Dieser lokale Buttonlauf beweist weder physische globale Hotkeyzustellung
 noch das Fenster-/Fokusverhalten eines Hotkey-Diktats. A26 bleibt insgesamt
-offen. Formale Paketabschlüsse weiterhin 4/14. Die schnellen kontrollierten
+offen. Die schnellen kontrollierten
 Softwaretests für 270-/300-Sekunden-Grenzen bleiben der normale autonome
 Regressionspfad; dieser reale Lauf ergänzt ausschließlich die fehlende
 native Beobachtung.

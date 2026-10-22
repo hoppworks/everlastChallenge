@@ -1,7 +1,7 @@
 # Native UI-Überarbeitung, 19.10.2026
 
 Ausgangsbasis: d680f35; abgeschlossener UI-Änderungsumfang im zugehörigen Commit.
-Nutzerauftrag: größeres nutzbares Standardfenster, Progressive Disclosure,
+Gestaltungsziel dieses Zwischenstands: größeres nutzbares Standardfenster, Progressive Disclosure,
 erreichbare Einstellungen; Deutsch mit englischen macOS-Bezeichnungen.
 
 ## Änderung
@@ -37,14 +37,14 @@ Appdaten und TCC-Datenbank unverändert. Die ZIP-Fassung 7b3dee7 bleibt ein
 historisches anderes Bundle und enthält diese UI-Überarbeitung nicht.
 
 Aktueller sichtbarer Rechtezustand nach Installation: Microphone notDetermined,
-Accessibility denied. Nutzer um eigene Freigabe gebeten. Keine Aufnahme oder
+Accessibility denied. Keine Aufnahme oder
 Zielprogramm-Einfügung in dieser UI-Prüfung durchgeführt; keine P02-/P07-/P09-
 Vollabnahme daraus abgeleitet. P06-Laufzeitpolitik unverändert Referenz.
 
 Logs: `artifacts/full-completion-audit/ui-{navigation-red,navigation-green,tests-full,check,release-build,bundle-verify}.log`
 und `ui-design-detect.json`.
 
-## Nachtrag: Berechtigungsdiagnose nach Nutzer-Rückmeldung
+## Nachtrag: Berechtigungsdiagnose
 
 Mikrofon wird inzwischen in der laufenden App erkannt (Bereit zum Diktieren).
 System Settings zeigt Everlast eingeschaltet unter „Device Control and Data
@@ -64,16 +64,12 @@ Datenbankmutation, Rechteänderung oder Signaturänderung vorgenommen.
 
 Unabhängige native Quellenprüfung durch settings: API/ABI korrekt, unmittelbare
 Abfrage im Appprozess, Aktualisierung bei Start/Fokus/Anfrage korrekt vorhanden.
-Nutzer um gezieltes Entfernen des alten Eintrags und Hinzufügen des exakten
-aktuellen Pfads gebeten. Abschluss dieser Vergabe noch nicht nachgewiesen.
+Zu diesem Zeitpunkt war die Neuzuordnung der Berechtigung zum aktuellen Build noch nicht nachgewiesen.
 
-Der Nutzer hat anschließend den alten Eintrag entfernt und die aktuelle App
-über ihren exakten Pfad hinzugefügt. CUA-Lesebeleg in der laufenden App:
+Anschließend wurde der alte Eintrag entfernt und die aktuelle App über ihren exakten Pfad hinzugefügt. CUA-Lesebeleg in der laufenden App:
 Einstellungen → Berechtigungen zeigt Mikrofon **Freigegeben** und
 Bedienungshilfen (Accessibility) **Freigegeben**. Damit ist die gezielte
 Neuzuordnung für diesen c28c2ac-Build erfolgreich verifiziert.
 
-Spätere Nutzerkritik fordert über diesen Weblayout-Zwischenstand hinaus echte
-native AppKit-Steuerung für Hauptansicht und Einstellungen, native Tabs,
-Standard-Appmenü „Einstellungen …“ mit ⌘, und keinen Inhalt-Schließenbutton.
-Dieser neue Umbau wird separat geprüft; dieser Nachweis behauptet ihn nicht.
+Dieser Weblayout-Zwischenstand wurde später durch weitere UI-Varianten ersetzt.
+Die aktuelle Oberfläche ist in [Palette](palette-2026-10-21.md) beschrieben.

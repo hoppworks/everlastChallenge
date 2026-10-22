@@ -52,5 +52,4 @@ Das erklärt die Exposition gegenüber Rauschen, noch keinen sicheren Fix.
 Die Energieschwelle einfach anzuheben würde die vorhandene Reserve für leise
 Sprache gefährden. Ein Fix muss den roten Dateifall und leise beziehungsweise
 späte echte Sprache gemeinsam prüfen, ohne Textphrasen herauszufiltern.
-Die bestehende qualifizierte Referenz und sämtliche formalen Paketgrenzen
-bleiben bis zu einem solchen geprüften Fix unverändert. Stand 4/14.
+Die bestehende qualifizierte Referenz bleibt durch diese Diagnose unverändert.

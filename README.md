@@ -31,6 +31,9 @@ im [aktuellen Release](https://github.com/hoppworks/everlastChallenge/releases/l
 5. [KI-Nutzung](docs/ai-review.md): Werkzeuge und überprüfte Beispiele.
 6. [Entwicklerwerkzeuge](docs/tooling.md): Auswertung, Korpus und reproduzierbare Prüfungen.
 
+Der [Dokumentationsindex](docs/README.md) trennt aktuelle Einstiege von datierten
+Versuchen und früheren Implementierungen.
+
 ## Fertige App starten
 
 Den oben verlinkten ZIP entpacken und die `.app` nach Programme kopieren.
@@ -67,6 +70,11 @@ zeigt dessen Status und Herkunft. Ältere gespeicherte Modellwahlen werden beim
 Start auf den Hybrid umgestellt; Mikrofon und Hotkey bleiben erhalten.
 Deutsch ist die freigegebene Produktsprache. Weitere Sprachen und schwierige
 Aufnahmen haben dokumentierte Qualitätsgrenzen.
+
+Der eigene Anwendungscode und die aktiven Entwicklerwerkzeuge sind Rust und
+TypeScript. Die eingebundenen Inferenzbibliotheken enthalten weiterhin C/C++
+und Metal; deren unveränderte Upstream-Quellen können weitere Hilfssprachen
+enthalten. Für den Appbetrieb wird kein Python benötigt.
 
 ## Architektur
 

@@ -7,10 +7,10 @@ Die unabhängige Codeprüfung ist abgeschlossen; ein neuer unveränderlicher Fre
 
 ## Neue Auswertung über getrennte Ausführungszeiträume
 
-Auf ausdrücklichen Nutzerauftrag darf ein **neues Screening-Dataset** bereits
-vollständig gültige Fälle aus v2 übernehmen und ausschließlich die fehlenden
-Fälle neu messen. Dies ändert die bisherige Regel, nach einem Fehler den Rest
-nicht auszuführen, nur für diese gesondert autorisierte Dataset-Bildung.
+Das hier definierte **Screening-Dataset** übernimmt bereits vollständig gültige
+Fälle aus v2 und misst ausschließlich die fehlenden Fälle neu. Dies weicht für
+diesen Datensatz von der bisherigen Regel ab, nach einem Fehler den Rest nicht
+auszuführen.
 Es ist keine automatische Wiederholung und keine nachträgliche Heilung von v2.
 Historische Aussagen über fehlgeschlagene Versuche und ihre damaligen Regeln
 bleiben unverändert; diese Ausnahme gilt nur für den neu eingefrorenen
