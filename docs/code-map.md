@@ -128,7 +128,9 @@ dann die erhaltene Bereinigungskennung. Während einer neuen Aufnahme gilt wiede
 die exakte aktive ID. Fehler und Abbruch zeigen das Original mit Kopieraktion,
 bearbeitete Ergebnisse bieten zusätzlich das ursprüngliche Transkript hinter
 einer Offenlegung. Die [UI-Verifikation](verification/refinement-ui-2026-10-22.md)
-grenzt Browserdarstellung und Vertragstests von der noch ausstehenden Paketabnahme ab.
+grenzt Browserdarstellung und Vertragstests vom nativen Paketnachweis ab.
+Die [Paketprüfung 0.3.0](verification/release-0.3.0.md) dokumentiert den
+beobachteten Textempfang und die weiterhin bestehenden Erkennungsgrenzen.
 
 Aktive Entwicklerwerkzeuge und der Umgang mit historischen Messreihen stehen in
 [tooling.md](tooling.md).

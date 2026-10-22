@@ -100,8 +100,9 @@ Der isolierte `text-refinement-worker` gehört zu den Workspace-Format-, Clippy-
 und Cargo-Prüfungen sowie zur expliziten Abhängigkeitsprüfung. Seine gezielten
 Transport-/Snapshot-Tests laufen auch ohne MLX mit
 `cargo test -p text-refinement-worker --no-default-features --locked`.
-Diese Tests belegen weder Modellqualität noch den noch ausstehenden
-Host-Supervisor oder nativen Textempfang.
+Diese Tests belegen keine Modellqualität oder nativen Textempfang.
+Die Host-Prozessaufsicht wird zusätzlich über die unten genannten
+Prozess-Fixtures geprüft.
 
 `npm run check:refinement` und `npm run test:refinement` prüfen Protokoll,
 Workermechanik und die Host-Prozessaufsicht ohne MLX auf portablen Runnern.

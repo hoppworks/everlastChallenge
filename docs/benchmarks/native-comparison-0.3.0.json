@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "runtimeRevision": "dd4dd5974bef3466b07865e226520d78c63939c8",
+  "sourceRevision": "f4d6a0e6630578ce463c1c17d55fb1bdfceb5d0c",
+  "scope": "Exploratory individual paired observations, not a repeated statistical benchmark or a general quality qualification.",
+  "metric": "Actual native stop-key event to independently observed complete final target text. Ranges bracket event/receipt observations; they are not confidence intervals.",
+  "environment": {
+    "hardware": "Mac17,2",
+    "os": "macOS 27.0.1 (26A434)",
+    "input": "Built-in microphone",
+    "output": "Built-in speakers",
+    "outputVolume": 0.5
+  },
+  "reference": {
+    "product": "Voicely",
+    "version": "0.4.27",
+    "mode": "local/private",
+    "observedCleanup": "deterministic_clean_original; llm=none in all four observations"
+  },
+  "sourceSummarySha256": "ec6e55c919e636f3a2897d64b54aee7532197aae84c66ccdae690ba9c7c9ae8c",
+  "limits": [
+    "One observation per side and case; selected after documented measurement-control repairs, not a new independent validation sample.",
+    "Known German synthetic speech cases, including an input previously used in optimization.",
+    "Speaker-to-microphone playback introduces room and capture variation despite identical source files.",
+    "Stops occur 2.0–2.3 seconds after source playback; paired stop-offset tolerance was 100ms.",
+    "Different time before stop may permit different work before the timing origin. This is not removed by timing each actual stop separately.",
+    "Earlier failed, aborted and timing-invalid controls are excluded from these four timing-qualified pairs and retained locally; these are not all attempted runs.",
+    "No raw recordings, transcripts, account metadata or machine-local paths are published.",
+    "Quality assessments are AI-assisted case checks, not general accuracy or independent human linguistic validation."
+  ],
+  "cases": [
+    {
+      "id": "short-de-day",
+      "audioSha256": "62ba07743c5ff690135ed4fdd1182b7915bdcf95a8a5e1437cbe2027c978f639",
+      "pairedStopOffsetDifferenceMs": 50.79291699999976,
+      "qualityAssessment": "candidate passes stated facts and cleanup; reference loses sentence content",
+      "observations": [
+        {
+          "side": "candidate",
+          "stopAfterSourceEndMs": 2166.291375,
+          "stopToReceiptMs": {
+            "lower": 446.434208,
+            "upper": 492.502542
+          },
+          "outputSha256": "e9918e6bfc501ff6b53227e9f6d173f44977a00d3a43965bb9bd62a9e4b6c888",
+          "sourceRecordSha256": "207ba7d5ed5feb731c6d5e78590ee97dffea542948439fec5e0d15ca5f11a630",
+          "nativeJournalSha256": "0f3b81e56da674e4d075bb77374cb27cc2111d43bc59a99a3748321312d43d4d"
+        },
+        {
+          "side": "reference",
+          "stopAfterSourceEndMs": 2115.498458,
+          "stopToReceiptMs": {
+            "lower": 859.947,
+            "upper": 893.472459
+          },
+          "outputSha256": "690a8bc996646724f0a92ff2afda241114d44553f40afd0773e98f4416ef7ec9",
+          "sourceRecordSha256": "2621150174d29fbb2660c5692c67a53949e9b792bcca29475515aa80a72c41d8",
+          "nativeJournalSha256": "ba03d6b7e1b51521cdff508582a5ea8742da828426285b32113179f9ddc706bf"
+        }
+      ]
+    },
+    {
+      "id": "sensitive-de-negation",
+      "audioSha256": "ccdb98ab37f22303d163c7a4b88f16447948355d8137ae5f9bc2fd505e39dbc2",
+      "pairedStopOffsetDifferenceMs": 15.157791000000088,
+      "qualityAssessment": "candidate passes stated facts and cleanup; reference loses sentence content",
+      "observations": [
+        {
+          "side": "candidate",
+          "stopAfterSourceEndMs": 2141.221708,
+          "stopToReceiptMs": {
+            "lower": 482.426,
+            "upper": 525.803875
+          },
+          "outputSha256": "8b38f3525dce6ea6e0da03dee00aa4ce070f0f8a0fda08b45f1d4abe2b6e5519",
+          "sourceRecordSha256": "5b66e1034c774670150db96563daa01507634c515e404c2ce412a02de2942f25",
+          "nativeJournalSha256": "a445f3e0df4108d48a02b06405dc54500435a5c7e856abb3ec42227f70a6d16c"
+        },
+        {
+          "side": "reference",
+          "stopAfterSourceEndMs": 2126.063917,
+          "stopToReceiptMs": {
+            "lower": 955.469916,
+            "upper": 989.307916
+          },
+          "outputSha256": "94a644ab24bed18654ccc4cdf4de7887202d830ab9827eca877b563e74e63821",
+          "sourceRecordSha256": "c7441c1f52ef511c38e79a684c5fbe7816edbc8e2184f7f7dceea02d7cdb3983",
+          "nativeJournalSha256": "67831427e6cb5df15c34ee0a5a4cb9e04e36874e6656139ee22935e21b4cb68d"
+        }
+      ]
+    },
+    {
+      "id": "sensitive-de-quote",
+      "audioSha256": "8780d15ccdd15c4f733fbcea1f41a8f112a2b8f27d2dbffdda50482e3af7b68b",
+      "pairedStopOffsetDifferenceMs": 27.486374999999953,
+      "qualityAssessment": "both fail full cleanup quality; candidate retains more source content",
+      "observations": [
+        {
+          "side": "candidate",
+          "stopAfterSourceEndMs": 2147.928042,
+          "stopToReceiptMs": {
+            "lower": 582.924125,
+            "upper": 626.988541
+          },
+          "outputSha256": "6f7054955c039668744b04609649d5aac5cdbecd35c10e9ff1fca0c889136d44",
+          "sourceRecordSha256": "b995015767b3066d726382af8257db379a37a8107dc6d786ab965362df615017",
+          "nativeJournalSha256": "6ad4da81168392c299b14a406d67d3b46d8d2412db07765321d9192a96911a94"
+        },
+        {
+          "side": "reference",
+          "stopAfterSourceEndMs": 2120.441667,
+          "stopToReceiptMs": {
+            "lower": 997.559917,
+            "upper": 1048.372333
+          },
+          "outputSha256": "e59d5c7538a4039614c2a63530894c42f4cabe415da479dcdeeb96eb4ea10622",
+          "sourceRecordSha256": "c339f89d0cda135068c10deb45f24376e35fe6a57a2617bb27cb6bcab214f74b",
+          "nativeJournalSha256": "bd6a0f6b237c5b013b4d7c840f7ad6056e2b65a173e698e5ab38ccbbf49e856d"
+        }
+      ]
+    },
+    {
+      "id": "long-de-plan",
+      "audioSha256": "30586a43ca1cbae216617a4eb5110c713a59d033c2491b97c402f3797a331b7d",
+      "pairedStopOffsetDifferenceMs": 20.746957999999722,
+      "qualityAssessment": "both fail full cleanup quality; candidate retains more source content",
+      "observations": [
+        {
+          "side": "candidate",
+          "stopAfterSourceEndMs": 2149.938667,
+          "stopToReceiptMs": {
+            "lower": 3779.83825,
+            "upper": 3846.773292
+          },
+          "outputSha256": "7294efe0e05e01f6cf983ab6ef5756c7605518b5e16526a5f8333baf8d50967f",
+          "sourceRecordSha256": "71ab5bb2c6260848fac2fa5a8f37946ad81bc39694bb242613744e27e7680aed",
+          "nativeJournalSha256": "97b868cb168ced46ba1ba257325c100929aae94f1eb0173e0d183032d4bd26b4"
+        },
+        {
+          "side": "reference",
+          "stopAfterSourceEndMs": 2129.191709,
+          "stopToReceiptMs": {
+            "lower": 2872.932958,
+            "upper": 2921.802125
+          },
+          "outputSha256": "543c107f0d7d21dde38e7fb0e12348347710048f98044e685ba23da562bcd1bb",
+          "sourceRecordSha256": "95ec57aa1d3e1a671fa19711ba60850ae9edbcf0ff8d2fb0ce5a7e47232efcb5",
+          "nativeJournalSha256": "b1714f6366a6d18bfaf62995aad9694b38b1b5f02ca2edda38488fa8c0e4071e"
+        }
+      ]
+    }
+  ]
+}
