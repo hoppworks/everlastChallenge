@@ -55,3 +55,12 @@ zeigte, dass eine parameterlose Serde-Variante zusätzliche Felder akzeptierte;
 eine explizite leere Struktur verhindert dies. Die Protokolltests prüfen
 Speichergrenzen, Teilrahmen, Versionen und unbekannte/doppelte Felder in
 kontrollierten Speicherstreams; sie ersetzen keine Prozess- oder Modellprüfung.
+
+## Isolated local text worker
+
+Codex assisted the MLX worker, bounded transport, model snapshot and focused
+regression tests. Independent review identified blocked control paths and two
+model-file ownership issues; targeted follow-up checked their corrections.
+A real model smoke test still missed two required corrections. The
+[worker report](verification/refinement-worker-2026-10-22.md) preserves that
+limitation and does not claim integrated product or quality acceptance.

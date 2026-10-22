@@ -4777,6 +4777,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "text-refinement-worker"
+version = "0.2.0"
+dependencies = [
+ "dictation-core",
+ "libc",
+ "mlxrs",
+ "serde",
+ "serde_json",
+ "sha2 0.11.1",
+ "tempfile",
+ "text-refinement-protocol",
+ "thiserror 2.0.21",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -92,3 +92,10 @@ Dokumentation behalten die üblichen Prüfungen.
 `mkfifo` ist wie `gitleaks` ein externes Werkzeug in Knip: Es gehört zum
 POSIX-Testhost und erzeugt ausschließlich eine temporäre FIFO für die
 Sonderdatei-Abweisung. Es ist keine npm-Abhängigkeit und kein Bestandteil der App.
+
+Der isolierte `text-refinement-worker` gehört zu den Workspace-Format-, Clippy-
+und Cargo-Prüfungen sowie zur expliziten Abhängigkeitsprüfung. Seine gezielten
+Transport-/Snapshot-Tests laufen auch ohne MLX mit
+`cargo test -p text-refinement-worker --no-default-features --locked`.
+Diese Tests belegen weder Modellqualität noch den noch ausstehenden
+Host-Supervisor oder nativen Textempfang.
