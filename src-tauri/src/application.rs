@@ -499,6 +499,8 @@ fn start_runtime(
     let prepared = refinement.map(|config| {
         let spec = config.worker.clone();
         prepare_runtime_directory(&spec.runtime_directory).map_err(worker_error)?;
+        crate::refinement_service::scratch::recover(&spec.runtime_directory)
+            .map_err(worker_error)?;
         crate::refinement_service::owner::Owner::spawn(
             spec,
             crate::refinement_service::Limits::default(),
@@ -640,8 +642,8 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn unavailable_text_directory_keeps_ready_asr_running() -> Result<(), Box<dyn std::error::Error>>
-    {
+    fn optional_text_recovery_runs_on_startup_and_keeps_asr_available()
+    -> Result<(), Box<dyn std::error::Error>> {
         struct Decoder;
         impl crate::inference_service::Decoder for Decoder {
             fn decode(
@@ -652,15 +654,24 @@ mod tests {
                 Ok("Ready.".into())
             }
         }
-        for symlink in [false, true] {
+        for case in 0..4 {
             let root = tempfile::tempdir()?;
             let path = root.path().join("text-runtime");
             let foreign = root.path().join("foreign");
             std::fs::write(&foreign, b"preserve")?;
-            if symlink {
-                std::os::unix::fs::symlink(&foreign, &path)?;
-            } else {
-                std::fs::write(&path, b"preserve")?;
+            match case {
+                0 => std::fs::write(&path, b"preserve")?,
+                1 => std::os::unix::fs::symlink(&foreign, &path)?,
+                2 => {
+                    std::fs::create_dir(&path)?;
+                    std::os::unix::fs::symlink(&foreign, path.join(".text-worker.lock"))?;
+                }
+                _ => {
+                    let abandoned = path.join("text-worker-v1-abandoned");
+                    std::fs::create_dir_all(&abandoned)?;
+                    std::fs::write(abandoned.join(".owner.lock"), b"everlast-text-owner-v1\n")?;
+                    std::fs::write(abandoned.join("snapshot"), b"abandoned model")?;
+                }
             }
             let config = RefinementConfig {
                 models: root.path().join("models"),
@@ -680,7 +691,14 @@ mod tests {
             let inference = crate::inference_service::InferenceService::with_decoder(Decoder)?;
             let (port, _endpoint) = runtime::native_mailbox();
             let (runtime, error) = start_runtime(inference, port, Some(&config))?;
-            assert!(error.is_some(), "optional failure must remain visible");
+            assert_eq!(
+                error.is_some(),
+                case != 3,
+                "optional failure must remain visible"
+            );
+            if case == 3 {
+                assert!(!path.join("text-worker-v1-abandoned").exists());
+            }
             let deadline = Instant::now() + Duration::from_secs(3);
             loop {
                 let snapshot = runtime.client().snapshot()?;
@@ -695,7 +713,9 @@ mod tests {
             }
             runtime.join()?;
             assert_eq!(std::fs::read(&foreign)?, b"preserve");
-            assert_eq!(std::fs::read(&path)?, b"preserve");
+            if case < 2 {
+                assert_eq!(std::fs::read(&path)?, b"preserve");
+            }
         }
         Ok(())
     }

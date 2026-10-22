@@ -1,6 +1,14 @@
 //! Opt-in process fixture, never part of the distributed application.
 use std::{io::Write, num::NonZeroU64, path::PathBuf};
 use text_refinement_protocol::{Request, Response, read_request, write_response};
+struct ExitMarker(PathBuf);
+impl Drop for ExitMarker {
+    fn drop(&mut self) {
+        if std::fs::write(self.0.join("child-exited"), b"exited").is_err() {
+            eprintln!("fixture exit marker failed");
+        }
+    }
+}
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut args = std::env::args_os().skip(1);
     let model = PathBuf::from(args.next().ok_or("model")?);
@@ -11,6 +19,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map_err(|_| "generation")?
         .parse::<NonZeroU64>()?;
     let scratch = PathBuf::from(args.next().ok_or("scratch")?);
+    let _exit = ExitMarker(model.clone());
+    let _lease =
+        text_refinement_worker::manifest::owner_lease(&scratch).map_err(|_| "owner lease")?;
     std::fs::write(scratch.join("model-snapshot"), b"fixture")?;
     let mode = model.file_name().and_then(|s| s.to_str()).ok_or("mode")?;
     if mode == "startup-hang" {

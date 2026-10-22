@@ -1,6 +1,8 @@
 //! Owns one local worker process. Call on a service thread, never an audio callback.
 #[path = "refinement_service/owner.rs"]
 pub mod owner;
+#[path = "refinement_service/scratch.rs"]
+pub mod scratch;
 use dictation_core::refinement::{AcceptedTranscript, OriginalTranscript, validate};
 use std::{
     io::{Read, Write},
@@ -102,7 +104,7 @@ pub struct Termination {
 pub struct Worker {
     child: Option<Child>,
     pid: u32,
-    scratch: Option<tempfile::TempDir>,
+    scratch: Option<scratch::Scratch>,
     scratch_path: PathBuf,
     expected: ExpectedIdentity,
     limits: Limits,
@@ -131,10 +133,8 @@ impl Worker {
         {
             return Err(Failure::InvalidPath.into());
         }
-        let scratch = tempfile::Builder::new()
-            .prefix("text-worker-")
-            .tempdir_in(&spec.runtime_directory)
-            .map_err(|_| Failure::Spawn)?;
+        let scratch =
+            scratch::Scratch::create(&spec.runtime_directory).map_err(|_| Failure::Spawn)?;
         let mut child = Command::new(&spec.executable)
             .arg(&spec.model_directory)
             .arg(spec.identity.generation.to_string())

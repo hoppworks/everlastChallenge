@@ -149,3 +149,10 @@ preceded the allowlist and nested-signing correction. The
 [packaging report](verification/refinement-package-2026-10-22.md) records focused
 tests and a real relocated-worker smoke check, separately from model quality,
 application delivery and notarization.
+
+Text-worker crash recovery was AI-assisted and independently reviewed. A failing
+regression showed an abandoned snapshot remaining after startup. Shared host/child
+leases now protect live snapshots; an exclusive lease permits later recovery.
+The [recovery report](verification/refinement-recovery-2026-10-22.md) separates
+controlled process-crash evidence from normal native MLX startup/shutdown and
+from the still-unqualified GPU-abort and memory-pressure cases.

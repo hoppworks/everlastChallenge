@@ -1,13 +1,23 @@
 # Local text refinement worker
 
 A dedicated Apple Silicon macOS process owns Qwen3 inference through MLX.
-This crate is not yet connected to the desktop dictation flow.
+The desktop invokes it after ASR when local text refinement is enabled and the
+processing policy requires it. Model-quality qualification remains incomplete.
 
 The executable takes three positional arguments: the installed model directory,
 a nonzero worker generation, and a private absolute directory owned by its
 supervisor. The supervisor must remove the last directory **after waiting for
 process exit**, including forced termination. It must not rely on child-process
 destructors for cleanup.
+
+The directory contains a versioned `.owner.lock` marker. Host and worker hold
+separate shared file locks while they own it. At application startup and before
+spawning a worker, the host serializes recovery and creation with a directory
+lock. It removes recognized abandoned directories only after acquiring their
+exclusive lease. Live leases, unmarked legacy directories and unknown markers
+are preserved; cleanup does not guess ownership from a PID or timestamp.
+Losing the parent pipe terminates the dedicated process even during a blocked
+GPU operation. An abrupt process exit can leave the snapshot for later recovery.
 
 The worker copies the pinned assets into that directory, checking size and SHA-256
 while copying. It loads only this private snapshot, retains it through model
@@ -60,4 +70,5 @@ after dequeuing a result and before delivery.
 `npm run test:refinement:process` exercises the supervisor and owner with real
 fixture children. These fixtures do not load MLX or prove dictation/UI integration.
 The [owner report](../../docs/verification/refinement-owner-2026-10-22.md) records
-the tested boundary and remaining integration requirements.
+its original verification scope. Later runtime, UI and packaging reports extend
+that evidence; none alone proves final model quality or end-to-end delivery.

@@ -1,0 +1,52 @@
+{
+  "baseCommit": "53141bd8f005cc6f5b831bb5e5377840f87a0e5c",
+  "sourceFiles": [
+    {
+      "path": "src-tauri/src/refinement_service.rs",
+      "sha256": "a07f9415ce62b1267e723549e28ae99e2ad4903fb9e3b73bc247da72d544caa8"
+    },
+    {
+      "path": "src-tauri/src/refinement_service/scratch.rs",
+      "sha256": "83ad1d9b01473e46266d7714139583b133b09261ea991d4a0c9f2110d0ee3ca2"
+    },
+    {
+      "path": "src-tauri/src/application.rs",
+      "sha256": "508fefdd27bf81c8789877f0c5c54d2b7ed1a22a652cf723dfc9897bde3b0660"
+    },
+    {
+      "path": "crates/text-refinement-worker/src/main.rs",
+      "sha256": "4ad5f1fce8af0b020b2249f778dd40798e036afabbe7ab5bbdbd53ed9512d1fc"
+    },
+    {
+      "path": "crates/text-refinement-worker/src/manifest.rs",
+      "sha256": "f626e8a67c14caa8eb8d2eb968eabd939837d4d618dd98810ea53587701e6a0b"
+    },
+    {
+      "path": "crates/text-refinement-worker/tests/manifest.rs",
+      "sha256": "5724bc2d711bd9fcc1e0c8338f09382244d5f32aab792f05e9c74bbc27727bf7"
+    },
+    {
+      "path": "crates/text-refinement-worker/tests/supervisor.rs",
+      "sha256": "d57ae2e01d7081cf5ea2c7b49d86bd8537c355e9373ec8e4f62bda33ae87c705"
+    },
+    {
+      "path": "crates/text-refinement-worker/tests/fixtures/process.rs",
+      "sha256": "f52f90f6257bf5a172779e2ce843766f42bdb11ae3b675d0e71dcf22cb7973b0"
+    }
+  ],
+  "nativeWorker": {
+    "sha256": "645e031998d6a92e1489c068014e2c1f180581f1b2e77426f552c37c00b43ef8",
+    "modelManifestSha256": "fea7cc2a764e60d910da77c44549b7f123e681edb0c84f03658011eb86519352",
+    "promptVersion": 6,
+    "policyVersion": 4,
+    "input": "Das ist ein einfacher Test.",
+    "edits": [],
+    "exit": {
+      "code": 0,
+      "signal": null
+    },
+    "remainingOwnerFiles": [
+      ".owner.lock"
+    ]
+  }
+}

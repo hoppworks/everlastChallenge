@@ -91,3 +91,41 @@ fn template_reads_are_bounded_and_reject_symbolic_links() -> TestResult {
     }
     Ok(())
 }
+
+#[test]
+fn owner_lease_protects_directory_until_the_worker_releases_it() -> TestResult {
+    use text_refinement_worker::manifest::owner_lease;
+    let root = tempfile::tempdir()?;
+    let path = root.path().join(".owner.lock");
+    std::fs::write(&path, b"everlast-text-owner-v1\n")?;
+    let held = owner_lease(root.path()).map_err(|_| "valid lease rejected")?;
+    let other = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(path)?;
+    assert!(matches!(
+        other.try_lock(),
+        Err(std::fs::TryLockError::WouldBlock)
+    ));
+    drop(held);
+    other.try_lock()?;
+    other.unlock()?;
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn owner_lease_rejects_missing_unknown_or_symlinked_markers() -> TestResult {
+    use text_refinement_worker::manifest::owner_lease;
+    let root = tempfile::tempdir()?;
+    assert!(owner_lease(root.path()).is_err());
+    let path = root.path().join(".owner.lock");
+    std::fs::write(&path, b"foreign file")?;
+    assert!(owner_lease(root.path()).is_err());
+    std::fs::remove_file(&path)?;
+    let target = root.path().join("target");
+    std::fs::write(&target, b"everlast-text-owner-v1\n")?;
+    std::os::unix::fs::symlink(&target, &path)?;
+    assert!(owner_lease(root.path()).is_err());
+    Ok(())
+}

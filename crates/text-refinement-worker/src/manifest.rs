@@ -128,6 +128,23 @@ fn open_asset(path: &Path) -> Result<File, FailureKind> {
     Ok(file)
 }
 
+/// Hold through process exit/model teardown. The host's matching shared lease
+/// protects the handoff; a future host may reclaim the directory only after
+/// acquiring an exclusive lease. No PID/liveness guess participates in recovery.
+pub fn owner_lease(directory: &Path) -> Result<File, FailureKind> {
+    let file = open_asset(&directory.join(".owner.lock"))?;
+    let mut marker = Vec::new();
+    (&file)
+        .take(64)
+        .read_to_end(&mut marker)
+        .map_err(|_| FailureKind::ModelLoad)?;
+    if marker != b"everlast-text-owner-v1\n" {
+        return Err(FailureKind::ModelLoad);
+    }
+    file.try_lock_shared().map_err(|_| FailureKind::ModelLoad)?;
+    Ok(file)
+}
+
 /// Owns a private snapshot until all model arrays and memory maps are released.
 /// This isolates loading from installer/cache replacement. As with the app's
 /// process memory, another process with the same user privileges is trusted.

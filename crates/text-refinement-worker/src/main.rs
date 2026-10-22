@@ -20,6 +20,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     if args.next().is_some() {
         return Err("unexpected worker argument".into());
     }
+    let _owner_lease =
+        manifest::owner_lease(&owner_directory).map_err(|_| "snapshot owner lease unavailable")?;
     serve(
         std::io::stdin(),
         std::io::stdout(),

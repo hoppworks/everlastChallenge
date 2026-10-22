@@ -77,7 +77,7 @@ fn async_owner_unload_cancels_startup_and_generation_without_blocking_the_caller
             .ok_or("cancelled job accepted")?;
         assert_eq!(error.reason, service::Failure::Cancelled);
         assert!(!error.cleanup_failed);
-        assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+        assert_eq!(std::fs::read_dir(root.path())?.count(), 2);
         owner.shutdown()?;
     }
     Ok(())
@@ -94,7 +94,7 @@ fn async_owner_idle_unloads_then_restarts_with_a_new_generation() -> TestResult 
     )?;
     owner.submit(owner_job(1, Cancellation::new())?)?;
     assert_eq!(owner_result(&owner)?.result?.as_str(), "Hello.");
-    until(|| std::fs::read_dir(root.path()).is_ok_and(|entries| entries.count() == 1))?;
+    until(|| std::fs::read_dir(root.path()).is_ok_and(|entries| entries.count() == 2))?;
     owner.submit(owner_job(2, Cancellation::new())?)?;
     assert_eq!(owner_result(&owner)?.result?.as_str(), "Hello.");
     let trace = std::fs::read_to_string(root.path().join("normal/requests.log"))?;
@@ -126,7 +126,7 @@ fn async_owner_cannot_release_a_completion_revoked_before_dequeue() -> TestResul
         // The idle close happens only after publishing this job's completion.
         until(|| {
             root.path().join("normal/requests.log").exists()
-                && std::fs::read_dir(root.path()).is_ok_and(|entries| entries.count() == 1)
+                && std::fs::read_dir(root.path()).is_ok_and(|entries| entries.count() == 2)
         })?;
         if unload {
             owner.unload()?;
@@ -157,7 +157,7 @@ fn async_owner_valid_stored_result_survives_a_rejected_followup_job() -> TestRes
     // Idle cleanup proves completion was stored, rather than merely in flight.
     until(|| {
         root.path().join("normal/requests.log").exists()
-            && std::fs::read_dir(root.path()).is_ok_and(|entries| entries.count() == 1)
+            && std::fs::read_dir(root.path()).is_ok_and(|entries| entries.count() == 2)
     })?;
     assert!(matches!(
         owner.submit(owner_job(2, Cancellation::new())?),
@@ -223,7 +223,7 @@ fn async_owner_reaps_a_clean_idle_exit_and_starts_the_next_explicit_job() -> Tes
     owner.submit(owner_job(1, Cancellation::new())?)?;
     owner_result(&owner)?.result?;
     std::fs::write(root.path().join("self-idle/allow-idle-exit"), b"exit")?;
-    until(|| std::fs::read_dir(root.path()).is_ok_and(|entries| entries.count() == 1))?;
+    until(|| std::fs::read_dir(root.path()).is_ok_and(|entries| entries.count() == 2))?;
     std::fs::remove_file(root.path().join("self-idle/allow-idle-exit"))?;
     owner.submit(owner_job(2, Cancellation::new())?)?;
     owner_result(&owner)?.result?;
@@ -263,7 +263,7 @@ fn async_owner_idle_crash_is_reported_without_a_restart_loop() -> TestResult {
             cleanup_failed: false
         })
     ));
-    assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+    assert_eq!(std::fs::read_dir(root.path())?.count(), 2);
     assert_eq!(
         std::fs::read_to_string(root.path().join("idle-crash/requests.log"))?
             .lines()
@@ -297,7 +297,7 @@ fn async_owner_failed_jobs_only_restart_for_a_new_explicit_session() -> TestResu
             .ok_or("invalid candidate released")?;
         assert_eq!(error.reason, service::Failure::InvalidCandidate);
         assert!(!error.cleanup_failed);
-        assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+        assert_eq!(std::fs::read_dir(root.path())?.count(), 2);
         assert!(matches!(
             owner.submit(owner_job(session, Cancellation::new())?),
             Err(OwnerError::InvalidJob)
@@ -344,7 +344,7 @@ fn async_owner_shutdown_and_drop_revoke_and_join_active_work() -> TestResult {
                 owner.shutdown()?;
             }
             assert!(cancel.is_cancelled());
-            assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+            assert_eq!(std::fs::read_dir(root.path())?.count(), 2);
         }
     }
     Ok(())
@@ -415,7 +415,7 @@ fn async_owner_is_lazy_reuses_the_process_and_preserves_unconsumed_results() -> 
     assert_eq!(rows[0][2], "1");
     assert_eq!(rows[1][2], "2");
     owner.shutdown()?;
-    assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+    assert_eq!(std::fs::read_dir(root.path())?.count(), 2);
     Ok(())
 }
 
@@ -553,7 +553,7 @@ fn startup_identity_must_match_every_bound_component() -> TestResult {
         let error = result.err().ok_or("accepted wrong worker identity")?;
         assert_eq!(error.reason, service::Failure::Identity);
         assert!(!error.cleanup_failed);
-        assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+        assert_eq!(std::fs::read_dir(root.path())?.count(), 2);
     }
     Ok(())
 }
@@ -579,7 +579,7 @@ fn malformed_startup_and_startup_timeout_leave_no_owned_process_directory() -> T
             error.reason
         );
         assert!(!error.cleanup_failed);
-        assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+        assert_eq!(std::fs::read_dir(root.path())?.count(), 2);
     }
     Ok(())
 }
@@ -703,6 +703,96 @@ fn unsolicited_output_flood_never_completes_a_job_and_is_reaped() -> TestResult 
         }
         Err(error) => assert!(!error.cleanup_failed),
     }
-    assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+    assert_eq!(std::fs::read_dir(root.path())?.count(), 2);
+    Ok(())
+}
+
+#[test]
+fn startup_recovers_only_released_versioned_scratch_directories() -> TestResult {
+    use std::io::Write;
+    let root = tempfile::tempdir()?;
+    let stale = root.path().join("text-worker-v1-stale");
+    let active = root.path().join("text-worker-v1-active");
+    let foreign = root.path().join("text-worker-unmarked");
+    for directory in [&stale, &active, &foreign] {
+        std::fs::create_dir(directory)?;
+    }
+    for directory in [&stale, &active] {
+        std::fs::write(directory.join(".owner.lock"), b"everlast-text-owner-v1\n")?;
+        std::fs::write(directory.join("model-bytes"), b"retained snapshot")?;
+    }
+    let mut held = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(active.join(".owner.lock"))?;
+    held.lock_shared()?;
+    held.flush()?;
+    let mut worker = Worker::spawn(spec(root.path(), "normal")?, limits(), &Cancellation::new())?;
+    assert!(!stale.exists(), "released scratch was not recovered");
+    assert!(
+        active.join("model-bytes").exists(),
+        "live scratch was removed"
+    );
+    assert!(foreign.exists(), "unmarked directory was removed");
+    worker.close()?;
+    held.unlock()?;
+    Ok(())
+}
+
+#[test]
+#[ignore = "Subprocess fixture invoked by abrupt_host_exit_preserves_live_lease_then_recovers"]
+fn scratch_crash_host_fixture() -> TestResult {
+    let root = std::path::PathBuf::from(
+        std::env::var_os("EVERLAST_CRASH_TEST_ROOT").ok_or("subprocess fixture root missing")?,
+    );
+    let worker = Worker::spawn(spec(&root, "normal")?, limits(), &Cancellation::new())?;
+    std::fs::write(
+        root.join("normal/host-ready"),
+        worker.scratch_directory().as_os_str().as_encoded_bytes(),
+    )?;
+    loop {
+        std::thread::park();
+    }
+}
+
+#[test]
+fn abrupt_host_exit_preserves_live_lease_then_recovers() -> TestResult {
+    let root = tempfile::tempdir()?;
+    let mut host = std::process::Command::new(std::env::current_exe()?)
+        .args(["--ignored", "--exact", "scratch_crash_host_fixture"])
+        .env("EVERLAST_CRASH_TEST_ROOT", root.path())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn()?;
+    let ready = until(|| root.path().join("normal/host-ready").exists());
+    // Always reap our fixture even when startup did not produce its marker.
+    host.kill()?;
+    host.wait()?;
+    ready?;
+    let scratch = PathBuf::from(std::fs::read_to_string(
+        root.path().join("normal/host-ready"),
+    )?);
+    until(|| root.path().join("normal/child-exited").exists())?;
+    until(|| service::scratch::recover(root.path()).is_ok() && !scratch.exists())?;
+    assert!(root.path().join("normal").is_dir());
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn recovery_preserves_foreign_markers_and_rejects_a_symlinked_root_lock() -> TestResult {
+    let root = tempfile::tempdir()?;
+    let unknown = root.path().join("text-worker-v1-unknown");
+    std::fs::create_dir(&unknown)?;
+    std::fs::write(unknown.join(".owner.lock"), b"foreign marker")?;
+    service::scratch::recover(root.path())?;
+    assert!(unknown.exists());
+    std::fs::remove_file(root.path().join(".text-worker.lock"))?;
+    let target = root.path().join("unrelated");
+    std::fs::write(&target, b"untouched")?;
+    std::os::unix::fs::symlink(&target, root.path().join(".text-worker.lock"))?;
+    assert!(service::scratch::recover(root.path()).is_err());
+    assert_eq!(std::fs::read(target)?, b"untouched");
+    assert!(unknown.exists());
     Ok(())
 }
