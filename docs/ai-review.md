@@ -109,3 +109,11 @@ the service and real-child fixtures without repeating builds or model runs and
 found no concrete blocker. The [owner report](verification/refinement-owner-2026-10-22.md)
 limits this evidence to the service boundary; controller and UI integration are
 still outstanding.
+
+The controller's refinement state and retained-transcript contract were developed
+with AI assistance and independently reviewed. Regressions exposed wrong-original
+and wrong-language validation authority, stale clear behavior and an empty final
+result retaining an intermediate text. The corrected typed result carries its
+source and language. A paused-actor test checks that client cancellation revokes
+the text-worker token directly. The [controller report](verification/refinement-controller-2026-10-22.md)
+separates these contracts from the still-missing product owner hookup and UI.

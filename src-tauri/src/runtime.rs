@@ -1,9 +1,13 @@
 //! Serial host actor connecting capture, inference and the main-thread bridge.
+#[cfg(test)]
+use crate::inference_service::WorkToken;
 use crate::{
     audio::{CaptureEvent, CaptureHandle, CaptureProgress},
     control::{self, Control, ControlTx, MailboxError},
-    controller::{Action, Controller, Event, SessionSettings, SessionSnapshot},
-    inference_service::{InferenceService, WorkToken},
+    controller::{
+        Action, Controller, Event, SessionCancellation, SessionSettings, SessionSnapshot,
+    },
+    inference_service::InferenceService,
 };
 use crossbeam_channel::{Receiver, Sender, TryRecvError, bounded};
 use dictation_core::session::{DeliveryResult, Phase};
@@ -124,7 +128,7 @@ struct Shared {
     suspended: bool,
     admission_epoch: u64,
     snapshot: RuntimeSnapshot,
-    cancellation: Option<(u64, DeliveryToken, WorkToken)>,
+    cancellation: Option<SessionCancellation>,
     #[cfg(feature = "measurement")]
     timing: Option<Arc<measurement::Trace>>,
 }
@@ -134,9 +138,8 @@ fn close_admission(shared: &Mutex<Shared>) {
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
     shared.closing = true;
-    if let Some((_, delivery, work)) = &shared.cancellation {
-        delivery.cancel();
-        work.cancel();
+    if let Some(cancel) = &shared.cancellation {
+        cancel.revoke();
     }
 }
 
@@ -154,9 +157,8 @@ impl Drop for RuntimeExit<'_> {
                 .shared
                 .lock()
                 .unwrap_or_else(|poisoned| poisoned.into_inner());
-            if let Some((_, delivery, work)) = shared.cancellation.take() {
-                delivery.cancel();
-                work.cancel();
+            if let Some(cancel) = shared.cancellation.take() {
+                cancel.revoke();
             }
             shared.closing = true;
             shared.snapshot.running = false;
@@ -216,7 +218,7 @@ fn control_targets_current(shared: &Shared, session: u64) -> Result<bool, Mailbo
     Ok(shared
         .cancellation
         .as_ref()
-        .is_some_and(|(active, _, _)| *active == session))
+        .is_some_and(|cancel| cancel.session == session))
 }
 
 #[derive(Clone)]
@@ -377,9 +379,8 @@ impl Client {
         if !control_targets_current(&shared, session)? {
             return Ok(());
         }
-        if let Some((_, delivery, work)) = &shared.cancellation {
-            delivery.cancel();
-            work.cancel();
+        if let Some(cancel) = &shared.cancellation {
+            cancel.revoke();
         }
         let result = self.control.cancel(session).map_err(RuntimeError::from);
         drop(shared);
@@ -407,16 +408,12 @@ impl Client {
                 }
                 shared.suspended = true;
             }
-            let session = shared
-                .cancellation
-                .as_ref()
-                .and_then(|(session, delivery, work)| {
-                    let committed = delivery.cancel() == CancelOutcome::AlreadyCommitted;
-                    work.cancel();
-                    // Lifecycle cleanup cannot retract a committed send. Wake
-                    // the actor to settle it, without reporting a user-cancel error.
-                    (!committed).then_some(*session)
-                });
+            let session = shared.cancellation.as_ref().and_then(|cancel| {
+                let committed = cancel.revoke() == CancelOutcome::AlreadyCommitted;
+                // Lifecycle cleanup cannot retract a committed send. Wake
+                // the actor to settle it, without reporting a user-cancel error.
+                (!committed).then_some(cancel.session)
+            });
             (session, exhausted)
         };
         if exhausted {
@@ -466,9 +463,8 @@ impl Client {
             .lock()
             .map(|mut shared| {
                 shared.closing = true;
-                if let Some((_, delivery, work)) = &shared.cancellation {
-                    delivery.cancel();
-                    work.cancel();
+                if let Some(cancel) = &shared.cancellation {
+                    cancel.revoke();
                 }
             })
             .map_err(|_| RuntimeError::Synchronization);
@@ -711,8 +707,10 @@ impl Runtime {
                             let result = if expected_text.as_deref().is_some_and(|expected| actor.controller.snapshot().text.as_deref() != Some(expected)) {
                                 Err("Der angezeigte Text hat sich inzwischen geändert. Bitte prüfe den aktuellen Text und versuche es erneut.".into())
                             } else {
-                                actor.controller.clear_text();
-                                Ok(())
+                                match actor.controller.clear_text() {
+                                    Ok(actions) => actor.execute(actions).map_err(|error| error.to_string()),
+                                    Err(error) => Err(error.to_string()),
+                                }
                             };
                             actor.publish()?;
                             if reply.send(result).is_err() { /* requester no longer waiting */ }
@@ -1007,15 +1005,15 @@ impl<A: AudioDriver> Actor<A> {
                     let shared = Arc::clone(&self.shared);
                     let admission = shared.lock().map_err(|_| RuntimeError::Synchronization)?;
                     if (admission.closing || admission.suspended)
-                        && let Some((_, _, work)) = self.controller.cancellation_handles()
+                        && let Some(cancel) = self.controller.cancellation_handles()
                     {
-                        work.cancel();
+                        cancel.revoke();
                     }
                     let mut follow = self.controller.reconcile_cancel().map_err(service_error)?;
                     let valid = self
                         .controller
                         .cancellation_handles()
-                        .is_some_and(|(id, _, work)| id == session && work.is_valid());
+                        .is_some_and(|cancel| cancel.session == session && cancel.is_valid());
                     if !valid {
                         follow.extend(
                             self.controller
@@ -1080,6 +1078,12 @@ impl<A: AudioDriver> Actor<A> {
                         Err(message) => self.fail(session, message).map_err(service_error)?,
                     }
                 }
+                Action::Refine(job) => self
+                    .fail(
+                        job.session.get(),
+                        "Text refinement service is unavailable".into(),
+                    )
+                    .map_err(service_error)?,
                 Action::CancelInference(session) => {
                     if let Some(service) = &self.inference {
                         service.cancel(session).map_err(service_error)?;
@@ -1269,8 +1273,8 @@ impl<A: AudioDriver> Actor<A> {
                     {
                         self.capture_pending = None;
                         if let Err(message) = result {
-                            if let Some((_, token, _)) = self.controller.cancellation_handles() {
-                                token.cancel();
+                            if let Some(cancel) = self.controller.cancellation_handles() {
+                                cancel.delivery.cancel();
                             }
                             self.error = Some(message);
                         }
@@ -1309,8 +1313,8 @@ impl<A: AudioDriver> Actor<A> {
         {
             self.capture_pending = None;
             self.error = Some("Start target capture timed out; automatic delivery disabled".into());
-            if let Some((_, token, _)) = self.controller.cancellation_handles() {
-                token.cancel();
+            if let Some(cancel) = self.controller.cancellation_handles() {
+                cancel.delivery.cancel();
             }
             if let Some((session, device)) = self.deferred_audio.take() {
                 self.execute(vec![Action::StartAudio { session, device }])?;
@@ -1337,7 +1341,7 @@ impl<A: AudioDriver> Actor<A> {
                 && self
                     .controller
                     .cancellation_handles()
-                    .is_some_and(|(id, _, work)| id == value.session && work.is_valid())
+                    .is_some_and(|cancel| cancel.session == value.session && cancel.is_valid())
         });
         let mut next = RuntimeSnapshot {
             revision: shared.snapshot.revision,
@@ -1417,6 +1421,7 @@ mod tests {
     }
     fn settings() -> SessionSettings {
         SessionSettings {
+            refinement: false,
             device: None,
             language: Language::German,
             generation: 1,
@@ -2547,7 +2552,24 @@ mod tests {
             session: 1,
             result: Ok(()),
         })?;
+        let _release = ReleaseOwners {
+            gates: vec![resume.clone()],
+            join: None,
+        };
+        let refinement = client
+            .shared
+            .lock()
+            .map_err(|_| "shared state poisoned")?
+            .cancellation
+            .as_ref()
+            .ok_or("missing active cancellation")?
+            .refinement
+            .clone();
         client.cancel(1)?;
+        assert!(
+            refinement.is_cancelled(),
+            "client must revoke refinement while actor is paused"
+        );
         resume.send(())?;
         wait_for(&client, |state| state.session.phase == Phase::Idle)?;
         assert!(matches!(did_start.try_recv(), Err(TryRecvError::Empty)));

@@ -59,9 +59,18 @@ impl OriginalTranscript {
 pub struct AcceptedTranscript {
     text: String,
     edit_count: usize,
+    original: OriginalTranscript,
+    language: Language,
 }
 
 impl AcceptedTranscript {
+    /// Validation authority is bound to these exact source bytes.
+    pub fn original(&self) -> &OriginalTranscript {
+        &self.original
+    }
+    pub fn language(&self) -> Language {
+        self.language
+    }
     pub fn as_str(&self) -> &str {
         &self.text
     }

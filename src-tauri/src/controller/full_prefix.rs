@@ -128,8 +128,7 @@ impl Controller {
         run.revision = text;
         if expected.final_job {
             let text = std::mem::take(&mut run.revision);
-            let effects = self.core.accept(Fact::Transcript { id: session, text })?;
-            self.actions(effects)
+            self.complete_transcription(session, text)
         } else {
             self.prefix_final_job()
         }
@@ -198,6 +197,7 @@ mod tests {
     type TestResult = Result<(), Box<dyn std::error::Error>>;
     fn settings() -> SessionSettings {
         SessionSettings {
+            refinement: false,
             device: None,
             language: Language::German,
             generation: 7,
@@ -327,6 +327,31 @@ mod tests {
         controller.accept(done(&final_job, ""))?;
         assert_eq!(controller.snapshot().text, None);
         assert_eq!(controller.snapshot().outcome, Some(Outcome::Empty));
+        Ok(())
+    }
+
+    #[test]
+    fn refinement_receives_only_the_full_final_prefix_result() -> TestResult {
+        let mut controller = Controller::with_policy(crate::pipeline::Policy::FullPrefix);
+        let mut preferences = settings();
+        preferences.refinement = true;
+        controller.start(preferences, None, true, false)?;
+        controller.accept(Event::AudioStarted(1))?;
+        let preview = job(controller.accept(Event::Segment {
+            session: 1,
+            timeline_range: 0..100,
+            samples: Arc::new(vec![0.1; 100]),
+        })?)?;
+        assert!(controller.accept(done(&preview, "äh partial"))?.is_empty());
+        assert!(controller.snapshot().refinement.original.is_none());
+        let final_job = job(controller.accept(Event::AudioFinished {
+            session: 1,
+            result: Ok(vec![0.1; 100]),
+        })?)?;
+        let actions = controller.accept(done(&final_job, "Das ist, äh, der vollständige Text."))?;
+        assert!(
+            matches!(&actions[..], [Action::Refine(job)] if job.original.as_str() == "Das ist, äh, der vollständige Text.")
+        );
         Ok(())
     }
     #[test]

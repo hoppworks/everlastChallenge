@@ -583,6 +583,7 @@ impl Desktop {
             return Err("Bitte zuerst den Mikrofonzugriff freigeben".into());
         }
         let session_settings = SessionSettings {
+            refinement: false,
             device: settings.device,
             language: settings.language.into(),
             generation: 1,
@@ -1923,6 +1924,7 @@ mod tests {
             running: true,
             model_ready: true,
             session: SessionSnapshot {
+                refinement: Default::default(),
                 phase: Phase::Recording,
                 session: Some(7),
                 text: Some("previous words".into()),
@@ -1955,6 +1957,7 @@ mod tests {
             running: true,
             model_ready: true,
             session: SessionSnapshot {
+                refinement: Default::default(),
                 phase: Phase::Idle,
                 session: None,
                 text: Some("retained words".into()),

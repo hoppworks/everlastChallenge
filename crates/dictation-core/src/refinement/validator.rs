@@ -105,6 +105,8 @@ pub(super) fn validate(
     Ok(AcceptedTranscript {
         text: result,
         edit_count: resolved.len(),
+        original: original.clone(),
+        language,
     })
 }
 

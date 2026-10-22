@@ -14,6 +14,8 @@ use std::{num::NonZeroU64, ops::Range, sync::Arc};
 
 #[cfg(any(test, feature = "measurement"))]
 mod full_prefix;
+mod refinement;
+pub use refinement::{RefinementSnapshot, RefinementStatus};
 #[cfg(feature = "measurement")]
 mod pretranscription;
 
@@ -22,6 +24,26 @@ pub struct SessionSettings {
     pub device: Option<String>,
     pub language: Language,
     pub generation: u64,
+    pub refinement: bool,
+}
+
+#[derive(Clone)]
+pub(crate) struct SessionCancellation {
+    pub session: u64,
+    pub delivery: DeliveryToken,
+    pub inference: WorkToken,
+    pub refinement: crate::refinement_service::Cancellation,
+}
+impl SessionCancellation {
+    pub fn revoke(&self) -> CancelOutcome {
+        let outcome = self.delivery.cancel();
+        self.inference.cancel();
+        self.refinement.cancel();
+        outcome
+    }
+    pub fn is_valid(&self) -> bool {
+        self.inference.is_valid() && !self.refinement.is_cancelled()
+    }
 }
 
 pub enum Action {
@@ -36,6 +58,7 @@ pub enum Action {
     },
     StopAudio(u64),
     Transcribe(Job),
+    Refine(crate::refinement_service::owner::Job),
     CancelInference(u64),
     Deliver {
         session: u64,
@@ -74,6 +97,14 @@ pub enum Event {
         session: u64,
         result: DeliveryResult,
     },
+    RefinementFinished {
+        session: u64,
+        original: dictation_core::refinement::OriginalTranscript,
+        result: Result<
+            dictation_core::refinement::AcceptedTranscript,
+            crate::refinement_service::Error,
+        >,
+    },
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -91,6 +122,7 @@ pub struct SessionSnapshot {
     pub last_held_session: Option<u64>,
     pub text: Option<String>,
     pub outcome: Option<Outcome>,
+    pub refinement: RefinementSnapshot,
 }
 
 struct Active {
@@ -99,6 +131,8 @@ struct Active {
     delivery: bool,
     delivery_token: DeliveryToken,
     work_token: WorkToken,
+    refinement_cancel: crate::refinement_service::Cancellation,
+    refining: bool,
     released: bool,
     audio: Option<Vec<f32>>,
     expected_range: Option<Range<usize>>,
@@ -112,6 +146,7 @@ struct Active {
 pub struct Controller {
     core: Machine,
     active: Option<Active>,
+    refinement: RefinementSnapshot,
     #[cfg(feature = "measurement")]
     pretranscription: bool,
     #[cfg(any(test, feature = "measurement"))]
@@ -133,13 +168,14 @@ impl Controller {
         self.core.session_id() == Some(session)
             && self.active.as_ref().is_some_and(|active| !active.released)
     }
-    pub(crate) fn cancellation_handles(&self) -> Option<(u64, DeliveryToken, WorkToken)> {
+    pub(crate) fn cancellation_handles(&self) -> Option<SessionCancellation> {
         let active = self.active.as_ref()?;
-        Some((
-            self.core.session_id()?,
-            active.delivery_token.clone(),
-            active.work_token.clone(),
-        ))
+        Some(SessionCancellation {
+            session: self.core.session_id()?,
+            delivery: active.delivery_token.clone(),
+            inference: active.work_token.clone(),
+            refinement: active.refinement_cancel.clone(),
+        })
     }
 
     pub fn fail(&mut self, session: u64, message: String) -> Result<Vec<Action>, ControllerError> {
@@ -147,11 +183,13 @@ impl Controller {
             return Ok(vec![]);
         }
         if self
-            .active
-            .as_ref()
-            .is_some_and(|active| !active.work_token.is_valid())
+            .cancellation_handles()
+            .is_some_and(|cancel| !cancel.is_valid())
         {
             return self.reconcile_cancel();
+        }
+        if self.active.as_ref().is_some_and(|active| active.refining) {
+            self.refinement.status = RefinementStatus::Failed(message.clone());
         }
         let effects = self.core.accept(Fact::Failed {
             id: session,
@@ -159,8 +197,25 @@ impl Controller {
         })?;
         self.actions(effects)
     }
-    pub fn clear_text(&mut self) {
+    pub fn clear_text(&mut self) -> Result<Vec<Action>, ControllerError> {
+        let actions = if self.active.as_ref().is_some_and(|active| {
+            active.refining
+                || active.settings.refinement
+                    && self.core.phase() == Phase::Delivering
+                    && self.refinement.session == self.core.session_id()
+        }) {
+            match self.cancel(self.core.session_id().ok_or(ControllerError::Resource)?) {
+                Ok(actions) => actions,
+                // Clearing local history cannot retract a paste already sent.
+                Err(ControllerError::Session(SessionError::DeliveryCommitted)) => vec![],
+                Err(error) => return Err(error),
+            }
+        } else {
+            vec![]
+        };
         self.core.clear_text();
+        self.refinement = RefinementSnapshot::default();
+        Ok(actions)
     }
     pub fn snapshot(&self) -> SessionSnapshot {
         SessionSnapshot {
@@ -169,6 +224,7 @@ impl Controller {
             last_held_session: self.core.last_held_session(),
             text: self.core.last_text().map(str::to_owned),
             outcome: self.core.outcome().cloned(),
+            refinement: self.refinement.clone(),
         }
     }
 
@@ -190,6 +246,8 @@ impl Controller {
             delivery,
             delivery_token: DeliveryToken::new(session),
             work_token: WorkToken::default(),
+            refinement_cancel: crate::refinement_service::Cancellation::new(),
+            refining: false,
             released: false,
             audio: None,
             expected_range: None,
@@ -211,6 +269,9 @@ impl Controller {
             return Ok(vec![]);
         }
         let active = self.active.as_ref().ok_or(ControllerError::Resource)?;
+        if active.refining {
+            self.refinement.status = RefinementStatus::Cancelled;
+        }
         let committed = active.delivery_token.cancel() == CancelOutcome::AlreadyCommitted;
         let effects = self.core.cancel(session, committed)?;
         self.actions(effects)
@@ -218,11 +279,11 @@ impl Controller {
 
     /// Fold an immediate client-side revocation into the serial state machine.
     pub(crate) fn reconcile_cancel(&mut self) -> Result<Vec<Action>, ControllerError> {
-        if let Some((session, _, work)) = self.cancellation_handles()
-            && !work.is_valid()
+        if let Some(cancel) = self.cancellation_handles()
+            && !cancel.is_valid()
             && self.core.phase() != Phase::Cancelling
         {
-            return match self.cancel(session) {
+            return match self.cancel(cancel.session) {
                 // The native send won the atomic commit; its result still settles delivery.
                 Err(ControllerError::Session(SessionError::DeliveryCommitted)) => Ok(vec![]),
                 result => result,
@@ -278,6 +339,7 @@ impl Controller {
             Event::AudioFinished { session, .. }
             | Event::InferenceFinished { session, .. }
             | Event::DeliveryFinished { session, .. } => *session,
+            Event::RefinementFinished { session, .. } => *session,
         };
         if self.core.session_id() != Some(session) {
             return Ok(vec![]);
@@ -410,6 +472,7 @@ impl Controller {
                 }
                 let active = self.active.as_ref().ok_or(ControllerError::Resource)?;
                 if self.core.phase() != Phase::Finalizing
+                    || active.refining
                     || !active.released
                     || generation != active.settings.generation
                     || job_id != session
@@ -418,13 +481,26 @@ impl Controller {
                 {
                     return Ok(actions);
                 }
-                effects.extend(self.core.accept(match result {
-                    Ok(text) => Fact::Transcript { id: session, text },
-                    Err(message) => Fact::Failed {
-                        id: session,
-                        message,
-                    },
-                })?);
+                return match result {
+                    Ok(text) => {
+                        actions.extend(self.complete_transcription(session, text)?);
+                        Ok(actions)
+                    }
+                    Err(message) => {
+                        effects.extend(self.core.accept(Fact::Failed {
+                            id: session,
+                            message,
+                        })?);
+                        actions.extend(self.actions(effects)?);
+                        Ok(actions)
+                    }
+                };
+            }
+            Event::RefinementFinished {
+                original, result, ..
+            } => {
+                actions.extend(self.complete_refinement(session, original, result)?);
+                return Ok(actions);
             }
             Event::DeliveryFinished { result, .. } => {
                 effects.extend(self.core.accept(Fact::Delivered {
@@ -492,6 +568,8 @@ impl Controller {
                 }),
                 Effect::Revoke(session) => {
                     active.work_token.cancel();
+                    active.refinement_cancel.cancel();
+                    active.refining = false;
                     active.delivery_token.cancel();
                     active.audio = None;
                     #[cfg(feature = "measurement")]
@@ -518,15 +596,16 @@ impl Controller {
 mod tests {
     use super::*;
 
-    fn settings() -> SessionSettings {
+    pub(super) fn settings() -> SessionSettings {
         SessionSettings {
+            refinement: false,
             device: Some("selected device".into()),
             language: Language::German,
             generation: 7,
         }
     }
 
-    fn finish_audio(
+    pub(super) fn finish_audio(
         controller: &mut Controller,
         id: u64,
     ) -> Result<Job, Box<dyn std::error::Error>> {
@@ -709,7 +788,10 @@ mod tests {
             session: 1,
             result: Ok(vec![0.2; 800]),
         })?;
-        let (_, _, work) = controller.cancellation_handles().ok_or("missing token")?;
+        let work = controller
+            .cancellation_handles()
+            .ok_or("missing token")?
+            .inference;
         work.cancel();
         controller.accept(Event::InferenceFinished {
             session: 1,
@@ -734,7 +816,10 @@ mod tests {
             session: 1,
             result: Ok(vec![0.2; 800]),
         })?;
-        let (_, _, work) = controller.cancellation_handles().ok_or("missing token")?;
+        let work = controller
+            .cancellation_handles()
+            .ok_or("missing token")?
+            .inference;
         work.cancel();
         controller.fail(1, "Invalid inference job".into())?;
         assert_eq!(controller.snapshot().outcome, Some(Outcome::Cancelled));

@@ -1,6 +1,6 @@
 use super::{Language, OriginalTranscript, text};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
 pub enum SkipReason {
     Empty,
     ExactValue,

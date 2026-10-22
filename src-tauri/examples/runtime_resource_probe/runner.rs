@@ -305,6 +305,7 @@ fn start(runtime: &MeasuredRuntime, row: &mut Row, timeout: Duration) -> Result<
     loop {
         let mut reply = runtime
             .start(SessionSettings {
+                refinement: false,
                 device: None,
                 language: Language::German,
                 generation: 1,

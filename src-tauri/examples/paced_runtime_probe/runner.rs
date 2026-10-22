@@ -677,6 +677,7 @@ fn start_input(
     row: &mut Observation,
 ) -> Result<(u64, everlast_dictation::audio::replay::ReplayInput), Box<dyn std::error::Error>> {
     let mut reply = runtime.start(SessionSettings {
+        refinement: false,
         device: None,
         language,
         generation: 1,

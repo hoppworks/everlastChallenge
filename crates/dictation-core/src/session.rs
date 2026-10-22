@@ -38,9 +38,23 @@ pub enum Effect {
 pub enum Fact {
     AudioStarted(u64),
     AudioReleased(u64),
-    Transcript { id: u64, text: String },
-    Delivered { id: u64, result: DeliveryResult },
-    Failed { id: u64, message: String },
+    Transcript {
+        id: u64,
+        text: String,
+    },
+    /// Preserve a complete transcript while a host-owned finalization step runs.
+    RetainTranscript {
+        id: u64,
+        text: String,
+    },
+    Delivered {
+        id: u64,
+        result: DeliveryResult,
+    },
+    Failed {
+        id: u64,
+        message: String,
+    },
 }
 
 pub enum DeliveryResult {
@@ -68,6 +82,7 @@ pub struct Machine {
     session_id: Option<u64>,
     stop_pending: bool,
     released: bool,
+    retained: bool,
     delivery: bool,
     last_text: Option<String>,
     outcome: Option<Outcome>,
@@ -109,6 +124,7 @@ impl Machine {
         self.session_id = Some(self.next_id);
         self.stop_pending = false;
         self.released = false;
+        self.retained = false;
         self.delivery = delivery;
         self.outcome = None;
         self.phase = Phase::Starting;
@@ -158,9 +174,10 @@ impl Machine {
     pub fn accept(&mut self, fact: Fact) -> Result<Vec<Effect>, SessionError> {
         let id = match &fact {
             Fact::AudioStarted(id) | Fact::AudioReleased(id) => *id,
-            Fact::Transcript { id, .. } | Fact::Delivered { id, .. } | Fact::Failed { id, .. } => {
-                *id
-            }
+            Fact::Transcript { id, .. }
+            | Fact::RetainTranscript { id, .. }
+            | Fact::Delivered { id, .. }
+            | Fact::Failed { id, .. } => *id,
         };
         if self.session_id != Some(id) {
             return Ok(Vec::new());
@@ -206,8 +223,18 @@ impl Machine {
                 self.released = true;
                 Ok(vec![Effect::Transcribe(id)])
             }
+            Fact::RetainTranscript { text, .. }
+                if self.phase == Phase::Finalizing && self.released && !self.retained =>
+            {
+                self.last_text = Some(text);
+                self.retained = true;
+                Ok(Vec::new())
+            }
             Fact::Transcript { text, .. } if self.phase == Phase::Finalizing && self.released => {
                 if text.is_empty() {
+                    if self.retained {
+                        self.last_text = None;
+                    }
                     self.finish(Outcome::Empty);
                     Ok(Vec::new())
                 } else {

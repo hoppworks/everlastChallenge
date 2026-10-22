@@ -174,8 +174,7 @@ impl Controller {
         }
         drop(run.final_rest.take());
         let text = std::mem::take(&mut run.text);
-        let effects = self.core.accept(Fact::Transcript { id: session, text })?;
-        self.actions(effects)
+        self.complete_transcription(session, text)
     }
 }
 
@@ -185,6 +184,7 @@ mod tests {
     type TestResult = Result<(), Box<dyn std::error::Error>>;
     fn settings() -> SessionSettings {
         SessionSettings {
+            refinement: false,
             device: None,
             language: Language::German,
             generation: 7,
@@ -291,6 +291,39 @@ mod tests {
         assert_ne!(
             newer.job_id, next,
             "job IDs are not inferred from session IDs"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn refinement_waits_for_the_complete_segment_coverage() -> TestResult {
+        let mut controller = Controller::default();
+        controller.enable_pretranscription();
+        let mut preferences = settings();
+        preferences.refinement = true;
+        controller.start(preferences, None, true, false)?;
+        controller.accept(Event::AudioStarted(1))?;
+        let first = take_job(controller.accept(Event::Segment {
+            session: 1,
+            timeline_range: 0..19200,
+            samples: Arc::new(vec![0.1; 19200]),
+        })?)?;
+        assert!(controller.accept(completion(&first, "Das"))?.is_empty());
+        assert!(controller.snapshot().refinement.original.is_none());
+        controller.stop(1)?;
+        let last = take_job(controller.accept(Event::SegmentedFinished {
+            session: 1,
+            base: 19200,
+            result: Ok(vec![0.1; 100]),
+        })?)?;
+        let actions = controller.accept(completion(&last, "ist, äh, vollständig."))?;
+        assert!(
+            matches!(&actions[..], [Action::Refine(job)] if job.original.as_str() == "Das ist, äh, vollständig.")
+        );
+        assert!(
+            controller
+                .accept(completion(&last, "duplicate"))?
+                .is_empty()
         );
         Ok(())
     }

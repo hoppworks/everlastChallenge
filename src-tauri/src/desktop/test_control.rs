@@ -147,6 +147,7 @@ impl Desktop {
             let reply = runtime
                 .start_controlled(
                     SessionSettings {
+                        refinement: false,
                         device: None,
                         language: settings.language.into(),
                         generation: 1,

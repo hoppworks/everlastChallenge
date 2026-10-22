@@ -17,6 +17,7 @@ pub struct Job {
 }
 pub struct Completed {
     pub session: NonZeroU64,
+    pub original: OriginalTranscript,
     pub result: Result<AcceptedTranscript, Error>,
     cancel: Cancellation,
 }
@@ -295,6 +296,7 @@ fn serve(
         } else {
             state.completed = Some(Completed {
                 session: job.session,
+                original: job.original,
                 result,
                 cancel: job.cancel,
             });

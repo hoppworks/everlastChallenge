@@ -5,6 +5,98 @@ use dictation_core::session::{
 
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
+#[test]
+fn retained_finalization_text_never_authorizes_delivery_and_survives_cancel_or_failure()
+-> TestResult {
+    for cancel in [true, false] {
+        let mut machine = in_phase(Phase::Finalizing)?;
+        machine.accept(Fact::AudioReleased(1))?;
+        assert!(
+            machine
+                .accept(Fact::RetainTranscript {
+                    id: 1,
+                    text: "original words".into()
+                })?
+                .is_empty()
+        );
+        assert_eq!(machine.phase(), Phase::Finalizing);
+        assert_eq!(machine.last_text(), Some("original words"));
+        if cancel {
+            machine.cancel(1, false)?;
+        } else {
+            machine.accept(Fact::Failed {
+                id: 1,
+                message: "postprocessing failed".into(),
+            })?;
+        }
+        assert_eq!(machine.phase(), Phase::Idle);
+        assert_eq!(machine.last_text(), Some("original words"));
+        assert!(
+            machine
+                .accept(Fact::Transcript {
+                    id: 1,
+                    text: "late output".into()
+                })?
+                .is_empty()
+        );
+        assert_eq!(machine.last_text(), Some("original words"));
+    }
+    Ok(())
+}
+
+#[test]
+fn an_empty_final_result_removes_only_its_retained_intermediate_text() -> TestResult {
+    let mut machine = in_phase(Phase::Finalizing)?;
+    machine.accept(Fact::AudioReleased(1))?;
+    machine.accept(Fact::RetainTranscript {
+        id: 1,
+        text: "hesitation".into(),
+    })?;
+    assert!(
+        machine
+            .accept(Fact::Transcript {
+                id: 1,
+                text: String::new()
+            })?
+            .is_empty()
+    );
+    assert_eq!(machine.last_text(), None);
+    assert_eq!(machine.outcome(), Some(&Outcome::Empty));
+    Ok(())
+}
+
+#[test]
+fn retained_text_requires_released_audio_and_cannot_be_replaced_twice() -> TestResult {
+    let mut machine = in_phase(Phase::Finalizing)?;
+    machine.accept(Fact::RetainTranscript {
+        id: 1,
+        text: "premature".into(),
+    })?;
+    assert_eq!(machine.last_text(), None);
+    machine.accept(Fact::AudioReleased(1))?;
+    machine.accept(Fact::RetainTranscript {
+        id: 99,
+        text: "foreign".into(),
+    })?;
+    assert_eq!(machine.last_text(), None);
+    machine.accept(Fact::RetainTranscript {
+        id: 1,
+        text: "original".into(),
+    })?;
+    machine.accept(Fact::RetainTranscript {
+        id: 1,
+        text: "duplicate".into(),
+    })?;
+    assert_eq!(machine.last_text(), Some("original"));
+    machine.accept(Fact::Transcript {
+        id: 1,
+        text: "accepted".into(),
+    })?;
+    assert_eq!(machine.last_text(), Some("accepted"));
+    assert_eq!(machine.phase(), Phase::Delivering);
+    Ok(())
+}
+
 fn in_phase(phase: Phase) -> Result<Machine, SessionError> {
     let mut machine = Machine::default();
     if phase == Phase::Idle {

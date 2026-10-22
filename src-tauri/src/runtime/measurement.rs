@@ -542,7 +542,8 @@ impl<A: AudioDriver> Actor<A> {
             .timing
             .as_ref()
             .ok_or(RuntimeError::Synchronization)?;
-        self.controller.clear_text();
+        let cleared = self.controller.clear_text().map_err(service_error)?;
+        self.execute(cleared)?;
         let actions = self
             .controller
             .start(settings, None, true, false)
@@ -603,6 +604,7 @@ mod tests {
     }
     fn settings() -> SessionSettings {
         SessionSettings {
+            refinement: false,
             device: None,
             language: Language::German,
             generation: 1,
@@ -663,6 +665,7 @@ mod tests {
             thread::sleep(Duration::from_millis(1));
         }
         let id = await_value(runtime.start(SessionSettings {
+            refinement: false,
             device: None,
             language: Language::German,
             generation: 1,
