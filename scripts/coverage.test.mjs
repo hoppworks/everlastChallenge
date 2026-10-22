@@ -1,6 +1,55 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkThresholds, resolveRustCoverageTools } from "./coverage.mjs";
+import {
+  checkThresholds,
+  checkFileThresholds,
+  resolveRustCoverageTools,
+} from "./coverage.mjs";
+
+test("file coverage cannot hide a missing or weak boundary behind another file", () => {
+  const minimum = { "owner.rs": 80, "protocol.rs": 90 };
+  const owner = { lines: 99, count: 100, covered: 99 };
+  assert.match(
+    checkFileThresholds({ "owner.rs": owner }, minimum).join(),
+    /protocol.rs.*missing/,
+  );
+  assert.match(
+    checkFileThresholds(
+      {
+        "owner.rs": owner,
+        "protocol.rs": { lines: 89, count: 100, covered: 89 },
+      },
+      minimum,
+    ).join(),
+    /protocol.rs.*below/,
+  );
+  assert.deepEqual(
+    checkFileThresholds(
+      {
+        "owner.rs": owner,
+        "protocol.rs": { lines: 90, count: 100, covered: 90 },
+      },
+      minimum,
+    ),
+    [],
+  );
+});
+
+test("file coverage requires a nonempty positive policy and executable measurements", () => {
+  assert.match(checkFileThresholds({}, {}).join(), /empty/);
+  for (const minimum of [0, -1, 101, NaN])
+    assert.match(
+      checkFileThresholds({}, { "owner.rs": minimum }).join(),
+      /invalid/,
+    );
+  assert.match(
+    checkFileThresholds(
+      { "owner.rs": { lines: 100, count: 0, covered: 0 } },
+      { "owner.rs": 80 },
+    ).join(),
+    /executable/,
+  );
+});
 
 test("coverage fails below a threshold or for missing metrics", () => {
   assert.deepEqual(checkThresholds({ lines: 90 }, { lines: 90 }), []);

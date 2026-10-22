@@ -200,3 +200,10 @@ records the successful paths and the limits: recipient focus was not established
 for delivery, and the OS pressure simulation failed for lack of permission.
 Neither is counted as a pass; finite model cases remain separate from human
 linguistic acceptance and comparative performance.
+
+An AI-assisted comparison of the implementation plan with the verification
+commands found missing explicit coverage scope for the new crates and extracted
+host modules. The [coverage report](verification/refinement-coverage-2026-10-22.md)
+records the added per-file checks, their failing/passing checker tests and two
+asset-boundary tests. These line measurements do not replace real-model or
+human-language acceptance.

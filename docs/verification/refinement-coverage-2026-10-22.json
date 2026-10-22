@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "verificationBaseRevision": "fe40f9f",
+  "runtimeRevision": "6365c00",
+  "sources": [
+    {
+      "path": "scripts/coverage.mjs",
+      "sha256": "9fc25d478758cf5498356ca2de0550dd5f2310a2703924693e15b2b9b1dd17c1"
+    },
+    {
+      "path": "scripts/coverage-host.mjs",
+      "sha256": "820aa8e5050be4262b9d2f27326c601ed145eba77df374ed58e228913a6eca74"
+    },
+    {
+      "path": "scripts/coverage-refinement.mjs",
+      "sha256": "41365dcf629c552311e9887dbbad1bc8a8942389739d60d192dde192e64f8371"
+    },
+    {
+      "path": "scripts/coverage.test.mjs",
+      "sha256": "39cbe5b920759068cdac6bb864de72ff08fce89fb7e10e782e4ac0260b789bd8"
+    },
+    {
+      "path": "config/coverage.json",
+      "sha256": "148f2917233bd817d076c6eb03bc67b21578ef18afbb4503173e8d6a8912f5f8"
+    },
+    {
+      "path": "crates/text-refinement-worker/tests/manifest.rs",
+      "sha256": "d4450f57d7c8c0b6db674d7eeaa79fe4ea241f30a417e6a80bcbd3a6876f5463"
+    },
+    {
+      "path": "package.json",
+      "sha256": "564c3606c8bf6245df9aea6a9234d51aa5f855c8a13bfa4ad0eb793c6bc1701e"
+    },
+    {
+      "path": ".github/workflows/quality.yml",
+      "sha256": "a6bdb5944836e8f02df5d41d89f8255d54e5000d4ee4aedb62dd4054ddacdd0e"
+    }
+  ],
+  "baseline": {
+    "crates/text-refinement-protocol/src/lib.rs": {
+      "lines": 96.55172413793103,
+      "count": 29,
+      "covered": 28
+    },
+    "crates/text-refinement-protocol/src/frame.rs": {
+      "lines": 90.9090909090909,
+      "count": 77,
+      "covered": 70
+    },
+    "crates/text-refinement-worker/src/lib.rs": {
+      "lines": 83.91304347826087,
+      "count": 230,
+      "covered": 193
+    },
+    "crates/text-refinement-worker/src/manifest.rs": {
+      "lines": 36.018957345971565,
+      "count": 211,
+      "covered": 76
+    },
+    "crates/text-refinement-worker/src/punctuation.rs": {
+      "lines": 96.20253164556962,
+      "count": 79,
+      "covered": 76
+    },
+    "crates/text-refinement-worker/src/selection.rs": {
+      "lines": 79.26829268292683,
+      "count": 82,
+      "covered": 65
+    },
+    "src-tauri/src/refinement_service.rs": {
+      "lines": 90.29126213592234,
+      "count": 309,
+      "covered": 279
+    },
+    "src-tauri/src/refinement_service/owner.rs": {
+      "lines": 95.22058823529412,
+      "count": 272,
+      "covered": 259
+    },
+    "src-tauri/src/refinement_service/scratch.rs": {
+      "lines": 85.98130841121495,
+      "count": 107,
+      "covered": 92
+    }
+  },
+  "measured": {
+    "portable": {
+      "crates/text-refinement-protocol/src/lib.rs": {
+        "lines": 96.55172413793103,
+        "count": 29,
+        "covered": 28
+      },
+      "crates/text-refinement-protocol/src/frame.rs": {
+        "lines": 90.9090909090909,
+        "count": 77,
+        "covered": 70
+      },
+      "crates/text-refinement-worker/src/lib.rs": {
+        "lines": 83.91304347826087,
+        "count": 230,
+        "covered": 193
+      },
+      "crates/text-refinement-worker/src/manifest.rs": {
+        "lines": 85.30805687203792,
+        "count": 211,
+        "covered": 180
+      },
+      "crates/text-refinement-worker/src/punctuation.rs": {
+        "lines": 96.20253164556962,
+        "count": 79,
+        "covered": 76
+      },
+      "crates/text-refinement-worker/src/selection.rs": {
+        "lines": 79.26829268292683,
+        "count": 82,
+        "covered": 65
+      },
+      "src-tauri/src/refinement_service.rs": {
+        "lines": 90.61488673139159,
+        "count": 309,
+        "covered": 280
+      },
+      "src-tauri/src/refinement_service/owner.rs": {
+        "lines": 95.22058823529412,
+        "count": 272,
+        "covered": 259
+      },
+      "src-tauri/src/refinement_service/scratch.rs": {
+        "lines": 85.98130841121495,
+        "count": 107,
+        "covered": 92
+      }
+    },
+    "host": {
+      "native_service.rs": {
+        "lines": 70.13081395348837,
+        "count": 1376,
+        "covered": 965
+      },
+      "controller.rs": {
+        "lines": 95.47826086956522,
+        "count": 575,
+        "covered": 549
+      },
+      "runtime.rs": {
+        "lines": 90.64352243861134,
+        "count": 2362,
+        "covered": 2141
+      },
+      "setup.rs": {
+        "lines": 78.44905320108205,
+        "count": 1109,
+        "covered": 870
+      },
+      "desktop.rs": {
+        "lines": 60.55990119390696,
+        "count": 2429,
+        "covered": 1471
+      },
+      "controller/refinement.rs": {
+        "lines": 96.875,
+        "count": 480,
+        "covered": 465
+      },
+      "runtime/refinement.rs": {
+        "lines": 81.55339805825243,
+        "count": 103,
+        "covered": 84
+      },
+      "refinement_setup.rs": {
+        "lines": 88.79056047197639,
+        "count": 339,
+        "covered": 301
+      },
+      "model/refinement.rs": {
+        "lines": 83.84146341463415,
+        "count": 328,
+        "covered": 275
+      }
+    }
+  },
+  "policy": {
+    "coreLineMinimum": 90,
+    "frontendMinimum": {
+      "statements": 80,
+      "branches": 80,
+      "functions": 80,
+      "lines": 80
+    },
+    "exclusions": [],
+    "hostMinimum": {
+      "native_service.rs": 70,
+      "controller.rs": 95,
+      "runtime.rs": 89,
+      "setup.rs": 78,
+      "desktop.rs": 59,
+      "controller/refinement.rs": 96,
+      "runtime/refinement.rs": 81,
+      "refinement_setup.rs": 88,
+      "model/refinement.rs": 83
+    },
+    "hostScope": "Initial measured module-file line coverage, including inline test code; regression floors, not production-only branch coverage or safety proof.",
+    "refinementMinimum": {
+      "crates/text-refinement-protocol/src/lib.rs": 96,
+      "crates/text-refinement-protocol/src/frame.rs": 90,
+      "crates/text-refinement-worker/src/lib.rs": 83,
+      "crates/text-refinement-worker/src/manifest.rs": 85,
+      "crates/text-refinement-worker/src/punctuation.rs": 96,
+      "crates/text-refinement-worker/src/selection.rs": 79,
+      "src-tauri/src/refinement_service.rs": 90,
+      "src-tauri/src/refinement_service/owner.rs": 95,
+      "src-tauri/src/refinement_service/scratch.rs": 85
+    },
+    "refinementScope": "Portable protocol, worker mechanics, manifest adapter and host supervisor; excludes the native MLX model adapter and executable entry point. Per-file measured regression floors, not semantic or end-to-end correctness."
+  },
+  "checks": {
+    "checkerRedBeforeImplementation": true,
+    "checkerTestsPassed": true,
+    "manifestBoundaryTests": 9,
+    "portableCoverageExitCode": 0,
+    "expandedHostCoverageExitCode": 0,
+    "finalPolicyReadbackPassed": true,
+    "workerClippyExitCode": 0,
+    "fastChecksExitCode": 0,
+    "ownerPermissionsNegativeControlFailedAsExpected": true,
+    "ownerPermissionsRestoredControlPassed": true
+  },
+  "privateLogSha256": {
+    "refinement-coverage-red.log": "b31d24a62191676b6ff6689413e86cd9c5c244ea77537163e0e0e75bf51a6c87",
+    "refinement-coverage-green-final.log": "f4f81ab3619ed11ff4813d225a4b38430674e7dd4e65ea8d5ec6c2f4cab416b2",
+    "refinement-coverage-final.log": "5cf8f77e2cca7ea5a2f9de5dbb3ce5d55baa51411203317c576cce3b11970c1a",
+    "refinement-expanded-host-coverage.log": "e89f2bae3a9e2380afe0a649df664f52301ab7c856232811a0dd5ffbb2b24cd0",
+    "refinement-manifest-extra-tests.log": "c221c0bf152c037ce0c8f7bd1583d24b75d1dc88d0912353d2ad7a8aa8dd21b7",
+    "refinement-coverage-clippy.log": "94e668f13cfb773b876bfb30e184f0df757c4e01754103d29972b7103c7eea63",
+    "refinement-coverage-fast.log": "2243424826cd055fb5f105f53f6b238d90a3716eb6491d84c14a73bbb26a91c0",
+    "refinement-coverage-owner-fixed.log": "182a685f49a496c03a7d31d6c20165e6afe05f453229d4b091f1646735ef9ab2",
+    "refinement-owner-permission-negative.log": "86cd4b101d3a0446fb0a1351413c6972e826783852751af4d4704c209ac6c682",
+    "refinement-owner-permission-positive.log": "055a15cc1cc167c72fa08d8bec14b7b8a0ea90374ae38647887a227dd5daf0c9"
+  },
+  "limitations": [
+    "Line coverage scope is explicitly selected; native MLX adapter and executable entry point are not in portable measurements.",
+    "Host module line totals include inline test code.",
+    "No new model-quality, microphone, target-receipt or comparative performance claim.",
+    "No successful remote CI run inferred."
+  ],
+  "intermediateManifestResult": {
+    "lines": 64.92890995260665,
+    "count": 211,
+    "covered": 137,
+    "limitation": "Snapshot fixture could fail at owner permissions before reaching intended copy/corruption branch; superseded after review."
+  }
+}

@@ -13,6 +13,22 @@ export function checkThresholds(actual, required) {
   });
 }
 
+export function checkFileThresholds(actual, required) {
+  const files = Object.entries(required);
+  if (!files.length) return ["File coverage policy is empty"];
+  return files.flatMap(([file, minimum]) => {
+    if (!Number.isFinite(minimum) || minimum <= 0 || minimum > 100)
+      return [`${file}: invalid coverage minimum`];
+    const measurement = actual[file];
+    if (!measurement) return [`${file}: missing coverage measurement`];
+    if (!Number.isInteger(measurement.count) || measurement.count <= 0)
+      return [`${file}: missing executable lines`];
+    return checkThresholds(measurement, { lines: minimum }).map(
+      (error) => `${file}: ${error}`,
+    );
+  });
+}
+
 function run(command, args, options = {}) {
   return execFileSync(command, args, {
     encoding: "utf8",

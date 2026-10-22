@@ -12,7 +12,23 @@
     "controller.rs": 95,
     "runtime.rs": 89,
     "setup.rs": 78,
-    "desktop.rs": 59
+    "desktop.rs": 59,
+    "controller/refinement.rs": 96,
+    "runtime/refinement.rs": 81,
+    "refinement_setup.rs": 88,
+    "model/refinement.rs": 83
   },
-  "hostScope": "Initial measured module-file line coverage, including inline test code; regression floors, not production-only branch coverage or safety proof."
+  "hostScope": "Initial measured module-file line coverage, including inline test code; regression floors, not production-only branch coverage or safety proof.",
+  "refinementMinimum": {
+    "crates/text-refinement-protocol/src/lib.rs": 96,
+    "crates/text-refinement-protocol/src/frame.rs": 90,
+    "crates/text-refinement-worker/src/lib.rs": 83,
+    "crates/text-refinement-worker/src/manifest.rs": 85,
+    "crates/text-refinement-worker/src/punctuation.rs": 96,
+    "crates/text-refinement-worker/src/selection.rs": 79,
+    "src-tauri/src/refinement_service.rs": 90,
+    "src-tauri/src/refinement_service/owner.rs": 95,
+    "src-tauri/src/refinement_service/scratch.rs": 85
+  },
+  "refinementScope": "Portable protocol, worker mechanics, manifest adapter and host supervisor; excludes the native MLX model adapter and executable entry point. Per-file measured regression floors, not semantic or end-to-end correctness."
 }

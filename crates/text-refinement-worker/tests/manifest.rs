@@ -129,3 +129,99 @@ fn owner_lease_rejects_missing_unknown_or_symlinked_markers() -> TestResult {
     assert!(owner_lease(root.path()).is_err());
     Ok(())
 }
+
+#[test]
+fn corrupt_later_asset_cannot_publish_a_partial_snapshot() -> TestResult {
+    use std::sync::atomic::AtomicBool;
+    use text_refinement_protocol::FailureKind;
+    use text_refinement_worker::manifest::{snapshot, verify};
+    let source = tempfile::tempdir()?;
+    let mut owner_builder = tempfile::Builder::new();
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        owner_builder.permissions(std::fs::Permissions::from_mode(0o700));
+    }
+    let owner = owner_builder.tempdir()?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        assert_eq!(owner.path().metadata()?.permissions().mode() & 0o777, 0o700);
+    }
+    let manifest = pinned_manifest().map_err(|_| "manifest")?;
+    for asset in &manifest.files {
+        std::fs::write(source.path().join(&asset.name), [])?;
+    }
+    // This existing attribution file is byte-identical to the first pinned
+    // model asset. Exercise real hash/copy work before a later asset fails.
+    let first = include_bytes!("../../../docs/licenses/qwen3-4b-mlx-model-card.txt");
+    assert_eq!(manifest.files[0].name, "README.md");
+    assert_eq!(u64::try_from(first.len())?, manifest.files[0].bytes);
+    use sha2::{Digest, Sha256};
+    let digest: String = Sha256::digest(first)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect();
+    assert_eq!(digest, manifest.files[0].sha256);
+    std::fs::write(source.path().join(&manifest.files[0].name), first)?;
+    std::fs::write(
+        source.path().join(&manifest.files[1].name),
+        vec![0; usize::try_from(manifest.files[1].bytes)?],
+    )?;
+    let cancel = AtomicBool::new(false);
+    assert!(matches!(
+        verify(source.path(), &cancel),
+        Err(FailureKind::ModelLoad)
+    ));
+    assert!(matches!(
+        snapshot(source.path(), owner.path(), &cancel),
+        Err(FailureKind::ModelLoad)
+    ));
+    assert_eq!(std::fs::read_dir(owner.path())?.count(), 0);
+    assert_eq!(
+        std::fs::read(source.path().join(&manifest.files[0].name))?,
+        first
+    );
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn verification_rejects_foreign_entries_and_nonprivate_snapshot_parents() -> TestResult {
+    use std::{os::unix::fs::PermissionsExt, sync::atomic::AtomicBool};
+    use text_refinement_protocol::FailureKind;
+    use text_refinement_worker::manifest::{snapshot, verify};
+    let root = tempfile::tempdir()?;
+    let source = root.path().join("source");
+    std::fs::create_dir(&source)?;
+    let cancel = AtomicBool::new(false);
+    assert!(matches!(
+        verify(&source, &cancel),
+        Err(FailureKind::ModelLoad)
+    ));
+    std::fs::write(source.join("foreign-file"), b"keep")?;
+    assert!(matches!(
+        verify(&source, &cancel),
+        Err(FailureKind::ModelLoad)
+    ));
+    let alias = root.path().join("alias");
+    std::os::unix::fs::symlink(&source, &alias)?;
+    assert!(matches!(
+        verify(&alias, &cancel),
+        Err(FailureKind::ModelLoad)
+    ));
+    assert!(matches!(
+        verify(std::path::Path::new("."), &cancel),
+        Err(FailureKind::ModelLoad)
+    ));
+    let owner = root.path().join("owner");
+    std::fs::create_dir(&owner)?;
+    std::fs::set_permissions(&owner, std::fs::Permissions::from_mode(0o755))?;
+    assert!(matches!(
+        snapshot(&source, &owner, &cancel),
+        Err(FailureKind::ModelLoad)
+    ));
+    assert_eq!(std::fs::read(source.join("foreign-file"))?, b"keep");
+    assert_eq!(std::fs::read_dir(owner)?.count(), 0);
+    Ok(())
+}

@@ -41,7 +41,7 @@ jobs:
       - run: cargo clippy -p dictation-core --all-targets --locked -- -D warnings
       - run: cargo test -p dictation-core --locked
       - run: npm run check:refinement
-      - run: npm run test:refinement
+      - run: npm run coverage:refinement
       - run: npm audit --audit-level=high
       - name: Install pinned secret scanner
         run: go install github.com/zricethezav/gitleaks/v8@v8.30.1

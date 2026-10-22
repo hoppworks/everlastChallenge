@@ -118,3 +118,10 @@ Begründung und Ablösebedingung stehen in [dependencies.md](dependencies.md).
 Neue Nutzer dieses Pakets, andere Advisory-IDs und eine nicht mehr benötigte
 Ausnahme bleiben Fehler. Ein erfolgreicher Check mit dieser Ausnahme bedeutet
 nicht, dass alle Abhängigkeiten aktiv gepflegt werden.
+
+`npm run coverage:refinement` misst Protokoll, portable Workermechanik und die
+Host-Prozessaufsicht dateiweise. Die Host-Coverage umfasst zusätzlich die
+ausgelagerten Bereinigungs-, Einrichtungs- und Modellmodule. Fehlende Dateien,
+leere Prüfbereiche und unterschrittene Einzelgrenzen scheitern unabhängig vom
+Gesamtdurchschnitt. Der [Scope-Bericht](verification/refinement-coverage-2026-10-22.md)
+nennt die Messwerte und die bewusst separat geprüften nativen Modellpfade.
