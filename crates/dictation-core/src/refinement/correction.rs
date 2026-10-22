@@ -57,6 +57,19 @@ fn parts(before: &str, language: Language) -> Option<Correction<'_>> {
     found
 }
 
+pub(super) fn explicitly_delimited(before: &str, language: Language) -> bool {
+    parts(before, language).is_some_and(|correction| correction.comma && correction.comma_after)
+}
+
+pub(super) fn requires_terminal_context(before: &str, language: Language) -> bool {
+    parts(before, language).is_none_or(|correction| {
+        correction.weak_marker
+            || ![correction.old, correction.replacement]
+                .iter()
+                .all(|word| !word.is_empty() && word.chars().all(|c| c.is_ascii_digit()))
+    })
+}
+
 fn frame(word: &str, language: Language) -> bool {
     match language {
         Language::German => matches!(

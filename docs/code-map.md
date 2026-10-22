@@ -23,6 +23,14 @@ erfasstes Ziel. Ein versandtes Tastaturereignis bestätigt nicht den Zielinhalt.
 Ein Cancel entzieht die Berechtigung für weitere Wirkung; es garantiert keinen
 sofortigen Abbruch eines bereits laufenden nativen Decoders.
 
+Vor einem Textworker-Auftrag kann der reine Kern eine eng begrenzte Korrektur
+[direkt validieren](../crates/dictation-core/src/refinement/direct.rs).
+Unveränderte Skip-Eingaben bleiben byteidentisch; mehrdeutige Fälle erhalten den
+Modellpfad mit dem vollständigen Rohoriginal. Die
+[Routingprüfung](verification/refinement-direct-2026-10-22.md) beschreibt Grenzen
+und Gegenbeispiele. Der Controller verwendet auch für direkte Ergebnisse den
+bestehenden widerrufbaren Übergabepfad.
+
 ## Modulgrenzen und Lesepfade
 
 | Bereich | Einstieg und Anschluss | Verträge und Risiken |

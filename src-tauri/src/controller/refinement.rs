@@ -76,6 +76,22 @@ impl Controller {
             };
             match decide(&original, language.into()) {
                 ProcessingDecision::Refine(_) => {
+                    match dictation_core::refinement::try_direct(&original, language.into()) {
+                        Ok(Some(accepted)) => {
+                            self.refinement.status = if accepted.edit_count() == 0 {
+                                RefinementStatus::CheckedUnchanged
+                            } else {
+                                RefinementStatus::Edited
+                            };
+                            let effects = self.core.accept(Fact::Transcript {
+                                id: session,
+                                text: accepted.as_str().to_owned(),
+                            })?;
+                            return self.actions(effects);
+                        }
+                        Ok(None) => {}
+                        Err(error) => return self.refinement_failed(session, error.to_string()),
+                    }
                     active.refining = true;
                     self.refinement.status = RefinementStatus::Processing;
                     return Ok(vec![Action::Refine(
@@ -186,6 +202,56 @@ impl Controller {
 mod tests {
     use super::*;
     type TestResult = Result<(), Box<dyn std::error::Error>>;
+
+    #[test]
+    fn ambiguous_direct_attempt_sends_exactly_the_original_to_one_worker() -> TestResult {
+        let source = "Wir kommen am Montag, nein am Dienstag um acht, Entschuldigung, neun Uhr.";
+        let (controller, job) = pending_text(source)?;
+        assert_eq!(job.original.as_str(), source);
+        assert_eq!(
+            controller.snapshot().refinement.original.as_deref(),
+            Some(source)
+        );
+        assert!(matches!(
+            controller.snapshot().refinement.status,
+            RefinementStatus::Processing
+        ));
+        Ok(())
+    }
+
+    #[test]
+    fn deterministic_completion_delivers_once_without_worker_and_can_be_revoked() -> TestResult {
+        let mut controller = Controller::default();
+        let mut settings = crate::controller::tests::settings();
+        settings.refinement = true;
+        controller.start(settings, None, true, true)?;
+        let job = crate::controller::tests::finish_audio(&mut controller, 1)?;
+        let event = || Event::InferenceFinished {
+            session: job.session,
+            generation: job.generation,
+            job_id: job.job_id,
+            sample_range: job.sample_range.clone(),
+            timeline_range: job.timeline_range.clone(),
+            result: Ok("Der Termin ist am Dienstag, nein, am Donnerstag um 10 Uhr.".into()),
+        };
+        let actions = controller.accept(event())?;
+        let [Action::Deliver { text, token, .. }] = &actions[..] else {
+            return Err("expected delivery without a refinement worker".into());
+        };
+        assert_eq!(text, "Der Termin ist am Donnerstag um 10 Uhr.");
+        assert!(matches!(
+            controller.snapshot().refinement.status,
+            RefinementStatus::Edited
+        ));
+        assert_eq!(
+            controller.snapshot().refinement.original.as_deref(),
+            Some("Der Termin ist am Dienstag, nein, am Donnerstag um 10 Uhr.")
+        );
+        assert!(controller.accept(event())?.is_empty());
+        controller.cancel(1)?;
+        assert!(!token.is_pending());
+        Ok(())
+    }
 
     fn pending()
     -> Result<(Controller, crate::refinement_service::owner::Job), Box<dyn std::error::Error>> {

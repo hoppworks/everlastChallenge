@@ -292,3 +292,11 @@ Rust validator; inputs, results, identities and limits are published in the
 [single-generation report](verification/refinement-single-pass-2026-10-22.md).
 This is automated and AI-assisted verification, not a new human acceptance,
 native-delivery or speed claim.
+
+The subsequent [deterministic routing check](verification/refinement-direct-2026-10-22.md)
+covers a restricted zero-model path through the same validation and delivery
+boundaries. Independent review supplied unseen counterexamples involving ordinary
+negation and a period inside a clock value. Both failed executable regressions
+before the route was narrowed. The reviewer then checked the corrected logic,
+raw-original fallback, source/language binding and revocable single delivery.
+The finite corpus result is not evidence of universal semantic correctness or speed.

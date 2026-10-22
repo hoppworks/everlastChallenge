@@ -2,6 +2,7 @@
 
 mod candidates;
 mod correction;
+mod direct;
 mod literals;
 mod policy;
 mod postprocess;
@@ -11,6 +12,7 @@ mod staged;
 mod text;
 mod validator;
 
+pub use direct::try_direct;
 pub use policy::{ProcessingDecision, RefinementSignal, SkipReason, decide};
 pub use postprocess::postprocess;
 pub use reconcile::reconcile;
