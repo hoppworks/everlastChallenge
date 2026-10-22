@@ -74,3 +74,18 @@ Parameterbindungen wiederverwendet. Dokumentation benötigt keinen neuen
 Modelllauf. Zeitmessungen laufen ohne parallele Builds oder andere Benchmarks.
 Ein lokaler Erfolg oder eine vorhandene Workflowdatei beweist keinen bestandenen
 Remote-CI-Lauf.
+
+## Gatekeeper und Notarisierung
+
+`npm run verify:bundle -- /path/to/App.app` prüft Signaturintegrität und
+Mikrofondeklaration. Das ist keine Prüfung der Gatekeeper-Zulassung.
+`npm run verify:distribution -- /path/to/App.app` verlangt zusätzlich eine
+erfolgreiche Gatekeeper-Prüfung und ein gültiges angeheftetes
+Apple-Notarisierungsticket. Die lokal signierten Builds bestehen diesen
+strengeren Check erwartungsgemäß nicht.
+
+Für einen regulär akzeptierten Download sind eine Apple-Developer-Mitgliedschaft,
+Developer-ID-Signierung und [Apple-Notarisierung](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution)
+nötig. Nach der Notarisierung das Ticket mit `stapler` an die App heften und
+erst danach das finale ZIP erstellen. Den Vertriebscheck auch an der entpackten
+ZIP-Kopie durchführen.

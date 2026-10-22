@@ -50,9 +50,39 @@ export function verifyBundle(bundle) {
   console.log("Bundle signature and microphone declarations verified");
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url))
-  verifyBundle(
-    process.argv[2] ??
+/** Signature integrity alone is insufficient for a normal downloaded app. */
+export function verifyDistribution(
+  bundle,
+  { run = execFileSync, verify = verifyBundle } = {},
+) {
+  verify(bundle);
+  const options = { stdio: "pipe", timeout: 30_000 };
+  try {
+    run("/usr/sbin/spctl", ["--assess", "--type", "execute", bundle], options);
+  } catch {
+    throw new Error(
+      "Gatekeeper rejected the app. A valid local signature is not distribution approval; check Developer ID signing and Apple notarization.",
+    );
+  }
+  try {
+    run("/usr/bin/xcrun", ["stapler", "validate", bundle], options);
+  } catch {
+    throw new Error("The app has no valid stapled Apple notarization ticket.");
+  }
+  console.log("Gatekeeper acceptance and stapled notarization ticket verified");
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  try {
+    const args = process.argv.slice(2);
+    const distribution = args[0] === "--distribution";
+    if (distribution) args.shift();
+    if (args.length > 1 || args[0]?.startsWith("-"))
+      throw new Error(
+        "Usage: node scripts/verify-bundle.mjs [--distribution] [BUILT.app]",
+      );
+    const bundle =
+      args[0] ??
       path.join(
         process.env.CARGO_TARGET_DIR || "target",
         "aarch64-apple-darwin/release/bundle/macos",
@@ -62,5 +92,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url))
             "utf8",
           ),
         ).productName + ".app",
-      ),
-  );
+      );
+    if (distribution) verifyDistribution(bundle);
+    else verifyBundle(bundle);
+  } catch (error) {
+    console.error(error.message);
+    process.exitCode = 1;
+  }
+}

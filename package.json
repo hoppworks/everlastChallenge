@@ -19,6 +19,7 @@
     "tauri": "tauri",
     "release": "node scripts/build-mlx-bundle.mjs",
     "verify:bundle": "node scripts/verify-bundle.mjs",
+    "verify:distribution": "node scripts/verify-bundle.mjs --distribution",
     "check:contracts": "node scripts/check-contracts.mjs",
     "test:quality": "node --import tsx --test tests/tooling/*.test.ts",
     "test:autonomous": "node scripts/autonomous-tests.mjs",

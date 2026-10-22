@@ -11,8 +11,10 @@ Oberfläche ist in React/TypeScript umgesetzt.
 [Release und Prüfsummen](https://github.com/hoppworks/everlastChallenge/releases/latest)
 
 Benötigt **Apple Silicon und macOS 27 oder neuer**. ZIP entpacken und die App
-nach Programme ziehen. Sie ist lokal signiert, aber nicht Apple-notarisiert;
-macOS kann beim ersten Öffnen einen Sicherheitshinweis anzeigen.
+nach Programme ziehen. **Der Build ist lokal signiert, nicht Apple-notarisiert.**
+macOS kann ihn beim ersten Öffnen blockieren. Die einmalige Freigabe erfolgt
+über **System Settings → Privacy & Security → Open Anyway**;
+[Details zur Meldung](docs/usage.md#macos-blockiert-das-erste-öffnen).
 
 ## Loslegen
 

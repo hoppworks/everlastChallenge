@@ -3,6 +3,26 @@
 Installation und die vier Schritte zum ersten Diktat stehen im
 [README](../README.md#loslegen).
 
+## macOS blockiert das erste Öffnen
+
+Die veröffentlichten Builds 0.1.0 und 0.2.0 sind lokal signiert, aber nicht mit
+Apple Developer ID signiert und von Apple notarisiert. Die Meldung „Apple could
+not verify … is free of malware“ bezeichnet diese fehlende Verifikation; sie
+ist kein Nachweis gefundener Schadsoftware. Ein intaktes ZIP allein hebt die
+Sperre nicht auf.
+
+Wenn du die App aus diesem Repository bewusst ausführen möchtest, prüfe zunächst
+Downloadquelle und die Prüfsumme im Release. Danach:
+
+1. Im Dialog **Done** wählen.
+2. **System Settings → Privacy & Security** öffnen.
+3. Bei der Meldung zu **Everlast Coding Challenge** auf **Open Anyway** klicken
+   und die anschließende Bestätigung durchführen.
+
+Dies entspricht [Apples Anleitung für nicht notarisierte Apps](https://support.apple.com/en-au/102445).
+Die Freigabe betrifft diese App. Gatekeeper muss dafür nicht global abgeschaltet
+und kein Quarantäneattribut per Terminal entfernt werden.
+
 ## Aufnahme und Einfügen
 
 Das globale Tastenkürzel **⌥D** startet und stoppt die Aufnahme. Dabei wird das

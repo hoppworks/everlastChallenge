@@ -6,6 +6,12 @@ gebaut. `Info.plist` meldet 0.2.0; Bundle-Signatur und Mikrofonentitlement wurde
 geprüft. Plattform: Apple Silicon, macOS 27.0.1. Eine Apple-Notarisierung liegt
 nicht vor.
 
+**Nachprüfung des Downloads:** Gatekeeper weist diese lokal signierte App
+zurück. Der gültige Bundle-Signaturcheck bedeutet keine Gatekeeper-Zulassung.
+[Diagnose und Prüfgrenze](gatekeeper-2026-10-22.md) sowie
+[einmalige manuelle Freigabe](../usage.md#macos-blockiert-das-erste-öffnen)
+beschreiben den tatsächlichen Installationsweg.
+
 ## Beobachtete Funktion
 
 - Eine gespeicherte Modellwahl `reference` wurde beim Start auf
