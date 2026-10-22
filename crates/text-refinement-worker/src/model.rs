@@ -20,7 +20,7 @@ use std::{
 use text_refinement_protocol::{FailureKind, Language};
 
 pub const PROMPT_VERSION: u16 = 6;
-pub const POLICY_VERSION: u16 = 3;
+pub const POLICY_VERSION: u16 = 4;
 const PROMPT: &str = include_str!("prompt.txt");
 const MAX_OUTPUT_BYTES: usize = 32 * 1024;
 const MAX_INPUT_TOKENS: usize = 8192;

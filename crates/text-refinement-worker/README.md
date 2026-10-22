@@ -39,3 +39,8 @@ The complete Rust validator still checks source spans, UTF-8 byte limits,
 overlaps and combined edit counts. Grammar-valid output can still omit a needed
 correction; it does not establish semantic quality. The existing ASR generation
 path does not use this processor.
+
+Policy version 4 additionally rejects punctuation edits that introduce doubled
+full stops, commas, colons or semicolons inside a replacement or at a source
+boundary. Existing ellipses can remain unchanged. This is a structural check;
+it does not decide whether a sentence boundary is linguistically appropriate.

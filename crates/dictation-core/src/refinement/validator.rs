@@ -10,6 +10,7 @@ const MAX_EDIT_BYTES: usize = 2048;
 const MAX_CONTEXT_BYTES: usize = 128;
 
 struct ResolvedEdit {
+    kind: EditKind,
     range: Range<usize>,
     replacement: String,
     needs_sentence_start: bool,
@@ -51,6 +52,7 @@ pub(super) fn validate(
                 if super::correction::allowed(&edit.before, &edit.after, language) =>
             {
                 ResolvedEdit {
+                    kind: edit.kind,
                     range,
                     replacement: edit.after.clone(),
                     needs_sentence_start: false,
@@ -60,6 +62,7 @@ pub(super) fn validate(
                 let needs_sentence_start = super::punctuation::analyze(&edit.before, &edit.after)
                     .ok_or(ValidationError::InvalidEdit)?;
                 ResolvedEdit {
+                    kind: edit.kind,
                     range,
                     replacement: edit.after.clone(),
                     needs_sentence_start,
@@ -76,18 +79,25 @@ pub(super) fn validate(
         return Err(ValidationError::InvalidEdit);
     }
     let mut result = String::with_capacity(source.len());
+    let mut punctuation = super::punctuation::Composition::new(source);
     let mut cursor = 0;
     for edit in &resolved {
+        punctuation.append(&source[cursor..edit.range.start], |index| {
+            Some(cursor + index)
+        })?;
         result.push_str(&source[cursor..edit.range.start]);
         if edit.needs_sentence_start && !super::punctuation::sentence_start(&result) {
             return Err(ValidationError::InvalidEdit);
         }
+        let positions = replacement_positions(source, edit)?;
+        punctuation.append(&edit.replacement, |index| positions[index])?;
         result.push_str(&edit.replacement);
         cursor = edit.range.end;
         if result.len() > MAX_ORIGINAL_BYTES {
             return Err(ValidationError::Limit);
         }
     }
+    punctuation.append(&source[cursor..], |index| Some(cursor + index))?;
     result.push_str(&source[cursor..]);
     if result.len() > MAX_ORIGINAL_BYTES {
         return Err(ValidationError::Limit);
@@ -96,6 +106,44 @@ pub(super) fn validate(
         text: result,
         edit_count: resolved.len(),
     })
+}
+
+fn replacement_positions(
+    source: &str,
+    edit: &ResolvedEdit,
+) -> Result<Vec<Option<usize>>, ValidationError> {
+    match edit.kind {
+        EditKind::PunctuationCase => Ok(super::punctuation::source_positions(
+            &source[edit.range.clone()],
+            &edit.replacement,
+            edit.range.start,
+        )),
+        EditKind::SelfCorrection => {
+            // A validated correction is the exact suffix already in the source.
+            let start = edit
+                .range
+                .end
+                .checked_sub(edit.replacement.len())
+                .ok_or(ValidationError::InvalidEdit)?;
+            Ok((0..edit.replacement.len())
+                .map(|index| Some(start + index))
+                .collect())
+        }
+        EditKind::Filler => {
+            // The only nonempty filler replacement is one retained comma and
+            // optional separator space, owned by the original filler span.
+            let comma = source[edit.range.clone()]
+                .find(',')
+                .map(|index| edit.range.start + index);
+            let mut positions = vec![None; edit.replacement.len()];
+            for (index, c) in edit.replacement.char_indices() {
+                if c == ',' {
+                    positions[index] = comma;
+                }
+            }
+            Ok(positions)
+        }
+    }
 }
 
 fn locate(source: &str, edit: &ProposedEdit) -> Result<Range<usize>, ValidationError> {
@@ -199,6 +247,7 @@ fn deletion(
             !c.is_whitespace() && !matches!(c, '.' | ',' | '?' | '!' | ';' | ':' | ')' | ']' | '}')
         });
     Ok(ResolvedEdit {
+        kind: edit.kind,
         range,
         replacement: if needs_separator {
             format!("{} ", edit.after)

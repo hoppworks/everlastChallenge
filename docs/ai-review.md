@@ -86,3 +86,9 @@ Independent review found no concrete code blocker and prompted a correction to
 an inherited tokenizer-version comment. The
 [structured-output report](verification/refinement-structured-2026-10-22.md)
 separates format enforcement from the still-failing model-quality criteria.
+
+A later diagnostic exposed acceptance of a duplicated sentence-ending point.
+Independent review found a mixed-edit bypass in the first correction. Both were
+reproduced with failing public tests before the final source-provenance guard.
+The [punctuation report](verification/refinement-punctuation-2026-10-22.md)
+documents the corrected composition rule and its limited linguistic scope.

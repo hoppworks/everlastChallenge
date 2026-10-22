@@ -14,6 +14,179 @@ fn edit(kind: EditKind, before: &str, after: &str) -> ProposedEdit {
 }
 
 #[test]
+fn punctuation_cannot_duplicate_an_existing_sentence_ending() -> TestResult {
+    let original = OriginalTranscript::new("Wir kommen um neun Uhr.".into())?;
+    assert!(
+        validate(
+            &original,
+            &[edit(EditKind::PunctuationCase, "Uhr", "Uhr.")],
+            Language::German,
+        )
+        .is_err()
+    );
+    assert_eq!(original.as_str(), "Wir kommen um neun Uhr.");
+    Ok(())
+}
+
+#[test]
+fn punctuation_rejects_new_repeated_separators_inside_and_at_both_edges() -> TestResult {
+    for (source, before, after) in [
+        ("Hallo. Welt!", "Welt", ".Welt"),
+        ("Hallo. Welt!", "Welt", " .Welt"),
+        ("Wir kommen um neun Uhr.", "Uhr", "Uhr. "),
+        ("Wir kommen um neun Uhr.", "Uhr", "Uhr.."),
+        ("Wir kommen heute", "kommen", "kommen,,"),
+        ("Wir kommen heute", "kommen", "kommen: :"),
+        ("Wir kommen heute", "kommen", "kommen;;"),
+    ] {
+        let original = OriginalTranscript::new(source.into())?;
+        assert!(
+            validate(
+                &original,
+                &[edit(EditKind::PunctuationCase, before, after)],
+                Language::German
+            )
+            .is_err(),
+            "{source} -> {after}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn separate_punctuation_edits_cannot_create_a_repeated_separator_together() -> TestResult {
+    let original = OriginalTranscript::new("Hallo Welt".into())?;
+    assert!(
+        validate(
+            &original,
+            &[
+                edit(EditKind::PunctuationCase, "Hallo", "Hallo."),
+                edit(EditKind::PunctuationCase, "Welt", ".Welt"),
+            ],
+            Language::German
+        )
+        .is_err()
+    );
+    Ok(())
+}
+
+#[test]
+fn filler_removal_cannot_join_a_new_point_to_an_existing_point() -> TestResult {
+    let original = OriginalTranscript::new("Hallo äh. Welt".into())?;
+    assert!(
+        validate(
+            &original,
+            &[
+                edit(EditKind::PunctuationCase, "Hallo", "Hallo."),
+                edit(EditKind::Filler, "äh", ""),
+            ],
+            Language::German
+        )
+        .is_err()
+    );
+    Ok(())
+}
+
+#[test]
+fn removing_one_ellipsis_does_not_authorize_a_new_repeated_point_elsewhere() -> TestResult {
+    let original = OriginalTranscript::new("Hallo... äh. Welt".into())?;
+    assert!(
+        validate(
+            &original,
+            &[
+                edit(EditKind::PunctuationCase, "Hallo...", "Hallo."),
+                edit(EditKind::Filler, "äh", ""),
+            ],
+            Language::German,
+        )
+        .is_err()
+    );
+    Ok(())
+}
+
+#[test]
+fn unchanged_ellipses_survive_filler_and_correction_edits() -> TestResult {
+    for (source, proposal, expected) in [
+        (
+            "Ähm ... wir warten.",
+            edit(EditKind::Filler, "Ähm", ""),
+            "... wir warten.",
+        ),
+        (
+            "Montag, nein Dienstag...",
+            edit(
+                EditKind::SelfCorrection,
+                "Montag, nein Dienstag...",
+                "Dienstag...",
+            ),
+            "Dienstag...",
+        ),
+    ] {
+        let original = OriginalTranscript::new(source.into())?;
+        assert_eq!(
+            validate(&original, &[proposal], Language::German)?.as_str(),
+            expected
+        );
+        assert_eq!(validate(&original, &[], Language::German)?.as_str(), source);
+    }
+    Ok(())
+}
+
+#[test]
+fn punctuation_origins_use_utf8_positions_after_multibyte_prefixes() -> TestResult {
+    let original = OriginalTranscript::new("Es ist spät. über...".into())?;
+    assert_eq!(
+        validate(
+            &original,
+            &[edit(EditKind::PunctuationCase, "über...", "Über...")],
+            Language::German,
+        )?
+        .as_str(),
+        "Es ist spät. Über..."
+    );
+    let original = OriginalTranscript::new("Äußerst müde äh. Welt".into())?;
+    assert!(
+        validate(
+            &original,
+            &[
+                edit(EditKind::PunctuationCase, "müde", "müde."),
+                edit(EditKind::Filler, "äh", ""),
+            ],
+            Language::German
+        )
+        .is_err()
+    );
+    Ok(())
+}
+
+#[test]
+fn existing_ellipsis_and_ordinary_new_sentence_punctuation_remain_valid() -> TestResult {
+    let original = OriginalTranscript::new("warte...".into())?;
+    for (before, after) in [("warte", "Warte"), ("warte...", "Warte...")] {
+        assert_eq!(
+            validate(
+                &original,
+                &[edit(EditKind::PunctuationCase, before, after)],
+                Language::German
+            )?
+            .as_str(),
+            "Warte..."
+        );
+    }
+    let original = OriginalTranscript::new("wir warten dann gehen wir".into())?;
+    let accepted = validate(
+        &original,
+        &[
+            edit(EditKind::PunctuationCase, "warten", "warten."),
+            edit(EditKind::PunctuationCase, "dann", "Dann"),
+        ],
+        Language::German,
+    )?;
+    assert_eq!(accepted.as_str(), "wir warten. Dann gehen wir");
+    Ok(())
+}
+
+#[test]
 fn filler_deletion_keeps_words_separate_without_leading_or_double_spaces() -> TestResult {
     let original = OriginalTranscript::new("Ähm, wir schicken, äh, den Bericht morgen.".into())?;
     let accepted = validate(
