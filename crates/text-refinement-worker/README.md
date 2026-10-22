@@ -2,7 +2,7 @@
 
 A dedicated Apple Silicon macOS process owns Qwen3 inference through MLX.
 The desktop invokes it after ASR when local text refinement is enabled and the
-processing policy requires it. Model-quality qualification remains incomplete.
+processing policy requires it. The [single-generation qualification](../../docs/verification/refinement-single-pass-2026-10-22.md) records the current finite text tests; app-package verification is a separate boundary.
 
 The executable takes three positional arguments: the installed model directory,
 a nonzero worker generation, and a private absolute directory owned by its
@@ -32,45 +32,38 @@ The input thread never performs inference or blocking output. One output frame
 can be queued behind the writer; further backpressure terminates the process.
 The host must enforce startup/job deadlines and kill an unresponsive worker.
 
-The first model pass selects a complete boolean vector over source-bound filler
-and self-correction options. The second pass adds punctuation and sentence-initial
-case to the exact intermediate text using a grammar that fixes the word sequence.
-Rust derives local punctuation proposals and validates both stages atomically.
-The host independently repeats this validation for its active original/session;
-the final accepted value remains bound to the raw ASR text. Current
-model-quality limitations are recorded in the
-[pipeline report](../../docs/verification/refinement-pipeline-2026-10-22.md).
+A refinement request invokes the local model at most once. It returns a complete
+text, constrained to the original word sequence and source-bound correction
+alternatives. Rust reconstructs the corresponding edits and validates the
+result before deterministic finishing. That finishing covers explicit digit-to-
+digit corrections with strong correction markers, comma-delimited initial
+hesitations, and permitted sentence casing
+and terminal punctuation. The final result is reconciled against the raw ASR
+text again; the host independently validates the returned stages for the active
+original and session. Invalid, incomplete or conflicting results never authorize
+automatic insertion.
 
-Validation anchors stay in Rust and are not exposed as option context. If a
-source span occurs repeatedly, model options give its one-based occurrence.
-This representation does not change the exact-anchor checks on returned edits.
+Validation anchors stay in Rust. Repeated source spans are identified to the
+model by their one-based occurrence. Grammar validity is not semantic acceptance:
+a model can still leave a necessary correction unapplied. Historical findings
+are recorded in the [pipeline report](../../docs/verification/refinement-pipeline-2026-10-22.md).
 
-Policy version 3 constrains generation with a request-owned JSON grammar:
-exact decision count, known fields and bounded punctuation lists/string lengths.
-The complete Rust validator still checks source spans, UTF-8 byte limits,
-overlaps and combined edit counts. Grammar-valid output can still omit a needed
-correction; it does not establish semantic quality. The existing ASR generation
-path does not use this processor.
-
-Policy version 4 additionally rejects punctuation edits that introduce doubled
-full stops, commas, colons or semicolons inside a replacement or at a source
-boundary. Existing ellipses can remain unchanged. This is a structural check;
-it does not decide whether a sentence boundary is linguistically appropriate.
-
-Protocol 2 carries both stages explicitly. Current prompt and policy identities
+Protocol 2 carries structural and punctuation edits as separate validation
+stages; these are not separate model calls. Current prompt and policy identities
 come from the shared [protocol constants](../text-refinement-protocol/src/lib.rs).
-Both stages share the
-30-second request deadline, 4,096 generated-token budget and 32-KiB output-byte
-budget. Each model prompt is limited to 8,192 tokens. No first model call is
-needed when the structural option list is empty. The punctuation grammar retains
-existing whitespace and offers bounded punctuation insertion at plain spaces.
-Policy version 8 permits capitalization alternatives only at existing sentence
-starts or immediately after a generated sentence terminator, matching the
-validator. Non-initial word casing remains unchanged unless a sentence boundary
-precedes it; this intentionally preserves names and identifiers and also leaves
-lowercase nouns untouched rather than guessing their role.
-The generated pattern is capped at 512 KiB. A failed or incomplete second pass
-does not return the first pass as a fallback.
+The complete request shares a 30-second deadline, a 4,096 generated-token budget
+and a 32-KiB output-byte budget. The model prompt is limited to 8,192 tokens and
+the generated grammar to 512 KiB. The tokenizer vocabulary is reusable, while
+every request creates an independent parser and matcher. The existing ASR
+inference path does not use this grammar.
+
+The grammar offers finite punctuation separators, retains literal atoms, and
+preserves separators between bare digits and the following word. Capitalization
+alternatives require an allowed sentence boundary. The Rust validator separately
+checks quotes, values, whitespace, overlaps and combined edit counts. It protects
+these boundaries even if a future grammar change admits an invalid candidate.
+A failure retains the original through the existing host error path; there is
+no second-model repair attempt or partially accepted result.
 
 ## Host service
 

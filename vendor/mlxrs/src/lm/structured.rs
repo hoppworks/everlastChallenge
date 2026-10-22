@@ -293,6 +293,28 @@ pub struct LLGuidanceLogitsProcessor {
   is_first_token: RefCell<bool>,
 }
 
+/// Immutable tokenizer vocabulary shared by independently compiled grammars.
+///
+/// Construct once per tokenizer/model pair. Every `compile` creates a fresh
+/// parser and matcher; no request's tokens or grammar state are retained here.
+pub struct GrammarCompiler {
+  tok_env: TokEnv,
+}
+
+impl GrammarCompiler {
+  /// Build the literal-byte vocabulary, including the model's padded IDs.
+  pub fn new(tokenizer: &Tokenizer, model_vocab_size: Option<usize>) -> Result<Self> {
+    Ok(Self {
+      tok_env: tok_env_from_tokenizer(tokenizer, model_vocab_size)?,
+    })
+  }
+
+  /// Compile an independent request grammar against this fixed vocabulary.
+  pub fn compile(&self, grammar: GrammarSpec) -> Result<LLGuidanceLogitsProcessor> {
+    LLGuidanceLogitsProcessor::from_tok_env(grammar, &self.tok_env)
+  }
+}
+
 impl LLGuidanceLogitsProcessor {
   /// Construct a new processor from a [`GrammarSpec`] + tokenizer
   /// (optionally pinned to the model's LM-head vocab width).
@@ -323,8 +345,11 @@ impl LLGuidanceLogitsProcessor {
     tokenizer: &Tokenizer,
     model_vocab_size: Option<usize>,
   ) -> Result<Self> {
-    let tok_env = tok_env_from_tokenizer(tokenizer, model_vocab_size)?;
-    let mut factory = ParserFactory::new_simple(&tok_env).map_err(|e| {
+    GrammarCompiler::new(tokenizer, model_vocab_size)?.compile(grammar)
+  }
+
+  fn from_tok_env(grammar: GrammarSpec, tok_env: &TokEnv) -> Result<Self> {
+    let mut factory = ParserFactory::new_simple(tok_env).map_err(|e| {
       Error::Parse(ParsePayload::new(
         "llguidance: ParserFactory",
         "llguidance grammar factory",
@@ -525,8 +550,8 @@ impl LLGuidanceLogitsProcessor {
 /// (`build_json_schema_logits_processor`). The Python reference caches the
 /// per-tokenizer LL tokenizer; mlxrs's caller (the upcoming structured-
 /// response wiring) owns the tokenizer lifecycle and can construct
-/// processors at the request boundary — so this thin helper is the
-/// natural shim. Equivalent to
+/// independent processors at the request boundary. Repeated calls can instead
+/// use [`GrammarCompiler`] to retain only the immutable vocabulary. Equivalent to
 /// `LLGuidanceLogitsProcessor::new(GrammarSpec::JsonSchema(schema),
 /// tokenizer, model_vocab_size)`. See
 /// [`LLGuidanceLogitsProcessor::new`]'s `model_vocab_size` doc for when

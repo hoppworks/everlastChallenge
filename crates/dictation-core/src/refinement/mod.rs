@@ -4,12 +4,16 @@ mod candidates;
 mod correction;
 mod literals;
 mod policy;
+mod postprocess;
 mod punctuation;
+mod reconcile;
 mod staged;
 mod text;
 mod validator;
 
 pub use policy::{ProcessingDecision, RefinementSignal, SkipReason, decide};
+pub use postprocess::postprocess;
+pub use reconcile::reconcile;
 
 /// Maximum UTF-8 length of a complete original transcript.
 pub const MAX_ORIGINAL_BYTES: usize = 32 * 1024;

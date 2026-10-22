@@ -1,14 +1,11 @@
-use crate::{Generator, manifest, punctuation, selection};
-use dictation_core::refinement::{
-    EditKind, MAX_ORIGINAL_BYTES, OriginalTranscript, StagedEdits, proposal_candidates, validate,
-    validate_staged,
-};
+use crate::{Generator, manifest, single_pass};
+use dictation_core::refinement::{MAX_ORIGINAL_BYTES, StagedEdits};
 use mlxrs::{
     lm::{
         factory::{ModelConfiguration, ModelContext, ModelTypeRegistry},
         generate::{FinishReason, GenConfig},
         models::qwen3::{Qwen3, Qwen3Config},
-        structured::build_json_schema_logits_processor,
+        structured::{GrammarCompiler, GrammarSpec},
     },
     memory::CacheLimitGuard,
     tokenizer::Tokenizer,
@@ -36,6 +33,7 @@ struct OutputBudget {
 pub struct MlxGenerator {
     // Field order also drops model arrays before the allocator guard on errors.
     context: Option<ModelContext>,
+    grammar: GrammarCompiler,
     cache: Option<CacheLimitGuard>,
     _snapshot: manifest::VerifiedSnapshot,
 }
@@ -90,7 +88,13 @@ impl MlxGenerator {
         if cancel.load(Ordering::Acquire) {
             return Err(FailureKind::Incomplete);
         }
+        let grammar = GrammarCompiler::new(&adapted_tokenizer, Some(config.vocab_size as usize))
+            .map_err(|_| FailureKind::ModelLoad)?;
+        if cancel.load(Ordering::Acquire) {
+            return Err(FailureKind::Incomplete);
+        }
         Ok(Self {
+            grammar,
             context: Some(ModelContext::new(model, adapted_tokenizer, config)),
             cache: Some(cache),
             _snapshot: snapshot,
@@ -124,12 +128,10 @@ impl MlxGenerator {
             .with_max_tokens(remaining.tokens)
             .with_prefill_step_size(256);
         parameters.temp = 0.;
-        let grammar = build_json_schema_logits_processor(
-            schema,
-            context.tokenizer(),
-            Some(context.config().vocab_size as usize),
-        )
-        .map_err(|_| FailureKind::Generation)?;
+        let grammar = self
+            .grammar
+            .compile(GrammarSpec::JsonSchema(schema))
+            .map_err(|_| FailureKind::Generation)?;
         if cancel.load(Ordering::Acquire) {
             return Err(FailureKind::Incomplete);
         }
@@ -204,45 +206,10 @@ impl Generator for MlxGenerator {
             bytes: MAX_OUTPUT_BYTES,
             tokens: 4096,
         };
-        let original = OriginalTranscript::new(text.into()).map_err(|_| FailureKind::InputLimit)?;
-        let mut choices =
-            proposal_candidates(&original, language.into()).map_err(|_| FailureKind::InputLimit)?;
-        choices.retain(|edit| edit.kind != EditKind::PunctuationCase);
-        let structural = if choices.is_empty() {
-            Vec::new()
-        } else {
-            let options = selection::prompt_options(&original, &choices)?;
-            let output = self.infer(
-                PROMPT,
-                &serde_json::json!({"language":language,"dictation":text,"choices":options}),
-                selection::output_schema(choices.len())?,
-                cancel,
-                started,
-                &mut remaining,
-            )?;
-            selection::decode(&output, &original, &choices, language.into())?
-        };
-        let interim = validate(&original, &structural, language.into())
-            .map_err(|_| FailureKind::InvalidCandidate)?;
-        let plan = punctuation::Plan::new(
-            OriginalTranscript::new(interim.as_str().into())
-                .map_err(|_| FailureKind::InputLimit)?,
-        )?;
-        let output = self.infer(
-            include_str!("punctuation-prompt.txt"),
-            &serde_json::json!({"language":language,"dictation":interim.as_str()}),
-            plan.schema(),
-            cancel,
-            started,
-            &mut remaining,
-        )?;
-        let punctuation = plan.decode(&output, language.into())?;
-        let proposal = StagedEdits {
-            structural,
-            punctuation,
-        };
-        validate_staged(&original, &proposal, language.into())
-            .map_err(|_| FailureKind::InvalidCandidate)?;
+        let plan = single_pass::Plan::new(text, language)?;
+        let proposal = plan.generate(|content, schema| {
+            self.infer(PROMPT, content, schema, cancel, started, &mut remaining)
+        })?;
         if cancel.load(Ordering::Acquire) {
             return Err(FailureKind::Incomplete);
         }

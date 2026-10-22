@@ -4,6 +4,8 @@
 pub mod manifest;
 pub mod punctuation;
 pub mod selection;
+pub mod single_pass;
+mod word_grammar;
 
 #[cfg(all(feature = "mlx", target_os = "macos", target_arch = "aarch64"))]
 pub mod model;

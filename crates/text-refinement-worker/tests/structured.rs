@@ -160,6 +160,59 @@ fn grammar_enforces_empty_and_exact_decision_counts_through_the_text_stream() ->
 }
 
 #[test]
+fn decision_grammar_allows_every_independent_choice_to_be_selected() -> TestResult {
+    use mlxrs::lm::generate::{FinishReason, stream_generate_with_processors};
+    struct SelectAll;
+    impl Model for SelectAll {
+        fn forward(
+            &self,
+            tokens: &Array,
+            _cache: &mut [Box<dyn KvCache>],
+        ) -> mlxrs::error::Result<Array> {
+            let mut row = vec![0f32; 96];
+            row[0] = 30.;
+            row[(b't' - 31) as usize] = 20.;
+            row[1] = -10.;
+            Array::from_slice(
+                &row.repeat(tokens.shape()[1]),
+                &(1usize, tokens.shape()[1], 96usize),
+            )
+        }
+    }
+    let root = tempfile::tempdir()?;
+    let tokenizer = ascii_tokenizer(root.path())?;
+    let compiler = mlxrs::lm::structured::GrammarCompiler::new(&tokenizer, Some(96))?;
+    // Reuse only vocabulary; a completed matcher must not leak into the next grammar.
+    for count in [3, 1, 3] {
+        let schema = text_refinement_worker::selection::output_schema(count)
+            .map_err(|error| format!("{error:?}"))?;
+        let grammar = compiler.compile(mlxrs::lm::structured::GrammarSpec::JsonSchema(schema))?;
+        let stream = stream_generate_with_processors(
+            &SelectAll,
+            &tokenizer,
+            &[1],
+            Vec::new(),
+            GenConfig::new().with_max_tokens(200),
+            vec![grammar.into_logits_processor()],
+        );
+        let mut output = String::new();
+        let mut finished = false;
+        for step in stream {
+            let step = step?;
+            output.push_str(&step.text);
+            finished |= matches!(step.finish_reason, Some(FinishReason::Eos));
+        }
+        assert!(finished, "{output}");
+        let parsed: serde_json::Value = serde_json::from_str(&output)?;
+        assert_eq!(
+            parsed,
+            serde_json::json!({"decisions":vec![true; count],"punctuation":[]})
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn fixed_word_grammar_preserves_word_sequence_under_controlled_logits() -> TestResult {
     use dictation_core::refinement::OriginalTranscript;
     use mlxrs::lm::{
@@ -332,5 +385,127 @@ fn punctuation_grammar_never_offers_internal_capitalization_rejected_by_validato
         plan.decode(&output, Language::German).is_ok(),
         "Grammar admitted invalid capitalization: {output}"
     );
+    Ok(())
+}
+
+#[test]
+fn single_pass_grammar_preserves_long_gaps_and_constrains_capitalization() -> TestResult {
+    use mlxrs::lm::{
+        generate::{FinishReason, stream_generate_with_processors},
+        structured::build_json_schema_logits_processor,
+    };
+    use std::cell::Cell;
+    use text_refinement_protocol::Language;
+    use text_refinement_worker::single_pass::Plan;
+    struct ScriptModel {
+        script: Vec<u8>,
+        cursor: Cell<usize>,
+    }
+    impl Model for ScriptModel {
+        fn forward(
+            &self,
+            tokens: &Array,
+            _: &mut [Box<dyn KvCache>],
+        ) -> mlxrs::error::Result<Array> {
+            let position = self.cursor.get();
+            self.cursor.set(position + 1);
+            let mut row = vec![-100f32; 96];
+            let token = self
+                .script
+                .get(position)
+                .map_or(0, |byte| usize::from(byte - 31));
+            row[token] = 100.;
+            Array::from_slice(
+                &row.repeat(tokens.shape()[1]),
+                &(1usize, tokens.shape()[1], 96usize),
+            )
+        }
+    }
+    let root = tempfile::tempdir()?;
+    let tokenizer = ascii_tokenizer(root.path())?;
+    let long_gap = format!("Hello{}world.", " ".repeat(65));
+    for (source, desired, exact) in [
+        (long_gap.as_str(), long_gap.as_str(), true),
+        ("der termin bleibt", "Der termin bleibt", true),
+        ("der termin bleibt", "Der. Termin. Bleibt", true),
+        ("der termin bleibt", "Der Termin Bleibt", false),
+        ("3 dogs", "3. Dogs", false),
+        ("\n\nHello.", "\n\nHello.", true),
+        ("Hello.\n\n", "Hello.\n\n", true),
+        ("\n\nID 0017;\n\n", "\n\nID 0017;\n\n", true),
+        (
+            "The code is 0017; keep it.",
+            "The code is 0017; keep it.",
+            true,
+        ),
+        (
+            "The report is ready.\n\nPlease read it.",
+            "The report is ready.\n\nPlease read it.",
+            true,
+        ),
+        (
+            "The report is ready.\n\nPlease read it.",
+            "The report is ready. Please read it.",
+            false,
+        ),
+        (
+            "Die Menge ist 60, Entschuldigung, 16 Kartons.",
+            "Die Menge ist 60. Entschuldigung, 16 Kartons.",
+            false,
+        ),
+        ("hello world", "Hello\nWorld", false),
+        (
+            "Der Betrag ist 50, Entschuldigung, 15 Euro.",
+            "Der Betrag ist 15 Euro.",
+            true,
+        ),
+        (
+            "Der Betrag ist 50, Entschuldigung, 15 Euro.",
+            "Der Betrag ist 15. Euro.",
+            false,
+        ),
+        (
+            "Ein Satz. Noch ein Satz.",
+            "Ein Satz.\nNoch ein Satz.",
+            false,
+        ),
+    ] {
+        let mut schema = None;
+        let _proposal = Plan::new(source, Language::German)
+            .map_err(|e| format!("{e:?}"))?
+            .generate(|_, value| {
+                schema = Some(value);
+                Ok(serde_json::json!({"text":source}).to_string())
+            })
+            .map_err(|error| format!("{error:?}"))?;
+        let expected = serde_json::json!({"text":desired}).to_string();
+        let model = ScriptModel {
+            script: expected.as_bytes().to_vec(),
+            cursor: Cell::new(0),
+        };
+        let grammar =
+            build_json_schema_logits_processor(schema.ok_or("schema")?, &tokenizer, Some(96))?;
+        let stream = stream_generate_with_processors(
+            &model,
+            &tokenizer,
+            &[1],
+            Vec::new(),
+            GenConfig::new().with_max_tokens(250),
+            vec![grammar.into_logits_processor()],
+        );
+        let mut output = String::new();
+        let mut ended = false;
+        for step in stream {
+            let step = step?;
+            output.push_str(&step.text);
+            ended |= matches!(step.finish_reason, Some(FinishReason::Eos));
+        }
+        if exact {
+            assert!(ended, "{output}");
+            assert_eq!(output, expected);
+        } else {
+            assert_ne!(output, expected);
+        }
+    }
     Ok(())
 }

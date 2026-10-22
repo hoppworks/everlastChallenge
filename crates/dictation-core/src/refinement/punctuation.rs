@@ -17,6 +17,33 @@ pub(super) fn analyze(before: &str, after: &str) -> Option<bool> {
     if old_words.is_empty() || old_words.len() != new_words.len() {
         return None;
     }
+    // Sentence formatting cannot remove, add, or move an existing paragraph.
+    // Compare whitespace in corresponding word gaps, not just global counts.
+    let old_ranges = text::word_ranges(before);
+    let new_ranges = text::word_ranges(after);
+    let (mut old_end, mut new_end) = (0, 0);
+    for (old, new) in old_ranges
+        .into_iter()
+        .chain(std::iter::once(before.len()..before.len()))
+        .zip(
+            new_ranges
+                .into_iter()
+                .chain(std::iter::once(after.len()..after.len())),
+        )
+    {
+        let old_gap = &before[old_end..old.start];
+        let new_gap = &after[new_end..new.start];
+        if (old_gap.contains(['\n', '\r']) || new_gap.contains(['\n', '\r']))
+            && !old_gap
+                .chars()
+                .filter(|c| c.is_whitespace())
+                .eq(new_gap.chars().filter(|c| c.is_whitespace()))
+        {
+            return None;
+        }
+        old_end = old.end;
+        new_end = new.end;
+    }
     let mut needs_sentence_start = false;
     for (index, (old, new)) in old_words.iter().zip(new_words.iter()).enumerate() {
         if old == new {

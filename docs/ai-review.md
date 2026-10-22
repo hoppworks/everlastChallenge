@@ -279,3 +279,16 @@ the report now pairs only common repetitions and marks two unrecorded routes.
 Neither the incomplete quote series nor a configured but unobserved 7B model
 is presented as a qualified performance comparison. No human approval, general
 speed advantage or release approval follows from these observations.
+
+## Single-generation refinement
+
+AI-assisted implementation replaced two model passes with one constrained text
+generation and deterministic Rust finishing. Independent static reviews found
+and corrected alternative-path provenance, numeric separator ownership,
+truncated-context scope and paragraph-boundary issues. Each concrete regression
+was reproduced with executable tests before its fix. The unchanged 71-case
+corpus subsequently passed the production MLX worker and a separately built
+Rust validator; inputs, results, identities and limits are published in the
+[single-generation report](verification/refinement-single-pass-2026-10-22.md).
+This is automated and AI-assisted verification, not a new human acceptance,
+native-delivery or speed claim.
