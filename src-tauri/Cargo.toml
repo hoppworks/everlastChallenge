@@ -21,10 +21,10 @@ tauri-build = { version = "=2.7.4", features = [] }
 
 [dependencies]
 tauri = { version = "=2.12.5", features = ["tray-icon", "image-png"] }
-text-refinement-protocol = { path = "../crates/text-refinement-protocol", version = "=0.2.0" }
+text-refinement-protocol = { path = "../crates/text-refinement-protocol", version = "=0.3.0" }
 tempfile = "=3.27.0"
-dictation-core = { path = "../crates/dictation-core", version = "=0.2.0" }
-macos-integration = { path = "../crates/macos-integration", version = "=0.2.0" }
+dictation-core = { path = "../crates/dictation-core", version = "=0.3.0" }
+macos-integration = { path = "../crates/macos-integration", version = "=0.3.0" }
 serde.workspace = true
 serde_json.workspace = true
 ts-rs = { version = "=12.0.1", features = ["serde-compat"] }

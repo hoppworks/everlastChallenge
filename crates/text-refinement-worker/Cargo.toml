@@ -12,8 +12,8 @@ default = ["mlx"]
 mlx = ["dep:mlxrs"]
 
 [dependencies]
-dictation-core = { path = "../dictation-core", version = "=0.2.0" }
-text-refinement-protocol = { path = "../text-refinement-protocol", version = "=0.2.0" }
+dictation-core = { path = "../dictation-core", version = "=0.3.0" }
+text-refinement-protocol = { path = "../text-refinement-protocol", version = "=0.3.0" }
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

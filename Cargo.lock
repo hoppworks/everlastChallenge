@@ -973,7 +973,7 @@ dependencies = [
 
 [[package]]
 name = "dictation-core"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "rubato",
  "serde",
@@ -1182,7 +1182,7 @@ checksum = "d817e038c30374a4bcb22f94d0a8a0e216958d4c3dcde369b1439fec4bdda6e6"
 
 [[package]]
 name = "everlast-dictation"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "cpal",
  "crossbeam-channel",
@@ -2447,7 +2447,7 @@ checksum = "dae608c151f68243f2b000364e1f7b186d9c29845f7d2d85bd31b9ad77ad552b"
 
 [[package]]
 name = "macos-integration"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "block2",
  "core-foundation",
@@ -4885,7 +4885,7 @@ dependencies = [
 
 [[package]]
 name = "text-refinement-protocol"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "dictation-core",
  "serde",
@@ -4895,7 +4895,7 @@ dependencies = [
 
 [[package]]
 name = "text-refinement-worker"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "dictation-core",
  "libc",
