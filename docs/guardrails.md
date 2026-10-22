@@ -87,3 +87,7 @@ Hashgebundene Original-Lizenztexte unter `docs/licenses/third-party/texts/`
 behalten ihre vollständigen Bytes einschließlich Whitespace. Nur dort ist
 Gits Whitespaceprüfung per `.gitattributes` ausgenommen; eigene Quelltexte und
 Dokumentation behalten die üblichen Prüfungen.
+
+`mkfifo` ist wie `gitleaks` ein externes Werkzeug in Knip: Es gehört zum
+POSIX-Testhost und erzeugt ausschließlich eine temporäre FIFO für die
+Sonderdatei-Abweisung. Es ist keine npm-Abhängigkeit und kein Bestandteil der App.

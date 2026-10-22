@@ -17,5 +17,5 @@
     "tools/**/*.ts",
     "tests/fixtures/browser-fields/**/*.ts"
   ],
-  "ignoreBinaries": ["gitleaks"]
+  "ignoreBinaries": ["gitleaks", "mkfifo"]
 }

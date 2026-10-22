@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import {
   mkdtempSync,
   readFileSync,
@@ -78,6 +80,36 @@ await test("bounded input refuses oversized files and directories before parsing
     assert.throws(() => readBytes(file, 4));
     assert.throws(() => readBytes(dir, 100));
     assert.equal(readBytes(file, 5).toString(), "12345");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+await test("special-file input is rejected without waiting for a FIFO writer", () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "bounded-fifo-"));
+  try {
+    const fifo = path.join(dir, "input");
+    const created = spawnSync("mkfifo", [fifo]);
+    assert.equal(created.status, 0);
+    const module = new URL("../../scripts/tooling/io.ts", import.meta.url).href;
+    const child = spawnSync(
+      process.execPath,
+      [
+        "--import",
+        "tsx",
+        "--input-type=module",
+        "-e",
+        `import {readBytes} from ${JSON.stringify(module)};try{readBytes(process.argv[1],32);process.exitCode=1;}catch{process.exitCode=0;}`,
+        fifo,
+      ],
+      {
+        cwd: fileURLToPath(new URL("../../", import.meta.url)),
+        timeout: 10000,
+        encoding: "utf8",
+      },
+    );
+    assert.ifError(child.error);
+    assert.equal(child.status, 0, child.stderr);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

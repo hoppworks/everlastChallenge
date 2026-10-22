@@ -1,5 +1,6 @@
 import {
   closeSync,
+  constants,
   fsyncSync,
   fstatSync,
   linkSync,
@@ -115,7 +116,8 @@ export function parseJson(source: string): unknown {
 export function readBytes(file: string, maxBytes: number): Buffer {
   if (!Number.isSafeInteger(maxBytes) || maxBytes < 0)
     throw new Error("Invalid read limit");
-  const fd = openSync(file, "r");
+  // Regular files behave unchanged; a FIFO must not wait for a writer before fstat rejects it.
+  const fd = openSync(file, constants.O_RDONLY | constants.O_NONBLOCK);
   try {
     const stat = fstatSync(fd);
     if (!stat.isFile() || stat.size > maxBytes)

@@ -48,7 +48,7 @@ bleiben von einer behaupteten exakten Linkclosure getrennt.
 | TLS-Transport | 9 Tests bestanden, einschließlich Ablehnung untrusted TLS, positiver isolierter Trust-Kontrolle, Abbruch, Timeout und unverändertem Altmodell |
 | React und IPC | 227 Tests bestanden |
 | Bestehende Node-Werkzeuge | 158 bestanden, eine ausdrücklich optionale native Helper-Probe nicht aktiviert |
-| Migrierte Werkzeuge | 35 Tests bestanden; zusätzlich gefrorene Unicode-, PCM-/Auswahl- und Mel-Referenzen |
+| Migrierte Werkzeuge | 36 Tests bestanden; zusätzlich gefrorene Unicode-, PCM-/Auswahl- und Mel-Referenzen |
 | Instrumentierte Kernabdeckung | 96,94 % der erfassten Zeilen |
 | Frontendabdeckung | 98,29 % Zeilen, 95,54 % Zweige |
 | Host-Abdeckung | alle bestehenden modulspezifischen Untergrenzen eingehalten |
@@ -59,7 +59,9 @@ bei den Hostdateien werden auch Inline-Tests erfasst. Sie beweisen keine globale
 Produktabdeckung. Die Softwareprüfungen wurden zusammenhängend ausgeführt.
 Nach konkreten Fehlern wurden die betroffenen Schritte fortgesetzt: insbesondere
 Rustls-Initialisierung, die isolierte TLS-Testkontrolle, Compiler-Dateifixtures
-und die gemeinsam genutzte Hashformatierung. Die Schwellen wurden nicht gesenkt.
+und die gemeinsam genutzte Hashformatierung. Spezielle Dateitypen werden vor
+dem Lesen abgelehnt; ein FIFO-Test bestätigt, dass dabei nicht auf einen
+Schreiber gewartet wird. Die Schwellen wurden nicht gesenkt.
 
 Die neue Unicode-Auswertung stimmt mit den eingefrorenen Ausgaben des früheren
 Unicode-13-Auswerters überein. Alle drei unabhängigen Mel-DFT-Fälle stimmen
