@@ -47,3 +47,6 @@ These are finite text-processing observations. They do not establish human
 linguistic acceptance, quality on arbitrary dictations, final signed-app
 operation, observed target receipt or comparative performance. No speedup is
 inferred from this run.
+
+A [later numeric-context check](refinement-numeric-context-2026-10-22.md) adds the
+captured ASR form with digits and records prompt 9, preserving these 66 outputs.

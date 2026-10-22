@@ -232,3 +232,12 @@ preceded the separate probe-success flag and corresponding UI/IPC checks. Native
 observations include a synthetic inference, cancellation and setup alongside a
 warm worker, with child exit and scratch cleanup verified. These observations
 do not establish full application memory bounds or comparative performance.
+
+The [numeric-context report](verification/refinement-numeric-context-2026-10-22.md)
+records an AI-assisted prompt correction for an omitted quantity correction in a
+long ASR transcript. A rejected prompt candidate introduced a hesitation-removal
+regression. The final production worker and independent Rust validator matched
+all 68 declared outputs, including the 66 unchanged previous results. Independent
+review retained the occurrence instruction for repeated spans. The change does
+not alter model selection, serialization, validation or execution flow; linguistic
+review, packaged delivery and performance remain separate requirements.

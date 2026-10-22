@@ -10,7 +10,7 @@ use std::{
 mod frame;
 
 pub const VERSION: u16 = 2;
-pub const TEXT_PROMPT_VERSION: u16 = 8;
+pub const TEXT_PROMPT_VERSION: u16 = 9;
 pub const TEXT_POLICY_VERSION: u16 = 7;
 pub const MAX_FRAME_BYTES: usize = 64 * 1024;
 

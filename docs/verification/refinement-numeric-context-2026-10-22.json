@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "baseRevision": "fd98fa28ced9fb87aa04b009e78b9ef6f4d5da34",
+  "scope": "Production MLX text worker with independent production Rust validation; not packaged app delivery, human acceptance or comparative performance.",
+  "identity": {
+    "workerSha256": "4acf3b813c0046aba0c807862e36f7ec9ae83908a85f246fa114ce6668f4d3d2",
+    "metallibSha256": "0f067d79c93fdd840bbe0df4de56f651b86c9ed0f59a04db4dddea7bc0a44d22",
+    "generation": 1,
+    "kind": "ready",
+    "model_manifest_sha256": "fea7cc2a764e60d910da77c44549b7f123e681edb0c84f03658011eb86519352",
+    "policy_version": 7,
+    "prompt_version": 9
+  },
+  "sources": {
+    "crates/dictation-core/src/refinement/correction.rs": "ae088b75364927f0cf27734c85b950213887c2e5e3f46b93b5d0f0411972ea70",
+    "crates/text-refinement-protocol/src/lib.rs": "f355ef772c29e30751f28903f9df33b0c72de9edad341f210896936b13759351",
+    "crates/text-refinement-worker/src/prompt.txt": "9ca9242e41f6df49a98bbff569233ba5a41eda1cf57f8ecdcd7e7247202b43bb"
+  },
+  "corpus": {
+    "cases": 68,
+    "sha256": "d1951323592e882fa4c167dc0c761d7173cf0cd97c199cc283f4250bc58fb3df",
+    "priorCorrectedCorpusSha256": "9275d76fe77a6f780e01870ba2976e7ee1da7a172421e73ed1aac4153a5d3d47",
+    "unchangedPriorInputs": 66,
+    "unchangedPriorOutputs": 66,
+    "accepted": 68,
+    "matchingExpected": 68
+  },
+  "verification": {
+    "validatorSha256": "5b4783c3b7e1526286008367422498d1b65d611713cc90eef39482f5c526038a",
+    "rawReportSha256": "9630109d9752752ec981b50f3b256c4bc48b78f1601781fe7ea0ed839dca55ce",
+    "validatedReportSha256": "702a3b817ed0b191eecf081cefe03beb3151b300f53090648328e6eab5859a10",
+    "modelExit": {
+      "code": 0,
+      "signal": null
+    },
+    "trailingBytes": 0,
+    "softwareChecks": [
+      {
+        "command": "npm run check:fast",
+        "status": "passed",
+        "logSha256": "2243424826cd055fb5f105f53f6b238d90a3716eb6491d84c14a73bbb26a91c0"
+      },
+      {
+        "command": "cargo fmt --all -- --check",
+        "status": "passed"
+      },
+      {
+        "command": "npm run test:refinement",
+        "status": "passed",
+        "testsPassed": 61,
+        "testsIgnored": 1,
+        "logSha256": "320dae9b1210a76c4fd64bfc4002aafba994287834eeef4fead7bc1967c04fd7"
+      },
+      {
+        "command": "npm run check:refinement",
+        "status": "passed",
+        "logSha256": "0602b898c6c8aedb64d0a0605be5a9f282ce57b0da38aafd80ed8483c76d3ce3"
+      }
+    ]
+  },
+  "regressions": [
+    {
+      "id": "short-digit-correction",
+      "language": "german",
+      "input": "Die geplante Menge beträgt 60, Entschuldigung, 16 Kartons.",
+      "previousOutput": "Die geplante Menge beträgt 16 Kartons.",
+      "output": "Die geplante Menge beträgt 16 Kartons.",
+      "accepted": true
+    },
+    {
+      "id": "observed-long-asr",
+      "language": "german",
+      "input": "Die technische Besprechung beginnt am Mittwoch, nein, am Freitag um 9 Uhr. Wir prüfen zuerst die Messwerte aus dem abgeschlossenen Versuch. Die Namen Mira, Jonas und Lenz bleiben in der angegebenen Reihenfolge stehen. Eine neue Auswertung darf die alten Rohdaten nicht ersetzen. Die Kennung ab 204 bezeichnet weiterhin genau denselben Prüfstand. Alle Beobachtungen müssen nachvollziehbar sein und erhalten einen eigenen Eintrag im Protokoll. Die Unterlagen enthalten eine Beschreibung des Aufbaus und der verwendeten Geräte. Bitte vergleiche die Ergebnisse nur unter denselben Bedingungen. Änderungen an den Einstellungen werden einzeln festgehalten. Die geplante Menge beträgt 60, Entschuldigung, 16 Kartons. Davon sind vier für die erste Prüfung vorgesehen. Die übrigen Kartons bleiben bis zur Freigabe im Lager. Niemand darf eine fehlende Messung durch eine Schätzung ersetzen. Im letzten Abschnitt steht das Zitat die Nummer 42 bleibt unverändert. Dieses Zitat gehört vollständig zum Bericht. Ein offener Punkt ist noch keine bestätigte Ursache. Wir prüfen zunächst die bekannte Abweichung und entscheiden erst danach über weitere Versuche. Falls die zweite Messung scheitert, bleibt auch dieser Versuch sichtbar. Die Entscheidung wird gemeinsam dokumentiert und am Ende mit dem ursprünglichen Auftrag verglichen.",
+      "previousOutput": "Die technische Besprechung beginnt am Freitag um 9 Uhr. Wir prüfen zuerst die Messwerte aus dem abgeschlossenen Versuch. Die Namen Mira, Jonas und Lenz bleiben in der angegebenen Reihenfolge stehen. Eine neue Auswertung darf die alten Rohdaten nicht ersetzen. Die Kennung ab 204 bezeichnet weiterhin genau denselben Prüfstand. Alle Beobachtungen müssen nachvollziehbar sein und erhalten einen eigenen Eintrag im Protokoll. Die Unterlagen enthalten eine Beschreibung des Aufbaus und der verwendeten Geräte. Bitte vergleiche die Ergebnisse nur unter denselben Bedingungen. Änderungen an den Einstellungen werden einzeln festgehalten. Die geplante Menge beträgt 60, Entschuldigung, 16 Kartons. Davon sind vier für die erste Prüfung vorgesehen. Die übrigen Kartons bleiben bis zur Freigabe im Lager. Niemand darf eine fehlende Messung durch eine Schätzung ersetzen. Im letzten Abschnitt steht das Zitat, die Nummer 42 bleibt unverändert. Dieses Zitat gehört vollständig zum Bericht. Ein offener Punkt ist noch keine bestätigte Ursache. Wir prüfen zunächst die bekannte Abweichung und entscheiden erst danach über weitere Versuche. Falls die zweite Messung scheitert, bleibt auch dieser Versuch sichtbar. Die Entscheidung wird gemeinsam dokumentiert und am Ende mit dem ursprünglichen Auftrag verglichen.",
+      "output": "Die technische Besprechung beginnt am Freitag um 9 Uhr. Wir prüfen zuerst die Messwerte aus dem abgeschlossenen Versuch. Die Namen Mira, Jonas und Lenz bleiben in der angegebenen Reihenfolge stehen. Eine neue Auswertung darf die alten Rohdaten nicht ersetzen. Die Kennung ab 204 bezeichnet weiterhin genau denselben Prüfstand. Alle Beobachtungen müssen nachvollziehbar sein und erhalten einen eigenen Eintrag im Protokoll. Die Unterlagen enthalten eine Beschreibung des Aufbaus und der verwendeten Geräte. Bitte vergleiche die Ergebnisse nur unter denselben Bedingungen. Änderungen an den Einstellungen werden einzeln festgehalten. Die geplante Menge beträgt 16 Kartons. Davon sind vier für die erste Prüfung vorgesehen. Die übrigen Kartons bleiben bis zur Freigabe im Lager. Niemand darf eine fehlende Messung durch eine Schätzung ersetzen. Im letzten Abschnitt steht das Zitat, die Nummer 42 bleibt unverändert. Dieses Zitat gehört vollständig zum Bericht. Ein offener Punkt ist noch keine bestätigte Ursache. Wir prüfen zunächst die bekannte Abweichung und entscheiden erst danach über weitere Versuche. Falls die zweite Messung scheitert, bleibt auch dieser Versuch sichtbar. Die Entscheidung wird gemeinsam dokumentiert und am Ende mit dem ursprünglichen Auftrag verglichen.",
+      "accepted": true
+    }
+  ],
+  "limitations": [
+    "Finite synthetic and captured-synthetic text cases; not arbitrary-language correctness.",
+    "The existing corrected capitalization oracle was reused; no new acceptance broadening.",
+    "The long numeric case allows both unchanged punctuation and the previously observed comma after Zitat.",
+    "A discarded expanded-prompt candidate retained a later English hesitation; final outputs match all unchanged prior expectations.",
+    "No speedup, microphone-path or new distributed-bundle qualification is inferred."
+  ]
+}
