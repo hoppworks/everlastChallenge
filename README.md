@@ -40,19 +40,19 @@ Einfügen. Nach fünf Minuten endet die Aufnahme automatisch.
 - **Deutsch ist die geprüfte Produktsprache.** Erkennungsfehler bleiben möglich;
   andere Sprachen, Geräte und Zielanwendungen sind nicht umfassend qualifiziert.
 
-Der [historische Voicely-Helfervergleich](docs/comparison.md) zeigt bei drei
-kurzen Dateien 36,4–39,1 % kürzere Prozesszeiten. Das misst weder die vollständigen
-Apps noch Aufnahme und Einfügen und ist kein Benchmark des aktuellen Releases.
+Die [Vergleichsberichte](docs/comparison.md) trennen historische Helfermessungen
+vom neueren nativen Kandidatenvergleich. Die Ergebnisse sind gemischt; ein
+allgemeiner Geschwindigkeitsvorsprung ist nicht belegt.
 
 ## Weiterführende Dokumentation
 
-| Thema | Einstieg |
-|---|---|
-| Architektur und Code | [Entscheidungen](docs/engineering-decisions.md) · [Code-Wegweiser](docs/code-map.md) |
-| Selbst bauen und testen | [Entwicklung](docs/development.md) · [Werkzeuge](docs/tooling.md) |
-| Bedienung und Fehlerfälle | [Bedienungsdetails](docs/usage.md) |
+| Thema                       | Einstieg                                                                                                                                                         |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Architektur und Code        | [Entscheidungen](docs/engineering-decisions.md) · [Code-Wegweiser](docs/code-map.md)                                                                             |
+| Selbst bauen und testen     | [Entwicklung](docs/development.md) · [Werkzeuge](docs/tooling.md)                                                                                                |
+| Bedienung und Fehlerfälle   | [Bedienungsdetails](docs/usage.md)                                                                                                                               |
 | Verifikation und KI-Nutzung | [Version 0.2.0](docs/verification/release-0.2.0.md) · [Softwareprüfungen](docs/verification/tooling-and-packages-2026-10-22.md) · [KI-Review](docs/ai-review.md) |
-| Weitere technische Belege | [Dokumentationsindex](docs/README.md) |
+| Weitere technische Belege   | [Dokumentationsindex](docs/README.md)                                                                                                                            |
 
 Der Anwendungscode steht unter [MIT](LICENSE). [Drittanbieter-Lizenzen](docs/licenses/third-party/README.md),
 [Abhängigkeiten](docs/dependencies.md) und die verbleibende

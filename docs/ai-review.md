@@ -270,3 +270,12 @@ change. The corrected production worker accepted the four diagnostic variants;
 all 68 existing cases retained their expected outputs. The updated signed package also delivered a corrected transcript to an observed
 native target. Its ASR output differed in casing; the exact lowercase failure
 remains covered by worker replay. No comparative timing claim follows.
+
+The [native comparison](verification/native-comparison-2026-10-22.md) records
+24 received outputs and two AI-assisted semantic readings. Independent review
+checked all 24 evidence bindings and recalculated three receipt intervals.
+It identified mismatched repetition subsets and missing reference-route records;
+the report now pairs only common repetitions and marks two unrecorded routes.
+Neither the incomplete quote series nor a configured but unobserved 7B model
+is presented as a qualified performance comparison. No human approval, general
+speed advantage or release approval follows from these observations.

@@ -1,5 +1,12 @@
 # Vergleich mit Voicely: Ergebnis und Aussagegrenzen
 
+Der [native App-Vergleich vom 22.10.2026](verification/native-comparison-2026-10-22.md)
+misst einen neueren Kandidaten bis zum beobachteten Textempfang. Sein Ergebnis
+ist gemischt; ein allgemeiner Speedup ist nicht belegt. Der folgende historische
+Helfervergleich bleibt davon getrennt.
+
+## Historischer Helfervergleich
+
 **Kurzfassung:** In einem historischen lokalen Datei-/CLI-Vergleich vom
 20.10.2026 benötigte der Everlast-Kandidat pro Fall **36,4–39,1 % weniger
 Prozesszeit** als der als Voicely 0.4.27 erfasste lokale Helfer. Das entspricht
@@ -21,11 +28,11 @@ vorgehalten. Betriebssystem-Dateicaches wurden jedoch **nicht geleert**.
 „Neuer Prozess“ bedeutet deshalb nicht „kalter Datenträgercache“ oder
 „erster Start nach der Installation“.
 
-| Aufnahme | WAV-Länge | Everlast Median | Vergleichshelfer Median | Weniger Zeit | Verhältnis |
-|---|---:|---:|---:|---:|---:|
-| FLEURS de 1736 | 5 s | 720 ms | 1137 ms | 36,7 % | 1,58× |
-| FLEURS de 1663 | 10 s | 759 ms | 1247 ms | 39,1 % | 1,64× |
-| FLEURS de 1668 | 15 s | 751 ms | 1182 ms | 36,4 % | 1,57× |
+| Aufnahme       | WAV-Länge | Everlast Median | Vergleichshelfer Median | Weniger Zeit | Verhältnis |
+| -------------- | --------: | --------------: | ----------------------: | -----------: | ---------: |
+| FLEURS de 1736 |       5 s |          720 ms |                 1137 ms |       36,7 % |      1,58× |
+| FLEURS de 1663 |      10 s |          759 ms |                 1247 ms |       39,1 % |      1,64× |
+| FLEURS de 1668 |      15 s |          751 ms |                 1182 ms |       36,4 % |      1,57× |
 
 Berechnung je Fall: `100 × (1 − Median Everlast / Median Vergleichshelfer)`.
 Das Verhältnis ist `Median Vergleichshelfer / Median Everlast`. Die Tabelle
@@ -95,8 +102,8 @@ die Erkennung oder die damals verstrichene Zeit. Ohne damalige Binärdateien,
 Modelle und Umgebung ist kein identischer Benchmarklauf versprochen.
 
 Für eine belastbare Behauptung „unsere aktuelle App ist schneller als Voicely“
-fehlt ein neuer Vergleich beider unveränderter Release-Apps: dieselbe
+reicht auch der neue begrenzte Kandidatenvergleich nicht aus. Nötig wären beide
+unveränderten Release-Apps: dieselbe
 Audiozuführung, getrennte Erststart-/Warmstartreihen, vorab definierte Fälle und
 Wiederholungen, Zeit vom Aufnahmeende bis zum tatsächlich sichtbaren finalen
-Text sowie eine parallele Qualitätsauswertung. Bis dahin ist die zulässige
-Aussage ausschließlich der oben beschriebene historische Helfervergleich.
+Text sowie eine parallele Qualitätsauswertung. Die Aussagen bleiben auf die jeweils beschriebenen Messreihen begrenzt.
