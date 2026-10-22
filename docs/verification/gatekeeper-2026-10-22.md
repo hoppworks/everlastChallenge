@@ -19,10 +19,18 @@ Der neue Befehl `npm run verify:distribution -- APP` prüft zusätzlich Gatekeep
 und das Notarisierungsticket. Regressionstests verhindern, dass allein ein
 erfolgreicher Signaturcheck als bestandene Vertriebsprüfung gilt. Gegen das
 unveränderte veröffentlichte Paket bleibt dieser Befehl korrekterweise rot.
-Eine erfolgreiche Notarisierung oder manuelle Freigabe wird nicht behauptet.
+Eine erfolgreiche Notarisierung wird nicht behauptet.
 
 Für den bestehenden lokalen Build ist die
 [von Apple dokumentierte manuelle Freigabe](../usage.md#macos-blockiert-das-erste-öffnen)
 erforderlich. Der reguläre Weg über Developer ID und Notarisierung steht in
 der [Entwicklungsanleitung](../development.md#gatekeeper-und-notarisierung).
 Das ZIP und seine Prüfsumme wurden bei dieser Diagnose nicht verändert.
+
+## Bestätigung nach manueller Freigabe
+
+Am 22.10.2026 wurde zurückgemeldet, dass die App nach **Open Anyway** startet.
+Das ist eine Anwenderbestätigung, kein unabhängig beobachteter oder
+automatisierter Startnachweis. Sie bestätigt den dokumentierten manuellen
+Installationsweg, ersetzt aber weder Notarisierung noch eine neue Prüfung von
+Mikrofon, Hotkey oder Textempfang.
