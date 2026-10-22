@@ -5,7 +5,7 @@ Installation und die vier Schritte zum ersten Diktat stehen im
 
 ## macOS blockiert das erste Öffnen
 
-Die veröffentlichten Builds 0.1.0 und 0.2.0 sind lokal signiert, aber nicht mit
+Die bereitgestellten Builds sind lokal signiert, aber nicht mit
 Apple Developer ID signiert und von Apple notarisiert. Die Meldung „Apple could
 not verify … is free of malware“ bezeichnet diese fehlende Verifikation; sie
 ist kein Nachweis gefundener Schadsoftware. Ein intaktes ZIP allein hebt die
@@ -39,6 +39,24 @@ Nach fünf Minuten endet die Aufnahme automatisch.
 „Kopieren“ übernimmt exakt den sichtbaren Text. Endet ein Hintergrunddienst,
 bleibt der letzte Text kopierbar; die App erklärt den erforderlichen Neustart.
 Ein gescheiterter Modelldownload kann ohne App-Neustart wiederholt werden.
+
+## Optionale Textbereinigung
+
+Unter **Einstellungen → Textbereinigung → Einrichten und aktivieren** wird das
+zusätzliche Textmodell einmalig heruntergeladen, geprüft und lokal getestet.
+Danach lässt sich die Funktion mit **Textbereinigung verwenden** ein- oder
+ausschalten. Die reine Diktierfunktion benötigt dieses zusätzliche Modell nicht.
+
+Die Bereinigung entfernt erkannte Fülllaute und korrigiert eindeutige Versprecher;
+sie fasst Texte nicht zusammen. Klare, eng begrenzte Fälle verarbeitet Rust
+direkt. Andere Fälle verwenden höchstens einen lokalen MLX-Modellaufruf und
+anschließende Prüfung gegen das Original. Sprach- und Erkennungsfehler bleiben
+möglich; Zahlen, Namen und wichtige Aussagen solltest du prüfen.
+
+**Original anzeigen** öffnet nach einer Bearbeitung das ursprüngliche Transkript.
+Bei Abbruch oder Fehler wird nichts automatisch eingefügt; das erhaltene Original
+kannst du kopieren. Ein Modellfehler darf kein teilweise bereinigtes Ergebnis
+freigeben.
 
 ## Oberfläche und Modell
 

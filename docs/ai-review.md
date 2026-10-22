@@ -300,3 +300,10 @@ negation and a period inside a clock value. Both failed executable regressions
 before the route was narrowed. The reviewer then checked the corrected logic,
 raw-original fallback, source/language binding and revocable single delivery.
 The finite corpus result is not evidence of universal semantic correctness or speed.
+
+A subsequent quantity rule recognizes complete, explicitly corrected amounts
+followed by a known unit. Review required single-token cardinal values and an
+exact sentence boundary; unsupported number phrases and trailing predicates
+remain model cases. Executable regressions cover these boundaries, and replay of
+a longer transcript preserves the full expected result without a model call.
+This component check is separate from native end-to-end timing.

@@ -70,6 +70,27 @@ pub(super) fn requires_terminal_context(before: &str, language: Language) -> boo
     })
 }
 
+// This route accepts one complete cardinal token on each side. The existing
+// word recognizer is a context guard, not a parser for arbitrary number phrases.
+pub(super) fn single_cardinal_repair(before: &str, language: Language) -> bool {
+    parts(before, language).is_some_and(|correction| {
+        [correction.old, correction.replacement].iter().all(|word| {
+            !word.chars().any(char::is_whitespace)
+                && numeric_word(word, language)
+                && match language {
+                    Language::English => !matches!(
+                        word.to_lowercase().as_str(),
+                        "hundred" | "thousand" | "million" | "billion" | "trillion"
+                    ),
+                    Language::German => !matches!(
+                        word.to_lowercase().as_str(),
+                        "million" | "millionen" | "milliarde" | "milliarden"
+                    ),
+                }
+        })
+    })
+}
+
 fn frame(word: &str, language: Language) -> bool {
     match language {
         Language::German => matches!(

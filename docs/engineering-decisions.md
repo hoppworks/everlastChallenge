@@ -17,6 +17,7 @@ jede Entscheidung mit dem überprüfbaren Vertrag. Der detaillierte
 | Kein automatischer zweiter Paste-Versuch | Nach irreversiblem Versand ist unbekannter Empfang kein sicherer Grund für einen zweiten Text | `delivery.rs`, `paste.rs`; Commit-/Cleanup-Verträge |
 | Modellbytes bei jedem Laden prüfen | Dateiname, Größe oder mtime allein begründen kein Vertrauen | `model/`; Chunk-Integritätsprüfung und Mutationsfälle |
 | Hybrid nach Qualitätsbefund | Ein schnellerer Decoder ist kein Fortschritt, wenn er Aussagen verändert | [MLX-Entscheidung](verification/full-mlx-decision-2026-10-21/README.md), [Zusatzversuch](verification/pure-mlx-screen-2026-10-21/README.md) |
+| Optionale lokale Textbereinigung | Eindeutige Fälle benötigen keine Textgenerierung; schwierigere Fälle bleiben lokal und separat abbrechbar | [Rust-Routing](verification/refinement-direct-2026-10-22.md), [ein Modelldurchlauf](verification/refinement-single-pass-2026-10-22.md); bei Fehlern Original zurückhalten |
 
 ## Ein konkreter behobener Fehler
 

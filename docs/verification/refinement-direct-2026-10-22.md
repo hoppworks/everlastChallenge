@@ -15,6 +15,10 @@ Fallback results are not counted as successful direct cleanup.
 - Direct edits require explicit comma-delimited correction markers and agreement
   between overlapping validated candidates. Other than strong digit corrections,
   the correction must end at a sentence boundary or a narrowly parsed clock adjunct.
+- A complete quantity can also finish directly: one supported cardinal token on
+  each side, explicit delimiters, and exactly one known unit or count noun before
+  the sentence boundary. The vocabulary is closed; modifiers, trailing predicates,
+  ambiguous abbreviations and multiword number phrases still require the model.
 - Initial hesitation, casing, and final punctuation use the existing restricted
   finishing rules. Any remaining cleanup signal requires the model.
 - The final result is validated against the complete raw original and language.
@@ -29,6 +33,12 @@ Both were reproduced by failing tests before correction. Inputs such as
 `We can meet on Monday, no, Tuesday at 14.30 is unavailable.` require the model.
 Dotted clock forms deliberately fall back; the direct clock grammar accepts only
 ASCII digits and colons.
+
+A frozen long transcript additionally verifies independent weekday and quantity
+corrections together. The complete output matches the existing expected text;
+names, negation and unrelated sentences remain unchanged. Eight direct-route tests
+cover positive completion and negative boundaries. The existing 71-case result is
+unchanged. This additional text replay does not establish native audio latency.
 
 ## Limits
 

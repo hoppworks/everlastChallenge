@@ -3,10 +3,10 @@
   "date": "2026-10-22",
   "scope": "Deterministic routing against the frozen 71-case text corpus; no microphone or performance claim",
   "sourceSha256": {
-    "crates/dictation-core/src/refinement/direct.rs": "20cda3a78a29b2a6d9629ebca9feaad55f42e463e553c16cb72860c2437501c7",
-    "crates/dictation-core/src/refinement/correction.rs": "39e3f71bfe0587536d2be0bec0857b0c09201aebcf840be64c9fcab0185e160e",
+    "crates/dictation-core/src/refinement/direct.rs": "86c1e38101cbf8853f599b8b8958d7c0596f26988ce7983ce225fa6f24b65aa0",
+    "crates/dictation-core/src/refinement/correction.rs": "2ef107fd804e93ad2cc040d883082db26c14c414c1fa7d436e6b1a3d3e3ae947",
     "crates/dictation-core/src/refinement/mod.rs": "c610b1d3d4a82a036e5df9dc4a0bb4d32c1f6ccb3deeaf88c54e1b1dd755c6ed",
-    "crates/dictation-core/tests/refinement_direct.rs": "733f443d930d2bc145f85e6ce194556b23968f0c2543afe336b0f8c5435d7192",
+    "crates/dictation-core/tests/refinement_direct.rs": "60925c216ef87232cae85214a22366a99ce5a790da7768767af6260b701c6344",
     "src-tauri/src/controller/refinement.rs": "3c19f9aa3062c0203058ed2f45d33c5d9d165fe73e07d10fdf10009d9779ed62"
   },
   "counts": {
@@ -870,5 +870,12 @@
       "sourceBound": true,
       "languageBound": true
     }
-  ]
+  ],
+  "additionalQuantityRegression": {
+    "original": "Ähm, ich fasse unseren Plan für die Bibliothek zusammen. Die neuen Lesegeräte kommen am Montag, nein, am Mittwoch. Bitte räumt vorher die Tische im ersten Stock frei und stellt die bisherigen Geräte in den Lagerraum. Sie werden nicht entsorgt. Für den Aufbau brauchen wir sechs, nein, acht Personen. Clara koordiniert die Lieferung, während Martin die vorhandenen Anschlüsse prüft. Der Eingang bleibt während der Arbeiten geöffnet. Nur der kleine Lesesaal ist gesperrt. Im großen Saal dürfen die Besucher weiterhin arbeiten. Die Schilder sollen deshalb ausdrücklich auf den kleinen Saal verweisen. Nach dem Aufbau testen wir jedes Gerät mit einem normalen Benutzerkonto. Wenn ein Gerät nicht startet, wird es markiert und einzeln überprüft. Wir ändern dafür keine gemeinsamen Zugangsdaten. Am nächsten Morgen besprechen wir die Ergebnisse und entscheiden, ob zusätzliche Unterstützung nötig ist. Bitte schickt mir bis dahin eine Liste der tatsächlich aufgetretenen Probleme.",
+    "expected": "Ich fasse unseren Plan für die Bibliothek zusammen. Die neuen Lesegeräte kommen am Mittwoch. Bitte räumt vorher die Tische im ersten Stock frei und stellt die bisherigen Geräte in den Lagerraum. Sie werden nicht entsorgt. Für den Aufbau brauchen wir acht Personen. Clara koordiniert die Lieferung, während Martin die vorhandenen Anschlüsse prüft. Der Eingang bleibt während der Arbeiten geöffnet. Nur der kleine Lesesaal ist gesperrt. Im großen Saal dürfen die Besucher weiterhin arbeiten. Die Schilder sollen deshalb ausdrücklich auf den kleinen Saal verweisen. Nach dem Aufbau testen wir jedes Gerät mit einem normalen Benutzerkonto. Wenn ein Gerät nicht startet, wird es markiert und einzeln überprüft. Wir ändern dafür keine gemeinsamen Zugangsdaten. Am nächsten Morgen besprechen wir die Ergebnisse und entscheiden, ob zusätzliche Unterstützung nötig ist. Bitte schickt mir bis dahin eine Liste der tatsächlich aufgetretenen Probleme.",
+    "actual": "Ich fasse unseren Plan für die Bibliothek zusammen. Die neuen Lesegeräte kommen am Mittwoch. Bitte räumt vorher die Tische im ersten Stock frei und stellt die bisherigen Geräte in den Lagerraum. Sie werden nicht entsorgt. Für den Aufbau brauchen wir acht Personen. Clara koordiniert die Lieferung, während Martin die vorhandenen Anschlüsse prüft. Der Eingang bleibt während der Arbeiten geöffnet. Nur der kleine Lesesaal ist gesperrt. Im großen Saal dürfen die Besucher weiterhin arbeiten. Die Schilder sollen deshalb ausdrücklich auf den kleinen Saal verweisen. Nach dem Aufbau testen wir jedes Gerät mit einem normalen Benutzerkonto. Wenn ein Gerät nicht startet, wird es markiert und einzeln überprüft. Wir ändern dafür keine gemeinsamen Zugangsdaten. Am nächsten Morgen besprechen wir die Ergebnisse und entscheiden, ob zusätzliche Unterstützung nötig ist. Bitte schickt mir bis dahin eine Liste der tatsächlich aufgetretenen Probleme.",
+    "usedModel": false,
+    "scope": "Frozen long transcript replay; not a native audio or comparative speed measurement"
+  }
 }

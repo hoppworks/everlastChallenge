@@ -50,6 +50,8 @@ pub fn try_direct(
             if !correction::explicitly_delimited(&edit.before, language)
                 || correction::requires_terminal_context(&edit.before, language)
                     && !terminal_tail(&original.as_str()[range.end..], language)
+                    && !(correction::single_cardinal_repair(&edit.before, language)
+                        && quantity_tail(&original.as_str()[range.end..], language))
             {
                 return Ok(None);
             }
@@ -84,18 +86,7 @@ pub fn try_direct(
 // Except for explicit numeric repair, require a sentence boundary or a literal
 // clock adjunct; arbitrary continuation still requires the model.
 fn terminal_tail(tail: &str, language: Language) -> bool {
-    let boundary = tail
-        .char_indices()
-        .find(|(index, c)| {
-            matches!(c, '\n' | '\r')
-                || matches!(c, '.' | '!' | '?')
-                    && tail[index + c.len_utf8()..]
-                        .chars()
-                        .next()
-                        .is_none_or(char::is_whitespace)
-        })
-        .map_or(tail.len(), |(index, _)| index);
-    let clause = tail[..boundary].trim();
+    let clause = first_clause(tail);
     if clause.is_empty() {
         return true;
     }
@@ -111,4 +102,90 @@ fn terminal_tail(tail: &str, language: Language) -> bool {
             && time.chars().any(|c| c.is_ascii_digit())
             && time.chars().all(|c| c.is_ascii_digit() || c == ':')
     })
+}
+
+fn first_clause(tail: &str) -> &str {
+    let boundary = tail
+        .char_indices()
+        .find(|(index, c)| {
+            matches!(c, '\n' | '\r')
+                || matches!(c, '.' | '!' | '?')
+                    && tail[index + c.len_utf8()..]
+                        .chars()
+                        .next()
+                        .is_none_or(char::is_whitespace)
+        })
+        .map_or(tail.len(), |(index, _)| index);
+    tail[..boundary].trim()
+}
+
+// A closed vocabulary of complete quantity units. No arbitrary noun, extra
+// adjective or trailing predicate is treated as a deterministic quantity.
+fn quantity_tail(tail: &str, language: Language) -> bool {
+    let unit = first_clause(tail).to_lowercase();
+    match language {
+        Language::German => matches!(
+            unit.as_str(),
+            "person"
+                | "personen"
+                | "stück"
+                | "stücke"
+                | "karton"
+                | "kartons"
+                | "gerät"
+                | "geräte"
+                | "euro"
+                | "cent"
+                | "dollar"
+                | "sekunde"
+                | "sekunden"
+                | "minute"
+                | "minuten"
+                | "stunde"
+                | "stunden"
+                | "gramm"
+                | "kilogramm"
+                | "meter"
+                | "kilometer"
+                | "liter"
+                | "milliliter"
+                | "prozent"
+        ),
+        Language::English => matches!(
+            unit.as_str(),
+            "person"
+                | "people"
+                | "item"
+                | "items"
+                | "box"
+                | "boxes"
+                | "device"
+                | "devices"
+                | "euro"
+                | "euros"
+                | "cent"
+                | "cents"
+                | "dollar"
+                | "dollars"
+                | "second"
+                | "seconds"
+                | "minute"
+                | "minutes"
+                | "hour"
+                | "hours"
+                | "gram"
+                | "grams"
+                | "kilogram"
+                | "kilograms"
+                | "meter"
+                | "meters"
+                | "kilometer"
+                | "kilometers"
+                | "liter"
+                | "liters"
+                | "milliliter"
+                | "milliliters"
+                | "percent"
+        ),
+    }
 }

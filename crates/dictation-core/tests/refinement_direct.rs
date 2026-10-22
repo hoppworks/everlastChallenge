@@ -119,3 +119,68 @@ fn clock_adjunct_requires_a_complete_sentence_boundary() -> TestResult {
     );
     Ok(())
 }
+
+#[test]
+fn complete_cardinal_quantity_repairs_need_no_model_generation() -> TestResult {
+    for (input, expected, language) in [
+        (
+            "Für den Aufbau brauchen wir sechs, nein, acht Personen.",
+            "Für den Aufbau brauchen wir acht Personen.",
+            Language::German,
+        ),
+        (
+            "The shipment contains six, no, eight boxes.",
+            "The shipment contains eight boxes.",
+            Language::English,
+        ),
+    ] {
+        let original = OriginalTranscript::new(input.into())?;
+        assert_eq!(
+            try_direct(&original, language)?
+                .ok_or("needs model")?
+                .as_str(),
+            expected
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn quantity_route_rejects_predicates_modifiers_and_number_fragments() -> TestResult {
+    for (text, language) in [
+        (
+            "Wir erwarten sechs, nein, acht Personen fehlen noch.",
+            Language::German,
+        ),
+        (
+            "Wir erwarten sechs, nein, acht weitere Personen.",
+            Language::German,
+        ),
+        (
+            "We counted six, no, eight people were injured.",
+            Language::English,
+        ),
+        (
+            "We counted six, no, eight people at 14.30 were injured.",
+            Language::English,
+        ),
+        (
+            "We counted twenty one, no, thirty two boxes.",
+            Language::English,
+        ),
+        (
+            "We counted one hundred, no, two hundred boxes.",
+            Language::English,
+        ),
+        ("We counted six, no, eight m.", Language::English),
+        ("We counted hundred, no, eight boxes.", Language::English),
+        (
+            "Wir erwarten Millionen, nein, acht Personen.",
+            Language::German,
+        ),
+    ] {
+        let original = OriginalTranscript::new(text.into())?;
+        assert!(try_direct(&original, language)?.is_none(), "{text}");
+    }
+    Ok(())
+}

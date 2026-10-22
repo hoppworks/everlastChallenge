@@ -35,6 +35,9 @@ Einfügen. Nach fünf Minuten endet die Aufnahme automatisch.
 
 - **Lokaler MLX-Hybrid:** optimierter MLX-Encoder mit whisper.cpp-Decoder;
   ausschließlich dieser Modellpfad ist in der App verfügbar.
+- **Optionale lokale Textbereinigung:** Fülllaute und eindeutige Versprecher
+  korrigieren. Unter **Einstellungen → Textbereinigung** einmalig einrichten;
+  bei Fehlern bleibt das Original ohne automatisches Einfügen erhalten.
 - **Native Audio- und Systemfunktionen:** keine Browser-Mikrofonaufnahme.
   Hell-/Dunkelmodus folgen macOS, Details erscheinen erst bei Bedarf.
 - **Deutsch ist die geprüfte Produktsprache.** Erkennungsfehler bleiben möglich;
