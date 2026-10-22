@@ -32,3 +32,10 @@ Das Review ersetzt diese ausführbaren Nachweise nicht.
 Der [native Prüfbericht 0.2.0](verification/release-0.2.0.md) ergänzt die
 beobachtete Einstellungsübernahme, Aufnahme, Modellproben und Paketprüfung.
 Er grenzt die fehlende neue Hotkey-/Empfangsprüfung ausdrücklich ab.
+
+Beim lokalen CI-Lauf wurde außerdem ein zeitabhängiger Cache-Sperrenfehler
+gefunden. Eine deterministische Reproduktion mit einem eigenen Kindprozess
+scheiterte vor der Korrektur und bestand danach. Der
+[Nachweis zur Sperrenlebensdauer](verification/cache-lock-lifetime-2026-10-22.md)
+trennt diesen belegten Mechanismus von der nicht vollständig aufgezeichneten
+ursprünglichen Prozessabfolge.

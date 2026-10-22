@@ -15,6 +15,18 @@ pub(super) struct CacheGuard {
     directory: PathBuf,
     definition: ModelDefinition,
 }
+impl Drop for CacheGuard {
+    fn drop(&mut self) {
+        // Closing only this descriptor can leave the lock alive in a child
+        // between fork and exec. Unlock the shared open-file description when
+        // its owner ends; a later close cannot unlock a new owner's descriptor.
+        if let Err(error) = self._lock.unlock() {
+            // Drop cannot return an error. Report it; File::drop still closes
+            // our descriptor as a fallback, without removing the lock file.
+            eprintln!("Could not explicitly release model cache lock: {error}");
+        }
+    }
+}
 impl CacheGuard {
     pub(super) fn acquire(
         directory: &Path,
@@ -60,15 +72,20 @@ impl CacheGuard {
             Err(std::fs::TryLockError::WouldBlock) => return Err(ModelError::Busy),
             Err(std::fs::TryLockError::Error(error)) => return Err(error.into()),
         }
-        if cancel.is_cancelled() {
-            return Err(ModelError::Cancelled);
-        }
-        lock.set_permissions(fs::Permissions::from_mode(0o600))?;
-        Ok(Self {
+        // Install the release guard immediately so cancellation and chmod
+        // failures after acquisition also unlock explicitly.
+        let guard = Self {
             _lock: lock,
             directory: directory.to_owned(),
             definition,
-        })
+        };
+        if cancel.is_cancelled() {
+            return Err(ModelError::Cancelled);
+        }
+        guard
+            ._lock
+            .set_permissions(fs::Permissions::from_mode(0o600))?;
+        Ok(guard)
     }
     pub(super) fn cleanup_parts(&self, cancel: &CancellationToken) -> Result<(), ModelError> {
         self.cleanup_with(cancel, macos_integration::process::definitely_absent)
@@ -432,6 +449,37 @@ mod tests {
         ));
         assert_eq!(fs::read(&target)?, b"keep");
         assert_eq!(fs::metadata(&target)?.permissions().mode() & 0o777, 0o644);
+        Ok(())
+    }
+    #[test]
+    fn dropping_guard_releases_lock_while_inherited_child_handle_stays_open()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use std::process::{Command, Stdio};
+        let directory = tempfile::tempdir()?;
+        let cancel = CancellationToken::new();
+        let owner = CacheGuard::acquire(directory.path(), SMALL, &cancel)?;
+        // Stdio deliberately keeps the same open-file description alive in
+        // another process, as can happen briefly during concurrent fork/exec.
+        let mut child = OwnedChild(
+            Command::new("/bin/sleep")
+                .arg("30")
+                .stdin(Stdio::from(owner._lock.try_clone()?))
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .spawn()?,
+        );
+        assert!(child.0.try_wait()?.is_none());
+        drop(owner);
+        let next_owner = CacheGuard::acquire(directory.path(), SMALL, &cancel)?;
+        // Closing the old inherited handle must not release the new owner's lock.
+        child.0.kill()?;
+        child.0.wait()?;
+        assert!(matches!(
+            CacheGuard::acquire(directory.path(), SMALL, &cancel),
+            Err(ModelError::Busy)
+        ));
+        drop(next_owner);
+        drop(CacheGuard::acquire(directory.path(), SMALL, &cancel)?);
         Ok(())
     }
     #[test]
