@@ -18,6 +18,8 @@ in `deny.toml` auf genau dieses Paket und diese Version beschränkt.
 
 ## Ergänzende Herkunftsnachweise
 
+- [Textmodell](qwen3-model-provenance.json): gepinnter Apache-2.0-Originaltext,
+  MLX-Modellkarte und Grenze der Basismodell-Revision; noch kein Produktpfad.
 - [Modellbereitstellung](../MODELS.md): Modellgewichte und Code besitzen
   getrennte Herkunftshinweise; Gewichte sind nicht Teil des App-Downloads.
 - [Neue Pakettexte](package-update-supplement.json): Ergänzungen für den

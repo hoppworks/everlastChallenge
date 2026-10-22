@@ -11,16 +11,19 @@ use std::{
 use tokio_util::sync::CancellationToken;
 const MAX_ENTRIES: usize = 1024;
 pub(super) struct CacheGuard {
-    _lock: File,
+    _lock: DirectoryLock,
     directory: PathBuf,
     definition: ModelDefinition,
 }
-impl Drop for CacheGuard {
+pub(super) struct DirectoryLock {
+    file: File,
+}
+impl Drop for DirectoryLock {
     fn drop(&mut self) {
         // Closing only this descriptor can leave the lock alive in a child
         // between fork and exec. Unlock the shared open-file description when
         // its owner ends; a later close cannot unlock a new owner's descriptor.
-        if let Err(error) = self._lock.unlock() {
+        if let Err(error) = self.file.unlock() {
             // Drop cannot return an error. Report it; File::drop still closes
             // our descriptor as a fallback, without removing the lock file.
             eprintln!("Could not explicitly release model cache lock: {error}");
@@ -33,13 +36,38 @@ impl CacheGuard {
         definition: ModelDefinition,
         cancel: &CancellationToken,
     ) -> Result<Self, ModelError> {
+        Ok(Self {
+            _lock: DirectoryLock::acquire(directory, definition.id, cancel)?,
+            directory: directory.to_owned(),
+            definition,
+        })
+    }
+}
+impl DirectoryLock {
+    pub(super) fn acquire(
+        directory: &Path,
+        namespace: &str,
+        cancel: &CancellationToken,
+    ) -> Result<Self, ModelError> {
         if cancel.is_cancelled() {
             return Err(ModelError::Cancelled);
+        }
+        if namespace.is_empty()
+            || matches!(namespace, "." | "..")
+            || !namespace
+                .bytes()
+                .all(|c| c.is_ascii_alphanumeric() || matches!(c, b'-' | b'_' | b'.'))
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "invalid cache lock namespace",
+            )
+            .into());
         }
         check_directory(directory, true)?;
         fs::create_dir_all(directory)?;
         check_directory(directory, false)?;
-        let path = directory.join(format!(".everlast-{}.lock", definition.id));
+        let path = directory.join(format!(".everlast-{namespace}.lock"));
         match fs::symlink_metadata(&path) {
             Ok(metadata) if !metadata.is_file() => {
                 return Err(io::Error::new(
@@ -74,19 +102,17 @@ impl CacheGuard {
         }
         // Install the release guard immediately so cancellation and chmod
         // failures after acquisition also unlock explicitly.
-        let guard = Self {
-            _lock: lock,
-            directory: directory.to_owned(),
-            definition,
-        };
+        let guard = Self { file: lock };
         if cancel.is_cancelled() {
             return Err(ModelError::Cancelled);
         }
         guard
-            ._lock
+            .file
             .set_permissions(fs::Permissions::from_mode(0o600))?;
         Ok(guard)
     }
+}
+impl CacheGuard {
     pub(super) fn cleanup_parts(&self, cancel: &CancellationToken) -> Result<(), ModelError> {
         self.cleanup_with(cancel, macos_integration::process::definitely_absent)
     }
@@ -163,7 +189,7 @@ fn check_directory(path: &Path, allow_missing: bool) -> Result<(), ModelError> {
     }
 }
 
-fn part_pid(name: &str, prefix: &str) -> Option<u32> {
+pub(super) fn part_pid(name: &str, prefix: &str) -> Option<u32> {
     let body = name.strip_prefix(prefix)?.strip_suffix(".part")?;
     let (pid, nonce) = body.split_once('-')?;
     let parsed_pid = pid.parse::<u32>().ok()?;
@@ -184,6 +210,19 @@ fn part_pid(name: &str, prefix: &str) -> Option<u32> {
 mod tests {
     use super::*;
     use crate::model::SMALL;
+    #[test]
+    fn silero_cache_lock_can_be_acquired_and_released() -> Result<(), Box<dyn std::error::Error>> {
+        let directory = tempfile::tempdir()?;
+        let cancel = CancellationToken::new();
+        let guard = CacheGuard::acquire(directory.path(), crate::model::VAD, &cancel)?;
+        assert!(matches!(
+            CacheGuard::acquire(directory.path(), crate::model::VAD, &cancel),
+            Err(ModelError::Busy)
+        ));
+        drop(guard);
+        let _guard = CacheGuard::acquire(directory.path(), crate::model::VAD, &cancel)?;
+        Ok(())
+    }
     struct OwnedChild(std::process::Child);
     impl Drop for OwnedChild {
         fn drop(&mut self) {
@@ -463,7 +502,7 @@ mod tests {
         let mut child = OwnedChild(
             Command::new("/bin/sleep")
                 .arg("30")
-                .stdin(Stdio::from(owner._lock.try_clone()?))
+                .stdin(Stdio::from(owner._lock.file.try_clone()?))
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .spawn()?,

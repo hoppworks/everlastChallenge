@@ -33,3 +33,21 @@ noch akzeptierte Produkt-/Leistungswerte.
 Falls spätere Release-Pakete zusätzlich Gewichtskopien enthalten, müssen diese
 Bestandteile im endgültigen Artefaktinventar ausdrücklich erscheinen und ihre
 begleitenden Lizenz-/Herkunftshinweise ebenfalls mitgegeben werden.
+
+## Local text refinement model (not yet integrated)
+
+The separate text worker pins `mlx-community/Qwen3-4B-Instruct-2507-4bit` at
+`50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b`. Its shared
+[manifest](../../crates/text-refinement-worker/src/model-manifest.json) binds
+all 12 assets by size and SHA-256: 2,278,970,666 bytes in total. The installer
+publishes only a complete verified set; it is not connected to application setup
+yet. These weights are not included in the current app download.
+
+The unmodified [Apache-2.0 license](qwen3-4b-Apache-2.0.txt) and
+[conversion model card](qwen3-4b-mlx-model-card.txt) are preserved separately.
+Their pinned URLs, hashes and attribution limits are recorded in the
+[provenance receipt](third-party/qwen3-model-provenance.json). The card identifies
+the base model and conversion tooling, but does not identify the exact base
+weight revision used for conversion. The independently pinned license source
+does not resolve that gap. Upstream usage examples in the preserved card are
+attribution material, not an application dependency or installation instruction.

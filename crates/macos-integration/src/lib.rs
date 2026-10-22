@@ -17,6 +17,7 @@ pub mod power;
 pub mod process;
 pub mod qos;
 pub mod realtime;
+pub mod storage;
 pub mod target;
 pub mod termination;
 pub mod ui_services;

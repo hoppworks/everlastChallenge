@@ -1,0 +1,21 @@
+{
+  "kind": "Original upstream license and conversion card; model weights downloaded separately",
+  "model": {
+    "repository": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+    "revision": "50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b",
+    "manifest": "crates/text-refinement-worker/src/model-manifest.json"
+  },
+  "license": {
+    "source": "https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507/resolve/cdbee75f17c01a7cc42f958dc650907174af0554/LICENSE",
+    "path": "docs/licenses/qwen3-4b-Apache-2.0.txt",
+    "sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+    "bytes": 11343
+  },
+  "modelCard": {
+    "source": "https://huggingface.co/mlx-community/Qwen3-4B-Instruct-2507-4bit/resolve/50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b/README.md",
+    "path": "docs/licenses/qwen3-4b-mlx-model-card.txt",
+    "sha256": "7b17ce562d7ea121c86d2ffdf660eed3726ac5b52cacfa9f1de11a65969f5657",
+    "bytes": 969
+  },
+  "limits": "The pinned conversion card identifies the upstream base model and mlx-lm version but does not specify the exact base-weight revision used during conversion. The license source is independently pinned; this receipt does not establish model quality."
+}

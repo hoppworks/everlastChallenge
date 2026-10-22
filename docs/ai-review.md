@@ -92,3 +92,12 @@ Independent review found a mixed-edit bypass in the first correction. Both were
 reproduced with failing public tests before the final source-provenance guard.
 The [punctuation report](verification/refinement-punctuation-2026-10-22.md)
 documents the corrected composition rule and its limited linguistic scope.
+
+The fixed text-model installer was AI-assisted and independently reviewed.
+The review caught a regression in the shared cache-lock namespace: the existing
+Silero ID contains dots. A test using the actual VAD definition reproduced the
+failure before the correction. The combined model test run also exposed a
+nonblocking socket error in the new HTTP fixture; accepted sockets now use
+bounded blocking I/O. The [installer report](verification/refinement-installer-2026-10-22.md)
+keeps both failures and distinguishes local fixture coverage from the still
+outstanding full download, setup and runtime acceptance.

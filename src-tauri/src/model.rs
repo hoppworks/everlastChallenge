@@ -12,6 +12,7 @@ mod mlx_manifest;
 #[cfg(unix)]
 mod parallel_verification;
 mod reference_conversion;
+pub mod refinement;
 mod storage;
 use cache::CacheGuard;
 #[cfg(all(feature = "mlx", feature = "measurement"))]
