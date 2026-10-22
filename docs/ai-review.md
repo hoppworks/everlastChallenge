@@ -307,3 +307,11 @@ exact sentence boundary; unsupported number phrases and trailing predicates
 remain model cases. Executable regressions cover these boundaries, and replay of
 a longer transcript preserves the full expected result without a model call.
 This component check is separate from native end-to-end timing.
+
+The [0.3.0 native package check](verification/release-0.3.0.md) distinguishes
+observed target receipt from paste dispatch. AI-assisted inspection of the
+original transcript also located residual initial-word and punctuation errors
+before refinement. An unchanged-model file replay reproduced the initial-word
+error without the acoustic playback path; it did not reproduce the hyphenated
+opening. These observations do not establish a general cause or accuracy rate.
+The ZIP roundtrip compares every bundled file, not only the main executable.

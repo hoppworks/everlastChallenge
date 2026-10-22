@@ -54,7 +54,7 @@ allgemeiner Geschwindigkeitsvorsprung ist nicht belegt.
 | Architektur und Code        | [Entscheidungen](docs/engineering-decisions.md) · [Code-Wegweiser](docs/code-map.md)                                                                             |
 | Selbst bauen und testen     | [Entwicklung](docs/development.md) · [Werkzeuge](docs/tooling.md)                                                                                                |
 | Bedienung und Fehlerfälle   | [Bedienungsdetails](docs/usage.md)                                                                                                                               |
-| Verifikation und KI-Nutzung | [Version 0.2.0](docs/verification/release-0.2.0.md) · [Softwareprüfungen](docs/verification/tooling-and-packages-2026-10-22.md) · [KI-Review](docs/ai-review.md) |
+| Verifikation und KI-Nutzung | [Version 0.3.0](docs/verification/release-0.3.0.md) · [Softwareprüfungen](docs/verification/tooling-and-packages-2026-10-22.md) · [KI-Review](docs/ai-review.md) |
 | Weitere technische Belege   | [Dokumentationsindex](docs/README.md)                                                                                                                            |
 
 Der Anwendungscode steht unter [MIT](LICENSE). [Drittanbieter-Lizenzen](docs/licenses/third-party/README.md),

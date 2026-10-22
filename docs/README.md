@@ -13,7 +13,7 @@ Lizenztexte und maschinenlesbare Schemafelder werden nicht übersetzt.
 | App installieren und ausprobieren | [Download, Voraussetzungen und Bedienung](../README.md#download-für-macos) |
 | Umsetzung verstehen | [Technische Entscheidungen](engineering-decisions.md), [Code-Wegweiser](code-map.md) |
 | Ergebnisse einschätzen | [Leistung](performance.md), [Vergleich mit Voicely und Testgrenzen](comparison.md) |
-| Aktuellen Stand prüfen | [Native Prüfung und Paket 0.2.0](verification/release-0.2.0.md), [Lokale CI-Prüfung](verification/local-ci-2026-10-22.md), [Softwareprüfungen](verification/tooling-and-packages-2026-10-22.md), [Abhängigkeiten](dependencies.md) |
+| Aktuellen Stand prüfen | [Native Prüfung und Paket 0.3.0](verification/release-0.3.0.md), [Lokale CI-Prüfung](verification/local-ci-2026-10-22.md), [Softwareprüfungen](verification/tooling-and-packages-2026-10-22.md), [Abhängigkeiten](dependencies.md) |
 | Selbst weiterentwickeln | [Setup und Build](development.md), [Entwicklerwerkzeuge](tooling.md), [automatische Prüfungen](autonomous-testing.md), [Guardrails](guardrails.md) |
 | Bedienungsdetails nachschlagen | [Aufnahme, Einstellungen und Mikrofonformate](usage.md) |
 | Gestaltung nachvollziehen | [Produkt](../PRODUCT.md), [Designsystem](../DESIGN.md) |
