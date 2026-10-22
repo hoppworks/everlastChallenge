@@ -59,7 +59,7 @@ function props(): SettingsViewProps {
     onClose: vi.fn<SettingsViewProps["onClose"]>(),
   };
 }
-test("requires setup before explicitly saving enabled text refinement", () => {
+test("requests native setup and displays its saved activation without another save", () => {
   const p = props();
   p.refinement = { ...p.refinement, phase: "Missing", downloadedBytes: 0 };
   const view = render(<SettingsView {...p} />);
@@ -71,12 +71,18 @@ test("requires setup before explicitly saving enabled text refinement", () => {
       }) as HTMLInputElement
     ).disabled,
   ).toBe(true);
-  fireEvent.click(screen.getByRole("button", { name: "Textmodell laden" }));
+  fireEvent.click(
+    screen.getByRole("button", { name: "Einrichten und aktivieren" }),
+  );
   expect(p.onDownloadRefinement).toHaveBeenCalledOnce();
   expect(p.onSave).not.toHaveBeenCalled();
   view.rerender(
     <SettingsView
       {...p}
+      preferences={{
+        ...p.preferences,
+        current: { ...p.preferences.current, refinement: true },
+      }}
       refinement={{
         ...p.refinement,
         phase: "Ready",
@@ -84,17 +90,21 @@ test("requires setup before explicitly saving enabled text refinement", () => {
       }}
     />,
   );
-  fireEvent.click(
-    screen.getByRole("switch", { name: "Textbereinigung verwenden" }),
-  );
+  expect(
+    (
+      screen.getByRole("switch", {
+        name: "Textbereinigung verwenden",
+      }) as HTMLInputElement
+    ).checked,
+  ).toBe(true);
   expect(p.onSave).not.toHaveBeenCalled();
-  fireEvent.click(
-    screen.getByRole("button", { name: "Einstellungen speichern" }),
-  );
-  expect(p.onSave).toHaveBeenCalledWith({
-    ...p.preferences.current,
-    refinement: true,
-  });
+  expect(
+    (
+      screen.getByRole("button", {
+        name: "Einstellungen speichern",
+      }) as HTMLButtonElement
+    ).disabled,
+  ).toBe(true);
 });
 test("download cancellation remains available while settings are busy", () => {
   const p = props();

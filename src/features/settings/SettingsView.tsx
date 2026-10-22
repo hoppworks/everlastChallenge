@@ -395,6 +395,12 @@ export function SettingsView(props: SettingsViewProps) {
                       möglich.
                     </p>
                   )}
+                  {refinement.phase !== "Ready" && (
+                    <p className="settings-help">
+                      Nach erfolgreicher Einrichtung wird die Textbereinigung
+                      automatisch aktiviert.
+                    </p>
+                  )}
                   {refinement.phase === "Downloading" && (
                     <div className="download-progress">
                       <progress
@@ -425,7 +431,7 @@ export function SettingsView(props: SettingsViewProps) {
                     >
                       {refinement.phase === "Failed"
                         ? "Erneut versuchen"
-                        : "Textmodell laden"}
+                        : "Einrichten und aktivieren"}
                     </button>
                   )}
                   {refinement.canCancel && (

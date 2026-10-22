@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "baseRevision": "a1b9d12",
+  "sources": {
+    "config/coverage.json": "e0201717e5144a67c6a9ef00d8012dc8fb822bf54e4539365559f6e6d169bd8b",
+    "src-tauri/src/application.rs": "c0a660be32d7667662b1e87933729a854604536fe478e64b156dc29bed78bddc",
+    "src-tauri/src/desktop.rs": "03a0216a229d8c0848b30e017b0e115a570e5cbc266eca55efee350a5fa12b19",
+    "src-tauri/src/desktop/refinement_activation.rs": "759fb69edcaac3a4926c0ca9c7840a330d203cc70152b9f757c54c68d650a68b",
+    "src-tauri/src/desktop/tests/settings_ack_contract.rs": "9e06c4d33655a4cd829328ec3bf1db803b72c3117fc77b25dc4970f38b57d3a8",
+    "src/features/settings/SettingsView.tsx": "8fb0c2ecab6c084672811204c2cb87577bac77926fb04df146e3d8df9191f14b",
+    "src/features/settings/SettingsView.test.tsx": "2cb4ab9931777c7f9f18dc13baadd208ef25157dbac70111b4917f6ca72e03cf"
+  },
+  "checks": {
+    "desktopTests": 45,
+    "focusedApplicationTests": 1,
+    "settingsViewTests": 23,
+    "format": "passed",
+    "clippy": "passed",
+    "fastChecks": "passed",
+    "hostCoverage": "passed",
+    "hostMeasured": {
+      "native_service.rs": {
+        "lines": 70.13081395348837,
+        "count": 1376,
+        "covered": 965
+      },
+      "controller.rs": {
+        "lines": 95.47826086956522,
+        "count": 575,
+        "covered": 549
+      },
+      "runtime.rs": {
+        "lines": 90.64352243861134,
+        "count": 2362,
+        "covered": 2141
+      },
+      "setup.rs": {
+        "lines": 78.44905320108205,
+        "count": 1109,
+        "covered": 870
+      },
+      "desktop.rs": {
+        "lines": 61.05895606458881,
+        "count": 2663,
+        "covered": 1626
+      },
+      "controller/refinement.rs": {
+        "lines": 96.875,
+        "count": 480,
+        "covered": 465
+      },
+      "runtime/refinement.rs": {
+        "lines": 81.55339805825243,
+        "count": 103,
+        "covered": 84
+      },
+      "refinement_setup.rs": {
+        "lines": 88.79056047197639,
+        "count": 339,
+        "covered": 301
+      },
+      "model/refinement.rs": {
+        "lines": 83.84146341463415,
+        "count": 328,
+        "covered": 275
+      },
+      "desktop/refinement_activation.rs": {
+        "lines": 100,
+        "count": 101,
+        "covered": 101
+      }
+    },
+    "frontendCoverage": {
+      "statements": 95.34,
+      "branches": 93.66,
+      "functions": 91.89,
+      "lines": 96.77
+    }
+  },
+  "negativeControls": [
+    {
+      "case": "cancelled queued activation",
+      "before": "operation executed after cancellation",
+      "after": "operation withheld"
+    },
+    {
+      "case": "automatic early save error",
+      "before": "no visible error",
+      "after": "native error published"
+    },
+    {
+      "case": "published Ready while actual setup Missing",
+      "before": "published-snapshot substitution failed the regression",
+      "after": "actual setup and queue occupancy queried together"
+    }
+  ],
+  "semantics": {
+    "activation": "explicit setup only; revocable through native commit admission",
+    "ready": "verified model files, not GPU startup preflight"
+  },
+  "limits": [
+    "No actual native-window setup interaction repeated at this revision.",
+    "Device-removal error simulated at the operation boundary, not physical hardware.",
+    "No new GPU load or inference, receipt, pressure or performance qualification.",
+    "Human linguistic review remains separate."
+  ]
+}

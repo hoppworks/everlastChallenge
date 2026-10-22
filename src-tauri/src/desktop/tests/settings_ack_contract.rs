@@ -43,6 +43,7 @@ fn renderer_save_retains_owner_reservation_and_returns_failed_or_closed_ack() ->
             draft: received,
             reply,
             _reservation: reservation,
+            ..
         } = requests.recv_timeout(Duration::from_secs(1))?
         else {
             return Err("renderer Save did not reach Settings queue".into());

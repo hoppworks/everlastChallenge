@@ -148,25 +148,31 @@ impl Client {
     }
     /// Includes accepted requests before their I/O worker starts.
     pub fn refinement_busy(&self) -> Result<bool, ApplicationError> {
+        self.refinement_status().map(|(_, busy)| busy)
+    }
+    /// Read current setup state and queue occupancy together. The renderer's
+    /// published snapshot can lag behind a just-completed setup attempt.
+    pub fn refinement_status(
+        &self,
+    ) -> Result<(Option<crate::refinement_setup::Snapshot>, bool), ApplicationError> {
         let state = self
             .state
             .lock()
             .map_err(|_| ApplicationError::Synchronization)?;
-        Ok(state.refinement_pending
-            || self
-                .refinement
-                .as_ref()
-                .map(|s| s.snapshot())
-                .transpose()
-                .map_err(worker_error)?
-                .is_some_and(|s| {
-                    matches!(
-                        s.phase,
-                        setup::Phase::Checking
-                            | setup::Phase::Downloading
-                            | setup::Phase::Cancelling
-                    )
-                }))
+        let snapshot = self
+            .refinement
+            .as_ref()
+            .map(|s| s.snapshot())
+            .transpose()
+            .map_err(worker_error)?;
+        let busy = state.refinement_pending
+            || snapshot.as_ref().is_some_and(|s| {
+                matches!(
+                    s.phase,
+                    setup::Phase::Checking | setup::Phase::Downloading | setup::Phase::Cancelling
+                )
+            });
+        Ok((snapshot, busy))
     }
     pub fn cancel_refinement_setup(&self) -> Result<(), ApplicationError> {
         let mut state = self
@@ -623,7 +629,22 @@ mod tests {
             requests,
             refinement: Some(refinement),
         };
+        client
+            .state
+            .lock()
+            .map_err(|_| "state")?
+            .snapshot
+            .refinement_setup
+            .as_mut()
+            .ok_or("snapshot")?
+            .phase = setup::Phase::Ready;
+        let (actual, busy) = client.refinement_status()?;
+        assert_eq!(actual.ok_or("actual setup")?.phase, setup::Phase::Missing);
+        assert!(!busy);
         client.download_refinement()?;
+        let (actual, busy) = client.refinement_status()?;
+        assert_eq!(actual.ok_or("actual setup")?.phase, setup::Phase::Missing);
+        assert!(busy);
         assert!(client.refinement_busy()?);
         assert!(matches!(
             client.download_refinement(),

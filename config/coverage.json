@@ -16,7 +16,8 @@
     "controller/refinement.rs": 96,
     "runtime/refinement.rs": 81,
     "refinement_setup.rs": 88,
-    "model/refinement.rs": 83
+    "model/refinement.rs": 83,
+    "desktop/refinement_activation.rs": 90
   },
   "hostScope": "Initial measured module-file line coverage, including inline test code; regression floors, not production-only branch coverage or safety proof.",
   "refinementMinimum": {

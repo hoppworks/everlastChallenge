@@ -216,3 +216,11 @@ worker and independent Rust validator exercised 66 text cases. Two erroneous
 capitalization expectations were corrected transparently after diagnostic output
 had been observed. The record preserves this limitation and does not substitute
 automatic matching for human linguistic review or application-level acceptance.
+
+The [activation report](verification/refinement-activation-2026-10-22.md) records
+AI-assisted native setup activation. Independent review found a queued-save
+cancellation race and missing publication of early errors; failing regressions
+and corrected queue/operation tests cover both. A separate negative control
+checks that setup admission uses current service state rather than delayed UI
+state. Software evidence is distinguished from pending packaged interaction and
+GPU startup verification.

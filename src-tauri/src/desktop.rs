@@ -35,6 +35,7 @@ mod start_observer;
 mod test_control;
 
 mod action_errors;
+mod refinement_activation;
 
 pub const SNAPSHOT_EVENT: &str = "dictation:snapshot";
 struct Shared {
@@ -45,6 +46,7 @@ struct Shared {
     settings_requests: u32,
     key_labels: macos_integration::keyboard::KeyLabels,
     preferences: PreferenceState,
+    refinement_activation: refinement_activation::Activation,
 }
 #[derive(Default)]
 struct PreferenceState {
@@ -91,6 +93,7 @@ enum SettingsCommand {
     },
     Save {
         draft: SettingsDraft,
+        activation: Option<refinement_activation::Ticket>,
         reply: oneshot::Sender<Result<(), String>>,
         _reservation: Reservation,
     },
@@ -212,6 +215,7 @@ impl Desktop {
                 settings_requests: 0,
                 key_labels: Default::default(),
                 preferences: PreferenceState::default(),
+                refinement_activation: Default::default(),
             }),
             closing: AtomicBool::new(false),
             refresh: AtomicBool::new(true),
@@ -552,12 +556,93 @@ impl Desktop {
         {
             return Err("Bitte das laufende Diktat zuerst abschließen.".into());
         }
-        client.download_refinement().map_err(|e| e.to_string())
+        let revision = client
+            .refinement_status()
+            .map_err(|e| e.to_string())?
+            .0
+            .ok_or("Textbereinigung ist nicht verfügbar")?
+            .revision;
+        client.download_refinement().map_err(|e| e.to_string())?;
+        self.0
+            .shared
+            .lock()
+            .map_err(|_| "Desktop lock failed")?
+            .refinement_activation
+            .request(revision);
+        Ok(())
     }
     pub fn cancel_refinement_setup(&self) -> Result<(), String> {
+        let _admission = self
+            .0
+            .admission
+            .lock()
+            .map_err(|_| "Admission lock failed")?;
+        self.0
+            .shared
+            .lock()
+            .map_err(|_| "Desktop lock failed")?
+            .refinement_activation
+            .cancel();
         self.app_client()?
             .cancel_refinement_setup()
             .map_err(|e| e.to_string())
+    }
+    fn activate_refinement_after_setup(
+        &self,
+        application: &crate::application::Snapshot,
+        busy: bool,
+    ) -> Result<(), String> {
+        // Keep cancellation, user saves and native start admission outside the
+        // interval between selecting the current preferences and queueing them.
+        let admission = self
+            .0
+            .admission
+            .lock()
+            .map_err(|_| "Admission lock failed")?;
+        let (setup, setup_busy) = self
+            .app_client()?
+            .refinement_status()
+            .map_err(|e| e.to_string())?;
+        let busy = busy
+            || setup_busy
+            || admission.changing_settings
+            || admission.pending_starts != 0
+            || admission.suspended
+            || admission.memory_pressure;
+        let draft = {
+            let mut shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+            if shared.preferences.needs_restart || application.closing || shared.settings.refinement
+            {
+                shared.refinement_activation.cancel();
+                None
+            } else if shared.refinement_activation.ready(setup.as_ref(), busy) {
+                let mut draft = draft_of(&shared.settings);
+                draft.refinement = true;
+                shared
+                    .refinement_activation
+                    .ticket()
+                    .map(|ticket| (draft, ticket))
+            } else {
+                None
+            }
+        };
+        if let Some((draft, ticket)) = draft {
+            match self.enqueue_settings_admitted(draft, admission, Some(ticket)) {
+                Ok(receive) => drop(receive), // The native owner commits even without a UI waiter.
+                Err(error) => {
+                    self.0
+                        .shared
+                        .lock()
+                        .map_err(|_| "Desktop lock failed")?
+                        .refinement_activation
+                        .cancel();
+                    self.action_error(format!(
+                        "Textmodell eingerichtet, Aktivierung fehlgeschlagen: {error}"
+                    ));
+                }
+            }
+        }
+        Ok(())
     }
     fn start_request(
         &self,
@@ -801,11 +886,19 @@ impl Desktop {
         &self,
         draft: SettingsDraft,
     ) -> Result<oneshot::Receiver<Result<(), String>>, String> {
-        let mut admission = self
+        let admission = self
             .0
             .admission
             .lock()
             .map_err(|_| "Admission lock failed")?;
+        self.enqueue_settings_admitted(draft, admission, None)
+    }
+    fn enqueue_settings_admitted(
+        &self,
+        draft: SettingsDraft,
+        mut admission: std::sync::MutexGuard<'_, Admission>,
+        activation: Option<refinement_activation::Ticket>,
+    ) -> Result<oneshot::Receiver<Result<(), String>>, String> {
         if self.0.closing.load(Ordering::Acquire) {
             return Err("Anwendung wird beendet".into());
         }
@@ -831,7 +924,11 @@ impl Desktop {
         validate_refinement_enable(
             &current,
             &draft,
-            &client.snapshot().map_err(|e| e.to_string())?,
+            client
+                .refinement_status()
+                .map_err(|e| e.to_string())?
+                .0
+                .as_ref(),
         )?;
         let setup = client
             .snapshot()
@@ -863,14 +960,26 @@ impl Desktop {
         };
         drop(admission);
         let (reply, receive) = oneshot::channel();
+        let automatic = activation.is_some();
         self.0
             .requests
             .try_send(SettingsCommand::Save {
                 draft,
+                activation,
                 reply,
                 _reservation: reservation,
             })
             .map_err(|_| "Einstellungsanfrage konnte nicht angenommen werden".to_owned())?;
+        // An explicit saved preference supersedes an unfinished activation.
+        // Admission remains reserved until this command has been processed.
+        if !automatic {
+            self.0
+                .shared
+                .lock()
+                .map_err(|_| "Desktop lock failed")?
+                .refinement_activation
+                .cancel();
+        }
         Ok(receive)
     }
     pub async fn reset_settings(&self) -> Result<(), String> {
@@ -998,13 +1107,40 @@ impl Desktop {
             }
             SettingsCommand::Save {
                 draft,
+                activation,
                 reply,
                 _reservation,
             } => {
-                let result = self.apply_preferences(draft, store, hotkeys, app);
+                let result = self.run_settings_save(activation.as_ref(), || {
+                    self.apply_preferences(draft, store, hotkeys, app)
+                });
                 if reply.send(result).is_err() { /* caller no longer waiting */ }
             }
         }
+    }
+    fn run_settings_save(
+        &self,
+        activation: Option<&refinement_activation::Ticket>,
+        operation: impl FnOnce() -> Result<(), String>,
+    ) -> Result<(), String> {
+        if let Some(ticket) = activation {
+            let mut shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
+            // This is the commit admission point. Cancellation that wins this
+            // lock revokes a queued activation without executing its save.
+            if self.0.closing.load(Ordering::Acquire) || !shared.refinement_activation.claim(ticket)
+            {
+                return Ok(());
+            }
+        }
+        let result = operation();
+        if activation.is_some()
+            && let Err(error) = &result
+        {
+            self.action_error(format!(
+                "Textmodell eingerichtet, Aktivierung fehlgeschlagen: {error}"
+            ));
+        }
+        result
     }
     fn apply_preferences(
         &self,
@@ -1038,7 +1174,11 @@ impl Desktop {
         validate_refinement_enable(
             &current,
             &draft,
-            &self.app_client()?.snapshot().map_err(|e| e.to_string())?,
+            self.app_client()?
+                .refinement_status()
+                .map_err(|e| e.to_string())?
+                .0
+                .as_ref(),
         )?;
         let result = store.commit(&current, draft, &mut binder);
         let native_error = binder.last_error.take();
@@ -1299,7 +1439,16 @@ impl Desktop {
                 });
                 let changing_settings = suspended.changing_settings;
                 let refreshing_devices = suspended.refreshing_devices;
+                let activation_busy = suspended.suspended
+                    || suspended.memory_pressure
+                    || suspended.pending_starts != 0
+                    || changing_settings
+                    || runtime
+                        .as_ref()
+                        .is_none_or(|r| r.session.phase != Phase::Idle)
+                    || application.setup.phase != setup::Phase::Ready;
                 drop(suspended);
+                self.activate_refinement_after_setup(&application, activation_busy)?;
                 let active = runtime
                     .as_ref()
                     .filter(|runtime| runtime.session.phase != Phase::Idle)
@@ -1428,14 +1577,11 @@ fn draft_of(settings: &Settings) -> SettingsDraft {
 fn validate_refinement_enable(
     current: &Settings,
     draft: &SettingsDraft,
-    application: &crate::application::Snapshot,
+    setup: Option<&crate::refinement_setup::Snapshot>,
 ) -> Result<(), String> {
     if draft.refinement
         && !current.refinement
-        && !application
-            .refinement_setup
-            .as_ref()
-            .is_some_and(|s| s.phase == setup::Phase::Ready)
+        && !setup.is_some_and(|s| s.phase == setup::Phase::Ready)
     {
         return Err("Bitte zuerst das Textmodell vollständig einrichten.".into());
     }
@@ -1799,6 +1945,7 @@ mod tests {
                 settings_requests: 0,
                 key_labels: Default::default(),
                 preferences: PreferenceState::default(),
+                refinement_activation: Default::default(),
             }),
             closing: AtomicBool::new(false),
             refresh: AtomicBool::new(false),
@@ -2074,7 +2221,10 @@ mod tests {
         let mut draft = draft_of(&current);
         draft.refinement = true;
         let mut application = application();
-        assert!(validate_refinement_enable(&current, &draft, &application).is_err());
+        assert!(
+            validate_refinement_enable(&current, &draft, application.refinement_setup.as_ref())
+                .is_err()
+        );
         for phase in [
             setup::Phase::Missing,
             setup::Phase::Checking,
@@ -2089,13 +2239,17 @@ mod tests {
                 failure: None,
             });
             assert_eq!(
-                validate_refinement_enable(&current, &draft, &application).is_ok(),
+                validate_refinement_enable(&current, &draft, application.refinement_setup.as_ref())
+                    .is_ok(),
                 phase == setup::Phase::Ready
             );
         }
         draft.refinement = false;
         application.refinement_setup = None;
-        assert!(validate_refinement_enable(&current, &draft, &application).is_ok());
+        assert!(
+            validate_refinement_enable(&current, &draft, application.refinement_setup.as_ref())
+                .is_ok()
+        );
     }
     #[test]
     fn refinement_projection_exposes_setup_and_retained_original()
@@ -2363,6 +2517,129 @@ mod tests {
             supervisor,
             _directory: directory,
         })
+    }
+
+    #[test]
+    fn cancelled_queued_activation_never_executes_its_save()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let SettingsQueueFixture {
+            desktop,
+            requests,
+            supervisor,
+            _directory,
+        } = desktop_with_settings_queue()?;
+        let ticket = {
+            let mut shared = desktop.0.shared.lock().map_err(|_| "shared")?;
+            shared.refinement_activation.request(4);
+            shared.refinement_activation.ticket().ok_or("ticket")?
+        };
+        // Queue the automatic command without a real model or native UI.
+        // Its revocation must be checked again at processing, not just admission.
+        let (reply, response) = oneshot::channel();
+        desktop
+            .0
+            .admission
+            .lock()
+            .map_err(|_| "admission")?
+            .changing_settings = true;
+        let mut draft = draft_of(&Settings::default());
+        draft.refinement = true;
+        desktop.0.requests.try_send(SettingsCommand::Save {
+            draft,
+            activation: Some(ticket),
+            reply,
+            _reservation: Reservation {
+                owner: Arc::clone(&desktop.0),
+                kind: ReservationKind::Settings,
+            },
+        })?;
+        // This fixture has no text backend; cancellation still revokes intent
+        // even when asking that unavailable backend to cancel returns an error.
+        assert!(desktop.cancel_refinement_setup().is_err());
+        let SettingsCommand::Save {
+            activation,
+            reply,
+            _reservation,
+            ..
+        } = requests.recv_timeout(Duration::from_secs(1))?
+        else {
+            return Err("save missing".into());
+        };
+        let called = std::cell::Cell::new(false);
+        let result = desktop.run_settings_save(activation.as_ref(), || {
+            called.set(true);
+            Ok(())
+        });
+        assert!(!called.get(), "cancelled activation wrote preferences");
+        assert!(result.is_ok());
+        assert!(reply.send(result).is_ok());
+        drop(response);
+        drop(_reservation);
+        supervisor.join()?;
+        Ok(())
+    }
+
+    #[test]
+    fn automatic_save_reports_errors_before_the_preference_transaction()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let desktop = unstarted_desktop();
+        let ticket = {
+            let mut shared = desktop.0.shared.lock().map_err(|_| "shared")?;
+            shared.refinement_activation.request(4);
+            shared.refinement_activation.ticket().ok_or("ticket")?
+        };
+        let result = desktop.run_settings_save(Some(&ticket), || {
+            Err("Das gewählte Mikrofon ist nicht verfügbar oder nicht eindeutig".into())
+        });
+        assert!(result.is_err());
+        let shared = desktop.0.shared.lock().map_err(|_| "shared")?;
+        assert!(!shared.settings.refinement);
+        assert!(
+            shared
+                .action_errors
+                .message()
+                .is_some_and(|m| m.contains("Mikrofon"))
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn an_explicit_settings_save_supersedes_pending_refinement_activation()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let SettingsQueueFixture {
+            desktop,
+            requests,
+            supervisor,
+            _directory,
+        } = desktop_with_settings_queue()?;
+        desktop
+            .0
+            .shared
+            .lock()
+            .map_err(|_| "shared")?
+            .refinement_activation
+            .request(4);
+        let response = desktop.enqueue_settings(draft_of(&Settings::default()))?;
+        let ready = crate::refinement_setup::Snapshot {
+            revision: 6,
+            phase: setup::Phase::Ready,
+            received: 10,
+            total: 10,
+            failure: None,
+        };
+        assert!(
+            !desktop
+                .0
+                .shared
+                .lock()
+                .map_err(|_| "shared")?
+                .refinement_activation
+                .ready(Some(&ready), false)
+        );
+        drop(requests.recv_timeout(Duration::from_secs(1))?);
+        drop(response);
+        supervisor.join()?;
+        Ok(())
     }
 
     #[test]
