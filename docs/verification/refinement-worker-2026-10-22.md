@@ -55,3 +55,24 @@ worker, retain ownership, enforce deadlines and remove it only after confirmed
 process exit, including a hard kill. Model copies consume additional disk space;
 installation and startup must account for it. Another process with the same
 user privileges is inside the trust boundary.
+
+## Prompt revision 2: broader diagnostic run
+
+Explicit complete JSON examples resolved the two weekday smoke failures. A
+subsequent serial run covered 24 earlier synthetic cases and eight additional
+English cases. All 32 requests completed. The independent Rust validation pass
+accepted 23 candidates and rejected nine; one accepted German filler edit still
+left the initial hesitation in place. Rejected candidates included edits to
+quoted material, ordinary negation, uncertainty and nonexistent source spans.
+These are model-quality failures caught by validation, not successful cleanups.
+
+Revision 2 therefore **also has no quality acceptance**. The test runner called
+the worker directly, including cases the product's need policy might skip; this
+intentionally exposes proposal weaknesses. No desktop insertion was attempted.
+The broader run is diagnostic, not a performance comparison or the final
+independent acceptance corpus.
+
+Revision 2 worker SHA-256:
+`e973e21d19d2e32de35e727726da476823bab3c96c28e985993cc5baf3674e12`.
+The model manifest and policy remain unchanged; prompt version is 2. Historical
+revision 1 results above are retained, not overwritten by this later run.

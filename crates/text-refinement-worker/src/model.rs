@@ -16,7 +16,7 @@ use std::{
 };
 use text_refinement_protocol::{FailureKind, Language};
 
-pub const PROMPT_VERSION: u16 = 1;
+pub const PROMPT_VERSION: u16 = 2;
 pub const POLICY_VERSION: u16 = 1;
 const PROMPT: &str = include_str!("prompt.txt");
 const MAX_OUTPUT_BYTES: usize = 32 * 1024;
