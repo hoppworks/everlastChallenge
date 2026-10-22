@@ -44,3 +44,20 @@ Policy version 4 additionally rejects punctuation edits that introduce doubled
 full stops, commas, colons or semicolons inside a replacement or at a source
 boundary. Existing ellipses can remain unchanged. This is a structural check;
 it does not decide whether a sentence boundary is linguistically appropriate.
+
+## Host service
+
+The host's [asynchronous owner](../../src-tauri/src/refinement_service/owner.rs)
+wraps the process supervisor on a dedicated thread. Its single slot includes a
+pending/active job and an unconsumed completion. Loading is deferred until a job
+arrives; a healthy process can serve later sessions with fresh request context.
+The idle deadline and explicit unload close and reap the process before removing
+its snapshot. Unload also revokes an unconsumed completion. A clean child idle
+exit permits a new process for a later explicit job; an idle crash closes the
+service without a restart loop. The caller must still recheck session authority
+after dequeuing a result and before delivery.
+
+`npm run test:refinement:process` exercises the supervisor and owner with real
+fixture children. These fixtures do not load MLX or prove dictation/UI integration.
+The [owner report](../../docs/verification/refinement-owner-2026-10-22.md) records
+the tested boundary and remaining integration requirements.

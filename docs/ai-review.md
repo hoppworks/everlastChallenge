@@ -101,3 +101,11 @@ nonblocking socket error in the new HTTP fixture; accepted sockets now use
 bounded blocking I/O. The [installer report](verification/refinement-installer-2026-10-22.md)
 keeps both failures and distinguishes local fixture coverage from the still
 outstanding full download, setup and runtime acceptance.
+
+The asynchronous text-worker owner was also AI-assisted. Failing process tests
+preceded the initial owner, unload behavior, completion revocation, cleanup-error
+propagation and clean idle-exit recovery. Independent combined review inspected
+the service and real-child fixtures without repeating builds or model runs and
+found no concrete blocker. The [owner report](verification/refinement-owner-2026-10-22.md)
+limits this evidence to the service boundary; controller and UI integration are
+still outstanding.

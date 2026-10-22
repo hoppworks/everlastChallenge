@@ -65,6 +65,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Request::Cancel { job } => write_response(&mut output, &Response::Cancelled { job })?,
             Request::Run { job, .. } => {
                 std::fs::write(scratch.join("run-started"), b"started")?;
+                let mut trace = std::fs::OpenOptions::new()
+                    .append(true)
+                    .create(true)
+                    .open(model.join("requests.log"))?;
+                writeln!(
+                    trace,
+                    "{} {} {}",
+                    std::process::id(),
+                    generation,
+                    job.session
+                )?;
                 if mode == "late" {
                     while let Some(request) = read_request(&mut input)? {
                         if matches!(request, Request::Shutdown {}) {
@@ -127,6 +138,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         edits: Vec::new(),
                     },
                 )?;
+                if mode == "self-idle" || mode == "idle-crash" {
+                    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(3);
+                    while !model.join("allow-idle-exit").exists() {
+                        if std::time::Instant::now() >= deadline {
+                            return Err("idle fixture deadline".into());
+                        }
+                        std::thread::sleep(std::time::Duration::from_millis(2));
+                    }
+                    return if mode == "self-idle" {
+                        Ok(())
+                    } else {
+                        Err("idle fixture crash".into())
+                    };
+                }
             }
         }
     }

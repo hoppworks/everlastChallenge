@@ -6,6 +6,418 @@ use std::{num::NonZeroU64, path::PathBuf, time::Duration};
 use text_refinement_protocol::{JobKey, Language};
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 
+fn until(mut ready: impl FnMut() -> bool) -> TestResult {
+    let deadline = std::time::Instant::now() + Duration::from_secs(3);
+    while !ready() {
+        if std::time::Instant::now() >= deadline {
+            return Err("condition did not settle".into());
+        }
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    Ok(())
+}
+
+fn owner_job(
+    session: u64,
+    cancel: Cancellation,
+) -> Result<service::owner::Job, Box<dyn std::error::Error>> {
+    Ok(service::owner::Job {
+        session: NonZeroU64::new(session).ok_or("zero")?,
+        original: OriginalTranscript::new("Hello.".into())?,
+        language: Language::English,
+        cancel,
+    })
+}
+
+fn owner_result(
+    owner: &service::owner::Owner,
+) -> Result<service::owner::Completed, Box<dyn std::error::Error>> {
+    let deadline = std::time::Instant::now() + Duration::from_secs(3);
+    loop {
+        if let Some(done) = owner.take_result()? {
+            return Ok(done);
+        }
+        if std::time::Instant::now() >= deadline {
+            return Err("owner did not settle".into());
+        }
+        std::thread::sleep(Duration::from_millis(2));
+    }
+}
+
+#[test]
+fn async_owner_unload_cancels_startup_and_generation_without_blocking_the_caller() -> TestResult {
+    use service::owner::Owner;
+    for mode in ["hang", "startup-hang"] {
+        let root = tempfile::tempdir()?;
+        let mut bounded = limits();
+        bounded.request = Duration::from_secs(10);
+        bounded.startup = Duration::from_secs(10);
+        let owner = Owner::spawn(spec(root.path(), mode)?, bounded, Duration::from_secs(120))?;
+        let cancel = Cancellation::new();
+        owner.submit(owner_job(1, cancel.clone())?)?;
+        until(|| {
+            std::fs::read_dir(root.path()).is_ok_and(|entries| {
+                entries.flatten().any(|e| {
+                    e.path()
+                        .join(if mode == "hang" {
+                            "run-started"
+                        } else {
+                            "model-snapshot"
+                        })
+                        .exists()
+                })
+            })
+        })?;
+        owner.unload()?;
+        assert!(cancel.is_cancelled());
+        let error = owner_result(&owner)?
+            .result
+            .err()
+            .ok_or("cancelled job accepted")?;
+        assert_eq!(error.reason, service::Failure::Cancelled);
+        assert!(!error.cleanup_failed);
+        assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+        owner.shutdown()?;
+    }
+    Ok(())
+}
+
+#[test]
+fn async_owner_idle_unloads_then_restarts_with_a_new_generation() -> TestResult {
+    use service::owner::Owner;
+    let root = tempfile::tempdir()?;
+    let owner = Owner::spawn(
+        spec(root.path(), "normal")?,
+        limits(),
+        Duration::from_millis(30),
+    )?;
+    owner.submit(owner_job(1, Cancellation::new())?)?;
+    assert_eq!(owner_result(&owner)?.result?.as_str(), "Hello.");
+    until(|| std::fs::read_dir(root.path()).is_ok_and(|entries| entries.count() == 1))?;
+    owner.submit(owner_job(2, Cancellation::new())?)?;
+    assert_eq!(owner_result(&owner)?.result?.as_str(), "Hello.");
+    let trace = std::fs::read_to_string(root.path().join("normal/requests.log"))?;
+    let rows = trace
+        .lines()
+        .map(str::split_whitespace)
+        .map(Iterator::collect::<Vec<_>>)
+        .collect::<Vec<_>>();
+    assert_eq!(rows.len(), 2);
+    assert_eq!(rows[0][1], "1");
+    assert_eq!(rows[1][1], "2");
+    assert_ne!(rows[0][0], rows[1][0]);
+    owner.shutdown()?;
+    Ok(())
+}
+
+#[test]
+fn async_owner_cannot_release_a_completion_revoked_before_dequeue() -> TestResult {
+    use service::owner::Owner;
+    for unload in [false, true] {
+        let root = tempfile::tempdir()?;
+        let owner = Owner::spawn(
+            spec(root.path(), "normal")?,
+            limits(),
+            Duration::from_millis(30),
+        )?;
+        let cancel = Cancellation::new();
+        owner.submit(owner_job(1, cancel.clone())?)?;
+        // The idle close happens only after publishing this job's completion.
+        until(|| {
+            root.path().join("normal/requests.log").exists()
+                && std::fs::read_dir(root.path()).is_ok_and(|entries| entries.count() == 1)
+        })?;
+        if unload {
+            owner.unload()?;
+        } else {
+            cancel.cancel();
+        }
+        assert!(cancel.is_cancelled());
+        let error = owner_result(&owner)?
+            .result
+            .err()
+            .ok_or("revoked completion released")?;
+        assert_eq!(error.reason, service::Failure::Cancelled);
+        owner.shutdown()?;
+    }
+    Ok(())
+}
+
+#[test]
+fn async_owner_valid_stored_result_survives_a_rejected_followup_job() -> TestResult {
+    use service::owner::{Owner, OwnerError};
+    let root = tempfile::tempdir()?;
+    let owner = Owner::spawn(
+        spec(root.path(), "normal")?,
+        limits(),
+        Duration::from_millis(30),
+    )?;
+    owner.submit(owner_job(1, Cancellation::new())?)?;
+    // Idle cleanup proves completion was stored, rather than merely in flight.
+    until(|| {
+        root.path().join("normal/requests.log").exists()
+            && std::fs::read_dir(root.path()).is_ok_and(|entries| entries.count() == 1)
+    })?;
+    assert!(matches!(
+        owner.submit(owner_job(2, Cancellation::new())?),
+        Err(OwnerError::Busy)
+    ));
+    let first = owner_result(&owner)?;
+    assert_eq!(first.session.get(), 1);
+    assert_eq!(first.result?.as_str(), "Hello.");
+    owner.submit(owner_job(2, Cancellation::new())?)?;
+    assert_eq!(owner_result(&owner)?.session.get(), 2);
+    owner.shutdown()?;
+    Ok(())
+}
+
+#[cfg(unix)]
+#[test]
+fn async_owner_shutdown_preserves_a_cleanup_failure_during_cancel() -> TestResult {
+    use service::owner::{Owner, OwnerError};
+    use std::os::unix::fs::PermissionsExt;
+    let root = tempfile::tempdir()?;
+    let owner = Owner::spawn(
+        spec(root.path(), "hang")?,
+        limits(),
+        Duration::from_secs(120),
+    )?;
+    owner.submit(owner_job(1, Cancellation::new())?)?;
+    let mut scratch = None;
+    until(|| {
+        scratch = std::fs::read_dir(root.path()).ok().and_then(|entries| {
+            entries
+                .flatten()
+                .find(|e| e.path().join("run-started").exists())
+                .map(|e| e.path())
+        });
+        scratch.is_some()
+    })?;
+    let scratch = scratch.ok_or("no running child")?;
+    std::fs::set_permissions(&scratch, std::fs::Permissions::from_mode(0o500))?;
+    let result = owner.shutdown();
+    if scratch.exists() {
+        std::fs::set_permissions(&scratch, std::fs::Permissions::from_mode(0o700))?;
+    }
+    let error = result.err().ok_or("shutdown hid failed cleanup")?;
+    assert!(matches!(
+        error,
+        OwnerError::Worker(service::Error {
+            cleanup_failed: true,
+            ..
+        })
+    ));
+    Ok(())
+}
+
+#[test]
+fn async_owner_reaps_a_clean_idle_exit_and_starts_the_next_explicit_job() -> TestResult {
+    use service::owner::Owner;
+    let root = tempfile::tempdir()?;
+    let owner = Owner::spawn(
+        spec(root.path(), "self-idle")?,
+        limits(),
+        Duration::from_secs(120),
+    )?;
+    owner.submit(owner_job(1, Cancellation::new())?)?;
+    owner_result(&owner)?.result?;
+    std::fs::write(root.path().join("self-idle/allow-idle-exit"), b"exit")?;
+    until(|| std::fs::read_dir(root.path()).is_ok_and(|entries| entries.count() == 1))?;
+    std::fs::remove_file(root.path().join("self-idle/allow-idle-exit"))?;
+    owner.submit(owner_job(2, Cancellation::new())?)?;
+    owner_result(&owner)?.result?;
+    std::fs::write(root.path().join("self-idle/allow-idle-exit"), b"exit")?;
+    owner.shutdown()?;
+    let trace = std::fs::read_to_string(root.path().join("self-idle/requests.log"))?;
+    let generations = trace
+        .lines()
+        .map(|line| line.split_whitespace().nth(1))
+        .collect::<Vec<_>>();
+    assert_eq!(generations, vec![Some("1"), Some("2")]);
+    Ok(())
+}
+
+#[test]
+fn async_owner_idle_crash_is_reported_without_a_restart_loop() -> TestResult {
+    use service::owner::{Owner, OwnerError};
+    let root = tempfile::tempdir()?;
+    let owner = Owner::spawn(
+        spec(root.path(), "idle-crash")?,
+        limits(),
+        Duration::from_secs(120),
+    )?;
+    owner.submit(owner_job(1, Cancellation::new())?)?;
+    owner_result(&owner)?.result?;
+    std::fs::write(root.path().join("idle-crash/allow-idle-exit"), b"exit")?;
+    until(|| matches!(owner.take_result(), Err(OwnerError::Closed)))?;
+    assert!(matches!(
+        owner.submit(owner_job(2, Cancellation::new())?),
+        Err(OwnerError::Closed)
+    ));
+    let error = owner.shutdown().err().ok_or("idle crash hidden")?;
+    assert!(matches!(
+        error,
+        OwnerError::Worker(service::Error {
+            reason: service::Failure::Exited,
+            cleanup_failed: false
+        })
+    ));
+    assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+    assert_eq!(
+        std::fs::read_to_string(root.path().join("idle-crash/requests.log"))?
+            .lines()
+            .count(),
+        1
+    );
+    Ok(())
+}
+
+#[test]
+fn async_owner_failed_jobs_only_restart_for_a_new_explicit_session() -> TestResult {
+    use service::owner::{Owner, OwnerError};
+    let root = tempfile::tempdir()?;
+    let owner = Owner::spawn(
+        spec(root.path(), "invalid-edit")?,
+        limits(),
+        Duration::from_secs(120),
+    )?;
+    let cancelled = Cancellation::new();
+    cancelled.cancel();
+    assert!(matches!(
+        owner.submit(owner_job(1, cancelled)?),
+        Err(OwnerError::Worker(_))
+    ));
+    assert!(!root.path().join("invalid-edit/requests.log").exists());
+    for session in [1, 2] {
+        owner.submit(owner_job(session, Cancellation::new())?)?;
+        let error = owner_result(&owner)?
+            .result
+            .err()
+            .ok_or("invalid candidate released")?;
+        assert_eq!(error.reason, service::Failure::InvalidCandidate);
+        assert!(!error.cleanup_failed);
+        assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+        assert!(matches!(
+            owner.submit(owner_job(session, Cancellation::new())?),
+            Err(OwnerError::InvalidJob)
+        ));
+    }
+    let trace = std::fs::read_to_string(root.path().join("invalid-edit/requests.log"))?;
+    let generations = trace
+        .lines()
+        .map(|line| line.split_whitespace().nth(1))
+        .collect::<Vec<_>>();
+    assert_eq!(generations, vec![Some("1"), Some("2")]);
+    owner.shutdown()?;
+    Ok(())
+}
+
+#[test]
+fn async_owner_shutdown_and_drop_revoke_and_join_active_work() -> TestResult {
+    use service::owner::Owner;
+    for mode in ["hang", "startup-hang"] {
+        for implicit in [false, true] {
+            let root = tempfile::tempdir()?;
+            let mut bounded = limits();
+            bounded.startup = Duration::from_secs(60);
+            bounded.request = Duration::from_secs(60);
+            let owner = Owner::spawn(spec(root.path(), mode)?, bounded, Duration::from_secs(120))?;
+            let cancel = Cancellation::new();
+            owner.submit(owner_job(1, cancel.clone())?)?;
+            until(|| {
+                std::fs::read_dir(root.path()).is_ok_and(|entries| {
+                    entries.flatten().any(|e| {
+                        e.path()
+                            .join(if mode == "hang" {
+                                "run-started"
+                            } else {
+                                "model-snapshot"
+                            })
+                            .exists()
+                    })
+                })
+            })?;
+            if implicit {
+                drop(owner);
+            } else {
+                owner.shutdown()?;
+            }
+            assert!(cancel.is_cancelled());
+            assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn async_owner_is_lazy_reuses_the_process_and_preserves_unconsumed_results() -> TestResult {
+    use service::owner::{Job, Owner, OwnerError};
+    let root = tempfile::tempdir()?;
+    let owner = Owner::spawn(
+        spec(root.path(), "normal")?,
+        limits(),
+        Duration::from_secs(2),
+    )?;
+    assert!(!root.path().join("normal/requests.log").exists());
+    let submit = |session| -> Result<(), Box<dyn std::error::Error>> {
+        owner.submit(Job {
+            session: NonZeroU64::new(session).ok_or("zero")?,
+            original: OriginalTranscript::new("Hello.".into())?,
+            language: Language::English,
+            cancel: Cancellation::new(),
+        })?;
+        Ok(())
+    };
+    submit(1)?;
+    let deadline = std::time::Instant::now() + Duration::from_secs(3);
+    while !root.path().join("normal/requests.log").exists() {
+        if std::time::Instant::now() >= deadline {
+            return Err("worker did not receive job".into());
+        }
+        std::thread::sleep(Duration::from_millis(2));
+    }
+    assert!(matches!(
+        owner.submit(Job {
+            session: NonZeroU64::new(2).ok_or("zero")?,
+            original: OriginalTranscript::new("Hello.".into())?,
+            language: Language::English,
+            cancel: Cancellation::new(),
+        }),
+        Err(OwnerError::Busy)
+    ));
+    let wait = || -> Result<_, Box<dyn std::error::Error>> {
+        let deadline = std::time::Instant::now() + Duration::from_secs(3);
+        loop {
+            if let Some(done) = owner.take_result()? {
+                return Ok(done);
+            }
+            if std::time::Instant::now() >= deadline {
+                return Err("owner did not complete".into());
+            }
+            std::thread::sleep(Duration::from_millis(2));
+        }
+    };
+    let done = wait()?;
+    assert_eq!(done.session.get(), 1);
+    assert_eq!(done.result?.as_str(), "Hello.");
+    submit(2)?;
+    assert_eq!(wait()?.result?.as_str(), "Hello.");
+    let trace = std::fs::read_to_string(root.path().join("normal/requests.log"))?;
+    let rows = trace
+        .lines()
+        .map(str::split_whitespace)
+        .map(Iterator::collect::<Vec<_>>)
+        .collect::<Vec<_>>();
+    assert_eq!(rows.len(), 2);
+    assert_eq!(rows[0][0], rows[1][0]);
+    assert_eq!(rows[0][1], rows[1][1]);
+    assert_eq!(rows[0][2], "1");
+    assert_eq!(rows[1][2], "2");
+    owner.shutdown()?;
+    assert_eq!(std::fs::read_dir(root.path())?.count(), 1);
+    Ok(())
+}
+
 fn spec(root: &std::path::Path, mode: &str) -> Result<WorkerSpec, Box<dyn std::error::Error>> {
     let model_directory = root.join(mode);
     std::fs::create_dir_all(&model_directory)?;

@@ -1,4 +1,6 @@
 //! Owns one local worker process. Call on a service thread, never an audio callback.
+#[path = "refinement_service/owner.rs"]
+pub mod owner;
 use dictation_core::refinement::{AcceptedTranscript, OriginalTranscript, validate};
 use std::{
     io::{Read, Write},
@@ -38,6 +40,7 @@ pub struct ExpectedIdentity {
     pub policy_version: u16,
 }
 /// Paths come from trusted application code, not IPC or user preferences.
+#[derive(Clone)]
 pub struct WorkerSpec {
     pub executable: PathBuf,
     pub model_directory: PathBuf,
