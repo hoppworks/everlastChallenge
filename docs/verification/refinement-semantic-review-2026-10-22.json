@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "date": "2026-10-22",
-  "runtimeRevision": "6f999ff89e2bb54b704a1b47315fc9ff0da5b884",
+  "runtimeRevision": "e31ff1387b9bc1535c5c39c2412fc4f59f3d7fbe",
   "scope": "Two AI-assisted semantic readings of the68recorded prompt9 input/output pairs; not human approval, audio accuracy, delivery or performance verification.",
   "workerSha256": "4acf3b813c0046aba0c807862e36f7ec9ae83908a85f246fa114ce6668f4d3d2",
   "corpusEvidenceSha256": "702a3b817ed0b191eecf081cefe03beb3151b300f53090648328e6eab5859a10",

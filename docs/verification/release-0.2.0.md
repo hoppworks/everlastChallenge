@@ -1,7 +1,7 @@
 # Native Prüfung von Version 0.2.0
 
 Der lokal signierte Releasebuild wurde aus
-`87c1986cc9691e27cee03505ba1657615253ee1c` mit dem aktualisierten npm-Lockfile
+`36b453258b148f687ca1f95d89251af0fc51ffa0` mit dem aktualisierten npm-Lockfile
 gebaut. `Info.plist` meldet 0.2.0; Bundle-Signatur und Mikrofonentitlement wurden
 geprüft. Plattform: Apple Silicon, macOS 27.0.1. Eine Apple-Notarisierung liegt
 nicht vor.
@@ -42,7 +42,7 @@ mit `ok`. Diese endlichen Modellproben sind kein Nachweis fehlerfreier
 Erkennung oder eines Geschwindigkeitsvorsprungs.
 
 Diese Modellproben stammen aus dem aktualisierten nativen Quellstand
-`f8efa1494666d75203a8efe33d66cd3e8b4cb5af`. Cargo-Lockfile, Rustquellen,
+`a8be0a44a96c0cff23fa2370d93ceb92d6d8abc3`. Cargo-Lockfile, Rustquellen,
 Vendorquellen, Modellkonfiguration und Rust-Toolchain sind gegenüber dem oben
 benannten Release-Quellstand unverändert. Das wurde per Git-Diff überprüft.
 Das spätere npm-Update erforderte einen frischen Frontend-/Releasebuild, keinen

@@ -1,6 +1,6 @@
 # Packaged local refinement checks
 
-The locally signed Apple Silicon bundle built from `6f999ff` was copied outside
+The locally signed Apple Silicon bundle built from `e31ff13` was copied outside
 the repository with its signature metadata preserved. Bundle inventory,
 architecture, linkage and signatures passed verification. The
 [record](refinement-packaged-2026-10-22.json) binds the executable, worker, Metal

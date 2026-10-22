@@ -1,5 +1,5 @@
 {
-  "baseCommit": "c981b4b84114390ce408fffa642d6da9c80569fb",
+  "baseCommit": "d592afcd00ec6942c7e9377126378c635dbc2ef8",
   "sourceFiles": [
     {
       "path": "src-tauri/src/refinement_service.rs",

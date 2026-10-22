@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "date": "2026-10-22",
-  "sourceRevision": "308db56e1f01f53cf0baa8dc500b649d6d66aa76",
+  "sourceRevision": "b905c574a9b3577da6fd8545dcda6ecc6a503189",
   "scope": "Exploratory individual paired observations, not a repeated statistical benchmark or a general quality qualification.",
   "metric": "Actual native stop-key event to independently observed complete final target text. Ranges bracket event/receipt observations; they are not confidence intervals.",
   "environment": {
@@ -150,6 +150,6 @@
       ]
     }
   ],
-  "runtimeSourceEquivalentRevision": "3867d8b5580bf2ef76cf34914ddc4961ceb5802b",
+  "runtimeSourceEquivalentRevision": "0a9c535c1721e40e10b02ed1fcde06840af2c650",
   "revisionScope": "Equivalent source revisions in the published history; measured runtime files are unchanged."
 }

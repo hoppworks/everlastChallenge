@@ -4,7 +4,7 @@ Das geprüfte macOS-arm64-Paket enthält den lokalen
 MLX-Hybrid für Spracherkennung und den optionalen, gebündelten MLX-Textworker.
 Die App verwendet weiterhin ausschließlich native Mikrofon- und Systemzugriffe.
 Der zugehörige Laufzeit-Quellstand ist
-`3867d8b5580bf2ef76cf34914ddc4961ceb5802b`; sämtliche Laufzeitdateien sind bytegleich.
+`0a9c535c1721e40e10b02ed1fcde06840af2c650`; sämtliche Laufzeitdateien sind bytegleich.
 Spätere Änderungen betreffen ausschließlich Dokumentation und Nachweise.
 
 ## Textbereinigung

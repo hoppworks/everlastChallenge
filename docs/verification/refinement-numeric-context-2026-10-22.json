@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "date": "2026-10-22",
-  "baseRevision": "a7a4c7c1149d816ff282732fa1ae64b7580fdc3e",
+  "baseRevision": "1525ed8c7215ef556a107f878c865609ce20747c",
   "scope": "Production MLX text worker with independent production Rust validation; not packaged app delivery, human acceptance or comparative performance.",
   "identity": {
     "workerSha256": "4acf3b813c0046aba0c807862e36f7ec9ae83908a85f246fa114ce6668f4d3d2",

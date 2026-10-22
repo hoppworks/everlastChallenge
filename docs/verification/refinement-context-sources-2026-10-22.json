@@ -1,5 +1,5 @@
 {
-  "baseCommit": "ef815d699f6375fcfa5b9fc2ac33fef92c3cf08f",
+  "baseCommit": "a2868971796d6fb8a092d8625f3cf91fa436b023",
   "sourceFiles": [
     {
       "path": "crates/dictation-core/src/refinement/correction.rs",

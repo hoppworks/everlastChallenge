@@ -1,6 +1,6 @@
 # Recovery of abandoned text-worker snapshots
 
-This change follows `c981b4b`. It extends temporary model ownership across
+This change follows `d592afc`. It extends temporary model ownership across
 abrupt process exits. The supervisor still waits for a child before ordinary
 cleanup; the worker still terminates when its parent pipe closes.
 

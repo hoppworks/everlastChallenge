@@ -1,6 +1,6 @@
 # Refinement settings and result presentation
 
-This package follows `c847172`. It connects the text setup service, saved
+This package follows `e41f336`. It connects the text setup service, saved
 preference and controller state to generated renderer contracts. It does not
 qualify model quality or the final application bundle.
 

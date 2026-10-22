@@ -1,6 +1,6 @@
 # Atomic validation of structural and punctuation edits
 
-This core-only change follows `f8dee6e`. It adds an atomic validation contract for
+This core-only change follows `b84c4e9`. It adds an atomic validation contract for
 a structural edit stage followed by punctuation and sentence-initial case edits.
 It does not yet change the desktop's worker protocol or inference path.
 

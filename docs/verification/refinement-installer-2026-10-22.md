@@ -1,6 +1,6 @@
 # Complete-set text model installer
 
-This report covers the installer module added after `5c618a8`. It is not yet
+This report covers the installer module added after `a66968d`. It is not yet
 connected to application setup or the dictation runtime. Model-quality failures
 reported in the earlier worker diagnostics remain open.
 

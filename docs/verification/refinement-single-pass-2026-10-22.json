@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "scope": "Finite text-only qualification of the local single-generation refinement worker. No audio accuracy, native delivery, package or speed claim.",
-  "baseRevision": "d93f59d35966d297baa82f318aa45f34cc184005",
+  "baseRevision": "d4ac4cea03b93d620da9cf305615101d1acb2302",
   "workerSha256": "af390be51a3e714e4f4cb92afbe1e2c39540c41319b91a3c872216e103cc6bc2",
   "metallibSha256": "0f067d79c93fdd840bbe0df4de56f651b86c9ed0f59a04db4dddea7bc0a44d22",
   "validatorSha256": "d6783a9f1d6a35ae650784b21a789b997dde7eb0aa91e91f98023bb27ba7de58",

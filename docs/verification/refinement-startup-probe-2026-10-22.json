@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "date": "2026-10-22",
-  "baseRevision": "20bba80",
+  "baseRevision": "d503847",
   "sources": {
     "crates/text-refinement-worker/tests/supervisor.rs": "9341985a26bd3837f061846a8c0afe07a29bdd4947519018a23fb52fb9449106",
     "src-tauri/src/application.rs": "a688ad2d6c2307dadb58f81a6bd583b3e2297b4f72c658299506e5ca090c05b7",
