@@ -1168,6 +1168,7 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-global-shortcut",
  "tempfile",
+ "text-refinement-protocol",
  "thiserror 2.0.21",
  "tokio",
  "tokio-util",

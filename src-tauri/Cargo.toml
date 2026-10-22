@@ -21,6 +21,8 @@ tauri-build = { version = "=2.7.4", features = [] }
 
 [dependencies]
 tauri = { version = "=2.12.5", features = ["tray-icon", "image-png"] }
+text-refinement-protocol = { path = "../crates/text-refinement-protocol", version = "=0.2.0" }
+tempfile = "=3.27.0"
 dictation-core = { path = "../crates/dictation-core", version = "=0.2.0" }
 macos-integration = { path = "../crates/macos-integration", version = "=0.2.0" }
 serde.workspace = true
@@ -42,7 +44,6 @@ rustls = { version = "=0.23.46", default-features = false, features = ["ring", "
 mlxrs = { version = "=0.2.0", default-features = false, features = ["whisper"], optional = true }
 
 [dev-dependencies]
-tempfile = "=3.27.0"
 hound = "=3.5.1"
 
 [lints]

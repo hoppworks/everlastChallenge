@@ -119,3 +119,16 @@ test("incoming dependency feature aliases are followed across crate boundaries",
     inspectWorkspace({ workspace_members: ["app", "native"], packages }).length,
   );
 });
+
+test("process fixtures cannot enter a production feature graph", () => {
+  const worker = {
+    id: "worker",
+    name: "text-refinement-worker",
+    features: { default: ["indirect"], indirect: ["test-fixture"] },
+    dependencies: [],
+  };
+  assert.ok(
+    inspectWorkspace({ workspace_members: [worker.id], packages: [worker] })
+      .length,
+  );
+});

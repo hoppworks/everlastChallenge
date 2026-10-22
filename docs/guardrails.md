@@ -99,3 +99,11 @@ Transport-/Snapshot-Tests laufen auch ohne MLX mit
 `cargo test -p text-refinement-worker --no-default-features --locked`.
 Diese Tests belegen weder Modellqualität noch den noch ausstehenden
 Host-Supervisor oder nativen Textempfang.
+
+`npm run check:refinement` und `npm run test:refinement` prüfen Protokoll,
+Workermechanik und die Host-Prozessaufsicht ohne MLX auf portablen Runnern.
+`npm run test:refinement:process` wählt nur die echten Prozess-Fixtures aus.
+Das dafür benötigte Feature `test-fixture` ist ausschließlich explizit für Tests
+aktiviert; die Architekturprüfung verbietet es in Produktionsdefaults und
+normalen Abhängigkeitsfeatures. Der Fixture-Binärname wird nicht paketiert.
+Die Fehlerpipe sammelt keine Texte und bricht nach 16 KiB Gesamtausgabe ab.

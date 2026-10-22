@@ -102,6 +102,12 @@ export function inspectFrontend(sources) {
 }
 
 const permittedCore = new Set(["serde", "thiserror", "rubato", "ts-rs"]);
+const experimentalFeatures = new Set([
+  "measurement",
+  "test-control",
+  "test-fixture",
+  "isolated",
+]);
 export function inspectWorkspace(metadata) {
   const errors = [];
   const members = new Set(metadata.workspace_members);
@@ -114,7 +120,7 @@ export function inspectWorkspace(metadata) {
     visited.add(key);
     const split = feature.indexOf("/");
     const leaf = split < 0 ? feature : feature.slice(split + 1);
-    if (["measurement", "test-control", "isolated"].includes(leaf))
+    if (experimentalFeatures.has(leaf))
       errors.push(
         `production feature graph exposes experimental control: ${key}`,
       );
@@ -154,7 +160,7 @@ export function inspectWorkspace(metadata) {
       (dep) => dep.kind !== "dev",
     )) {
       for (const feature of dependency.features ?? []) {
-        if (["measurement", "test-control", "isolated"].includes(feature))
+        if (experimentalFeatures.has(feature))
           errors.push(
             `${pkg.name}: dependency ${dependency.name} enables experimental control ${feature}`,
           );

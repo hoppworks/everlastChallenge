@@ -11,8 +11,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "format": "cargo fmt --all && prettier --write src scripts config *.json *.ts index.html",
-    "check": "cargo fmt --all -- --check && cargo clippy --workspace --all-targets --locked -- -D warnings && npm run check:fast && node scripts/check-contracts.mjs && npm run check:dependencies:rust",
-    "test": "cargo test --workspace --locked && vitest run --passWithNoTests && node --test scripts/*.test.mjs && npm run test:quality",
+    "check": "cargo fmt --all -- --check && cargo clippy --workspace --all-targets --features text-refinement-worker/test-fixture --locked -- -D warnings && npm run check:fast && node scripts/check-contracts.mjs && npm run check:dependencies:rust",
+    "test": "cargo test --workspace --features text-refinement-worker/test-fixture --locked && vitest run --passWithNoTests && node --test scripts/*.test.mjs && npm run test:quality",
     "verify": "npm run check && npm run test && npm run coverage && npm run coverage:host && npm run test:guardrails && node scripts/secrets.mjs && cargo deny check && npm audit --audit-level=high",
     "test:guardrails": "node scripts/prove-guardrails.mjs",
     "coverage": "node scripts/coverage.mjs",
@@ -39,7 +39,10 @@
     "check:dependencies": "knip --no-progress",
     "check:dependencies:rust": "cargo machete crates/dictation-core crates/macos-integration crates/text-refinement-protocol crates/text-refinement-worker src-tauri",
     "doctor": "node scripts/doctor.mjs",
-    "check:secrets": "node scripts/secrets.mjs && node scripts/secrets.mjs --history"
+    "check:secrets": "node scripts/secrets.mjs && node scripts/secrets.mjs --history",
+    "check:refinement": "cargo clippy -p text-refinement-protocol -p text-refinement-worker --no-default-features --features text-refinement-worker/test-fixture --all-targets --locked -- -D warnings",
+    "test:refinement": "cargo test -p text-refinement-protocol -p text-refinement-worker --no-default-features --features text-refinement-worker/test-fixture --locked",
+    "test:refinement:process": "cargo test -p text-refinement-worker --no-default-features --features test-fixture --test supervisor --locked"
   },
   "dependencies": {
     "@tauri-apps/api": "2.12.4",

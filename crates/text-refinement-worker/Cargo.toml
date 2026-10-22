@@ -7,6 +7,7 @@ license.workspace = true
 publish.workspace = true
 
 [features]
+test-fixture = []
 default = ["mlx"]
 mlx = ["dep:mlxrs"]
 
@@ -27,3 +28,12 @@ mlxrs = { version = "=0.2.0", default-features = false, features = ["qwen3"], op
 
 [lints]
 workspace = true
+
+[[bin]]
+name = "refinement-fixture"
+path = "tests/fixtures/process.rs"
+required-features = ["test-fixture"]
+
+[[test]]
+name = "supervisor"
+required-features = ["test-fixture"]

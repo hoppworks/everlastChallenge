@@ -14,6 +14,7 @@ pub mod model;
 pub mod native_service;
 pub(crate) mod pipeline;
 pub mod preferences;
+pub mod refinement_service;
 pub mod runtime;
 pub mod settings;
 pub mod setup;

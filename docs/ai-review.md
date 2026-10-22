@@ -71,3 +71,10 @@ corrections, each backed by a regression. The
 [candidate report](verification/refinement-candidates-2026-10-22.md) also records
 an unresolved model-selection failure reproduced with the upstream runtime;
 software test success is not presented as model-quality acceptance.
+
+The host process supervisor was also AI-assisted and independently reviewed.
+A real filesystem regression reproduced and corrected an inaccurate cleanup
+error flag. Twelve child-process tests cover bounded transport, lifecycle and
+rejection behavior; the [supervisor report](verification/refinement-supervisor-2026-10-22.md)
+records source hashes and explicitly excludes GPU, delivery and crash-recovery
+acceptance.
