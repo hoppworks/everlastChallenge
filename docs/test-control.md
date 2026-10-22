@@ -24,10 +24,10 @@ The check obtains native process identity; the configured PID alone is not targe
 
 ## Manual build and launch on this Mac
 
-This sequence is for the **current local workspace on the already prepared Mac**,
-not a promise that a fresh checkout contains a certificate, models or prior
-permissions. First complete the README dependencies (`npm run setup`). The
-user-approved local Code Signing identity and `.everlast-signing.json` must
+This sequence requires a prepared Mac with the
+[development prerequisites](development.md), including `npm run setup`.
+A fresh checkout does not contain a signing certificate, model cache or system
+permissions. The local Code Signing identity and `.everlast-signing.json` must
 already exist; this sequence creates/imports no identity and changes no trust.
 The existing model cache and OS permissions remain necessary.
 

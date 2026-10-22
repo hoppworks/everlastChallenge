@@ -39,7 +39,8 @@ end the owned process group and independent work can continue.
 
 This example is a template, not a runnable campaign or benchmark permission.
 Replace paths, choose an unexpired deadline, and declare the exact bounded jobs.
-`2026-10-21T07:00:00Z` is the agreed 21 October 2026, 09:00 Europe/Berlin stop.
+The example timestamp is 21 October 2026, 09:00 Europe/Berlin; it must be
+replaced with a future deadline for a new run.
 
 Every job needs a unique safe ID, absolute executable and existing absolute cwd,
 positive integer timeout, dependencies, at least one explicit regular input file,

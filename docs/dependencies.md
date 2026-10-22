@@ -164,7 +164,7 @@ Vendorreceipts erhalten. `mlx-rs` und `mlxrs` sind unterschiedliche Crates.
 
 Die sichere lokale Modellkonvertierung, Hashprüfung, atomare Veröffentlichung,
 Abbruchbehandlung und getrennten Cacheverzeichnisse sind tatsächlich geprüft.
-Nur der optionale Koeffizientenpfad verwendet abgeleitete F32-Gewichte ohne Downloadendpunkt; die Einrichtung
+Der aktive Hybrid verwendet abgeleitete F32-Gewichte ohne eigenen Downloadendpunkt; die Einrichtung
 erzeugt sie aus der zuvor vollständig verifizierten Q5-Eingabe. Ein Abbruch
 entfernt ausschließlich die eigene Teildatei und erhält ein vorhandenes
 verifiziertes Ziel.

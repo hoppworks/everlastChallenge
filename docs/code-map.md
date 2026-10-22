@@ -23,7 +23,7 @@ sofortigen Abbruch eines bereits laufenden nativen Decoders.
 
 ## Modulgrenzen und Lesepfade
 
-| Bereich | Einstieg und Anschluss | Bei der eigenen Erklärung besonders prüfen |
+| Bereich | Einstieg und Anschluss | Verträge und Risiken |
 |---|---|---|
 | Reiner Sitzungskern | [session.rs](../crates/dictation-core/src/session.rs) → [controller.rs](../src-tauri/src/controller.rs) | Fakten und Effekte, Starting/Stop/Cancel, Sitzungsnummern, veraltete Ergebnisse und genau einmalige Wirkung |
 | Steuerung und Lebensdauer | [control.rs](../src-tauri/src/control.rs), [runtime.rs](../src-tauri/src/runtime.rs), [main.rs](../src-tauri/src/main.rs) | begrenzte Anfragen, gesonderte Stop/Cancel/Shutdown-Signale, Admission schließen, Besitzer joinen, Panic- und Powerpfade |

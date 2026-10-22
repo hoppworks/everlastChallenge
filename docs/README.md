@@ -10,7 +10,8 @@ App muss niemand die einzelnen Versuchsprotokolle durcharbeiten.
 | Umsetzung verstehen | [Technische Entscheidungen](engineering-decisions.md), [Code-Wegweiser](code-map.md) |
 | Ergebnisse einschätzen | [Leistung](performance.md), [Vergleich mit Voicely und Testgrenzen](comparison.md) |
 | Aktuellen Stand prüfen | [Native Prüfung und Paket 0.2.0](verification/release-0.2.0.md), [Softwareprüfungen](verification/tooling-and-packages-2026-10-22.md), [Abhängigkeiten](dependencies.md) |
-| Selbst weiterentwickeln | [Entwicklerwerkzeuge](tooling.md), [automatische Prüfungen](autonomous-testing.md), [Guardrails](guardrails.md) |
+| Selbst weiterentwickeln | [Setup und Build](development.md), [Entwicklerwerkzeuge](tooling.md), [automatische Prüfungen](autonomous-testing.md), [Guardrails](guardrails.md) |
+| Bedienungsdetails nachschlagen | [Aufnahme, Einstellungen und Mikrofonformate](usage.md) |
 | Gestaltung nachvollziehen | [Produkt](../PRODUCT.md), [Designsystem](../DESIGN.md) |
 | Herkunft und KI-Nutzung prüfen | [Lizenzen](licenses/third-party/README.md), [KI-gestützte Arbeit und Verifikation](ai-review.md) |
 

@@ -5,7 +5,14 @@ Der Setupdienst lädt nur nach ausdrücklicher Aktion die mit Größe und SHA-25
 gepinnten Dateien von den im Code festgelegten Herausgeberrevisionen.
 Dies ist keine Behauptung, dass Gewichte bereits im App-/DMG-Artefakt beiliegen.
 
-ASR: large-v3-turbo-q5_0 und small-q5_1 stammen aus den für whisper.cpp
+Der aktive Hybrid lädt `large-v3-turbo-q5_0` und leitet daraus lokal den
+F32-Encodercheckpoint ab; die Encoderberechnung verwendet FP16. Zusammen mit
+Silero VAD sind dies die Modellbestandteile des aktuellen Produktpfads.
+`small-q5_1` ist eine historische Vergleichsvariante und in der App nicht
+auswählbar. [Abhängigkeiten](../dependencies.md) erklären Speicherbedarf und
+Konvertierung.
+
+Die ASR-Quellen `large-v3-turbo-q5_0` und `small-q5_1` stammen aus den für whisper.cpp
 konvertierten OpenAI-Whisper-Modellen beim Herausgeber ggerganov/whisper.cpp,
 Revision5359861c739e955e79d9a303bcbc70fb988958b1. Dessen exakt gepinnte
 Modellkarte bezeichnet die Modelle als MIT. OpenAI erklärt Code und Gewichte

@@ -1,7 +1,7 @@
 # Automatisierte Prüfung
 
 Die verfügbaren Befehle stehen in `package.json`. Voraussetzungen und Setup:
-[README](../README.md#entwickeln-und-bauen).
+[Entwicklungsanleitung](development.md).
 
 ## Schnelle Softwareprüfungen
 
