@@ -50,7 +50,10 @@ sha2 0.11 verwendet seine eingebaute, zur Laufzeit erkannte Hardwarebeschleunigu
 das frühere `asm`-Feature und die direkte Abhängigkeit von `sha2-asm` entfallen.
 Die vollständige Modell-Hashprüfung bleibt erhalten. reqwest verwendet den
 Rustls-Provider Ring und den Plattform-Zertifikatsprüfer. TLS-Fehler werden nicht
-als Cachetreffer oder erfolgreiche Downloads behandelt.
+als Cachetreffer oder erfolgreiche Downloads behandelt. Die frühere
+Lizenzausnahme für `webpki-roots 1.0.10` ist entfernt: Das Paket gehört nicht
+mehr zum aktiven macOS-Zielgraphen. `webpki-root-certs` im plattformübergreifenden
+Lockfile wird für dieses Ziel ebenfalls nicht gebaut.
 
 Das [aktualisierte Zielgraph-Inventar](licenses/third-party/refinement-dependencies-2026-10-22.json)
 ist an beide Lockfiles gebunden. [Neue Originaltexte](licenses/third-party/package-update-supplement.json)

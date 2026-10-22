@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "verifiedRevision": "bce2ae0bbd0887aa8b1d515e4163ae2a225c47c5",
+  "sourceTree": "51fb58f65dd289db97d7c3c5cde4e83b4ca0214c",
+  "command": "npm run verify",
+  "exitCode": 0,
+  "logSha256": "e36b618274807e5681433474d980fcd646073d2024afc7ce9969a51795d2e563",
+  "environment": {
+    "rust": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "node": "v22.23.1",
+    "os": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434"
+  },
+  "lockfiles": {
+    "cargo": "ce55831b489e9b612770fddfda49b0f79fe7ba9899e01d6926faffae1cb2ca31",
+    "npm": "961e42d6e631bf058be51124364612e01a68bd9b331f31d980310e161f541625"
+  },
+  "checks": {
+    "rust": {
+      "passed": 579,
+      "failed": 0,
+      "ignored": 4,
+      "scope": "Initial workspace cargo test including doctests; does not count later coverage reruns."
+    },
+    "frontend": {
+      "passed": 244,
+      "files": 7
+    },
+    "nodeScripts": {
+      "passed": 168,
+      "skipped": 1
+    },
+    "tooling": {
+      "passed": 36
+    },
+    "frontendCoverage": {
+      "statements": 95.35,
+      "branches": 93.66,
+      "functions": 91.89,
+      "lines": 96.78
+    },
+    "coverageHost": "Configured per-file floors passed; named file scope only.",
+    "coverageRefinement": "Configured per-file floors passed; portable worker/protocol/owner scope only.",
+    "guardrails": "Positive and intentionally failing rule fixtures passed.",
+    "dependencies": "cargo deny passed; npm audit reported0vulnerabilities."
+  },
+  "historySecretScan": {
+    "command": "node scripts/secrets.mjs --history",
+    "result": "No findings",
+    "logSha256": "2467db2677c2c895e7719c9d2e994132ef28257a905a6745c3ecdf1e0c6f18fd",
+    "reachableCommits": 423,
+    "commitsWithDefaultLogDiff": 382,
+    "commitsWithoutDefaultLogDiff": 41
+  },
+  "followup": {
+    "change": "Removed unused webpki-roots license exception; no runtime dependency changed.",
+    "command": "cargo deny check",
+    "result": "passed",
+    "logSha256": "a7fcd3d5fbcd5689d5b19d89046648c4beb113514f582b47bfa39bccd7136632"
+  },
+  "limitations": [
+    "This is a local verification run, not a GitHub Actions result.",
+    "Ignored and skipped tests are not executed coverage.",
+    "The suite does not replace native packaged receipt, human text review, acoustic qualification or performance measurements.",
+    "Documented compatible dependency duplicates and the narrowly scoped maintenance advisory exception remain; passing the policy is not a claim of zero dependency risk."
+  ]
+}

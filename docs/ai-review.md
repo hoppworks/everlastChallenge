@@ -247,3 +247,10 @@ record AI-operated native target observation and a separate network-denied app
 run. The first stop attempt was rejected on focus loss and is retained. Offline
 processing passed, but the isolated launch lacked Accessibility authorization;
 these two observations are not presented as a single offline delivery test.
+
+The [local gate report](verification/local-gates-2026-10-22.md) records the full
+configured verification command and a separate history scan. AI-assisted
+inspection removed an unused historical license exception and clarified the
+worker README's version references; the targeted dependency check passed after
+that cleanup. Counts distinguish ignored tests and coverage reruns, and the
+report does not claim a remote CI result or complete product acceptance.

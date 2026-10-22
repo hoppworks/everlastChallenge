@@ -27,11 +27,6 @@ name = "whisper-rs-sys"
 version = "=0.15.0"
 allow = ["Unlicense"]
 
-[[licenses.exceptions]]
-name = "webpki-roots"
-version = "=1.0.10"
-allow = ["CDLA-Permissive-2.0"]
-
 # Grammar-engine URI resolution uses this MIT No Attribution utility. The
 # original permission/disclaimer text is retained in the runtime inventory.
 [[licenses.exceptions]]

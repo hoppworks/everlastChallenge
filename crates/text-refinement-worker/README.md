@@ -57,7 +57,9 @@ full stops, commas, colons or semicolons inside a replacement or at a source
 boundary. Existing ellipses can remain unchanged. This is a structural check;
 it does not decide whether a sentence boundary is linguistically appropriate.
 
-Protocol 2, prompt 7 and policy 6 carry both stages explicitly. They share the
+Protocol 2 carries both stages explicitly. Current prompt and policy identities
+come from the shared [protocol constants](../text-refinement-protocol/src/lib.rs).
+Both stages share the
 30-second request deadline, 4,096 generated-token budget and 32-KiB output-byte
 budget. Each model prompt is limited to 8,192 tokens. No first model call is
 needed when the structural option list is empty. The punctuation grammar retains
