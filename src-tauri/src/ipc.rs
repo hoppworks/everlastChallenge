@@ -73,6 +73,22 @@ pub fn model_cancel(window: WebviewWindow, desktop: State<'_, Desktop>) -> Resul
     desktop.cancel_setup()
 }
 #[tauri::command]
+pub fn refinement_download(
+    window: WebviewWindow,
+    desktop: State<'_, Desktop>,
+) -> Result<(), String> {
+    authorize(&window)?;
+    desktop.download_refinement()
+}
+#[tauri::command]
+pub fn refinement_cancel_setup(
+    window: WebviewWindow,
+    desktop: State<'_, Desktop>,
+) -> Result<(), String> {
+    authorize(&window)?;
+    desktop.cancel_refinement_setup()
+}
+#[tauri::command]
 pub async fn recording_start(
     window: WebviewWindow,
     desktop: State<'_, Desktop>,

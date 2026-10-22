@@ -6,6 +6,8 @@ fn main() {
             "app_snapshot",
             "model_download",
             "model_cancel",
+            "refinement_download",
+            "refinement_cancel_setup",
             "recording_start",
             "recording_stop",
             "recording_cancel",

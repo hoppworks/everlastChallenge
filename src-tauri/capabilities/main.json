@@ -13,6 +13,8 @@
     "allow-app-snapshot",
     "allow-model-download",
     "allow-model-cancel",
+    "allow-refinement-download",
+    "allow-refinement-cancel-setup",
     "allow-recording-start",
     "allow-recording-stop",
     "allow-recording-cancel",

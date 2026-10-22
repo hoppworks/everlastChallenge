@@ -242,6 +242,9 @@ impl Controller {
         let effects = self
             .core
             .start(ready && settings.generation != 0, delivery)?;
+        // The retained text may remain visible, but refinement status belongs
+        // to the completed session and must not describe this new recording.
+        self.refinement = RefinementSnapshot::default();
         let session = NonZeroU64::new(self.core.session_id().ok_or(ControllerError::Resource)?)
             .ok_or(ControllerError::Resource)?;
         self.active = Some(Active {

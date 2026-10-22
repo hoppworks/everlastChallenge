@@ -28,12 +28,27 @@ vi.mock("./ipc/window", () => ({
 
 function snapshot(): Snapshot {
   return {
+    refinement: {
+      setup: {
+        available: true,
+        phase: "Ready",
+        downloadedBytes: 2278970666,
+        totalBytes: 2278970666,
+        canCancel: false,
+        error: null,
+      },
+      sessionId: null,
+      original: null,
+      status: "Disabled",
+      message: null,
+    },
     revision: 1,
     running: true,
     settingsBusy: false,
     settingsRequest: 0,
     preferences: {
       current: {
+        refinement: false,
         device: null,
         language: "german",
         hotkey: {

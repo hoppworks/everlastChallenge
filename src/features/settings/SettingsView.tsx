@@ -4,6 +4,9 @@ import type { AppViewProps } from "../app/AppView";
 import "./styles.css";
 
 export interface SettingsViewProps {
+  refinement: Snapshot["refinement"]["setup"];
+  onDownloadRefinement: () => void;
+  onCancelRefinementSetup: () => void;
   preferences: Snapshot["preferences"];
   setup: AppViewProps["setup"];
   permissions: AppViewProps["permissions"];
@@ -70,8 +73,10 @@ function identity(value: SettingsDraft): string {
 }
 
 export function SettingsView(props: SettingsViewProps) {
-  const { preferences, setup, permissions } = props;
-  const [area, setArea] = useState<"Aufnahme" | "Berechtigungen" | "Modell">(
+  const { preferences, setup, permissions, refinement } = props;
+  const [area, setArea] = useState<
+    "Aufnahme" | "Berechtigungen" | "Modell" | "Textbereinigung"
+  >(
     permissions.microphone !== "granted" ||
       permissions.accessibility !== "granted"
       ? "Berechtigungen"
@@ -128,7 +133,9 @@ export function SettingsView(props: SettingsViewProps) {
         </h2>
       </header>
       <nav className="settings-navigation" aria-label="Einstellungsbereiche">
-        {(["Aufnahme", "Berechtigungen", "Modell"] as const).map((name) => (
+        {(
+          ["Aufnahme", "Textbereinigung", "Berechtigungen", "Modell"] as const
+        ).map((name) => (
           <button
             type="button"
             key={name}
@@ -311,6 +318,155 @@ export function SettingsView(props: SettingsViewProps) {
               )}
             </div>
           </form>
+        )}
+        {area === "Textbereinigung" && (
+          <section
+            className="settings-detail"
+            aria-labelledby="settings-refinement"
+          >
+            <h3 id="settings-refinement">Textbereinigung</h3>
+            <p>
+              Füllwörter, eindeutige Versprecher und Zeichensetzung lokal
+              bereinigen.
+            </p>
+            <p className="settings-help">
+              Bei einem Fehler bleibt das Original zum Kopieren erhalten. Es
+              wird dann nichts automatisch eingefügt.
+            </p>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (
+                  !disabled &&
+                  valid &&
+                  dirty &&
+                  (refinement.phase === "Ready" || !draft.refinement)
+                )
+                  props.onSave(draft);
+              }}
+            >
+              <label className="refinement-switch">
+                <input
+                  type="checkbox"
+                  role="switch"
+                  aria-checked={draft.refinement}
+                  checked={draft.refinement}
+                  disabled={
+                    disabled ||
+                    (!draft.refinement && refinement.phase !== "Ready")
+                  }
+                  onChange={(event) =>
+                    setDraft({ ...draft, refinement: event.target.checked })
+                  }
+                />
+                Textbereinigung verwenden
+              </label>
+              {!refinement.available ? (
+                <p role="status">
+                  Textbereinigung ist in diesem Build nicht verfügbar.
+                </p>
+              ) : (
+                <>
+                  {refinement.phase === "Ready" ? (
+                    <p className="settings-help">
+                      Das Textmodell ist eingerichtet. Die Verarbeitung bleibt
+                      auf diesem Mac.
+                    </p>
+                  ) : (
+                    <p role="status">
+                      {refinement.phase === "Downloading"
+                        ? "Textmodell wird geladen"
+                        : refinement.phase === "Checking"
+                          ? "Textmodell wird geprüft"
+                          : refinement.phase === "Cancelling"
+                            ? "Einrichtung wird abgebrochen"
+                            : refinement.phase === "Cancelled"
+                              ? "Einrichtung abgebrochen"
+                              : "Einmalige Einrichtung erforderlich"}
+                    </p>
+                  )}
+                  {refinement.phase !== "Ready" && (
+                    <p className="settings-help">
+                      Download:{" "}
+                      {new Intl.NumberFormat("de-DE", {
+                        maximumFractionDigits: 1,
+                      }).format(refinement.totalBytes / 1_000_000_000)}{" "}
+                      GB. Diktieren ohne Bereinigung bleibt danach weiterhin
+                      möglich.
+                    </p>
+                  )}
+                  {refinement.phase === "Downloading" && (
+                    <div className="download-progress">
+                      <progress
+                        aria-label="Textmodelldownload"
+                        value={refinement.downloadedBytes}
+                        max={refinement.totalBytes || 1}
+                      />
+                      <p>
+                        {new Intl.NumberFormat("de-DE", {
+                          maximumFractionDigits: 0,
+                        }).format(refinement.downloadedBytes / 1_000_000)}{" "}
+                        von{" "}
+                        {new Intl.NumberFormat("de-DE", {
+                          maximumFractionDigits: 0,
+                        }).format(refinement.totalBytes / 1_000_000)}{" "}
+                        MB
+                      </p>
+                    </div>
+                  )}
+                  {refinement.error && <p role="alert">{refinement.error}</p>}
+                  {["Missing", "Failed", "Cancelled"].includes(
+                    refinement.phase,
+                  ) && (
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      onClick={props.onDownloadRefinement}
+                    >
+                      {refinement.phase === "Failed"
+                        ? "Erneut versuchen"
+                        : "Textmodell laden"}
+                    </button>
+                  )}
+                  {refinement.canCancel && (
+                    <button
+                      type="button"
+                      onClick={props.onCancelRefinementSetup}
+                    >
+                      Einrichtung abbrechen
+                    </button>
+                  )}
+                </>
+              )}
+              <div className="settings-save">
+                <button
+                  className="primary-action"
+                  type="submit"
+                  disabled={
+                    disabled ||
+                    !valid ||
+                    !dirty ||
+                    (draft.refinement && refinement.phase !== "Ready")
+                  }
+                >
+                  Einstellungen speichern
+                </button>
+                {dirty && (
+                  <span className="settings-help" role="status">
+                    Ungespeicherte Änderungen
+                  </span>
+                )}
+              </div>
+            </form>
+            <details className="settings-advanced">
+              <summary>Modelldetails</summary>
+              <p>Qwen3 4B · vollständig lokale Verarbeitung mit MLX</p>
+              <p className="settings-help">
+                Vorgeschlagene Änderungen werden vor der Übernahme geprüft. Der
+                Wortlaut kann im Original nachgelesen werden.
+              </p>
+            </details>
+          </section>
         )}
         {area === "Modell" && (
           <section className="settings-detail" aria-labelledby="settings-model">

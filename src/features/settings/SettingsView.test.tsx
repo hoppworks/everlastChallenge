@@ -6,8 +6,20 @@ import type { SettingsViewProps } from "./SettingsView";
 afterEach(cleanup);
 function props(): SettingsViewProps {
   return {
+    refinement: {
+      available: true,
+      phase: "Ready",
+      downloadedBytes: 2278970666,
+      totalBytes: 2278970666,
+      canCancel: false,
+      error: null,
+    },
+    onDownloadRefinement: vi.fn<SettingsViewProps["onDownloadRefinement"]>(),
+    onCancelRefinementSetup:
+      vi.fn<SettingsViewProps["onCancelRefinementSetup"]>(),
     preferences: {
       current: {
+        refinement: false,
         device: null,
         language: "german",
         hotkey: {
@@ -47,6 +59,75 @@ function props(): SettingsViewProps {
     onClose: vi.fn<SettingsViewProps["onClose"]>(),
   };
 }
+test("requires setup before explicitly saving enabled text refinement", () => {
+  const p = props();
+  p.refinement = { ...p.refinement, phase: "Missing", downloadedBytes: 0 };
+  const view = render(<SettingsView {...p} />);
+  fireEvent.click(screen.getByRole("button", { name: "Textbereinigung" }));
+  expect(
+    (
+      screen.getByRole("switch", {
+        name: "Textbereinigung verwenden",
+      }) as HTMLInputElement
+    ).disabled,
+  ).toBe(true);
+  fireEvent.click(screen.getByRole("button", { name: "Textmodell laden" }));
+  expect(p.onDownloadRefinement).toHaveBeenCalledOnce();
+  expect(p.onSave).not.toHaveBeenCalled();
+  view.rerender(
+    <SettingsView
+      {...p}
+      refinement={{
+        ...p.refinement,
+        phase: "Ready",
+        downloadedBytes: 2278970666,
+      }}
+    />,
+  );
+  fireEvent.click(
+    screen.getByRole("switch", { name: "Textbereinigung verwenden" }),
+  );
+  expect(p.onSave).not.toHaveBeenCalled();
+  fireEvent.click(
+    screen.getByRole("button", { name: "Einstellungen speichern" }),
+  );
+  expect(p.onSave).toHaveBeenCalledWith({
+    ...p.preferences.current,
+    refinement: true,
+  });
+});
+test("download cancellation remains available while settings are busy", () => {
+  const p = props();
+  render(
+    <SettingsView
+      {...p}
+      busy
+      refinement={{ ...p.refinement, phase: "Downloading", canCancel: true }}
+    />,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Textbereinigung" }));
+  const cancel = screen.getByRole("button", { name: "Einrichtung abbrechen" });
+  expect((cancel as HTMLButtonElement).disabled).toBe(false);
+  fireEvent.click(cancel);
+  expect(p.onCancelRefinementSetup).toHaveBeenCalledOnce();
+  expect((screen.getByRole("switch") as HTMLInputElement).disabled).toBe(true);
+});
+test("broken setup does not prevent switching refinement off", () => {
+  const p = props();
+  p.preferences.current.refinement = true;
+  render(
+    <SettingsView {...p} refinement={{ ...p.refinement, phase: "Failed" }} />,
+  );
+  fireEvent.click(screen.getByRole("button", { name: "Textbereinigung" }));
+  fireEvent.click(screen.getByRole("switch"));
+  fireEvent.click(
+    screen.getByRole("button", { name: "Einstellungen speichern" }),
+  );
+  expect(p.onSave).toHaveBeenCalledWith({
+    ...p.preferences.current,
+    refinement: false,
+  });
+});
 test("saves the chosen microphone and physical hotkey only after explicit submit", () => {
   const p = props();
   render(<SettingsView {...p} />);
@@ -63,6 +144,7 @@ test("saves the chosen microphone and physical hotkey only after explicit submit
     screen.getByRole("button", { name: "Einstellungen speichern" }),
   );
   expect(p.onSave).toHaveBeenCalledWith({
+    refinement: false,
     device: "USB Mikrofon",
     language: "german",
     hotkey: {

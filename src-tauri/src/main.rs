@@ -360,6 +360,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             ipc::app_snapshot,
             ipc::model_download,
             ipc::model_cancel,
+            ipc::refinement_download,
+            ipc::refinement_cancel_setup,
             ipc::recording_start,
             ipc::recording_stop,
             ipc::recording_cancel,

@@ -395,6 +395,20 @@ mod tests {
     fn snapshot() -> view::Snapshot {
         let settings = everlast_dictation::settings::Settings::default();
         view::Snapshot {
+            refinement: view::Refinement {
+                setup: view::RefinementSetup {
+                    available: false,
+                    phase: view::SetupPhase::Missing,
+                    downloaded_bytes: 0,
+                    total_bytes: 0,
+                    can_cancel: false,
+                    error: None,
+                },
+                session_id: None,
+                original: None,
+                status: view::RefinementStatus::Disabled,
+                message: None,
+            },
             revision: 1,
             running: true,
             setup: view::Setup {
@@ -436,6 +450,7 @@ mod tests {
             preferences: view::Preferences {
                 key_labels: vec![],
                 current: everlast_dictation::preferences::SettingsDraft {
+                    refinement: false,
                     model: None,
                     device: settings.device,
                     language: settings.language,

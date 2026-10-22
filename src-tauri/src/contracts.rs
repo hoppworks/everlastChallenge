@@ -59,6 +59,37 @@ pub struct Setup {
     pub error: Option<String>,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+pub enum RefinementStatus {
+    Disabled,
+    Processing,
+    Skipped,
+    Unchanged,
+    Edited,
+    Failed,
+    Held,
+    Cancelled,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct RefinementSetup {
+    pub available: bool,
+    pub phase: SetupPhase,
+    pub downloaded_bytes: u32,
+    pub total_bytes: u32,
+    pub can_cancel: bool,
+    pub error: Option<String>,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Refinement {
+    pub setup: RefinementSetup,
+    #[ts(type = "number | null")]
+    pub session_id: Option<u64>,
+    pub original: Option<String>,
+    pub status: RefinementStatus,
+    pub message: Option<String>,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Session {
     pub phase: SessionPhase,
@@ -113,6 +144,7 @@ pub struct Snapshot {
     pub revision: u64,
     pub running: bool,
     pub setup: Setup,
+    pub refinement: Refinement,
     pub session: Session,
     pub permissions: Permissions,
     pub labels: Labels,

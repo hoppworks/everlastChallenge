@@ -134,3 +134,11 @@ symlink at that path. A separate regression exposed inconsistent legacy decoding
 in preference rollback. The shared decoder now preserves the original bytes on
 failed saves. The [provisioning report](verification/refinement-provisioning-2026-10-22.md)
 separates these host contracts from UI, bundle and model-quality acceptance.
+
+The refinement UI and generated IPC contracts were AI-assisted and independently
+reviewed. Review caught an incorrect assumption that idle results retain an active
+session ID. Failing UI tests were changed to real idle snapshots with a null ID;
+the correction retains completed-result metadata and resets it on the next
+successful start. The [UI report](verification/refinement-ui-2026-10-22.md) records
+software tests and a separate visual review of simulated states. Neither proves
+packaged inference, model quality or receipt by another application.

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-refinement-cancel-setup"
+description = "Enables the refinement_cancel_setup command without any pre-configured scope."
+commands.allow = ["refinement_cancel_setup"]
+
+[[permission]]
+identifier = "deny-refinement-cancel-setup"
+description = "Denies the refinement_cancel_setup command without any pre-configured scope."
+commands.deny = ["refinement_cancel_setup"]

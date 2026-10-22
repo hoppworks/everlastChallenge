@@ -501,6 +501,35 @@ impl Desktop {
             .cancel_setup()
             .map_err(|error| error.to_string())
     }
+    pub fn download_refinement(&self) -> Result<(), String> {
+        let admission = self
+            .0
+            .admission
+            .lock()
+            .map_err(|_| "Admission lock failed")?;
+        if admission.suspended || admission.changing_settings || admission.pending_starts != 0 {
+            return Err(
+                "Bitte laufende Aufnahmen oder Einstellungsänderungen zuerst abschließen.".into(),
+            );
+        }
+        let client = self.app_client()?;
+        if client
+            .runtime()
+            .map_err(|e| e.to_string())?
+            .map(|r| r.snapshot())
+            .transpose()
+            .map_err(|e| e.to_string())?
+            .is_some_and(|r| r.session.phase != Phase::Idle)
+        {
+            return Err("Bitte das laufende Diktat zuerst abschließen.".into());
+        }
+        client.download_refinement().map_err(|e| e.to_string())
+    }
+    pub fn cancel_refinement_setup(&self) -> Result<(), String> {
+        self.app_client()?
+            .cancel_refinement_setup()
+            .map_err(|e| e.to_string())
+    }
     fn start_request(
         &self,
         process: Option<ProcessIdentity>,
@@ -579,11 +608,21 @@ impl Desktop {
                     .phase,
                 Phase::Starting | Phase::Recording
             );
+        if !stopping
+            && self
+                .app_client()?
+                .refinement_busy()
+                .map_err(|e| e.to_string())?
+        {
+            return Err(
+                "Bitte die Textmodelleinrichtung zuerst abschließen oder abbrechen.".into(),
+            );
+        }
         if !stopping && ui_services::microphone_authorization() != MicAuthorization::Granted {
             return Err("Bitte zuerst den Mikrofonzugriff freigeben".into());
         }
         let session_settings = SessionSettings {
-            refinement: false,
+            refinement: settings.refinement,
             device: settings.device,
             language: settings.language.into(),
             generation: 1,
@@ -755,6 +794,16 @@ impl Desktop {
         };
         draft.clone().apply_to(&current).map_err(preference_error)?;
         let client = self.app_client()?;
+        if client.refinement_busy().map_err(|e| e.to_string())? {
+            return Err(
+                "Bitte die Textmodelleinrichtung zuerst abschließen oder abbrechen.".into(),
+            );
+        }
+        validate_refinement_enable(
+            &current,
+            &draft,
+            &client.snapshot().map_err(|e| e.to_string())?,
+        )?;
         let setup = client
             .snapshot()
             .map_err(|error| error.to_string())?
@@ -957,6 +1006,11 @@ impl Desktop {
             desktop: self.clone(),
             last_error: None,
         };
+        validate_refinement_enable(
+            &current,
+            &draft,
+            &self.app_client()?.snapshot().map_err(|e| e.to_string())?,
+        )?;
         let result = store.commit(&current, draft, &mut binder);
         let native_error = binder.last_error.take();
         let mut shared = self.0.shared.lock().map_err(|_| "Desktop lock failed")?;
@@ -1243,6 +1297,7 @@ impl Desktop {
                     &shared.settings,
                     shared.view.permissions.clone(),
                 );
+                next.settings_busy |= client.refinement_busy().map_err(|e| e.to_string())?;
                 if let Some(native) = native {
                     next.permissions = permissions(native);
                 }
@@ -1329,11 +1384,28 @@ fn valid_id(id: u64) -> Result<(), String> {
 }
 fn draft_of(settings: &Settings) -> SettingsDraft {
     SettingsDraft {
+        refinement: settings.refinement,
         model: crate::preferences::PreferenceModel::from_settings(settings),
         device: settings.device.clone(),
         language: settings.language,
         hotkey: settings.hotkey.clone(),
     }
+}
+fn validate_refinement_enable(
+    current: &Settings,
+    draft: &SettingsDraft,
+    application: &crate::application::Snapshot,
+) -> Result<(), String> {
+    if draft.refinement
+        && !current.refinement
+        && !application
+            .refinement_setup
+            .as_ref()
+            .is_some_and(|s| s.phase == setup::Phase::Ready)
+    {
+        return Err("Bitte zuerst das Textmodell vollständig einrichten.".into());
+    }
+    Ok(())
 }
 fn forward_start(
     reply: oneshot::Receiver<Result<(), String>>,
@@ -1429,6 +1501,20 @@ fn initial() -> view::Snapshot {
     let settings = Settings::default();
     let definition = settings.model.definition();
     view::Snapshot {
+        refinement: view::Refinement {
+            setup: view::RefinementSetup {
+                available: false,
+                phase: view::SetupPhase::Missing,
+                downloaded_bytes: 0,
+                total_bytes: 0,
+                can_cancel: false,
+                error: None,
+            },
+            session_id: None,
+            original: None,
+            status: view::RefinementStatus::Disabled,
+            message: None,
+        },
         revision: 1,
         running: true,
         setup: view::Setup {
@@ -1481,6 +1567,16 @@ fn project(
     permissions: view::Permissions,
 ) -> view::Snapshot {
     let mut result = initial();
+    if let Some(setup) = &application.refinement_setup {
+        result.refinement.setup = view::RefinementSetup {
+            available: true,
+            phase: setup_phase(setup.phase),
+            downloaded_bytes: setup.received.min(u64::from(u32::MAX)) as u32,
+            total_bytes: setup.total.min(u64::from(u32::MAX)) as u32,
+            can_cancel: matches!(setup.phase, setup::Phase::Checking | setup::Phase::Downloading | setup::Phase::Loading),
+            error: setup.failure.as_ref().map(|_| "Das Textmodell konnte nicht eingerichtet werden. Prüfe Verbindung und freien Speicherplatz und versuche es erneut.".into()),
+        };
+    }
     result.permissions = permissions;
     result.running = application.running && !application.closing;
     result.setup.phase = match application.setup.phase {
@@ -1539,6 +1635,24 @@ fn project(
     .into();
     result.labels.hotkey = crate::hotkey_labels::shortcut(&settings.hotkey, &Default::default());
     if let Some(runtime) = runtime {
+        use crate::controller::RefinementStatus as R;
+        result.refinement.session_id = runtime.session.refinement.session;
+        result.refinement.original = runtime.session.refinement.original.clone();
+        result.refinement.status = match &runtime.session.refinement.status {
+            R::Disabled => view::RefinementStatus::Disabled,
+            R::Processing => view::RefinementStatus::Processing,
+            R::Skipped(_) => view::RefinementStatus::Skipped,
+            R::CheckedUnchanged => view::RefinementStatus::Unchanged,
+            R::Edited => view::RefinementStatus::Edited,
+            R::Failed(_) => view::RefinementStatus::Failed,
+            R::HeldOriginal(_) => view::RefinementStatus::Held,
+            R::Cancelled => view::RefinementStatus::Cancelled,
+        };
+        result.refinement.message = match &runtime.session.refinement.status {
+            R::Failed(_) | R::HeldOriginal(_) => Some("Die Textbereinigung konnte nicht abgeschlossen werden. Das Original bleibt erhalten; es wurde nichts eingefügt.".into()),
+            R::Cancelled => Some("Textbereinigung abgebrochen. Das Original bleibt erhalten; es wurde nichts eingefügt.".into()),
+            _ => None,
+        };
         result.session.phase = match runtime.session.phase {
             Phase::Idle => view::SessionPhase::Idle,
             Phase::Starting => view::SessionPhase::Starting,
@@ -1574,6 +1688,19 @@ fn project(
         result.settings_busy |= runtime.session.phase != Phase::Idle;
     }
     result
+}
+
+fn setup_phase(phase: setup::Phase) -> view::SetupPhase {
+    match phase {
+        setup::Phase::Missing => view::SetupPhase::Missing,
+        setup::Phase::Checking => view::SetupPhase::Checking,
+        setup::Phase::Downloading => view::SetupPhase::Downloading,
+        setup::Phase::Loading => view::SetupPhase::Loading,
+        setup::Phase::Cancelling => view::SetupPhase::Cancelling,
+        setup::Phase::Cancelled => view::SetupPhase::Cancelled,
+        setup::Phase::Ready => view::SetupPhase::Ready,
+        setup::Phase::Failed => view::SetupPhase::Failed,
+    }
 }
 
 #[cfg(feature = "measurement")]
@@ -1906,6 +2033,80 @@ mod tests {
             runtime_available: false,
             error: None,
         }
+    }
+    #[test]
+    fn enabling_refinement_requires_ready_assets_but_disabling_remains_available() {
+        let current = Settings::default();
+        let mut draft = draft_of(&current);
+        draft.refinement = true;
+        let mut application = application();
+        assert!(validate_refinement_enable(&current, &draft, &application).is_err());
+        for phase in [
+            setup::Phase::Missing,
+            setup::Phase::Checking,
+            setup::Phase::Failed,
+            setup::Phase::Ready,
+        ] {
+            application.refinement_setup = Some(crate::refinement_setup::Snapshot {
+                revision: 1,
+                phase,
+                received: 0,
+                total: 1,
+                failure: None,
+            });
+            assert_eq!(
+                validate_refinement_enable(&current, &draft, &application).is_ok(),
+                phase == setup::Phase::Ready
+            );
+        }
+        draft.refinement = false;
+        application.refinement_setup = None;
+        assert!(validate_refinement_enable(&current, &draft, &application).is_ok());
+    }
+    #[test]
+    fn refinement_projection_exposes_setup_and_retained_original()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let mut application = application();
+        application.refinement_setup = Some(crate::refinement_setup::Snapshot {
+            revision: 3,
+            phase: setup::Phase::Ready,
+            received: 2_278_970_666,
+            total: 2_278_970_666,
+            failure: None,
+        });
+        let runtime = RuntimeSnapshot {
+            revision: 5,
+            running: true,
+            model_ready: true,
+            session: SessionSnapshot {
+                phase: Phase::Finalizing,
+                session: Some(8),
+                last_held_session: None,
+                text: Some("Das ist, äh, ein Test.".into()),
+                outcome: None,
+                refinement: crate::controller::RefinementSnapshot {
+                    session: Some(8),
+                    original: Some("Das ist, äh, ein Test.".into()),
+                    status: crate::controller::RefinementStatus::Processing,
+                },
+            },
+            maximum_warning: false,
+            maximum_reached: false,
+            elapsed_millis: 0,
+            level_permille: 0,
+            error: None,
+        };
+        let value = serde_json::to_value(project(
+            &application,
+            Some(&runtime),
+            &Settings::default(),
+            initial().permissions,
+        ))?;
+        assert_eq!(value["refinement"]["status"], "Processing");
+        assert_eq!(value["refinement"]["original"], "Das ist, äh, ein Test.");
+        assert_eq!(value["refinement"]["sessionId"], 8);
+        assert_eq!(value["refinement"]["setup"]["phase"], "Ready");
+        Ok(())
     }
     #[test]
     fn model_loaded_without_runtime_is_not_ready_to_record() {

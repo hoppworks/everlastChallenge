@@ -484,6 +484,23 @@ mod tests {
         ));
         Ok(())
     }
+    #[test]
+    fn a_new_session_clears_old_refinement_metadata_without_erasing_last_text() -> TestResult {
+        let (mut controller, _job) = pending()?;
+        controller.fail(1, "worker failed".into())?;
+        assert!(controller.snapshot().session.is_none());
+        controller.start(super::super::tests::settings(), None, true, false)?;
+        assert_eq!(
+            controller.snapshot().text.as_deref(),
+            Some("Das ist, äh, ein Test.")
+        );
+        assert!(controller.snapshot().refinement.original.is_none());
+        assert!(matches!(
+            controller.snapshot().refinement.status,
+            RefinementStatus::Disabled
+        ));
+        Ok(())
+    }
 
     #[test]
     fn oversized_original_is_retained_without_sending_a_truncated_job() -> TestResult {

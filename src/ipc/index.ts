@@ -48,6 +48,7 @@ function draft(value: unknown): value is SettingsDraft {
       "device",
       "language",
       "hotkey",
+      "refinement",
       ...(typeof value === "object" && value !== null && "model" in value
         ? ["model"]
         : []),
@@ -58,6 +59,7 @@ function draft(value: unknown): value is SettingsDraft {
     return false;
   const hotkey = value.hotkey;
   return (
+    typeof value.refinement === "boolean" &&
     (value.device === null || deviceName(value.device)) &&
     oneOf(value.language, ["german", "english"]) &&
     object(hotkey, ["key", "option", "command", "control", "shift"]) &&
@@ -153,6 +155,7 @@ export function decodeSnapshot(value: unknown): Snapshot {
       "revision",
       "running",
       "setup",
+      "refinement",
       "session",
       "permissions",
       "labels",
@@ -165,6 +168,7 @@ export function decodeSnapshot(value: unknown): Snapshot {
     throw new Error("Ungültiger Anwendungsstatus");
   const { setup, session, labels, permissions: access } = value;
   if (
+    !refinement(value.refinement) ||
     !preferences(value.preferences) ||
     !number(value.revision) ||
     typeof value.running !== "boolean" ||
@@ -242,6 +246,42 @@ export function decodeSnapshot(value: unknown): Snapshot {
   }
   return value as unknown as Snapshot;
 }
+function refinement(value: unknown): boolean {
+  if (!object(value, ["setup", "sessionId", "original", "status", "message"]))
+    return false;
+  const setup = value.setup;
+  return (
+    object(setup, [
+      "available",
+      "phase",
+      "downloadedBytes",
+      "totalBytes",
+      "canCancel",
+      "error",
+    ]) &&
+    typeof setup.available === "boolean" &&
+    oneOf(setup.phase, setupPhases) &&
+    number(setup.downloadedBytes) &&
+    number(setup.totalBytes) &&
+    setup.downloadedBytes <= setup.totalBytes &&
+    typeof setup.canCancel === "boolean" &&
+    optionalText(setup.error) &&
+    (value.sessionId === null ||
+      (number(value.sessionId) && value.sessionId > 0)) &&
+    (value.original === null || text(value.original, 262144)) &&
+    optionalText(value.message) &&
+    oneOf(value.status, [
+      "Disabled",
+      "Processing",
+      "Skipped",
+      "Unchanged",
+      "Edited",
+      "Failed",
+      "Held",
+      "Cancelled",
+    ])
+  );
+}
 export async function connect(
   receive: (value: Snapshot) => void,
   onError: (error: unknown) => void = () => {},
@@ -280,6 +320,8 @@ export function command(
   name:
     | "model_download"
     | "model_cancel"
+    | "refinement_download"
+    | "refinement_cancel_setup"
     | "recording_start"
     | "microphone_request"
     | "accessibility_request"

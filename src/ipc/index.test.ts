@@ -25,12 +25,27 @@ vi.mock("@tauri-apps/api/event", () => ({ listen: native.listen }));
 
 function snapshot(): Snapshot {
   return {
+    refinement: {
+      setup: {
+        available: true,
+        phase: "Ready",
+        downloadedBytes: 2278970666,
+        totalBytes: 2278970666,
+        canCancel: false,
+        error: null,
+      },
+      sessionId: null,
+      original: null,
+      status: "Disabled",
+      message: null,
+    },
     revision: 1,
     running: true,
     settingsBusy: false,
     settingsRequest: 0,
     preferences: {
       current: {
+        refinement: false,
         device: null,
         language: "german",
         hotkey: {
@@ -84,6 +99,50 @@ function snapshot(): Snapshot {
 }
 
 beforeEach(() => vi.resetAllMocks());
+
+test.each([
+  { status: "Invented" },
+  { original: 42 },
+  { sessionId: -1 },
+  { message: "x".repeat(4097) },
+  {
+    setup: {
+      available: true,
+      phase: "Ready",
+      downloadedBytes: 11,
+      totalBytes: 10,
+      canCancel: false,
+      error: null,
+    },
+  },
+])("rejects malformed refinement state %#", (change) => {
+  const value = snapshot();
+  expect(() =>
+    decodeSnapshot({
+      ...value,
+      refinement: { ...value.refinement, ...change },
+    }),
+  ).toThrow("Ungültiger Anwendungsstatus");
+});
+test("rejects missing or non-boolean refinement preference", () => {
+  const value = snapshot();
+  const { refinement: _refinement, ...missing } = value.preferences.current;
+  expect(() =>
+    decodeSnapshot({
+      ...value,
+      preferences: { ...value.preferences, current: missing },
+    }),
+  ).toThrow("Ungültiger Anwendungsstatus");
+  expect(() =>
+    decodeSnapshot({
+      ...value,
+      preferences: {
+        ...value.preferences,
+        current: { ...value.preferences.current, refinement: "yes" },
+      },
+    }),
+  ).toThrow("Ungültiger Anwendungsstatus");
+});
 
 test("accepts native null option values and bounded German text unchanged", () => {
   const value = snapshot();
@@ -321,7 +380,9 @@ test("malformed payloads queued after unsubscribe are ignored", async () => {
   native.invoke.mockResolvedValue(snapshot());
   const stop = await connect(vi.fn<(value: Snapshot) => void>());
   stop();
-  expect(() => deliver?.({ payload: null })).not.toThrow();
+  expect(() => deliver?.({ payload: null })).not.toThrow(
+    "Ungültiger Anwendungsstatus",
+  );
 });
 
 test.each([
@@ -363,7 +424,9 @@ test("invalid event reports an error without crashing or advancing the accepted 
   });
   native.invoke.mockResolvedValue(snapshot());
   const stop = await connect(receive, report);
-  expect(() => deliver?.({ payload: { revision: 500 } })).not.toThrow();
+  expect(() => deliver?.({ payload: { revision: 500 } })).not.toThrow(
+    "Ungültiger Anwendungsstatus",
+  );
   expect(report).toHaveBeenCalledOnce();
   expect(report).toHaveBeenCalledWith(
     expect.objectContaining({ message: "Ungültiger Anwendungsstatus" }),
@@ -383,7 +446,9 @@ test("malformed events are also isolated when no error callback is provided", as
   });
   native.invoke.mockResolvedValue(snapshot());
   const stop = await connect(vi.fn<(value: Snapshot) => void>());
-  expect(() => deliver?.({ payload: null })).not.toThrow();
+  expect(() => deliver?.({ payload: null })).not.toThrow(
+    "Ungültiger Anwendungsstatus",
+  );
   stop();
 });
 

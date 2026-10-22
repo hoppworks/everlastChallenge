@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-refinement-download"
+description = "Enables the refinement_download command without any pre-configured scope."
+commands.allow = ["refinement_download"]
+
+[[permission]]
+identifier = "deny-refinement-download"
+description = "Denies the refinement_download command without any pre-configured scope."
+commands.deny = ["refinement_download"]

@@ -4,6 +4,7 @@ import type { PreferenceModel } from "./PreferenceModel";
 import type { SettingsLanguage } from "./SettingsLanguage";
 
 export type SettingsDraft = {
+  refinement: boolean;
   model?: PreferenceModel;
   device: string | null;
   language: SettingsLanguage;

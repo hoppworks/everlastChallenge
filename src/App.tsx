@@ -113,6 +113,10 @@ export function App() {
     <>
       {!settingsOpen && (
         <AppView
+          refinement={snapshot.refinement}
+          onCopyOriginal={() =>
+            run(() => copyTranscript(snapshot.refinement.original ?? ""))
+          }
           onDisclosureChange={setTranscriptExpanded}
           setup={{
             phase: snapshot.setup.phase,
@@ -153,6 +157,11 @@ export function App() {
       )}
       {settingsOpen && (
         <SettingsView
+          refinement={snapshot.refinement.setup}
+          onDownloadRefinement={() => run(() => command("refinement_download"))}
+          onCancelRefinementSetup={() =>
+            run(() => command("refinement_cancel_setup"))
+          }
           preferences={snapshot.preferences}
           {...(error || snapshot.error
             ? { error: error ?? snapshot.error ?? "" }

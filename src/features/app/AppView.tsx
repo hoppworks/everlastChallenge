@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { LevelVisual } from "./LevelVisual";
+import type { Snapshot } from "../../ipc";
 import "./styles.css";
 
 type SetupPhase =
@@ -25,6 +26,8 @@ type SessionOutcome =
   | { kind: "held" | "failed"; message: string };
 
 export interface AppViewProps {
+  refinement?: Snapshot["refinement"];
+  onCopyOriginal?: () => void;
   onDisclosureChange?: (expanded: boolean) => void;
   setup: {
     phase: SetupPhase;
@@ -129,16 +132,32 @@ export function AppView(props: AppViewProps) {
     onDisclosureChange?.(expanded || detailsOpen);
   }, [expanded, detailsOpen, onDisclosureChange]);
   const active = session.phase !== "Idle";
-  const title =
-    session.phase !== "Idle"
-      ? sessionTitles[session.phase]
-      : setup.phase !== "Ready"
-        ? setupTitles[setup.phase]
-        : session.outcome
-          ? outcomeTitles[session.outcome.kind]
-          : permissions.microphone === "granted"
-            ? setupTitles.Ready
-            : "Mikrofonzugriff erforderlich";
+  const refinement =
+    props.refinement?.sessionId != null &&
+    (session.phase === "Idle" || props.refinement.sessionId === session.id)
+      ? props.refinement
+      : undefined;
+  const refining =
+    refinement?.status === "Processing" && session.phase === "Finalizing";
+  const retained =
+    !active &&
+    Boolean(refinement?.original) &&
+    ["Failed", "Held", "Cancelled"].includes(refinement?.status ?? "");
+  const title = refining
+    ? "Text wird bereinigt"
+    : retained
+      ? refinement?.status === "Cancelled"
+        ? "Textbereinigung abgebrochen"
+        : "Original bleibt erhalten"
+      : session.phase !== "Idle"
+        ? sessionTitles[session.phase]
+        : setup.phase !== "Ready"
+          ? setupTitles[setup.phase]
+          : session.outcome
+            ? outcomeTitles[session.outcome.kind]
+            : permissions.microphone === "granted"
+              ? setupTitles.Ready
+              : "Mikrofonzugriff erforderlich";
   const canStart =
     !active &&
     setup.phase === "Ready" &&
@@ -146,8 +165,9 @@ export function AppView(props: AppViewProps) {
     !props.settingsBusy;
   const showDownload =
     !active && ["Missing", "Cancelled", "Failed"].includes(setup.phase);
-  const detail =
-    session.outcome?.kind === "held" || session.outcome?.kind === "failed"
+  const detail = retained
+    ? refinement?.message
+    : session.outcome?.kind === "held" || session.outcome?.kind === "failed"
       ? session.outcome.message
       : undefined;
   const downloading = setup.phase === "Downloading";
@@ -204,7 +224,11 @@ export function AppView(props: AppViewProps) {
                 <p>Die Aufnahme beginnt, sobald das Mikrofon bereit ist.</p>
               )}
               {session.phase === "Finalizing" && (
-                <p>Die Spracherkennung verarbeitet dein Diktat lokal.</p>
+                <p>
+                  {refining
+                    ? "Dein Text wird lokal geprüft. Beim Abbrechen bleibt das Original erhalten."
+                    : "Die Spracherkennung verarbeitet dein Diktat lokal."}
+                </p>
               )}
               {session.phase === "Delivering" && (
                 <p>Das ursprüngliche Textfeld wird noch einmal geprüft.</p>
@@ -442,6 +466,27 @@ export function AppView(props: AppViewProps) {
               spellCheck={false}
               placeholder="Dein nächstes Diktat erscheint hier."
             />
+            {refinement?.status === "Edited" &&
+              refinement.original !== session.text && (
+                <details className="original-disclosure">
+                  <summary>Original anzeigen</summary>
+                  <textarea
+                    aria-label="Originaltranskript"
+                    value={refinement.original ?? ""}
+                    readOnly
+                    spellCheck={false}
+                  />
+                  {props.onCopyOriginal && (
+                    <button
+                      type="button"
+                      onClick={props.onCopyOriginal}
+                      disabled={pending}
+                    >
+                      Original kopieren
+                    </button>
+                  )}
+                </details>
+              )}
           </div>
         )}
       </section>

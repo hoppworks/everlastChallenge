@@ -40,6 +40,7 @@ struct State {
     runtime: Option<RuntimeClient>,
     setup_epoch: u64,
     refinement_epoch: u64,
+    refinement_pending: bool,
 }
 enum SetupRequest {
     Asr(u64),
@@ -108,7 +109,7 @@ impl Client {
             .map_err(|error| ApplicationError::Worker(error.to_string()))
     }
     pub fn download_refinement(&self) -> Result<(), ApplicationError> {
-        let state = self
+        let mut state = self
             .state
             .lock()
             .map_err(|_| ApplicationError::Synchronization)?;
@@ -118,12 +119,54 @@ impl Client {
         if self.refinement.is_none() {
             return Err(worker_error("Local text setup is unavailable"));
         }
+        if state.refinement_pending
+            || self
+                .refinement
+                .as_ref()
+                .map(|s| s.snapshot())
+                .transpose()
+                .map_err(worker_error)?
+                .is_some_and(|s| {
+                    matches!(
+                        s.phase,
+                        setup::Phase::Checking
+                            | setup::Phase::Downloading
+                            | setup::Phase::Cancelling
+                    )
+                })
+        {
+            return Err(ApplicationError::Busy);
+        }
         self.requests
             .try_send(SetupRequest::Refinement(state.refinement_epoch))
             .map_err(|error| match error {
                 crossbeam_channel::TrySendError::Full(_) => ApplicationError::Busy,
                 crossbeam_channel::TrySendError::Disconnected(_) => ApplicationError::Closed,
-            })
+            })?;
+        state.refinement_pending = true;
+        Ok(())
+    }
+    /// Includes accepted requests before their I/O worker starts.
+    pub fn refinement_busy(&self) -> Result<bool, ApplicationError> {
+        let state = self
+            .state
+            .lock()
+            .map_err(|_| ApplicationError::Synchronization)?;
+        Ok(state.refinement_pending
+            || self
+                .refinement
+                .as_ref()
+                .map(|s| s.snapshot())
+                .transpose()
+                .map_err(worker_error)?
+                .is_some_and(|s| {
+                    matches!(
+                        s.phase,
+                        setup::Phase::Checking
+                            | setup::Phase::Downloading
+                            | setup::Phase::Cancelling
+                    )
+                }))
     }
     pub fn cancel_refinement_setup(&self) -> Result<(), ApplicationError> {
         let mut state = self
@@ -137,6 +180,7 @@ impl Client {
             .refinement_epoch
             .checked_add(1)
             .ok_or(ApplicationError::Busy)?;
+        state.refinement_pending = false;
         self.refinement
             .as_ref()
             .ok_or_else(|| worker_error("Local text setup is unavailable"))?
@@ -261,6 +305,7 @@ impl AppSupervisor {
             runtime: None,
             setup_epoch: 0,
             refinement_epoch: 0,
+            refinement_pending: false,
         }));
         let (requests, receive) = bounded(8);
         let client = Client {
@@ -377,6 +422,7 @@ impl AppSupervisor {
                                         refinement.start(true).err().map(|error| error.to_string());
                                     state.snapshot.revision =
                                         state.snapshot.revision.saturating_add(1);
+                                    state.refinement_pending = false;
                                 }
                             }
                             Err(crossbeam_channel::RecvTimeoutError::Timeout) => {}
@@ -545,6 +591,54 @@ mod tests {
     use super::*;
     use crate::model::REFERENCE;
     use std::time::Instant;
+    #[test]
+    fn accepted_text_download_is_busy_before_dispatch_and_cancel_revokes_queue()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let root = tempfile::tempdir()?;
+        let setup = Arc::new(SetupService::new(root.path().join("asr"), REFERENCE));
+        let refinement = Arc::new(crate::refinement_setup::Setup::new(
+            root.path().join("models"),
+        )?);
+        let (requests, receive) = bounded(8);
+        let state = Arc::new(Mutex::new(State {
+            snapshot: Snapshot {
+                revision: 1,
+                running: true,
+                closing: false,
+                setup: setup.snapshot()?,
+                refinement_setup: Some(refinement.snapshot()?),
+                runtime_available: false,
+                error: None,
+            },
+            runtime: None,
+            setup_epoch: 0,
+            refinement_epoch: 0,
+            refinement_pending: false,
+        }));
+        let client = Client {
+            state,
+            setup,
+            requests,
+            refinement: Some(refinement),
+        };
+        client.download_refinement()?;
+        assert!(client.refinement_busy()?);
+        assert!(matches!(
+            client.download_refinement(),
+            Err(ApplicationError::Busy)
+        ));
+        client.cancel_refinement_setup()?;
+        assert!(!client.refinement_busy()?);
+        let SetupRequest::Refinement(epoch) = receive.try_recv()? else {
+            return Err("wrong setup request".into());
+        };
+        assert_ne!(
+            epoch,
+            client.state.lock().map_err(|_| "state")?.refinement_epoch
+        );
+        client.shutdown()?;
+        Ok(())
+    }
     #[test]
     fn unavailable_text_directory_keeps_ready_asr_running() -> Result<(), Box<dyn std::error::Error>>
     {

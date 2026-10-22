@@ -2,6 +2,7 @@
 import type { Labels } from "./Labels";
 import type { Permissions } from "./Permissions";
 import type { Preferences } from "./Preferences";
+import type { Refinement } from "./Refinement";
 import type { Session } from "./Session";
 import type { Setup } from "./Setup";
 
@@ -9,6 +10,7 @@ export type Snapshot = {
   revision: number;
   running: boolean;
   setup: Setup;
+  refinement: Refinement;
   session: Session;
   permissions: Permissions;
   labels: Labels;

@@ -27,11 +27,11 @@ sofortigen Abbruch eines bereits laufenden nativen Decoders.
 |---|---|---|
 | Reiner Sitzungskern | [session.rs](../crates/dictation-core/src/session.rs) → [controller.rs](../src-tauri/src/controller.rs) | Fakten und Effekte, Starting/Stop/Cancel, Sitzungsnummern, veraltete Ergebnisse und genau einmalige Wirkung |
 | Reine Textprüfung | [refinement](../crates/dictation-core/src/refinement/mod.rs) → [Vertragstests](../crates/dictation-core/tests/refinement_contract.rs) | Bedarfsregel, exakt gebundene Änderungsoptionen und atomare Annahme; der validierte Typ bindet Original und Sprache |
-| Bereinigung im Sitzungscontroller | [refinement.rs](../src-tauri/src/controller/refinement.rs), [Controller](../src-tauri/src/controller.rs) | vollständiges Original vor Verarbeitung sichern, späte Ergebnisse ablehnen, Widerruf und einmalige Freigabe über bestehenden Sitzungskern; Einrichtung und UI stehen noch aus |
+| Bereinigung im Sitzungscontroller | [refinement.rs](../src-tauri/src/controller/refinement.rs), [Controller](../src-tauri/src/controller.rs) | vollständiges Original vor Verarbeitung sichern, späte Ergebnisse ablehnen, Widerruf und einmalige Freigabe über bestehenden Sitzungskern; neue Sitzung entfernt alte Bereinigungsmetadaten, nicht den letzten Text |
 | Worker-Protokoll | [Nachrichten](../crates/text-refinement-protocol/src/lib.rs), [Rahmung](../crates/text-refinement-protocol/src/frame.rs) | versionierte 64-KiB-Rahmen, Sitzungs-/Generationsbindung, striktes JSON; Prozessaufsicht und Modellprüfung bleiben Aufgaben des Hosts |
-| Lokaler Textworker | [Worker](../crates/text-refinement-worker/README.md), [Prozesssteuerung](../crates/text-refinement-worker/src/lib.rs), [Modell](../crates/text-refinement-worker/src/model.rs) | separater MLX-Owner, begrenzte Ausgabe, private hashgeprüfte Modellkopie; Produktsetup noch ausstehend |
+| Lokaler Textworker | [Worker](../crates/text-refinement-worker/README.md), [Prozesssteuerung](../crates/text-refinement-worker/src/lib.rs), [Modell](../crates/text-refinement-worker/src/model.rs) | separater MLX-Owner, begrenzte Ausgabe, private hashgeprüfte Modellkopie; Paketierung und vollständige Produktabnahme noch ausstehend |
 | Textworker-Prozessaufsicht | [refinement_service.rs](../src-tauri/src/refinement_service.rs), [asynchroner Owner](../src-tauri/src/refinement_service/owner.rs), [Runtime-Adapter](../src-tauri/src/runtime/refinement.rs), [echte Prozess-Fixtures](../crates/text-refinement-worker/tests/supervisor.rs) | begrenzte Pipes, Identitätsprüfung, ein belegter Auftrag einschließlich unentnommenem Ergebnis, sofortiger Widerruf und kontrolliertes Entladen; Runtime übermittelt und entnimmt asynchron, unterscheidet Dienstfehler von Benutzerabbruch und joint den Owner auch bei weiteren Cleanupfehlern |
-| Textmodell-Installation | [refinement.rs](../src-tauri/src/model/refinement.rs), [Setup-Owner](../src-tauri/src/refinement_setup.rs), [Application](../src-tauri/src/application.rs), [Tests](../src-tauri/src/model/refinement/tests.rs) | gemeinsames Worker-Manifest, vollständige Hashprüfung, atomare Satzveröffentlichung, exklusiver Cachebesitz und konservative Stage-Recovery; gesonderter I/O-Owner, lokale Startprüfung und expliziter Download, Einrichtung noch nicht in der UI angeboten |
+| Textmodell-Installation | [refinement.rs](../src-tauri/src/model/refinement.rs), [Setup-Owner](../src-tauri/src/refinement_setup.rs), [Application](../src-tauri/src/application.rs), [Tests](../src-tauri/src/model/refinement/tests.rs) | gemeinsames Worker-Manifest, vollständige Hashprüfung, atomare Satzveröffentlichung, exklusiver Cachebesitz und konservative Stage-Recovery; gesonderter I/O-Owner, lokale Startprüfung und expliziter Download im Einstellungsbereich Textbereinigung |
 | Steuerung und Lebensdauer | [control.rs](../src-tauri/src/control.rs), [runtime.rs](../src-tauri/src/runtime.rs), [main.rs](../src-tauri/src/main.rs) | begrenzte Anfragen, gesonderte Stop/Cancel/Shutdown-Signale, Admission schließen, Besitzer joinen, Panic- und Powerpfade |
 | Mikrofon und DSP | [audio.rs](../src-tauri/src/audio.rs) → [Core-DSP](../crates/dictation-core/src/audio.rs), [Aufnahmegrenzen](../crates/dictation-core/src/recording_limits.rs) | Callback produziert in den Ring; gemeinsamer CPAL-Fehlercallback meldet Streamfehler; Audioowner verarbeitet, schließt, drainiert und flusht; Sample-/Kanal-/Raten- und Speichergrenzen |
 | Inferenz | [inference_service.rs](../src-tauri/src/inference_service.rs) → [transcription.rs](../src-tauri/src/transcription.rs), [speech_gate.rs](../src-tauri/src/transcription/speech_gate.rs) | serielle Arbeit, warme Gewichte/frischer ASR-State, Job-/Session-/Generation-/Bereichsbindung, getrennte VAD-Kopie, Fehler statt scheinbarer Stille |
@@ -58,9 +58,9 @@ Einstellungsdateien der Version 1 werden typisiert auf Version 2 migriert; die
 zusätzliche Bereinigungspräferenz bleibt dabei ausgeschaltet. Start, Speicherung
 und Rollback verwenden denselben Decoder. Der Application-Owner richtet einen
 trägen Textworker am festgelegten Bundle-Pfad ein. Fehler der optionalen
-Textlaufzeit bleiben sichtbar und verhindern den ASR-Start nicht. Die bisherige
-UI übermittelt diese Präferenz noch nicht an die Sitzung; die Funktion ist dort
-noch nicht aktivierbar.
+Textlaufzeit bleiben sichtbar und verhindern den ASR-Start nicht. Aktivierung
+verlangt eine fertige Modelleinrichtung; die Präferenz wird pro Sitzung eingefroren.
+Angenommene Downloads sperren neue Aufnahmen bereits vor ihrem I/O-Start.
 
 `running=false` hat in React Vorrang vor Setup, Sitzung und Einstellungen:
 Neustarthilfe und letzter Text bleiben verfügbar, dienstabhängige Aktionen nicht.
@@ -110,6 +110,14 @@ Einstellungsgröße an; dabei bleibt die logische Nutzerbreite erhalten. Überho
 Größenabfragen werden verworfen, Größenfehler bleiben sichtbar. Tauri erlaubt nur
 dem lokalen Hauptfenster die erforderlichen Größenabfragen/-änderung.
 `DESIGN.md` beschreibt die bestätigte Oberfläche einschließlich Systemthemes.
+
+Der Bereich Textbereinigung bietet Einrichtung, Abbruch und den gespeicherten
+Schalter an. Nach Sitzungsende ist die aktive ID leer; die Ergebnisansicht nutzt
+dann die erhaltene Bereinigungskennung. Während einer neuen Aufnahme gilt wieder
+die exakte aktive ID. Fehler und Abbruch zeigen das Original mit Kopieraktion,
+bearbeitete Ergebnisse bieten zusätzlich das ursprüngliche Transkript hinter
+einer Offenlegung. Die [UI-Verifikation](verification/refinement-ui-2026-10-22.md)
+grenzt Browserdarstellung und Vertragstests von der noch ausstehenden Paketabnahme ab.
 
 Aktive Entwicklerwerkzeuge und der Umgang mit historischen Messreihen stehen in
 [tooling.md](tooling.md).

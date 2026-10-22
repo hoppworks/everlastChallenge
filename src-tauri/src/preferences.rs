@@ -27,6 +27,7 @@ impl PreferenceModel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[serde(deny_unknown_fields)]
 pub struct SettingsDraft {
+    pub refinement: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub model: Option<PreferenceModel>,
@@ -51,6 +52,7 @@ impl SettingsDraft {
             }
         };
         let next = Settings {
+            refinement: self.refinement,
             model,
             device: self.device,
             language: self.language,
@@ -316,6 +318,7 @@ mod tests {
     }
     fn draft(current: &Settings) -> SettingsDraft {
         SettingsDraft {
+            refinement: current.refinement,
             model: None,
             device: Some("Studio".into()),
             language: SettingsLanguage::German,
@@ -648,6 +651,7 @@ mod tests {
             ..Settings::default()
         };
         let mut draft = SettingsDraft {
+            refinement: false,
             model: None,
             device: None,
             language: SettingsLanguage::English,

@@ -4,6 +4,105 @@ import { AppView, type AppViewProps } from "./AppView";
 
 afterEach(cleanup);
 
+test("shows refinement processing and preserves the original on failure", () => {
+  const base = fixture();
+  const refining = {
+    setup: {
+      available: true,
+      phase: "Ready" as const,
+      downloadedBytes: 1,
+      totalBytes: 1,
+      canCancel: false,
+      error: null,
+    },
+    sessionId: 8,
+    original: "Das ist, äh, ein Test.",
+    status: "Processing" as const,
+    message: null,
+  };
+  const view = render(
+    <AppView
+      {...base}
+      refinement={refining}
+      session={{ id: 8, phase: "Finalizing", text: refining.original }}
+    />,
+  );
+  expect(
+    screen.getByRole("heading", { name: "Text wird bereinigt" }),
+  ).toBeDefined();
+  expect(screen.getByRole("button", { name: "Abbrechen" })).toBeDefined();
+  view.rerender(
+    <AppView
+      {...base}
+      refinement={{
+        ...refining,
+        status: "Failed",
+        message: "Original bleibt erhalten. Nichts eingefügt.",
+      }}
+      session={{
+        id: null,
+        phase: "Idle",
+        text: refining.original,
+        outcome: { kind: "failed", message: "Backend failed" },
+      }}
+    />,
+  );
+  expect(
+    screen.getByRole("heading", { name: "Original bleibt erhalten" }),
+  ).toBeDefined();
+  expect(screen.getByRole("textbox").textContent).toBe(refining.original);
+  expect(screen.getByRole("button", { name: "Kopieren" })).toBeDefined();
+});
+test("offers the original separately after edits and hides stale session status", () => {
+  const copy = () => {};
+  const base = fixture();
+  const refinement = {
+    setup: {
+      available: true,
+      phase: "Ready" as const,
+      downloadedBytes: 1,
+      totalBytes: 1,
+      canCancel: false,
+      error: null,
+    },
+    sessionId: 4,
+    original: "Äh, hallo.",
+    status: "Edited" as const,
+    message: null,
+  };
+  const view = render(
+    <AppView
+      {...base}
+      refinement={refinement}
+      onCopyOriginal={copy}
+      session={{
+        id: null,
+        phase: "Idle",
+        text: "Hallo.",
+        outcome: { kind: "local" },
+      }}
+    />,
+  );
+  expect(screen.getByText("Original anzeigen")).toBeDefined();
+  fireEvent.click(screen.getByText("Original anzeigen"));
+  expect(
+    (
+      screen.getByRole("textbox", {
+        name: "Originaltranskript",
+      }) as HTMLTextAreaElement
+    ).value,
+  ).toBe("Äh, hallo.");
+  view.rerender(
+    <AppView
+      {...base}
+      refinement={{ ...refinement, status: "Processing" }}
+      session={{ id: 5, phase: "Recording", text: "Hallo." }}
+    />,
+  );
+  expect(screen.queryByText("Text wird bereinigt")).toBeNull();
+  expect(screen.queryByText("Original anzeigen")).toBeNull();
+});
+
 function fixture(): AppViewProps {
   const noop = () => {};
   return {

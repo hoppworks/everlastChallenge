@@ -5,6 +5,7 @@ type TestResult = Result<(), Box<dyn std::error::Error>>;
 
 fn draft() -> SettingsDraft {
     SettingsDraft {
+        refinement: false,
         model: None,
         device: None,
         language: crate::settings::SettingsLanguage::German,
