@@ -63,8 +63,13 @@ Both stages share the
 30-second request deadline, 4,096 generated-token budget and 32-KiB output-byte
 budget. Each model prompt is limited to 8,192 tokens. No first model call is
 needed when the structural option list is empty. The punctuation grammar retains
-existing whitespace and offers bounded punctuation insertion at plain spaces;
-its generated pattern is capped at 512 KiB. A failed or incomplete second pass
+existing whitespace and offers bounded punctuation insertion at plain spaces.
+Policy version 8 permits capitalization alternatives only at existing sentence
+starts or immediately after a generated sentence terminator, matching the
+validator. Non-initial word casing remains unchanged unless a sentence boundary
+precedes it; this intentionally preserves names and identifiers and also leaves
+lowercase nouns untouched rather than guessing their role.
+The generated pattern is capped at 512 KiB. A failed or incomplete second pass
 does not return the first pass as a fallback.
 
 ## Host service

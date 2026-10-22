@@ -261,3 +261,11 @@ The reviewers checked meaning and protected content separately from fixture
 agreement. No blocking semantic defect was identified; ambiguity and imperfect
 quotation punctuation remain explicit limitations. This is not human approval,
 a general accuracy estimate or a performance result.
+
+The [capitalization regression](verification/refinement-capitalization-2026-10-22.md)
+records an AI-assisted fix for a native transcript rejected by the text worker.
+Controlled MLX logits reproduced the mismatch between grammar-permitted case
+changes and the unchanged Rust validator. Independent review covered the grammar
+change. The corrected production worker accepted the four diagnostic variants;
+all 68 existing cases retained their expected outputs. These results do not
+replace a native receipt check of the updated package or comparative timings.

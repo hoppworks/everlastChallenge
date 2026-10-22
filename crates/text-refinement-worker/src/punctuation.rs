@@ -39,7 +39,7 @@ impl Plan {
         let mut pattern = String::from("^");
         let mut cursor = 0;
         for (index, range) in ranges.iter().enumerate() {
-            pattern.push_str(&escape(&text[cursor..range.start]));
+            let gap = &text[cursor..range.start];
             let word = &text[range.clone()];
             let mut chars = word.chars();
             let first = chars.next().ok_or(FailureKind::InvalidCandidate)?;
@@ -48,21 +48,30 @@ impl Plan {
             } else {
                 word.into()
             };
-            if title == word {
-                pattern.push_str(&escape(word));
+            let original_word = escape(word);
+            let sentence_word = if title == word {
+                original_word.clone()
             } else {
-                pattern.push_str(&format!("(?:{}|{})", escape(word), escape(&title)));
+                format!("(?:{}|{})", original_word, escape(&title))
+            };
+            let can_insert = index > 0
+                && gap == " "
+                && !text[ranges[index - 1].clone()].ends_with([',', '.', '!', '?', ':', ';']);
+            if can_insert {
+                // The validator permits a case change only at a sentence start.
+                // Couple that alternative to a preceding sentence terminator;
+                // commas, colons and semicolons do not grant case authority.
+                pattern.push_str(&format!("(?:[.!?] {sentence_word}|[,;:]? {original_word})"));
+            } else {
+                pattern.push_str(&escape(gap));
+                let prefix = text[..range.start].trim_end_matches([' ', '\t']);
+                if prefix.is_empty() || prefix.ends_with(['.', '!', '?', '\n', '\r']) {
+                    pattern.push_str(&sentence_word);
+                } else {
+                    pattern.push_str(&original_word);
+                }
             }
             cursor = range.end;
-            let next = ranges.get(index + 1).map_or(text.len(), |r| r.start);
-            let gap = &text[cursor..next];
-            if index + 1 < ranges.len()
-                && gap == " "
-                && !word.ends_with([',', '.', '!', '?', ':', ';'])
-            {
-                pattern.push_str("[,.!?:;]? ");
-                cursor = next;
-            }
         }
         if let Some(last) = ranges.last()
             && !text[last.clone()].ends_with(['.', '!', '?'])

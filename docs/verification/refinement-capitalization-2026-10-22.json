@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "priorRevision": "70031cfe6fe339a3c1974c4db9beba306438b4a0",
+  "policyVersion": 8,
+  "promptVersion": 9,
+  "sourceHashes": {
+    "crates/text-refinement-worker/src/punctuation.rs": "fded62919be36a3a3529f8ada3cf7b9aeffcc962a439cb41f500b853e4b1d204",
+    "crates/text-refinement-worker/tests/structured.rs": "5bc3100aa4c0162b9e89bbf4d2978747d12bd6fc23f2798ee14320cb60a94ed0",
+    "crates/text-refinement-protocol/src/lib.rs": "232fa6ca30d0b3d5ed9c6e0b0df9f3daa5919650c63b49fedd76397c07a64416"
+  },
+  "originalFailure": {
+    "kind": "invalid_candidate",
+    "rawWorkerReportSha256": "d24b8164b3bc7fb807595c7d7fe18cb7199f5c8a988faa090b5c12d905444532",
+    "scope": "Exact native ASR transcript replayed through the signed production worker."
+  },
+  "regression": {
+    "redLogSha256": "1bdb0475f0b0acae824501fc79541cfa8fa4023a03bbdcce266ea59b123c68bd",
+    "focusedGreenLogSha256": "e36d533d2790e824f1a9ac7f4d70e64dba0523869882872148dee20acc1d4248"
+  },
+  "realModel": {
+    "workerSha256": "9011d2f4bc994abc141e2ff16305e5115159ee9eea5d2f06cb789df102c8d120",
+    "rawReportSha256": "e911c89e4610e207c3a788d7f2783f9371fd6ef79a6bafa8004f33606e306b7d",
+    "validatedReportSha256": "d79efa05b8058ff3fc720daa76f943f7d00cd531203054608ef86c17a7f210a2",
+    "existingCases": 68,
+    "accepted": 68,
+    "expectedOutputsMatched": 68,
+    "changedExistingOutputs": 0,
+    "newVariants": 4,
+    "newVariantsValidatedReportSha256": "372996ac5603d987ab209e51ad594dbfe38f95232b750f7ae1ea22c1ca785fd1"
+  },
+  "nativeUpdatedPackage": "pending",
+  "scope": "Source-bound regression and real-model evidence; no performance or updated native delivery claim.",
+  "softwareChecks": {
+    "command": "cargo test -p text-refinement-protocol -p text-refinement-worker --features text-refinement-worker/test-fixture --locked",
+    "passed": 68,
+    "ignored": 1,
+    "testLogSha256": "33ea2476baeab5cd1e8a15570e48369c4b87c0d5e41ccdc3f4fab6120062d11e",
+    "clippy": "passed; both affected crates, all targets, test-fixture feature, warnings denied",
+    "clippyLogSha256": "fe5ac7b2eaff01e27bf8f01378094dc60cbbbf57659192b8a11ce6c5e46e2497",
+    "format": "cargo fmt --all -- --check passed"
+  }
+}

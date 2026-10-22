@@ -273,3 +273,64 @@ fn fixed_word_grammar_accepts_a_long_complete_transcript() -> TestResult {
     let _ = build_json_schema_logits_processor(plan.schema(), &tokenizer, Some(96))?;
     Ok(())
 }
+
+#[test]
+fn punctuation_grammar_never_offers_internal_capitalization_rejected_by_validator() -> TestResult {
+    use dictation_core::refinement::{Language, OriginalTranscript};
+    use mlxrs::lm::{
+        generate::{FinishReason, stream_generate_with_processors},
+        structured::build_json_schema_logits_processor,
+    };
+    struct CapitalizingModel;
+    impl Model for CapitalizingModel {
+        fn forward(
+            &self,
+            tokens: &Array,
+            _cache: &mut [Box<dyn KvCache>],
+        ) -> mlxrs::error::Result<Array> {
+            let sequence = tokens.shape()[1];
+            let mut row = vec![0f32; 96];
+            row[0] = 20.;
+            row[1] = 1.;
+            row[(b'"' - 31) as usize] = 4.;
+            row[(b':' - 31) as usize] = 2.;
+            row[(b'{' - 31) as usize] = 3.;
+            row[(b'}' - 31) as usize] = 3.;
+            for byte in b'a'..=b'z' {
+                row[(byte - 31) as usize] = 5.;
+            }
+            for byte in b'A'..=b'Z' {
+                row[(byte - 31) as usize] = 10.;
+            }
+
+            Array::from_slice(&row.repeat(sequence), &(1usize, sequence, 96usize))
+        }
+    }
+    let root = tempfile::tempdir()?;
+    let tokenizer = ascii_tokenizer(root.path())?;
+    let plan = text_refinement_worker::punctuation::Plan::new(OriginalTranscript::new(
+        "der termin bleibt".into(),
+    )?)
+    .map_err(|e| format!("{e:?}"))?;
+    let grammar = build_json_schema_logits_processor(plan.schema(), &tokenizer, Some(96))?;
+    let mut output = String::new();
+    let mut ended = false;
+    for step in stream_generate_with_processors(
+        &CapitalizingModel,
+        &tokenizer,
+        &[1],
+        Vec::new(),
+        GenConfig::new().with_max_tokens(200),
+        vec![grammar.into_logits_processor()],
+    ) {
+        let step = step?;
+        output.push_str(&step.text);
+        ended |= matches!(step.finish_reason, Some(FinishReason::Eos));
+    }
+    assert!(ended, "{output}");
+    assert!(
+        plan.decode(&output, Language::German).is_ok(),
+        "Grammar admitted invalid capitalization: {output}"
+    );
+    Ok(())
+}
