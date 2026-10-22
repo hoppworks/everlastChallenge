@@ -54,17 +54,24 @@ pub struct SentPaste {
     restore_after: Instant,
 }
 
+fn key_events(key_code: u16) -> Result<(CGEvent, CGEvent), PasteError> {
+    let source = CGEventSource::new(CGEventSourceStateID::CombinedSessionState)
+        .map_err(|_| PasteError::EventConstruction)?;
+    let down = CGEvent::new_keyboard_event(source.clone(), key_code, true)
+        .map_err(|_| PasteError::EventConstruction)?;
+    let up = CGEvent::new_keyboard_event(source, key_code, false)
+        .map_err(|_| PasteError::EventConstruction)?;
+    down.set_flags(CGEventFlags::CGEventFlagCommand);
+    // Preflight requires no held modifiers. End our synthetic chord with no
+    // modifier flags so its final event cannot retain an implicit Command state.
+    up.set_flags(CGEventFlags::empty());
+    Ok((down, up))
+}
+
 impl PreparedPaste {
     /// Creates both events before any clipboard mutation, without posting them.
     pub fn new(key: PasteKey, _main_thread: MainThreadMarker) -> Result<Self, PasteError> {
-        let source = CGEventSource::new(CGEventSourceStateID::CombinedSessionState)
-            .map_err(|_| PasteError::EventConstruction)?;
-        let down = CGEvent::new_keyboard_event(source.clone(), key.key_code(), true)
-            .map_err(|_| PasteError::EventConstruction)?;
-        let up = CGEvent::new_keyboard_event(source, key.key_code(), false)
-            .map_err(|_| PasteError::EventConstruction)?;
-        down.set_flags(CGEventFlags::CGEventFlagCommand);
-        up.set_flags(CGEventFlags::CGEventFlagCommand);
+        let (down, up) = key_events(key.key_code())?;
         Ok(Self { key, down, up })
     }
 
@@ -166,5 +173,21 @@ impl SentPaste {
     /// Schedule outside the send step; neither delay nor restore proves receipt.
     pub(crate) fn restore(self, main: MainThreadMarker) -> Result<RestoreOutcome, ClipboardError> {
         self.clipboard.restore(main)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn paste_key_up_releases_the_implicit_command_modifier() -> Result<(), PasteError> {
+        let (down, up) = key_events(9)?;
+        assert!(down.get_flags().contains(CGEventFlags::CGEventFlagCommand));
+        assert!(
+            up.get_flags().is_empty(),
+            "paste key-up must not retain a modifier flag"
+        );
+        Ok(())
     }
 }
