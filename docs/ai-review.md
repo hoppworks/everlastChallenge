@@ -241,3 +241,9 @@ all 68 declared outputs, including the 66 unchanged previous results. Independen
 review retained the occurrence instruction for repeated spans. The change does
 not alter model selection, serialization, validation or execution flow; linguistic
 review, packaged delivery and performance remain separate requirements.
+
+The [packaged refinement checks](verification/refinement-packaged-2026-10-22.md)
+record AI-operated native target observation and a separate network-denied app
+run. The first stop attempt was rejected on focus loss and is retained. Offline
+processing passed, but the isolated launch lacked Accessibility authorization;
+these two observations are not presented as a single offline delivery test.

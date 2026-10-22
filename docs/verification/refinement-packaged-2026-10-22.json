@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "runtimeRevision": "287641502723bcfa1239449048b8d72b6a6f5afd",
+  "sourceTree": "262ce65cd1379d03cec4731907c129e0bdf27cd1",
+  "historyCommitCount": 422,
+  "historyListSha256": "ea43c7b735b1c2592e23b3b7f9b5b02b87ae2cc01a1bf8cb78ab0e0e4160015a",
+  "bundle": {
+    "metadataPreservingExternalCopy": true,
+    "signatureAndInventoryVerification": "passed",
+    "runtimeFiles": [
+      {
+        "path": "Contents/MacOS/everlast-dictation",
+        "sha256": "cb18b07acf480cc36d7a1a4e03d431e3d83bbf3ea70a3ec1ccb68273b8318f79"
+      },
+      {
+        "path": "Contents/MacOS/mlx.metallib",
+        "sha256": "0f067d79c93fdd840bbe0df4de56f651b86c9ed0f59a04db4dddea7bc0a44d22"
+      },
+      {
+        "path": "Contents/MacOS/text-refinement-worker",
+        "sha256": "3f9183fca6cabe85acbdf0a8bb2141abf198a3021597340c1f7e0a3fb8e1bf1d"
+      }
+    ],
+    "workerBinding": {
+      "qualifiedRawSha256": "4acf3b813c0046aba0c807862e36f7ec9ae83908a85f246fa114ce6668f4d3d2",
+      "signatureStrippedRawSha256": "b2d13d809f5809b4f8dd04b7506ad81b875684beecfee1cbb668bdbbfae09ee4",
+      "signatureStrippedSignedSha256": "7db0bc2294f0b6b6eb110328074f2a38b3d11d333b21d57a3be0da28f31002ba",
+      "normalizedSha256": "580fe7c5c08ce3ff377380a300a6798979646433d4db577e84dff757ce55c0b2",
+      "onlyDifference": "__LINKEDIT.vmsize allocation after removal of differently sized code signatures",
+      "rawField": {
+        "offset": 2032,
+        "vmsize": "5963776",
+        "filesize": "5730512"
+      },
+      "signedField": {
+        "offset": 2032,
+        "vmsize": "5816320",
+        "filesize": "5730512"
+      }
+    }
+  },
+  "nativeDelivery": {
+    "audioSha256": "b4fafc402f5ff643ce758f903cb00626ecbdaccb7f171458afb712c2524ccffc",
+    "journalSha256": "ef229662cea7d63a47755a7f11cc2f35e74348b45ee50b46e8901081c09e7d53",
+    "observations": 9616,
+    "terminal": "stopped",
+    "firstReceiptFrontmost": true,
+    "textSha256": "1679fcfc3cfc1b50b11a998c83ebf369d2d597370a53dad4e12d3aa2a7f77916",
+    "text": "Die technische Besprechung beginnt am Freitag um 9 Uhr. Wir prüfen zuerst die Messwerte aus dem abgeschlossenen Versuch. Die Namen Mira, Jonas und Lenz bleiben in der angegebenen Reihenfolge stehen. Eine neue Auswertung darf die alten Rohdaten nicht ersetzen. Die Kennung ab 204 bezeichnet weiterhin genau denselben Prüfstand. Alle Beobachtungen müssen nachvollziehbar sein und erhalten einen eigenen Eintrag im Protokoll. Die Unterlagen enthalten eine Beschreibung des Aufbaus und der verwendeten Geräte. Bitte vergleiche die Ergebnisse nur unter denselben Bedingungen. Änderungen an den Einstellungen werden einzeln festgehalten. Die geplante Menge beträgt 16 Kartons. Davon sind vier für die erste Prüfung vorgesehen. Die übrigen Kartons bleiben bis zur Freigabe im Lager. Niemand darf eine fehlende Messung durch eine Schätzung ersetzen. Im letzten Abschnitt steht das Zitat: Die Nummer 42 bleibt unverändert. Dieses Zitat gehört vollständig zum Bericht. Ein offener Punkt ist noch keine bestätigte Ursache. Wir prüfen zunächst die bekannte Abweichung und entscheiden erst danach über weitere Versuche. Falls die zweite Messung scheitert, bleibt auch dieser Versuch sichtbar. Die Entscheidung wird gemeinsam dokumentiert und am Ende mit dem ursprünglichen Auftrag verglichen.",
+    "firstStopAttempt": "Rejected before dispatch because own recipient was not frontmost; refocused it and retried once.",
+    "scope": "Functional target receipt only; no timing claim."
+  },
+  "offline": {
+    "profile": "(version 1) (allow default) (deny network*)",
+    "profileSha256": "5c358b8d847211333e7ba22df82d84f796b5f30a41a2682209a949d783adbd08",
+    "socketControl": {
+      "outside": "allowed",
+      "inside": "denied: PermissionDenied, os=Some(1)"
+    },
+    "livePolicy": {
+      "operation": "network-outbound",
+      "appResult": 1,
+      "workerResult": 1,
+      "unsandboxedControlResult": 0,
+      "apiReference": "https://github.com/WebKit/WebKit/blob/main/Source/WTF/wtf/spi/darwin/SandboxSPI.h"
+    },
+    "inputAudioSha256": "f86a1931df030397aa69ce33ba0f0b27c7093cb52bd59f6ef588a290234224eb",
+    "original": "Wir treffen uns am Montag, nein, am Dienstag um 9 Uhr.",
+    "result": "Wir treffen uns am Dienstag um 9 Uhr.",
+    "automaticDeliveryQualified": false,
+    "limitation": "The direct sandbox launch did not retain Accessibility authorization; recording and local refinement were verified through the app UI.",
+    "appAndWorkerExited": true
+  },
+  "limitations": [
+    "Finite synthetic audio cases, not arbitrary-dictation accuracy.",
+    "Audio hashes identify private authored fixtures; the raw recordings are not distributed in this record.",
+    "No single run establishes offline automatic delivery.",
+    "No comparative latency, memory-pressure or human semantic acceptance is inferred."
+  ],
+  "historyListEncoding": "git rev-list runtimeRevision in default order; UTF-8; trailing newline removed"
+}

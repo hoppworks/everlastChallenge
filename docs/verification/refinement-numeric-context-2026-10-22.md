@@ -39,3 +39,6 @@ ignored; that ignored test is not counted as executed evidence.
 These are finite text-processing observations. They do not establish human
 linguistic acceptance, arbitrary-input correctness, a newly distributed app's
 microphone or delivery path, or comparative performance.
+
+The later [packaged checks](refinement-packaged-2026-10-22.md) add actual native
+receipt of the long numeric correction and separately scoped offline processing.
