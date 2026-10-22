@@ -1,5 +1,7 @@
-use crate::{Generator, manifest};
-use dictation_core::refinement::{MAX_ORIGINAL_BYTES, ProposedEdit};
+use crate::{Generator, manifest, selection};
+use dictation_core::refinement::{
+    MAX_ORIGINAL_BYTES, OriginalTranscript, ProposedEdit, proposal_candidates,
+};
 use mlxrs::{
     lm::{
         factory::{ModelConfiguration, ModelContext, ModelTypeRegistry},
@@ -16,8 +18,8 @@ use std::{
 };
 use text_refinement_protocol::{FailureKind, Language};
 
-pub const PROMPT_VERSION: u16 = 2;
-pub const POLICY_VERSION: u16 = 1;
+pub const PROMPT_VERSION: u16 = 6;
+pub const POLICY_VERSION: u16 = 2;
 const PROMPT: &str = include_str!("prompt.txt");
 const MAX_OUTPUT_BYTES: usize = 32 * 1024;
 const MAX_INPUT_TOKENS: usize = 8192;
@@ -28,12 +30,6 @@ pub struct MlxGenerator {
     context: Option<ModelContext>,
     cache: Option<CacheLimitGuard>,
     _snapshot: manifest::VerifiedSnapshot,
-}
-
-#[derive(serde::Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Candidate {
-    edits: Vec<ProposedEdit>,
 }
 
 impl MlxGenerator {
@@ -108,12 +104,17 @@ impl Generator for MlxGenerator {
             return Err(FailureKind::Incomplete);
         }
         let started = Instant::now();
+        let original = OriginalTranscript::new(text.into()).map_err(|_| FailureKind::InputLimit)?;
+        let choices =
+            proposal_candidates(&original, language.into()).map_err(|_| FailureKind::InputLimit)?;
+        let options = selection::prompt_options(&original, &choices)?;
         let context = self.context.as_ref().ok_or(FailureKind::Generation)?;
-        let content =
-            serde_json::to_string(&serde_json::json!({"language":language,"dictation":text}))
-                .map_err(|_| FailureKind::Generation)?
-                .replace('<', "\\u003c")
-                .replace('>', "\\u003e");
+        let content = serde_json::to_string(
+            &serde_json::json!({"language":language,"dictation":text,"choices":options}),
+        )
+        .map_err(|_| FailureKind::Generation)?
+        .replace('<', "\\u003c")
+        .replace('>', "\\u003e");
         let messages = serde_json::json!([{"role":"system","content":PROMPT},{"role":"user","content":content}]);
         let input = context
             .apply_chat_template_ids(&messages, None, true, false, None)
@@ -160,12 +161,7 @@ impl Generator for MlxGenerator {
         if !stopped {
             return Err(FailureKind::Incomplete);
         }
-        let candidate: Candidate =
-            serde_json::from_str(&output).map_err(|_| FailureKind::InvalidCandidate)?;
-        if candidate.edits.len() > 32 {
-            return Err(FailureKind::InvalidCandidate);
-        }
-        Ok(candidate.edits)
+        selection::decode(&output, &original, &choices, language.into())
     }
 
     fn finish(mut self) -> Result<(), FailureKind> {

@@ -64,3 +64,10 @@ model-file ownership issues; targeted follow-up checked their corrections.
 A real model smoke test still missed two required corrections. The
 [worker report](verification/refinement-worker-2026-10-22.md) preserves that
 limitation and does not claim integrated product or quality acceptance.
+
+Rust-generated source options and their selection decoder were also developed
+with AI assistance. Independent review produced three concrete boundary/limit
+corrections, each backed by a regression. The
+[candidate report](verification/refinement-candidates-2026-10-22.md) also records
+an unresolved model-selection failure reproduced with the upstream runtime;
+software test success is not presented as model-quality acceptance.

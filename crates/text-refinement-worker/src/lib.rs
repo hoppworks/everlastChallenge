@@ -2,6 +2,7 @@
 //! One inference owner with bounded input and session-scoped cancellation.
 
 pub mod manifest;
+pub mod selection;
 
 #[cfg(all(feature = "mlx", target_os = "macos", target_arch = "aarch64"))]
 pub mod model;

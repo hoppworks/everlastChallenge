@@ -1,5 +1,6 @@
 //! Bounded, deterministic acceptance of local text edits. No model or OS access.
 
+mod candidates;
 mod correction;
 mod literals;
 mod policy;
@@ -84,4 +85,13 @@ pub fn validate(
     language: Language,
 ) -> Result<AcceptedTranscript, ValidationError> {
     validator::validate(original, edits, language)
+}
+
+/// Enumerate source-bound options. Each option is independently valid; selection
+/// still requires semantic judgment and joint validation for overlap/conflicts.
+pub fn proposal_candidates(
+    original: &OriginalTranscript,
+    language: Language,
+) -> Result<Vec<ProposedEdit>, ValidationError> {
+    candidates::generate(original, language)
 }

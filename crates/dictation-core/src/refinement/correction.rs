@@ -1,6 +1,6 @@
 use super::{Language, text};
 
-fn markers(language: Language) -> &'static [&'static str] {
+pub(super) fn markers(language: Language) -> &'static [&'static str] {
     match language {
         Language::German => &["nein", "entschuldigung", "ich meine", "korrektur"],
         Language::English => &["no", "sorry", "i mean", "correction"],
