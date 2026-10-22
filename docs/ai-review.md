@@ -254,3 +254,10 @@ inspection removed an unused historical license exception and clarified the
 worker README's version references; the targeted dependency check passed after
 that cleanup. Counts distinguish ignored tests and coverage reruns, and the
 report does not claim a remote CI result or complete product acceptance.
+
+The [semantic review](verification/refinement-semantic-review-2026-10-22.md)
+records two AI-assisted readings of all68actual prompt9 input/output pairs.
+The reviewers checked meaning and protected content separately from fixture
+agreement. No blocking semantic defect was identified; ambiguity and imperfect
+quotation punctuation remain explicit limitations. This is not human approval,
+a general accuracy estimate or a performance result.

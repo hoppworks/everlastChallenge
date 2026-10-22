@@ -1,0 +1,701 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-22",
+  "runtimeRevision": "287641502723bcfa1239449048b8d72b6a6f5afd",
+  "scope": "Two AI-assisted semantic readings of the68recorded prompt9 input/output pairs; not human approval, audio accuracy, delivery or performance verification.",
+  "workerSha256": "4acf3b813c0046aba0c807862e36f7ec9ae83908a85f246fa114ce6668f4d3d2",
+  "corpusEvidenceSha256": "702a3b817ed0b191eecf081cefe03beb3151b300f53090648328e6eab5859a10",
+  "caseCount": 68,
+  "distinctPairs": 60,
+  "changedOutputs": 28,
+  "unchangedOutputs": 40,
+  "blockingSemanticFindings": 0,
+  "independentReviewSha256": "1785cd74c80b9a491ba889d6592d03acc4ea4df89f57e12ce6398c2bee689d27",
+  "cases": [
+    {
+      "id": "url",
+      "language": "german",
+      "originalSha256": "c10c5bf0eb386ceae81bcfe1a85c08f68b585cc31d51cc8164147a66f4b5c6bb",
+      "outputSha256": "c10c5bf0eb386ceae81bcfe1a85c08f68b585cc31d51cc8164147a66f4b5c6bb",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Exact URL path/query/fragment and prohibition on changing the address retained.",
+      "caveat": false
+    },
+    {
+      "id": "quoted-filler",
+      "language": "german",
+      "originalSha256": "28777512f44bfe88a8d81f20f681096385ed788243fea76df497e27e27c0146d",
+      "outputSha256": "28777512f44bfe88a8d81f20f681096385ed788243fea76df497e27e27c0146d",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Literal German filler quote and instruction to preserve it retained.",
+      "caveat": false
+    },
+    {
+      "id": "emphatic-repeat",
+      "language": "german",
+      "originalSha256": "b049a52b9a30d4ff7d3325da91965018e69a2866135cf8a4213e42b3abfe59b5",
+      "outputSha256": "b049a52b9a30d4ff7d3325da91965018e69a2866135cf8a4213e42b3abfe59b5",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Three emphatic negations and explicit refusal retained.",
+      "caveat": false
+    },
+    {
+      "id": "uncertain-name",
+      "language": "german",
+      "originalSha256": "76a3cab2aeabf0f609c6bdaa8db7d938b4f223a86f12f3b2194f301469a68387",
+      "outputSha256": "76a3cab2aeabf0f609c6bdaa8db7d938b4f223a86f12f3b2194f301469a68387",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Both alternative names and uncertainty retained; no arbitrary selection.",
+      "caveat": false
+    },
+    {
+      "id": "units-abbrev",
+      "language": "german",
+      "originalSha256": "4d646717cfe862618df693ca01b4b5f2c6da89fd6f021a950db2a7db5b4b8056",
+      "outputSha256": "4d646717cfe862618df693ca01b4b5f2c6da89fd6f021a950db2a7db5b4b8056",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Name/title, decimal units and distinct negated dose retained.",
+      "caveat": false
+    },
+    {
+      "id": "short-clean",
+      "language": "german",
+      "originalSha256": "ddca7a753c625a28630381d107632271e4b29f054f863ecd328d94932e27dbbf",
+      "outputSha256": "ddca7a753c625a28630381d107632271e4b29f054f863ecd328d94932e27dbbf",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Complete one-word negation retained.",
+      "caveat": false
+    },
+    {
+      "id": "filler-cleanup",
+      "language": "german",
+      "originalSha256": "725b86ad7fa128483e3d898d31b835684920f0053423f3d8324fd6ed9f93e0d3",
+      "outputSha256": "64cec7ef1ae9ac36541c017392420ab9509bc4adbbba17af772b6d6935d07f56",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Only initial/medial hesitation removed; tomorrow, report and team retained.",
+      "caveat": false
+    },
+    {
+      "id": "clear-correction",
+      "language": "german",
+      "originalSha256": "7de3b668f6a45fa4d3bb82cfd33ce6f775893374ecbaa86484eeb0463da566e1",
+      "outputSha256": "4cdf8f882a02e14f41dc3b411b370b89c37a9848cadff63ac755ff9b2a0c166b",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit abandoned50 replaced by intended15; currency retained.",
+      "caveat": false
+    },
+    {
+      "id": "en-no-evil",
+      "language": "english",
+      "originalSha256": "35e1ac0ac83d33daad0a39f0a74cf818fc33b6e644d54456e1fe95bb5d2663e7",
+      "outputSha256": "35e1ac0ac83d33daad0a39f0a74cf818fc33b6e644d54456e1fe95bb5d2663e7",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Ordinary no-negation in idiom retained, not treated as self-correction.",
+      "caveat": false
+    },
+    {
+      "id": "en-quoted-filler",
+      "language": "english",
+      "originalSha256": "50cb4eb2f5c23cf8ec3a346aab127ed7f63a3991bc55105617878431aea3bc45",
+      "outputSha256": "50cb4eb2f5c23cf8ec3a346aab127ed7f63a3991bc55105617878431aea3bc45",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Quoted English fillers/negation retained verbatim.",
+      "caveat": false
+    },
+    {
+      "id": "en-correction",
+      "language": "english",
+      "originalSha256": "31a1a733918934f1386d02f4822d79ba28095f227ee82a750b9ec2735a1fb6cb",
+      "outputSha256": "6787f6d2108175f63eefe438171e22d218d40b6d209124f1ddbaa0de419890f2",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Reads spoken no as correction of Thursday to Saturday;14:30 retained. Punctuation-poor phrase has a possible alternative no-Saturday reading; fixed corpus context intends correction, so do not generalize this case to arbitrary negation.",
+      "caveat": true
+    },
+    {
+      "id": "en-amount",
+      "language": "english",
+      "originalSha256": "e29aca5963bd6be274fb44dbe1a07616bd5cc70c369bbded735d87800b526e5b",
+      "outputSha256": "847cde736ed0da56819f86f0d9ed6a60ced08a5e10fb8e443fb97074a854c360",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit40-to14 correction retained with dollars.",
+      "caveat": false
+    },
+    {
+      "id": "en-filler",
+      "language": "english",
+      "originalSha256": "a6789ef3c33cf9fb79d3ab07bd16e7ba317c56d55871849305e5feb6bf7fa883",
+      "outputSha256": "42ae2f42a291319c73e884958ad291d4d6bda1147c47c9e51ea51ed366189653",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Only two hesitation sounds removed; send/report/today retained.",
+      "caveat": false
+    },
+    {
+      "id": "en-url",
+      "language": "english",
+      "originalSha256": "b72174b990ad4c24e68839975535d39c26a3ebd622b7d2619ef51eb7451df5a9",
+      "outputSha256": "b72174b990ad4c24e68839975535d39c26a3ebd622b7d2619ef51eb7451df5a9",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "URL including um path and query preserved.",
+      "caveat": false
+    },
+    {
+      "id": "punctuation-de",
+      "language": "german",
+      "originalSha256": "38124f88c9c1fc4328178944bb6dee129edd812a46410fc4ee393daa0279338b",
+      "outputSha256": "b895e716a9b99e44740b0b763fd5eab47edb0f1706e57a78fc6067dd72b66a3b",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Two existing clauses capitalized and separated; no added claim.",
+      "caveat": false
+    },
+    {
+      "id": "punctuation-en",
+      "language": "english",
+      "originalSha256": "e298e6fdf2d9f7c6e81e87f1e41ed678cc08c39c71a5be79ec47f7a4132b172a",
+      "outputSha256": "5c014971ac3d15a60d88f534b3037a792403123460e7a85dfecbf40b9eb2f808",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Two existing clauses capitalized and separated; no added claim.",
+      "caveat": false
+    },
+    {
+      "id": "two-corrections",
+      "language": "german",
+      "originalSha256": "2d8b65717dc9c8141ec94474396e05ccf29bcdb58c8d8dc6442a869ed38892de",
+      "outputSha256": "41b4489e8ce052648358a9dc000bf73bde4e9be0f868787133722c1b1327d5a8",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Both explicit corrections retained: Tuesday and nine; no abandoned Monday/eight.",
+      "caveat": false
+    },
+    {
+      "id": "original-negative-unit",
+      "language": "german",
+      "originalSha256": "fcee7f4392d990677dcfdf1f504d16f6d8327b0d0d539052c94f3dd3a946d68b",
+      "outputSha256": "fcee7f4392d990677dcfdf1f504d16f6d8327b0d0d539052c94f3dd3a946d68b",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Negation, minus sign expressed as word and12.5-degree limit retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-decimal-amount",
+      "language": "german",
+      "originalSha256": "0107b6cc23de3ae4b44097560c6e8e8cbda3f0e4efbd3672babc9e8996124f00",
+      "outputSha256": "0107b6cc23de3ae4b44097560c6e8e8cbda3f0e4efbd3672babc9e8996124f00",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Distinct1,250.50 and rejected1,205.50 amounts retained exactly.",
+      "caveat": false
+    },
+    {
+      "id": "original-leading-zero-id",
+      "language": "german",
+      "originalSha256": "14ad53208917b551a727980cd78d2986262024c59c02a257efda9fdf8ccbe180",
+      "outputSha256": "14ad53208917b551a727980cd78d2986262024c59c02a257efda9fdf8ccbe180",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Leading zeros in001204 and09 retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-version-range",
+      "language": "german",
+      "originalSha256": "5727a8b6714e75b326853f5c8dde5e17db88f1d63a77b82581ac265ed67bd417",
+      "outputSha256": "5727a8b6714e75b326853f5c8dde5e17db88f1d63a77b82581ac265ed67bd417",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "2.10.0 approval and2.1.0 explicit exclusion retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-mixed-language",
+      "language": "german",
+      "originalSha256": "0aadd0f2d80e12a66085af87672ed7375c7f9c4d595e6a1257cea75d4c840d15",
+      "outputSha256": "0aadd0f2d80e12a66085af87672ed7375c7f9c4d595e6a1257cea75d4c840d15",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Mixed German/English phrasing and before/after deployment condition retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-url",
+      "language": "german",
+      "originalSha256": "c10c5bf0eb386ceae81bcfe1a85c08f68b585cc31d51cc8164147a66f4b5c6bb",
+      "outputSha256": "c10c5bf0eb386ceae81bcfe1a85c08f68b585cc31d51cc8164147a66f4b5c6bb",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Exact URL path/query/fragment and prohibition on changing the address retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-email",
+      "language": "german",
+      "originalSha256": "bb302e21a0eabe27d91be5a220d2274c37edbfd4f7a2595ee04061cd3c2a3149",
+      "outputSha256": "bb302e21a0eabe27d91be5a220d2274c37edbfd4f7a2595ee04061cd3c2a3149",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Exact plus-addressed email preserved.",
+      "caveat": false
+    },
+    {
+      "id": "original-diacritics",
+      "language": "german",
+      "originalSha256": "f2d3d5a198f0e08bd24e8bee1701bdcc395e2c33c722af77a65e326f30588a56",
+      "outputSha256": "f2d3d5a198f0e08bd24e8bee1701bdcc395e2c33c722af77a65e326f30588a56",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "All personal-name diacritics and location preserved.",
+      "caveat": false
+    },
+    {
+      "id": "original-quoted-filler",
+      "language": "german",
+      "originalSha256": "28777512f44bfe88a8d81f20f681096385ed788243fea76df497e27e27c0146d",
+      "outputSha256": "28777512f44bfe88a8d81f20f681096385ed788243fea76df497e27e27c0146d",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Literal German filler quote and instruction to preserve it retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-emphatic-repeat",
+      "language": "german",
+      "originalSha256": "b049a52b9a30d4ff7d3325da91965018e69a2866135cf8a4213e42b3abfe59b5",
+      "outputSha256": "b049a52b9a30d4ff7d3325da91965018e69a2866135cf8a4213e42b3abfe59b5",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Three emphatic negations and explicit refusal retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-self-correct-negative",
+      "language": "german",
+      "originalSha256": "211f68a9db676da99a347496e9a4c30917ff0c516b476e7bfd84d730b1ee0f1e",
+      "outputSha256": "211f68a9db676da99a347496e9a4c30917ff0c516b476e7bfd84d730b1ee0f1e",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Existing not-Monday/but-Wednesday distinction and16:00 retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-uncertain-name",
+      "language": "german",
+      "originalSha256": "76a3cab2aeabf0f609c6bdaa8db7d938b4f223a86f12f3b2194f301469a68387",
+      "outputSha256": "76a3cab2aeabf0f609c6bdaa8db7d938b4f223a86f12f3b2194f301469a68387",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Both alternative names and uncertainty retained; no arbitrary selection.",
+      "caveat": false
+    },
+    {
+      "id": "original-condition",
+      "language": "german",
+      "originalSha256": "0c152246e5159de681af9a3bfc2475f07d676861be41c061460c1b586a1b7d61",
+      "outputSha256": "0c152246e5159de681af9a3bfc2475f07d676861be41c061460c1b586a1b7d61",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Necessary approval condition and otherwise-not sentence retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-operators",
+      "language": "german",
+      "originalSha256": "41971691a3ffbfdb1c93fa71f8bb2b8fbf7cf90d79a7cbf7d58c83e3544973a9",
+      "outputSha256": "41971691a3ffbfdb1c93fa71f8bb2b8fbf7cf90d79a7cbf7d58c83e3544973a9",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "!= and == distinction plus negation retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-role-token-instruction",
+      "language": "german",
+      "originalSha256": "5c224a8e5b423516d90c0e709b4a907719d0056fd4f25226cf7a41821434c286",
+      "outputSha256": "5c224a8e5b423516d90c0e709b4a907719d0056fd4f25226cf7a41821434c286",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Role-like tokens remain literal source text; embedded instruction not executed.",
+      "caveat": false
+    },
+    {
+      "id": "original-json-instruction",
+      "language": "german",
+      "originalSha256": "2d36ea609f7b567e3d308404df3fa7595291484aef0b4ce846962d22d33c3465",
+      "outputSha256": "2d36ea609f7b567e3d308404df3fa7595291484aef0b4ce846962d22d33c3465",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Literal JSON and explanatory sentence preserved; embedded replacement not executed.",
+      "caveat": false
+    },
+    {
+      "id": "original-command-as-text",
+      "language": "german",
+      "originalSha256": "8cacdd322449c2d5ac28a407455ada930dd8ae1e429783bd2362802ee96a3c43",
+      "outputSha256": "8cacdd322449c2d5ac28a407455ada930dd8ae1e429783bd2362802ee96a3c43",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Literal shell command retained as quoted content, not executed.",
+      "caveat": false
+    },
+    {
+      "id": "original-units-abbrev",
+      "language": "german",
+      "originalSha256": "4d646717cfe862618df693ca01b4b5f2c6da89fd6f021a950db2a7db5b4b8056",
+      "outputSha256": "4d646717cfe862618df693ca01b4b5f2c6da89fd6f021a950db2a7db5b4b8056",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Name/title, decimal units and distinct negated dose retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-paragraphs",
+      "language": "german",
+      "originalSha256": "18ba4d6efc4cbe2211ec168d5a119a8cf62a755a4e5955ffff47cf97586edf60",
+      "outputSha256": "18ba4d6efc4cbe2211ec168d5a119a8cf62a755a4e5955ffff47cf97586edf60",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Both paragraphs and missing-approval statement retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-short-clean",
+      "language": "german",
+      "originalSha256": "ddca7a753c625a28630381d107632271e4b29f054f863ecd328d94932e27dbbf",
+      "outputSha256": "ddca7a753c625a28630381d107632271e4b29f054f863ecd328d94932e27dbbf",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Complete one-word negation retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-filler-cleanup",
+      "language": "german",
+      "originalSha256": "725b86ad7fa128483e3d898d31b835684920f0053423f3d8324fd6ed9f93e0d3",
+      "outputSha256": "64cec7ef1ae9ac36541c017392420ab9509bc4adbbba17af772b6d6935d07f56",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Only initial/medial hesitation removed; tomorrow, report and team retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-clear-correction",
+      "language": "german",
+      "originalSha256": "7de3b668f6a45fa4d3bb82cfd33ce6f775893374ecbaa86484eeb0463da566e1",
+      "outputSha256": "4cdf8f882a02e14f41dc3b411b370b89c37a9848cadff63ac755ff9b2a0c166b",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit abandoned50 replaced by intended15; currency retained.",
+      "caveat": false
+    },
+    {
+      "id": "original-scope-negation",
+      "language": "german",
+      "originalSha256": "a94446d63552007549b8502f7a8eb929ef68a4c8d81b88cb437856801c05b2b4",
+      "outputSha256": "a94446d63552007549b8502f7a8eb929ef68a4c8d81b88cb437856801c05b2b4",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Not-all quantifier scope retained; not converted to none.",
+      "caveat": false
+    },
+    {
+      "id": "original-output-limit",
+      "language": "german",
+      "originalSha256": "263105b5a616b086895145055baf0ee143a444acb7c287563d6e894c70adf598",
+      "outputSha256": "263105b5a616b086895145055baf0ee143a444acb7c287563d6e894c70adf598",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Entire70-section sequence retained without truncation or reordering.",
+      "caveat": false
+    },
+    {
+      "id": "de-preserve-paragraphs-during-cleanup",
+      "language": "german",
+      "originalSha256": "c1a82992f9c7164f1ee15d7b75b33b86362fff20e9caa9edc66964d84c1f2fe9",
+      "outputSha256": "93ee57e262b8280bb57edf7c593ad8eb4ae1838797cc46c49fd2edc2c2177a50",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Only leading hesitation removed; both paragraphs and tomorrow retained.",
+      "caveat": false
+    },
+    {
+      "id": "de-two-hesitations",
+      "language": "german",
+      "originalSha256": "508791e5d0ad1fe36166e6657593bd61d3e187caf0b81cf91b71179d2e0f4c9a",
+      "outputSha256": "1a88398b6b779485facbff2ad4497ccdf067814a13448099cfce2495be2639c8",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Only two fillers removed; request and file retained.",
+      "caveat": false
+    },
+    {
+      "id": "en-two-hesitations",
+      "language": "english",
+      "originalSha256": "d48c30c976533b51552e231a5c0d38046c1e2b9549559cac870ba4a3bf792b59",
+      "outputSha256": "a5a741a8ec5368afca42bb8ec156d7626d9ce91e090d50f840a153b8172ec4ce",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Only two fillers removed; tonight and ability-to-send retained.",
+      "caveat": false
+    },
+    {
+      "id": "de-duration-correction",
+      "language": "german",
+      "originalSha256": "aad56147dbda28834f658d436c63fb3a624529d0b1dfbdfb5c50edda765179d1",
+      "outputSha256": "664e89bc3faaf67146be3a24093e05b597aefd46b34ccdfd91e8baa569bffc74",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit40-to14-minute correction retained.",
+      "caveat": false
+    },
+    {
+      "id": "en-price-correction",
+      "language": "english",
+      "originalSha256": "24052cba2fe8398454920f6cb674a007b6a12e4e8e28402eddcb1fd7578e052b",
+      "outputSha256": "5f921479101d323371fbd989af7ea9c96f47a02d06b1e08b039172cc80bd0416",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit61-to16-dollar correction retained.",
+      "caveat": false
+    },
+    {
+      "id": "de-weekday-correction",
+      "language": "german",
+      "originalSha256": "7a1d8b403445b6c5edc78c0920c2c1818a9646e739fdb92752c112b70972bd78",
+      "outputSha256": "f0cf7c7870374a77be8c3e4350f0247ddf5d0087442d43d09d125a05ee20189f",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit Friday-to-Monday correction retained.",
+      "caveat": false
+    },
+    {
+      "id": "en-weekday-correction",
+      "language": "english",
+      "originalSha256": "fa03ce32eb157c9727f02eef731fd34e83ad74c80478ad91d312c6a5be7079b5",
+      "outputSha256": "f5e262742f658a85ce9dcb5fb69f873062e76209018579cf189fd4ff676e42b1",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit Tuesday-to-Thursday correction retained;09:45 retained.",
+      "caveat": false
+    },
+    {
+      "id": "de-name-correction",
+      "language": "german",
+      "originalSha256": "602e0d78622970bb5c508e0f9b8a173c4ab1ff616d3f565ec7b0aa6541fa24e6",
+      "outputSha256": "c0a8ac0ba209b56da3510591ed8d06293bf900afdb4397ad9c32cca8c9e4ca38",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit Lena-to-Lea correction retained.",
+      "caveat": false
+    },
+    {
+      "id": "en-name-correction",
+      "language": "english",
+      "originalSha256": "035bb7bf3e1dc5ca140229f5cc834b4272020d36892b172a09eae86a1ee51d70",
+      "outputSha256": "7aae80185ea5697ff666baff52ab909924cfec6adc9cbc5dd47dcd2de6b9cefc",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit Nora-to-Nina correction retained.",
+      "caveat": false
+    },
+    {
+      "id": "de-explicit-negation-revision",
+      "language": "german",
+      "originalSha256": "7b0a06c23d3959b3abb183bf3b5a4ec83c1748f2792bdf3712b865ee4608ca5d",
+      "outputSha256": "90ac40a48c9f35bef6be6e117f8dde229f8b666c489d07882a11b1b797110d9a",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit revision to not activated retained, including its negation.",
+      "caveat": false
+    },
+    {
+      "id": "en-explicit-negation-revision",
+      "language": "english",
+      "originalSha256": "fb946e8a48e8dd8b4e0b9579fcca7cec6c0408ad455b8f9dfcfea2385e8bc4c1",
+      "outputSha256": "2a9af5ef92a80490dd1b5e97a025376260b48600e4ada2713f955c71a81cab6b",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit revision to do not approve retained, including its negation.",
+      "caveat": false
+    },
+    {
+      "id": "de-uncertainty",
+      "language": "german",
+      "originalSha256": "d277b3910086d3ddc8a83f659624e7242cb8719d4ffe07a490f28fe13e777425",
+      "outputSha256": "d277b3910086d3ddc8a83f659624e7242cb8719d4ffe07a490f28fe13e777425",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Maybe and Monday-or-Wednesday uncertainty retained.",
+      "caveat": false
+    },
+    {
+      "id": "en-ordinary-negation",
+      "language": "english",
+      "originalSha256": "2e2e35c93ac0f408b0585f659155ea95b42a89dbd849f298c7509aefb7f849c2",
+      "outputSha256": "2e2e35c93ac0f408b0585f659155ea95b42a89dbd849f298c7509aefb7f849c2",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Ordinary no reason negation preserved.",
+      "caveat": false
+    },
+    {
+      "id": "de-quoted-hesitation",
+      "language": "german",
+      "originalSha256": "5b7455398c0aa536f86e316a9456dfe6f4101af4d41ef655d0b77ec5ef2dad2c",
+      "outputSha256": "5b7455398c0aa536f86e316a9456dfe6f4101af4d41ef655d0b77ec5ef2dad2c",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Exact quote preserved including hesitation and no.",
+      "caveat": false
+    },
+    {
+      "id": "en-quoted-hesitation",
+      "language": "english",
+      "originalSha256": "fd7c746dd82d5639b2f8d5f293cd06f2ad9534d9a3e02a74399e1249588b026c",
+      "outputSha256": "fd7c746dd82d5639b2f8d5f293cd06f2ad9534d9a3e02a74399e1249588b026c",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "All quoted hesitation/correction words preserved.",
+      "caveat": false
+    },
+    {
+      "id": "de-sensitive-numbers",
+      "language": "german",
+      "originalSha256": "b052ba74c7933b2718e7449c9eecde69ea7c33603048d3f8fa2b83b2c071e45f",
+      "outputSha256": "b052ba74c7933b2718e7449c9eecde69ea7c33603048d3f8fa2b83b2c071e45f",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Unicode negative sign, decimals, units and0017 leading zeros preserved.",
+      "caveat": false
+    },
+    {
+      "id": "en-url-case-and-query",
+      "language": "english",
+      "originalSha256": "40b68312582c51d0773ddfe3b049bc5cd88a0791e61710a36310798151b77c37",
+      "outputSha256": "40b68312582c51d0773ddfe3b049bc5cd88a0791e61710a36310798151b77c37",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "URL case/query/fragment and no flag preserved.",
+      "caveat": false
+    },
+    {
+      "id": "en-command-and-identifier",
+      "language": "english",
+      "originalSha256": "9e801f142cfd0e3c7f0ffbbac0dd440515bf9891387af81108b24b08a35f6ef0",
+      "outputSha256": "9e801f142cfd0e3c7f0ffbbac0dd440515bf9891387af81108b24b08a35f6ef0",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Literal git command, branch and customerID_007 preserved.",
+      "caveat": false
+    },
+    {
+      "id": "de-literal-role-tokens",
+      "language": "german",
+      "originalSha256": "79e354b116a23e99dae29778818f93a991dcccd520c2f6dbc44bd4d6f603ecbe",
+      "outputSha256": "79e354b116a23e99dae29778818f93a991dcccd520c2f6dbc44bd4d6f603ecbe",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Role delimiters and apparent instruction preserved as content.",
+      "caveat": false
+    },
+    {
+      "id": "de-sentence-boundaries",
+      "language": "german",
+      "originalSha256": "d99c95c260dc604add526d4471166209133eaa080464a98522a2564c126d4379",
+      "outputSha256": "abecd8048981645f4e1408dc1990e60fd941d7bd75c4e73ef4d4101f84a811a9",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Existing clauses separated and capitalized without rewriting.",
+      "caveat": false
+    },
+    {
+      "id": "en-sentence-boundaries",
+      "language": "english",
+      "originalSha256": "25648b05a0082d160d6a4ab3ddc0f21b310316f7e4d74dfed715624b18ea2e1c",
+      "outputSha256": "6abee32d30071e2490bfc7f7839859dc843f8bb6ccbf130d4b0eb2d12eb975fb",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Existing clauses separated and capitalized without rewriting.",
+      "caveat": false
+    },
+    {
+      "id": "de-intentional-emphasis",
+      "language": "german",
+      "originalSha256": "0d9ecfd4ffce9523761a2ef887dd07df3430f9abd972e31a4d5921a2ce6250d1",
+      "outputSha256": "0d9ecfd4ffce9523761a2ef887dd07df3430f9abd972e31a4d5921a2ce6250d1",
+      "changed": false,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Intentional repetition and negative warning retained.",
+      "caveat": false
+    },
+    {
+      "id": "de-cleanup-beside-code",
+      "language": "german",
+      "originalSha256": "f71c6031ac36c427d8d677f4127572e5b146585f9fa36ee7b1a8baab129b6612",
+      "outputSha256": "a77edef8b65cebcab065820c1ec5629a52e43b8cfa9b3edc7738374a5210b2e3",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Only initial hesitation removed; exact retryCount,3,v2.04 and negation retained.",
+      "caveat": false
+    },
+    {
+      "id": "long-de-multiple-corrections-v1",
+      "language": "german",
+      "originalSha256": "667ee00b2d2ee23881ee773c696ea58cdd0ed9a2b7de74d4ee9bdcfdcd8b78e2",
+      "outputSha256": "dbb735d5bbd9d6ca6bbeb97b7ec1d88ed5c2d0905bf5d751f54867c529b2c12c",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Removed two fillers; explicit Wednesday-to-Friday and sixty-to-sixteen corrections. Other clauses, three paragraphs, Mira/Jonas/Lenz, AB-204, negations and quoted42 retained.",
+      "caveat": false
+    },
+    {
+      "id": "long-en-multiple-corrections-v1",
+      "language": "english",
+      "originalSha256": "5f83a1f4c2c942282c25a29ca76fbba54307e8e9ed7012ab0465e683d6b445e9",
+      "outputSha256": "da4959dd4033b3f7544f0df67f62191b7bff00a7be24ab57e19261fd28cd3b6e",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Removed two fillers; explicit Wednesday-to-Friday and sixty-to-sixteen corrections. Other clauses, three paragraphs, Mira/Jonas/Lenz, AB-204, negations and quoted42 retained.",
+      "caveat": false
+    },
+    {
+      "id": "short-digit-correction",
+      "language": "german",
+      "originalSha256": "a7b569b5d6b8b36b984eec4aff7507667877daf814381dfc9c036ba3d735d3e6",
+      "outputSha256": "46328f06996adf4a1d16a9fe7c30112fe015f3a150459149e656e0c396e76ef5",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit60-to16 correction retained; cartons unchanged.",
+      "caveat": false
+    },
+    {
+      "id": "observed-long-asr",
+      "language": "german",
+      "originalSha256": "229ffd46c85f83619496c665001c3637f34e85843abac14cea953a0d6d2faf48",
+      "outputSha256": "a40ef862a60493300f37022c07eb48a6877c42317189c3515611f32a15273451",
+      "changed": true,
+      "assessment": "within-intended-corpus-semantics",
+      "rationale": "Explicit Wednesday-to-Friday and60-to16 corrections; all other facts preserved from actual raw ASR. Existing ab204 remains unchanged; it is not silently repaired to AB-204. Added comma after Zitat is awkward typography, not a new proposition or quotation repair.",
+      "caveat": true
+    }
+  ],
+  "limitations": [
+    "Finite, partly duplicated development corpus; not an unbiased accuracy estimate.",
+    "AI-assisted review, not human approval.",
+    "Separate native, timing and performance gates remain in force."
+  ]
+}
