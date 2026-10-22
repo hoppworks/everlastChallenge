@@ -24,6 +24,9 @@ unless a sentence boundary precedes them; lowercase German nouns can therefore
 remain lowercase. This conservative restriction protects names and identifiers.
 
 The implementation and regression were AI-assisted and independently reviewed.
-Real-model replay is separate from native app delivery; the revised package still
-needs its own native recording and receipt check. Machine-readable source and
+A fresh signed package at `ca56a99` also completed native microphone capture,
+local refinement and actual target receipt: “Der Termin ist am Donnerstag um
+10 Uhr.” Its ASR output already used title case, so the exact lowercase failure
+is covered by the separate worker replay. The recipient closed cleanly, and
+macOS reported no held keys after delivery. This run is not a speed comparison. Machine-readable source and
 result hashes are in the [evidence record](refinement-capitalization-2026-10-22.json).

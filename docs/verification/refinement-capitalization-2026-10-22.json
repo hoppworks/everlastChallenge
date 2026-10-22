@@ -29,8 +29,23 @@
     "newVariants": 4,
     "newVariantsValidatedReportSha256": "372996ac5603d987ab209e51ad594dbfe38f95232b750f7ae1ea22c1ca785fd1"
   },
-  "nativeUpdatedPackage": "pending",
-  "scope": "Source-bound regression and real-model evidence; no performance or updated native delivery claim.",
+  "nativeUpdatedPackage": {
+    "revision": "ca56a99fdab898e53e944f309d3c328d25548667",
+    "sourceTree": "f59666da5c2f0067ec38b1114c6543dcb294f7cb",
+    "bundleFileCount": 346,
+    "appExecutableSha256": "a8840c871dc224071443c3560b1093ea04a09fe99ba9e448639dbc4741498aa1",
+    "workerExecutableSha256": "104ad05b4c91ad124fbbadef08cd925621aafec2fdae62960e008012de3f37f5",
+    "original": "Der Termin ist am Dienstag, nein, am Donnerstag um 10 Uhr.",
+    "received": "Der Termin ist am Donnerstag um 10 Uhr.",
+    "outputSha256": "e9918e6bfc501ff6b53227e9f6d173f44977a00d3a43965bb9bd62a9e4b6c888",
+    "journalSha256": "9b6307e7b5cb8d9bfd08f24a21619d3544e0ce5abee8c58ac959ebe3ae7a6b94",
+    "journalFrames": 2638,
+    "cleanRecipientTermination": true,
+    "focusAtReceipt": true,
+    "postDeliveryHeldKeys": [],
+    "scope": "Native microphone, local processing and actual target receipt. This capture yielded title case already; exact lowercase failure is covered by the separate worker replay. Not a comparative timing run."
+  },
+  "scope": "Source-bound regression, real-model and native received-text evidence; no comparative performance claim.",
   "softwareChecks": {
     "command": "cargo test -p text-refinement-protocol -p text-refinement-worker --features text-refinement-worker/test-fixture --locked",
     "passed": 68,

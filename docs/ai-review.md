@@ -267,5 +267,6 @@ records an AI-assisted fix for a native transcript rejected by the text worker.
 Controlled MLX logits reproduced the mismatch between grammar-permitted case
 changes and the unchanged Rust validator. Independent review covered the grammar
 change. The corrected production worker accepted the four diagnostic variants;
-all 68 existing cases retained their expected outputs. These results do not
-replace a native receipt check of the updated package or comparative timings.
+all 68 existing cases retained their expected outputs. The updated signed package also delivered a corrected transcript to an observed
+native target. Its ASR output differed in casing; the exact lowercase failure
+remains covered by worker replay. No comparative timing claim follows.
