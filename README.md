@@ -22,6 +22,9 @@ auf Apple Silicon. Die App ist lokal signiert, nicht Apple-notarisiert; macOS ka
 beim ersten Öffnen einen Sicherheitshinweis anzeigen. Prüfsumme und Details stehen
 im [aktuellen Release](https://github.com/hoppworks/everlastChallenge/releases/latest).
 
+Zum Installieren und Benutzen sind **weder Xcode noch Rust, Node.js oder Python**
+nötig. Die benötigte Metal-Bibliothek ist im App-Paket enthalten.
+
 ## In wenigen Minuten durch das Repository
 
 1. [Technische Entscheidungen](docs/engineering-decisions.md): zentrale Invarianten und Abwägungen.
@@ -93,6 +96,10 @@ Paste-Ereignis ist keine Empfangsbestätigung. Diese Unterschiede sind in den
 Zustandsmodellen und Verhaltenstests ausdrücklich abgebildet.
 
 ## Entwickeln und bauen
+
+Die folgenden Werkzeuge sind nur nötig, um die App aus dem Quellcode zu bauen.
+Der aktuelle MLX-Build kompiliert mit Apples Metal-Compiler die mitgelieferte
+`mlx.metallib`; diese Buildabhängigkeit besteht auch beim Hybrid weiterhin.
 
 Qualifiziert ist **Apple Silicon mit macOS 27**. Auf dem Prüfhost: macOS 27.0.1,
 Xcode 27.1 (27A9275) mit separat installierter Metal Toolchain, Node 22.23.1 /
