@@ -117,3 +117,12 @@ result retaining an intermediate text. The corrected typed result carries its
 source and language. A paused-actor test checks that client cancellation revokes
 the text-worker token directly. The [controller report](verification/refinement-controller-2026-10-22.md)
 separates these contracts from the still-missing product owner hookup and UI.
+
+The runtime-to-owner adapter was AI-assisted and independently reviewed. Runtime
+tests exercise retained originals, delivery gating, cancellation, sleep, stale
+results and independent cleanup. Review found an idle-crash race that could label
+an internal failure as user cancellation. The race was reproduced with a real
+process; its final regression fixes the exact state ordering deterministically.
+Fatal closure now takes precedence over an unconsumed completion. The
+[runtime report](verification/refinement-runtime-2026-10-22.md) records the
+integration boundary; product setup, UI and model-quality acceptance remain open.

@@ -182,11 +182,15 @@ impl Controller {
         if self.core.session_id() != Some(session) {
             return Ok(vec![]);
         }
-        if self
-            .cancellation_handles()
-            .is_some_and(|cancel| !cancel.is_valid())
-        {
-            return self.reconcile_cancel();
+        if let Some(cancel) = self.cancellation_handles() {
+            if !cancel.inference.is_valid() {
+                return self.reconcile_cancel();
+            }
+            if cancel.refinement.is_cancelled()
+                && self.active.as_ref().is_some_and(|active| active.refining)
+            {
+                return self.cancel(session);
+            }
         }
         if self.active.as_ref().is_some_and(|active| active.refining) {
             self.refinement.status = RefinementStatus::Failed(message.clone());
@@ -280,7 +284,10 @@ impl Controller {
     /// Fold an immediate client-side revocation into the serial state machine.
     pub(crate) fn reconcile_cancel(&mut self) -> Result<Vec<Action>, ControllerError> {
         if let Some(cancel) = self.cancellation_handles()
-            && !cancel.is_valid()
+            // Only this token denotes an immediate caller-side revocation.
+            // A text-owner fault can revoke its own token before reporting an
+            // error; the refinement result/fault path preserves that cause.
+            && !cancel.inference.is_valid()
             && self.core.phase() != Phase::Cancelling
         {
             return match self.cancel(cancel.session) {

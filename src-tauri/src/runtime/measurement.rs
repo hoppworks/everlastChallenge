@@ -1001,6 +1001,8 @@ mod tests {
         let mut actor = Actor {
             controller,
             inference: None,
+            refinement: None,
+            refinement_suspended: false,
             generation: 1,
             audio: CpalAudio::default(),
             native,

@@ -21,6 +21,27 @@ pub enum RefinementStatus {
     Cancelled,
 }
 impl Controller {
+    /// A service fault may itself revoke its token. Only a caller-side session
+    /// revocation (the inference token) takes precedence over this failure.
+    pub(crate) fn refinement_unavailable(
+        &mut self,
+        session: u64,
+        message: String,
+    ) -> Result<Vec<Action>, ControllerError> {
+        if self.core.session_id() != Some(session)
+            || !self.active.as_ref().is_some_and(|active| active.refining)
+        {
+            return Ok(vec![]);
+        }
+        if self
+            .active
+            .as_ref()
+            .is_some_and(|active| !active.work_token.is_valid())
+        {
+            return self.reconcile_cancel();
+        }
+        self.refinement_failed(session, message)
+    }
     pub(super) fn complete_transcription(
         &mut self,
         session: u64,

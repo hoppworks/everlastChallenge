@@ -35,6 +35,7 @@ fn owner_result(
     let deadline = std::time::Instant::now() + Duration::from_secs(3);
     loop {
         if let Some(done) = owner.take_result()? {
+            assert_eq!(done.original.as_str(), "Hello.");
             return Ok(done);
         }
         if std::time::Instant::now() >= deadline {

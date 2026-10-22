@@ -124,6 +124,12 @@ impl Owner {
             .0
             .lock()
             .map_err(|_| OwnerError::Synchronization)?;
+        // Fatal exit revokes even a stored success. Report the service failure
+        // before examining its token, otherwise that revocation looks like a
+        // user cancellation. Shutdown/join retains the concrete failure cause.
+        if state.closing {
+            return Err(OwnerError::Closed);
+        }
         if let Some(mut completed) = state.completed.take() {
             if completed.cancel.is_cancelled() && completed.result.is_ok() {
                 completed.result = Err(Failure::Cancelled.into());
@@ -131,9 +137,6 @@ impl Owner {
                 self.shared.1.notify_one();
             }
             return Ok(Some(completed));
-        }
-        if state.closing {
-            return Err(OwnerError::Closed);
         }
         Ok(None)
     }
@@ -333,4 +336,39 @@ fn run(
         job.language,
         &job.cancel,
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn fatal_close_precedes_an_unconsumed_completion() -> Result<(), Box<dyn std::error::Error>> {
+        let original = OriginalTranscript::new("Hello.".into())?;
+        let accepted =
+            dictation_core::refinement::validate(&original, &[], Language::English.into())?;
+        let cancel = Cancellation::new();
+        let shared = Arc::new((
+            Mutex::new(State {
+                completed: Some(Completed {
+                    session: NonZeroU64::new(1).ok_or("zero session")?,
+                    original,
+                    result: Ok(accepted),
+                    cancel: cancel.clone(),
+                }),
+                ..State::default()
+            }),
+            Condvar::new(),
+        ));
+        let owner = Owner {
+            shared: Arc::clone(&shared),
+            thread: None,
+        };
+        // Exercise the actual fatal-exit guard after a result was stored. This
+        // ordering is not established by a child's pipe-write acknowledgement.
+        drop(Exit(shared));
+        assert!(cancel.is_cancelled());
+        assert!(matches!(owner.take_result(), Err(OwnerError::Closed)));
+        Ok(())
+    }
 }

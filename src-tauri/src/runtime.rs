@@ -27,6 +27,7 @@ use tokio::sync::oneshot;
 
 #[cfg(feature = "measurement")]
 pub mod measurement;
+mod refinement;
 
 pub enum NativeCommand {
     Capture {
@@ -623,6 +624,32 @@ impl Runtime {
         native: NativePort,
         audio: impl AudioDriver,
     ) -> Result<Self, RuntimeError> {
+        Self::with_services(inference, generation, native, audio, None)
+    }
+    pub fn spawn_with_refinement(
+        inference: InferenceService,
+        generation: u64,
+        native: NativePort,
+        refinement: crate::refinement_service::owner::Owner,
+    ) -> Result<Self, RuntimeError> {
+        Self::with_services(
+            inference,
+            generation,
+            native,
+            CpalAudio {
+                policy: crate::pipeline::Policy::Reference,
+                ..CpalAudio::default()
+            },
+            Some(Box::new(refinement)),
+        )
+    }
+    fn with_services(
+        inference: InferenceService,
+        generation: u64,
+        native: NativePort,
+        audio: impl AudioDriver,
+        refinement: Option<Box<dyn refinement::Service>>,
+    ) -> Result<Self, RuntimeError> {
         let controller = Controller::with_policy(audio.policy());
         #[cfg(feature = "measurement")]
         let controller = {
@@ -665,6 +692,8 @@ impl Runtime {
                 let mut actor = Actor {
                     controller,
                     inference: Some(inference),
+                    refinement,
+                    refinement_suspended: false,
                     generation,
                     audio,
                     native,
@@ -757,10 +786,19 @@ impl Runtime {
                         None => Ok(()),
                     }
                 })).unwrap_or(Err(RuntimeError::Worker));
-                let result = result.and(audio_cleanup).and(inference_cleanup);
-                if let Err(error) = &result
+                let refinement_cleanup = catch_unwind(AssertUnwindSafe(|| {
+                    match actor.refinement.take() {
+                        Some(service) => service.shutdown().map_err(service_error),
+                        None => Ok(()),
+                    }
+                })).unwrap_or(Err(RuntimeError::Worker));
+                let diagnostics = [&result, &audio_cleanup, &inference_cleanup, &refinement_cleanup]
+                    .into_iter().filter_map(|result| result.as_ref().err().map(ToString::to_string))
+                    .collect::<Vec<_>>();
+                let result = result.and(audio_cleanup).and(inference_cleanup).and(refinement_cleanup);
+                if !diagnostics.is_empty()
                     && let Ok(mut shared) = actor.shared.lock() {
-                    shared.snapshot.error = Some(error.to_string());
+                    shared.snapshot.error = Some(diagnostics.join("; "));
                 }
                 result
             })
@@ -801,6 +839,8 @@ fn service_error(error: impl std::fmt::Display) -> RuntimeError {
 struct Actor<A: AudioDriver> {
     controller: Controller,
     inference: Option<InferenceService>,
+    refinement: Option<Box<dyn refinement::Service>>,
+    refinement_suspended: bool,
     generation: u64,
     audio: A,
     native: NativePort,
@@ -1078,12 +1118,18 @@ impl<A: AudioDriver> Actor<A> {
                         Err(message) => self.fail(session, message).map_err(service_error)?,
                     }
                 }
-                Action::Refine(job) => self
-                    .fail(
-                        job.session.get(),
-                        "Text refinement service is unavailable".into(),
-                    )
-                    .map_err(service_error)?,
+                Action::Refine(job) => {
+                    let session = job.session.get();
+                    let submitted = self
+                        .refinement
+                        .as_ref()
+                        .ok_or_else(|| "Text refinement service is unavailable".to_owned())
+                        .and_then(|service| service.submit(job));
+                    match submitted {
+                        Ok(()) => vec![],
+                        Err(message) => self.fail(session, message).map_err(service_error)?,
+                    }
+                }
                 Action::CancelInference(session) => {
                     if let Some(service) = &self.inference {
                         service.cancel(session).map_err(service_error)?;
@@ -1133,6 +1179,7 @@ impl<A: AudioDriver> Actor<A> {
     }
 
     fn poll(&mut self) -> Result<(), RuntimeError> {
+        self.poll_refinement()?;
         for event in self.audio.poll() {
             let event = match event {
                 CaptureEvent::Segment { session, prefix } => Event::Segment {
@@ -1480,6 +1527,12 @@ mod tests {
             Self::with_decoder(FixtureDecoder)
         }
         fn with_decoder(decoder: impl Decoder + Send) -> Result<Self, Box<dyn std::error::Error>> {
+            Self::with_services(decoder, None)
+        }
+        fn with_services(
+            decoder: impl Decoder + Send,
+            refinement: Option<Box<dyn refinement::Service>>,
+        ) -> Result<Self, Box<dyn std::error::Error>> {
             let (audio, events) = bounded(3);
             let (started, starts) = bounded(4);
             let (stopped, stops) = bounded(4);
@@ -1489,7 +1542,7 @@ mod tests {
             let closed = Arc::new(AtomicBool::new(false));
             let progress = Arc::new(crate::audio::ProgressSlot::default());
             let (port, native) = native_mailbox();
-            let runtime = Runtime::with_audio(
+            let runtime = Runtime::with_services(
                 InferenceService::with_decoder(decoder)?,
                 1,
                 port,
@@ -1501,6 +1554,7 @@ mod tests {
                     gate: Some((Arc::clone(&armed), entered, proceed)),
                     progress: Some(Arc::clone(&progress)),
                 },
+                refinement,
             )?;
             wait_for(&runtime.client(), |state| state.model_ready)?;
             Ok(Self {
@@ -1526,7 +1580,13 @@ mod tests {
             Ok(())
         }
         fn record(&self) -> Result<DeliveryToken, Box<dyn std::error::Error>> {
-            accepted(self.runtime.client().start(settings(), None, true, false)?)?;
+            self.record_with(settings())
+        }
+        fn record_with(
+            &self,
+            settings: SessionSettings,
+        ) -> Result<DeliveryToken, Box<dyn std::error::Error>> {
+            accepted(self.runtime.client().start(settings, None, true, false)?)?;
             let token = match self.native.requests.recv_timeout(Duration::from_secs(1))? {
                 NativeCommand::Capture { token, .. } => token,
                 _ => return Err("capture missing".into()),
@@ -2804,5 +2864,6 @@ mod tests {
     mod cpal_adapter_contract;
     mod full_prefix_native_contract;
     mod maximum_contract;
+    mod refinement_contract;
     mod restart_contract;
 }
