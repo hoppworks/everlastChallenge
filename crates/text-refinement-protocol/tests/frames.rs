@@ -36,13 +36,13 @@ fn raw_frame(json: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
 #[test]
 fn malformed_unknown_and_duplicate_fields_are_not_silently_accepted() -> TestResult {
     let bodies = [
-        r#"{"version":1,"version":1,"payload":{"kind":"shutdown"}}"#,
-        r#"{"version":1,"payload":{"kind":"shutdown"},"unexpected":0}"#,
-        r#"{"version":1,"payload":{"kind":"shutdown","unexpected":0}}"#,
-        r#"{"version":1,"payload":{"kind":"shutdown","kind":"shutdown"}}"#,
-        r#"{"version":1,"payload":{"kind":"run","job":{"session":1,"generation":1,"request":1},"language":"german","text":"one","text":"two"}}"#,
-        r#"{"version":1,"payload":{"kind":"run","job":{"session":0,"generation":1,"request":1},"language":"german","text":"one"}}"#,
-        r#"{"version":1,"payload":{"kind":"run","job":{"session":1,"generation":1,"request":1},"language":"unknown","text":"one"}}"#,
+        r#"{"version":2,"version":2,"payload":{"kind":"shutdown"}}"#,
+        r#"{"version":2,"payload":{"kind":"shutdown"},"unexpected":0}"#,
+        r#"{"version":2,"payload":{"kind":"shutdown","unexpected":0}}"#,
+        r#"{"version":2,"payload":{"kind":"shutdown","kind":"shutdown"}}"#,
+        r#"{"version":2,"payload":{"kind":"run","job":{"session":1,"generation":1,"request":1},"language":"german","text":"one","text":"two"}}"#,
+        r#"{"version":2,"payload":{"kind":"run","job":{"session":0,"generation":1,"request":1},"language":"german","text":"one"}}"#,
+        r#"{"version":2,"payload":{"kind":"run","job":{"session":1,"generation":1,"request":1},"language":"unknown","text":"one"}}"#,
     ];
     for body in bodies {
         assert!(
@@ -56,7 +56,7 @@ fn malformed_unknown_and_duplicate_fields_are_not_silently_accepted() -> TestRes
 #[test]
 fn incompatible_version_is_rejected() -> TestResult {
     use text_refinement_protocol::ProtocolError;
-    let body = r#"{"version":2,"payload":{"kind":"shutdown"}}"#;
+    let body = r#"{"version":1,"payload":{"kind":"shutdown"}}"#;
     assert!(matches!(
         read_request(&mut Cursor::new(raw_frame(body)?)),
         Err(ProtocolError::Version)
@@ -119,7 +119,7 @@ fn decoded_text_limit_is_checked_before_dispatch() -> TestResult {
     use text_refinement_protocol::ProtocolError;
     let text = "x".repeat(32 * 1024 + 1);
     let body = format!(
-        r#"{{"version":1,"payload":{{"kind":"run","job":{{"session":1,"generation":1,"request":1}},"language":"german","text":"{text}"}}}}"#
+        r#"{{"version":2,"payload":{{"kind":"run","job":{{"session":1,"generation":1,"request":1}},"language":"german","text":"{text}"}}}}"#
     );
     assert!(matches!(
         read_request(&mut Cursor::new(raw_frame(&body)?)),
@@ -149,9 +149,38 @@ fn candidate_schema_rejects_duplicate_keys_and_unknown_edits() -> TestResult {
         r#"{"kind":"unknown","before":"uh","after":""}"#,
     ] {
         let body = format!(
-            r#"{{"version":1,"payload":{{"kind":"completed","job":{{"session":1,"generation":1,"request":1}},"edits":[{edit}]}}}}"#
+            r#"{{"version":2,"payload":{{"kind":"completed","job":{{"session":1,"generation":1,"request":1}},"proposal":{{"structural":[{edit}],"punctuation":[]}}}}}}"#
         );
         assert!(read_response(&mut Cursor::new(raw_frame(&body)?)).is_err());
     }
+    Ok(())
+}
+
+#[test]
+fn staged_response_roundtrips_both_lists_without_erasing_the_job() -> TestResult {
+    use dictation_core::refinement::{EditKind, ProposedEdit, StagedEdits};
+    use text_refinement_protocol::{Response, read_response, write_response};
+    let response = Response::Completed {
+        job: job(),
+        proposal: StagedEdits {
+            structural: vec![ProposedEdit {
+                kind: EditKind::Filler,
+                before: "Um,".into(),
+                after: "".into(),
+                left_context: None,
+                right_context: None,
+            }],
+            punctuation: vec![ProposedEdit {
+                kind: EditKind::PunctuationCase,
+                before: "hello".into(),
+                after: "Hello.".into(),
+                left_context: None,
+                right_context: None,
+            }],
+        },
+    };
+    let mut bytes = Vec::new();
+    write_response(&mut bytes, &response)?;
+    assert!(read_response(&mut Cursor::new(bytes))? == Some(response));
     Ok(())
 }

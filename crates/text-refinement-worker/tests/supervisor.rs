@@ -429,8 +429,8 @@ fn spec(root: &std::path::Path, mode: &str) -> Result<WorkerSpec, Box<dyn std::e
         identity: ExpectedIdentity {
             generation: NonZeroU64::MIN,
             model_manifest_sha256: "0".repeat(64),
-            prompt_version: 6,
-            policy_version: 2,
+            prompt_version: text_refinement_protocol::TEXT_PROMPT_VERSION,
+            policy_version: text_refinement_protocol::TEXT_POLICY_VERSION,
         },
     })
 }
@@ -794,5 +794,31 @@ fn recovery_preserves_foreign_markers_and_rejects_a_symlinked_root_lock() -> Tes
     assert!(service::scratch::recover(root.path()).is_err());
     assert_eq!(std::fs::read(target)?, b"untouched");
     assert!(unknown.exists());
+    Ok(())
+}
+
+#[test]
+fn real_process_stages_require_host_validation_before_returning_any_text() -> TestResult {
+    for mode in ["staged", "invalid-second"] {
+        let root = tempfile::tempdir()?;
+        let mut worker = Worker::spawn(spec(root.path(), mode)?, limits(), &Cancellation::new())?;
+        let original = OriginalTranscript::new("Um, hello".into())?;
+        let result = worker.run(job(1)?, &original, Language::English, &Cancellation::new());
+        if mode == "staged" {
+            let accepted = result?;
+            assert_eq!(accepted.as_str(), "Hello.");
+            assert!(accepted.original() == &original);
+            assert_eq!(accepted.edit_count(), 2);
+        } else {
+            assert!(matches!(
+                result,
+                Err(service::Error {
+                    reason: service::Failure::InvalidCandidate,
+                    ..
+                })
+            ));
+        }
+        worker.close()?;
+    }
     Ok(())
 }

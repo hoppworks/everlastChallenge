@@ -170,3 +170,10 @@ It keeps the existing validator intact, applies it to each stage's exact source
 and binds the final result back to the original dictation. The
 [staged-validation report](verification/refinement-stages-2026-10-22.md) states the
 core-only scope; this contract alone does not qualify the model or application.
+
+The two-stage worker/host integration was AI-assisted and independently reviewed.
+The review corrected punctuation spans adjacent to preserved quotes. Native model
+verification then exposed literal control-token encoding and long-grammar
+compilation failures; deterministic regressions preceded both corrections. The
+[pipeline report](verification/refinement-pipeline-2026-10-22.md) distinguishes
+these checks from full product quality, delivery and performance acceptance.

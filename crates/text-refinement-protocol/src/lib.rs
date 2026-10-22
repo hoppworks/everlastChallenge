@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 //! Versioned, bounded messages between the desktop host and its private worker.
 
-use dictation_core::refinement::ProposedEdit;
+use dictation_core::refinement::StagedEdits;
 use std::{
     io::{Read, Write},
     num::NonZeroU64,
@@ -9,9 +9,9 @@ use std::{
 
 mod frame;
 
-pub const VERSION: u16 = 1;
-pub const TEXT_PROMPT_VERSION: u16 = 6;
-pub const TEXT_POLICY_VERSION: u16 = 4;
+pub const VERSION: u16 = 2;
+pub const TEXT_PROMPT_VERSION: u16 = 7;
+pub const TEXT_POLICY_VERSION: u16 = 5;
 pub const MAX_FRAME_BYTES: usize = 64 * 1024;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -77,7 +77,7 @@ pub enum Response {
     },
     Completed {
         job: JobKey,
-        edits: Vec<ProposedEdit>,
+        proposal: StagedEdits,
     },
     Failed {
         job: Option<JobKey>,

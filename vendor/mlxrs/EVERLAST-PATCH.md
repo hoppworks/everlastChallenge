@@ -34,3 +34,14 @@ Text-only generation without EOS cannot advance the audio cursor over a whole wi
 ## Owned reusable-buffer cache policy
 
 The additive memory API sets a process-wide reusable-buffer budget through the existing C API. A model-lifetime guard holds exclusive ownership, rejects competing safe setters, clears unused buffers and restores the previous policy on explicit finish or unwinding. This is a soft pool budget, not an active-memory limit; one returned buffer may exceed it. Explicit finish reports native failures; Drop uses only teardown-safe raw cleanup. Counter documentation now distinguishes active allocation from RSS and documents the native peak reset to zero. Model tensors, arithmetic, decoding and kernels are unchanged.
+
+## Literal control-token spellings in constrained text
+
+The private HuggingFace tokenizer inside the grammar adapter now encodes special
+token spellings as ordinary bytes. Previously, forced literal bytes such as
+`<|im_start|>` could be encoded as an added special token, which the trie
+represents with a special marker instead of those literal bytes. The next
+`consume_token` then failed despite the preceding mask allowing it. The model
+prompt tokenizer is unchanged; the trie retains its explicit special/EOS tokens.
+A controlled-logit text-stream regression reproduces the failure and verifies
+complete, byte-exact JSON output after the correction.

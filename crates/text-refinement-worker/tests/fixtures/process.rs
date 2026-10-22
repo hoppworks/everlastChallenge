@@ -47,8 +47,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             } else {
                 "0".repeat(64)
             },
-            prompt_version: if mode == "wrong-prompt" { 5 } else { 6 },
-            policy_version: if mode == "wrong-policy" { 1 } else { 2 },
+            prompt_version: if mode == "wrong-prompt" {
+                0
+            } else {
+                text_refinement_protocol::TEXT_PROMPT_VERSION
+            },
+            policy_version: if mode == "wrong-policy" {
+                0
+            } else {
+                text_refinement_protocol::TEXT_POLICY_VERSION
+            },
         },
     )?;
     if mode == "stdout-flood" {
@@ -58,8 +66,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 &Response::Ready {
                     generation,
                     model_manifest_sha256: "0".repeat(64),
-                    prompt_version: 6,
-                    policy_version: 2,
+                    prompt_version: text_refinement_protocol::TEXT_PROMPT_VERSION,
+                    policy_version: text_refinement_protocol::TEXT_POLICY_VERSION,
                 },
             )?;
         }
@@ -87,6 +95,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     generation,
                     job.session
                 )?;
+                if matches!(mode, "staged" | "invalid-second") {
+                    use dictation_core::refinement::{EditKind, ProposedEdit, StagedEdits};
+                    write_response(
+                        &mut output,
+                        &Response::Completed {
+                            job,
+                            proposal: StagedEdits {
+                                structural: vec![ProposedEdit {
+                                    kind: EditKind::Filler,
+                                    before: "Um,".into(),
+                                    after: "".into(),
+                                    left_context: None,
+                                    right_context: None,
+                                }],
+                                punctuation: vec![ProposedEdit {
+                                    kind: EditKind::PunctuationCase,
+                                    before: "hello".into(),
+                                    after: if mode == "staged" { "Hello." } else { "secret" }
+                                        .into(),
+                                    left_context: None,
+                                    right_context: None,
+                                }],
+                            },
+                        },
+                    )?;
+                    continue;
+                }
                 if mode == "late" {
                     while let Some(request) = read_request(&mut input)? {
                         if matches!(request, Request::Shutdown {}) {
@@ -94,7 +129,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 &mut output,
                                 &Response::Completed {
                                     job,
-                                    edits: Vec::new(),
+                                    proposal: Default::default(),
                                 },
                             )?;
                             return Ok(());
@@ -109,7 +144,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         &mut output,
                         &Response::Completed {
                             job: stale,
-                            edits: Vec::new(),
+                            proposal: Default::default(),
                         },
                     )?;
                     continue;
@@ -120,13 +155,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         &mut output,
                         &Response::Completed {
                             job,
-                            edits: vec![ProposedEdit {
-                                kind: EditKind::Filler,
-                                before: "Hello".into(),
-                                after: "Changed".into(),
-                                left_context: None,
-                                right_context: None,
-                            }],
+                            proposal: dictation_core::refinement::StagedEdits {
+                                structural: vec![ProposedEdit {
+                                    kind: EditKind::Filler,
+                                    before: "Hello".into(),
+                                    after: "Changed".into(),
+                                    left_context: None,
+                                    right_context: None,
+                                }],
+                                punctuation: vec![],
+                            },
                         },
                     )?;
                     continue;
@@ -146,7 +184,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     &mut output,
                     &Response::Completed {
                         job,
-                        edits: Vec::new(),
+                        proposal: Default::default(),
                     },
                 )?;
                 if mode == "self-idle" || mode == "idle-crash" {

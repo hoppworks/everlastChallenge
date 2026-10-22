@@ -2,12 +2,13 @@
 //! One inference owner with bounded input and session-scoped cancellation.
 
 pub mod manifest;
+pub mod punctuation;
 pub mod selection;
 
 #[cfg(all(feature = "mlx", target_os = "macos", target_arch = "aarch64"))]
 pub mod model;
 
-use dictation_core::refinement::ProposedEdit;
+use dictation_core::refinement::StagedEdits;
 use std::{
     io::{Read, Write},
     num::NonZeroU64,
@@ -29,7 +30,7 @@ pub trait Generator {
         text: &str,
         language: Language,
         cancelled: &AtomicBool,
-    ) -> Result<Vec<ProposedEdit>, FailureKind>;
+    ) -> Result<StagedEdits, FailureKind>;
     fn finish(self) -> Result<(), FailureKind>;
 }
 
@@ -293,7 +294,7 @@ where
                 state.pending.take().ok_or(WorkerError::Synchronization)?
             };
             let generated = if work.cancelled.load(Ordering::Acquire) {
-                Ok(Vec::new())
+                Ok(StagedEdits::default())
             } else {
                 generator.generate(&work.text, work.language, &work.cancelled)
             };
@@ -305,9 +306,9 @@ where
                 Response::Cancelled { job: work.job }
             } else {
                 match generated {
-                    Ok(edits) => Response::Completed {
+                    Ok(proposal) => Response::Completed {
                         job: work.job,
-                        edits,
+                        proposal,
                     },
                     Err(code) => Response::Failed {
                         job: Some(work.job),

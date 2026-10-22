@@ -12,17 +12,7 @@ pub fn output_schema(choice_count: usize) -> Result<serde_json::Value, FailureKi
         "type":"object",
         "properties":{
             "decisions":{"type":"array","items":{"type":"boolean"},"minItems":choice_count,"maxItems":choice_count},
-            "punctuation":{"type":"array","maxItems":32,"items":{
-                "type":"object",
-                "properties":{
-                    "before":{"type":"string","minLength":1,"maxLength":2048},
-                    "after":{"type":"string","maxLength":2048},
-                    "leftContext":{"type":"string","maxLength":128},
-                    "rightContext":{"type":"string","maxLength":128}
-                },
-                "required":["before","after"],
-                "additionalProperties":false
-            }}
+            "punctuation":{"type":"array","maxItems":0,"items":false}
         },
         "required":["decisions","punctuation"],
         "additionalProperties":false
@@ -33,17 +23,7 @@ pub fn output_schema(choice_count: usize) -> Result<serde_json::Value, FailureKi
 #[serde(deny_unknown_fields)]
 struct Selection {
     decisions: Vec<bool>,
-    punctuation: Vec<Punctuation>,
-}
-#[derive(serde::Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "camelCase")]
-struct Punctuation {
-    before: String,
-    after: String,
-    #[serde(default)]
-    left_context: Option<String>,
-    #[serde(default)]
-    right_context: Option<String>,
+    punctuation: Vec<serde_json::Value>,
 }
 
 pub fn decode(
@@ -57,7 +37,8 @@ pub fn decode(
     }
     let selection: Selection =
         serde_json::from_str(output).map_err(|_| FailureKind::InvalidCandidate)?;
-    if selection.decisions.len() != choices.len()
+    if !selection.punctuation.is_empty()
+        || selection.decisions.len() != choices.len()
         || selection
             .decisions
             .iter()
@@ -74,13 +55,12 @@ pub fn decode(
             edits.push(choices[index].clone());
         }
     }
-    edits.extend(selection.punctuation.into_iter().map(|edit| ProposedEdit {
-        kind: EditKind::PunctuationCase,
-        before: edit.before,
-        after: edit.after,
-        left_context: edit.left_context,
-        right_context: edit.right_context,
-    }));
+    if edits
+        .iter()
+        .any(|edit| edit.kind == EditKind::PunctuationCase)
+    {
+        return Err(FailureKind::InvalidCandidate);
+    }
     validate(original, &edits, language).map_err(|_| FailureKind::InvalidCandidate)?;
     Ok(edits)
 }

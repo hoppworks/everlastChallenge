@@ -3,7 +3,7 @@
 pub mod owner;
 #[path = "refinement_service/scratch.rs"]
 pub mod scratch;
-use dictation_core::refinement::{AcceptedTranscript, OriginalTranscript, validate};
+use dictation_core::refinement::{AcceptedTranscript, OriginalTranscript, validate_staged};
 use std::{
     io::{Read, Write},
     num::NonZeroU64,
@@ -364,8 +364,8 @@ impl Worker {
         match response {
             Response::Completed {
                 job: received,
-                edits,
-            } if job == received => validate(original, &edits, language.into())
+                proposal,
+            } if job == received => validate_staged(original, &proposal, language.into())
                 .map_err(|_| self.abort(Failure::InvalidCandidate)),
             Response::Failed {
                 job: Some(received),

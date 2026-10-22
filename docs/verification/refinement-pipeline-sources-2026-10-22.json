@@ -1,0 +1,85 @@
+{
+  "baseCommit": "52d81cd5692a759d43fde6b64c398408d2bf5a52",
+  "sourceFiles": [
+    {
+      "path": "crates/dictation-core/src/refinement/candidates.rs",
+      "sha256": "3c1e502285886f0904a7940e2519f413e97a54b51e36aabd5b22d7cd23a3a634"
+    },
+    {
+      "path": "crates/dictation-core/src/refinement/mod.rs",
+      "sha256": "5559e459d439df56002949e38014541387ca14aeb4a906e0893dfe44c05a2cd7"
+    },
+    {
+      "path": "crates/dictation-core/src/refinement/punctuation.rs",
+      "sha256": "7828bb731cc93d5c81e449c3fea5de2bfec842d657bc6d985f45b0cf84510cb0"
+    },
+    {
+      "path": "crates/dictation-core/tests/refinement_punctuation.rs",
+      "sha256": "8358f4a79d86cc14a6a370aa0be3105831056fa45596a5c766dba5b807f86a98"
+    },
+    {
+      "path": "crates/text-refinement-protocol/src/lib.rs",
+      "sha256": "86ce291d1221cff19e0ee3fe15899032e9fa123a727aaf1eab309a4acadca4eb"
+    },
+    {
+      "path": "crates/text-refinement-protocol/tests/frames.rs",
+      "sha256": "c072f0a5f6725715c350ab7f9aede4cb030aec2b0b3fead3b951db08c24386f5"
+    },
+    {
+      "path": "crates/text-refinement-worker/src/lib.rs",
+      "sha256": "792c7679d57c71ac685a9d0bb1ba1498a7502609e3e9d8b88bdccc92affd1d0a"
+    },
+    {
+      "path": "crates/text-refinement-worker/src/model.rs",
+      "sha256": "a6fca752c17f909f552f1a38e1f81459f8828b900fbdeab9920573b7ec2293f8"
+    },
+    {
+      "path": "crates/text-refinement-worker/src/prompt.txt",
+      "sha256": "49ddac50e740bb43c5f4fb8925fda1da82797a691921d9fc2b7757f147dc74ef"
+    },
+    {
+      "path": "crates/text-refinement-worker/src/punctuation-prompt.txt",
+      "sha256": "5d28621fc250c2e36d35a413c837c3132554f244139f75d3928e389bc82b0f07"
+    },
+    {
+      "path": "crates/text-refinement-worker/src/punctuation.rs",
+      "sha256": "a3f760bde95c42ebe3099bfdea59348f597f81b6ec78594dc64988ee5d39282f"
+    },
+    {
+      "path": "crates/text-refinement-worker/src/selection.rs",
+      "sha256": "e76108ec5ca0aa9b5d2cf7be55cf88dd883fc8b3316f0d331d65eff80bc189d3"
+    },
+    {
+      "path": "crates/text-refinement-worker/tests/fixtures/process.rs",
+      "sha256": "0e084767e46f689b553fb61d527b2fc341b38a7bc76d786ebcfee671179ce4f4"
+    },
+    {
+      "path": "crates/text-refinement-worker/tests/lifecycle.rs",
+      "sha256": "5bb15d8aee013c8f1d95b78e74c811c0f68a69de014e4554146281b18ac1589a"
+    },
+    {
+      "path": "crates/text-refinement-worker/tests/punctuation.rs",
+      "sha256": "dcea007d7de07bb1549af482e7904317202e3737f40cf78319a8faaf11596322"
+    },
+    {
+      "path": "crates/text-refinement-worker/tests/structured.rs",
+      "sha256": "d50f98fbd2dfbebf81d2a77b3070877c05a082d0594dfd535fa216fb0c3fb2e9"
+    },
+    {
+      "path": "crates/text-refinement-worker/tests/supervisor.rs",
+      "sha256": "500680e1f905ef47d9bc11203b99777e29190dd41a537d4f032fb94d6a9429af"
+    },
+    {
+      "path": "src-tauri/src/refinement_service.rs",
+      "sha256": "5111f1a401d8c21d2e2383d350775fa4d8321fda3e606636fe88da008e1f4017"
+    },
+    {
+      "path": "vendor/mlxrs/EVERLAST-PATCH.json",
+      "sha256": "49a54d5d8737df5f630db05763565d724295129690dcd435f3fc60ca3300aacb"
+    },
+    {
+      "path": "vendor/mlxrs/src/lm/structured.rs",
+      "sha256": "c0762d9ce0b095c1b0ea4978b5361050143802cf32d302bb7324ce3b9f5fb0c7"
+    }
+  ]
+}

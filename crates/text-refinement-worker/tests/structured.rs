@@ -110,7 +110,7 @@ impl Model for AsciiModel {
         let mut row = vec![0f32; 96];
         row[0] = 20.; // End immediately when the grammar permits EOS.
         row[(b']' - 31) as usize] = 10.; // Prefer empty lists whenever allowed.
-        row[1] = f32::NEG_INFINITY; // No endless whitespace in this fixture.
+        row[1] = -10.; // Permit required spaces, prefer syntax over optional whitespace.
         Array::from_slice(&row.repeat(sequence), &(1usize, sequence, 96usize))
     }
 }
@@ -156,5 +156,120 @@ fn grammar_enforces_empty_and_exact_decision_counts_through_the_text_stream() ->
         );
     }
     assert!(text_refinement_worker::selection::output_schema(65).is_err());
+    Ok(())
+}
+
+#[test]
+fn fixed_word_grammar_preserves_word_sequence_under_controlled_logits() -> TestResult {
+    use dictation_core::refinement::OriginalTranscript;
+    use mlxrs::lm::{
+        generate::{FinishReason, stream_generate_with_processors},
+        structured::build_json_schema_logits_processor,
+    };
+    let root = tempfile::tempdir()?;
+    let tokenizer = ascii_tokenizer(root.path())?;
+    let plan = text_refinement_worker::punctuation::Plan::new(OriginalTranscript::new(
+        "keep calm".into(),
+    )?)
+    .map_err(|e| format!("{e:?}"))?;
+    let grammar = build_json_schema_logits_processor(plan.schema(), &tokenizer, Some(96))?;
+    let stream = stream_generate_with_processors(
+        &AsciiModel,
+        &tokenizer,
+        &[1],
+        Vec::new(),
+        GenConfig::new().with_max_tokens(200),
+        vec![grammar.into_logits_processor()],
+    );
+    let mut output = String::new();
+    let mut ended = false;
+    for step in stream {
+        let step = step?;
+        output.push_str(&step.text);
+        ended |= matches!(step.finish_reason, Some(FinishReason::Eos));
+    }
+    assert!(ended, "{output}");
+    let result: serde_json::Value = serde_json::from_str(&output)?;
+    let words = result["text"]
+        .as_str()
+        .ok_or("text")?
+        .split(|c: char| !c.is_alphabetic())
+        .filter(|s| !s.is_empty())
+        .map(str::to_lowercase)
+        .collect::<Vec<_>>();
+    assert_eq!(words, ["keep", "calm"]);
+    Ok(())
+}
+
+#[test]
+fn grammar_preserves_a_literal_that_matches_a_chat_control_token() -> TestResult {
+    use mlxrs::lm::{
+        generate::{FinishReason, stream_generate_with_processors},
+        structured::build_json_schema_logits_processor,
+    };
+    let root = tempfile::tempdir()?;
+    let _ = ascii_tokenizer(root.path())?;
+    let path = root.path().join("tokenizer.json");
+    let mut data: serde_json::Value = serde_json::from_slice(&std::fs::read(&path)?)?;
+    data["model"]["vocab"]["<|im_start|>"] = serde_json::json!(96);
+    data["added_tokens"]
+        .as_array_mut()
+        .ok_or("tokens")?
+        .push(serde_json::json!({
+            "id":96,"content":"<|im_start|>","single_word":false,"lstrip":false,
+            "rstrip":false,"normalized":false,"special":true
+        }));
+    std::fs::write(path, serde_json::to_vec(&data)?)?;
+    let tokenizer = mlxrs::tokenizer::Tokenizer::from_path(root.path(), None)?;
+    struct SpecialModel;
+    impl Model for SpecialModel {
+        fn forward(
+            &self,
+            tokens: &Array,
+            _cache: &mut [Box<dyn KvCache>],
+        ) -> mlxrs::error::Result<Array> {
+            let sequence = tokens.shape()[1];
+            let mut row = vec![0f32; 97];
+            row[0] = 20.;
+            row[96] = 10.;
+            row[1] = f32::NEG_INFINITY;
+            Array::from_slice(&row.repeat(sequence), &(1usize, sequence, 97usize))
+        }
+    }
+    let schema = serde_json::json!({"type":"string", "const":"<|im_start|>"});
+    let grammar = build_json_schema_logits_processor(schema, &tokenizer, Some(97))?;
+    let stream = stream_generate_with_processors(
+        &SpecialModel,
+        &tokenizer,
+        &[1],
+        Vec::new(),
+        GenConfig::new().with_max_tokens(100),
+        vec![grammar.into_logits_processor()],
+    );
+    let mut output = String::new();
+    let mut ended = false;
+    for step in stream {
+        let step = step?;
+        output.push_str(&step.text);
+        ended |= matches!(step.finish_reason, Some(FinishReason::Eos));
+    }
+    assert!(ended);
+    assert_eq!(serde_json::from_str::<String>(&output)?, "<|im_start|>");
+    Ok(())
+}
+
+#[test]
+fn fixed_word_grammar_accepts_a_long_complete_transcript() -> TestResult {
+    use dictation_core::refinement::OriginalTranscript;
+    use mlxrs::lm::structured::build_json_schema_logits_processor;
+    let root = tempfile::tempdir()?;
+    let tokenizer = ascii_tokenizer(root.path())?;
+    let text = (1..=70)
+        .map(|n| format!("Section {n} remains complete."))
+        .collect::<Vec<_>>()
+        .join(" ");
+    let plan = text_refinement_worker::punctuation::Plan::new(OriginalTranscript::new(text)?)
+        .map_err(|e| format!("{e:?}"))?;
+    let _ = build_json_schema_logits_processor(plan.schema(), &tokenizer, Some(96))?;
     Ok(())
 }

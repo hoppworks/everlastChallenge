@@ -51,6 +51,16 @@ pub struct StagedEdits {
 
 pub use staged::validate_staged;
 
+/// Derive exact punctuation proposals from a word-preserving candidate.
+/// The existing validator remains the final authority for every derived edit.
+pub fn propose_punctuation(
+    original: &OriginalTranscript,
+    candidate: &str,
+    language: Language,
+) -> Result<Vec<ProposedEdit>, ValidationError> {
+    punctuation::propose(original, candidate, language)
+}
+
 #[derive(Clone, PartialEq, Eq)]
 pub struct OriginalTranscript(String);
 

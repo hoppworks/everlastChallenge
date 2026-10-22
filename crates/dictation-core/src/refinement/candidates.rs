@@ -6,7 +6,7 @@ use std::ops::Range;
 
 const MAX_CANDIDATES: usize = 64;
 
-fn context(source: &str, range: &Range<usize>) -> (String, String) {
+pub(super) fn context(source: &str, range: &Range<usize>) -> (String, String) {
     let mut left = range.start.saturating_sub(128);
     while !source.is_char_boundary(left) {
         left += 1;

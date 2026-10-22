@@ -164,13 +164,21 @@ fn tok_env_from_tokenizer(
       Box::new(e) as Box<dyn std::error::Error + Send + Sync>,
     ))
   })?;
-  let bt = ByteTokenizer::from_json_bytes(&json).map_err(|e| {
+  let mut bt = ByteTokenizer::from_json_bytes(&json).map_err(|e| {
     Error::Parse(ParsePayload::new(
       "llguidance: build ByteTokenizer",
       "HF tokenizer JSON",
       std::io::Error::other(e.to_string()),
     ))
   })?;
+
+  // Forced grammar bytes are literal text, even when they spell a chat control
+  // token. HF otherwise recognizes added specials during ordinary encoding,
+  // but the trie represents those ids with its special-token marker. That
+  // mismatch makes a mask permit a token that consume_token cannot accept.
+  // Change only this private grammar tokenizer; prompt tokenization and the
+  // trie's explicit special/EOS recognition retain their existing semantics.
+  bt.hf_tokenizer.set_encode_special_tokens(true);
 
   // Sync mlxrs's configured EOS ids into the resulting [`TokEnv`]'s
   // `tok_trie().eos_token_set()` so terminal-grammar EOS-only masks

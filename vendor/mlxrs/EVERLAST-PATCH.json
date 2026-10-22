@@ -4,7 +4,7 @@
   "upstreamRevision": "38744eb0dc1b91750991b12de0e24b1d0e475a6f",
   "registryChecksum": "dd72771402de14a1134490089ddeb6b744920291d07e7c238e1eaaee2db2400f",
   "source": "https://crates.io/api/v1/crates/mlxrs/0.2.0/download",
-  "patchPurpose": "Inference-only playback separation; Whisper periodic Hann; validated optional native encoder positions; actual EOS for text-only completion. Original model arithmetic preserved; rejected beam experiment archived outside runtime source. Exclusive reusable-buffer cache budgets with teardown-safe release and corrected allocator-counter documentation; model arithmetic unchanged. Additive request-owned logits processor entry points for grammar-constrained local text generation; ordinary ASR generation unchanged.",
+  "patchPurpose": "Inference-only playback separation; Whisper periodic Hann; validated optional native encoder positions; actual EOS for text-only completion. Original model arithmetic preserved; rejected beam experiment archived outside runtime source. Exclusive reusable-buffer cache budgets with teardown-safe release and corrected allocator-counter documentation; model arithmetic unchanged. Additive request-owned logits processor entry points for grammar-constrained local text generation; ordinary ASR generation unchanged. Grammar-owned tokenizer treats literal chat-token spellings as ordinary bytes; prompt tokenization and explicit EOS semantics unchanged.",
   "changedFiles": [
     {
       "path": "Cargo.toml",
@@ -79,7 +79,7 @@
     {
       "path": "src/lm/structured.rs",
       "upstreamSha256": "8f21bda8526c98a144a325118d4cdacce9bd0972fd97207aef8174e69f59b437",
-      "patchedSha256": "364af4ac8dec7058de767971a67af3944f650ab61bce834b281e2ef923da038d"
+      "patchedSha256": "c0762d9ce0b095c1b0ea4978b5361050143802cf32d302bb7324ce3b9f5fb0c7"
     }
   ],
   "whisperWindowCorrection": {

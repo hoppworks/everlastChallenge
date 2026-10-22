@@ -1,6 +1,7 @@
-use crate::{Generator, manifest, selection};
+use crate::{Generator, manifest, punctuation, selection};
 use dictation_core::refinement::{
-    MAX_ORIGINAL_BYTES, OriginalTranscript, ProposedEdit, proposal_candidates,
+    EditKind, MAX_ORIGINAL_BYTES, OriginalTranscript, StagedEdits, proposal_candidates, validate,
+    validate_staged,
 };
 use mlxrs::{
     lm::{
@@ -26,6 +27,11 @@ const PROMPT: &str = include_str!("prompt.txt");
 const MAX_OUTPUT_BYTES: usize = 32 * 1024;
 const MAX_INPUT_TOKENS: usize = 8192;
 const JOB_TIMEOUT: Duration = Duration::from_secs(30);
+
+struct OutputBudget {
+    bytes: usize,
+    tokens: usize,
+}
 
 pub struct MlxGenerator {
     // Field order also drops model arrays before the allocator guard on errors.
@@ -90,46 +96,36 @@ impl MlxGenerator {
             _snapshot: snapshot,
         })
     }
-}
-
-impl Generator for MlxGenerator {
-    fn generate(
-        &mut self,
-        text: &str,
-        language: Language,
+    fn infer(
+        &self,
+        prompt: &str,
+        content: &serde_json::Value,
+        schema: serde_json::Value,
         cancel: &AtomicBool,
-    ) -> Result<Vec<ProposedEdit>, FailureKind> {
-        if text.len() > MAX_ORIGINAL_BYTES {
-            return Err(FailureKind::InputLimit);
-        }
-        if cancel.load(Ordering::Acquire) {
-            return Err(FailureKind::Incomplete);
-        }
-        let started = Instant::now();
-        let original = OriginalTranscript::new(text.into()).map_err(|_| FailureKind::InputLimit)?;
-        let choices =
-            proposal_candidates(&original, language.into()).map_err(|_| FailureKind::InputLimit)?;
-        let options = selection::prompt_options(&original, &choices)?;
+        started: Instant,
+        remaining: &mut OutputBudget,
+    ) -> Result<String, FailureKind> {
         let context = self.context.as_ref().ok_or(FailureKind::Generation)?;
-        let content = serde_json::to_string(
-            &serde_json::json!({"language":language,"dictation":text,"choices":options}),
-        )
-        .map_err(|_| FailureKind::Generation)?
-        .replace('<', "\\u003c")
-        .replace('>', "\\u003e");
-        let messages = serde_json::json!([{"role":"system","content":PROMPT},{"role":"user","content":content}]);
+        let content = serde_json::to_string(content)
+            .map_err(|_| FailureKind::Generation)?
+            .replace('<', "\\u003c")
+            .replace('>', "\\u003e");
+        let messages = serde_json::json!([{"role":"system","content":prompt},{"role":"user","content":content}]);
         let input = context
             .apply_chat_template_ids(&messages, None, true, false, None)
             .map_err(|_| FailureKind::Generation)?;
         if input.len() > MAX_INPUT_TOKENS {
             return Err(FailureKind::InputLimit);
         }
+        if remaining.tokens == 0 {
+            return Err(FailureKind::InputLimit);
+        }
         let mut parameters = GenConfig::new()
-            .with_max_tokens(4096)
+            .with_max_tokens(remaining.tokens)
             .with_prefill_step_size(256);
         parameters.temp = 0.;
         let grammar = build_json_schema_logits_processor(
-            selection::output_schema(choices.len())?,
+            schema,
             context.tokenizer(),
             Some(context.config().vocab_size as usize),
         )
@@ -147,6 +143,7 @@ impl Generator for MlxGenerator {
         );
         let mut output = String::new();
         let mut stopped = false;
+        let mut used_tokens = 0;
         loop {
             if cancel.load(Ordering::Acquire) {
                 return Err(FailureKind::Incomplete);
@@ -164,9 +161,11 @@ impl Generator for MlxGenerator {
             if started.elapsed() > JOB_TIMEOUT {
                 return Err(FailureKind::Timeout);
             }
-            if output.len().saturating_add(step.text.len()) > MAX_OUTPUT_BYTES {
+            if step.text.len() > remaining.bytes {
                 return Err(FailureKind::InputLimit);
             }
+            remaining.bytes -= step.text.len();
+            used_tokens = step.generation_tokens;
             output.push_str(&step.text);
             if let Some(reason) = step.finish_reason {
                 stopped = matches!(reason, FinishReason::Eos);
@@ -179,7 +178,78 @@ impl Generator for MlxGenerator {
         if !stopped {
             return Err(FailureKind::Incomplete);
         }
-        selection::decode(&output, &original, &choices, language.into())
+        remaining.tokens = remaining
+            .tokens
+            .checked_sub(used_tokens)
+            .ok_or(FailureKind::InputLimit)?;
+        Ok(output)
+    }
+}
+
+impl Generator for MlxGenerator {
+    fn generate(
+        &mut self,
+        text: &str,
+        language: Language,
+        cancel: &AtomicBool,
+    ) -> Result<StagedEdits, FailureKind> {
+        if text.len() > MAX_ORIGINAL_BYTES {
+            return Err(FailureKind::InputLimit);
+        }
+        if cancel.load(Ordering::Acquire) {
+            return Err(FailureKind::Incomplete);
+        }
+        let started = Instant::now();
+        let mut remaining = OutputBudget {
+            bytes: MAX_OUTPUT_BYTES,
+            tokens: 4096,
+        };
+        let original = OriginalTranscript::new(text.into()).map_err(|_| FailureKind::InputLimit)?;
+        let mut choices =
+            proposal_candidates(&original, language.into()).map_err(|_| FailureKind::InputLimit)?;
+        choices.retain(|edit| edit.kind != EditKind::PunctuationCase);
+        let structural = if choices.is_empty() {
+            Vec::new()
+        } else {
+            let options = selection::prompt_options(&original, &choices)?;
+            let output = self.infer(
+                PROMPT,
+                &serde_json::json!({"language":language,"dictation":text,"choices":options}),
+                selection::output_schema(choices.len())?,
+                cancel,
+                started,
+                &mut remaining,
+            )?;
+            selection::decode(&output, &original, &choices, language.into())?
+        };
+        let interim = validate(&original, &structural, language.into())
+            .map_err(|_| FailureKind::InvalidCandidate)?;
+        let plan = punctuation::Plan::new(
+            OriginalTranscript::new(interim.as_str().into())
+                .map_err(|_| FailureKind::InputLimit)?,
+        )?;
+        let output = self.infer(
+            include_str!("punctuation-prompt.txt"),
+            &serde_json::json!({"language":language,"dictation":interim.as_str()}),
+            plan.schema(),
+            cancel,
+            started,
+            &mut remaining,
+        )?;
+        let punctuation = plan.decode(&output, language.into())?;
+        let proposal = StagedEdits {
+            structural,
+            punctuation,
+        };
+        validate_staged(&original, &proposal, language.into())
+            .map_err(|_| FailureKind::InvalidCandidate)?;
+        if cancel.load(Ordering::Acquire) {
+            return Err(FailureKind::Incomplete);
+        }
+        if started.elapsed() > JOB_TIMEOUT {
+            return Err(FailureKind::Timeout);
+        }
+        Ok(proposal)
     }
 
     fn finish(mut self) -> Result<(), FailureKind> {

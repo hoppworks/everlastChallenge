@@ -1,5 +1,5 @@
 #![cfg(unix)]
-use dictation_core::refinement::ProposedEdit;
+use dictation_core::refinement::StagedEdits;
 use std::{
     num::NonZeroU64,
     os::unix::net::UnixStream,
@@ -25,8 +25,8 @@ impl Generator for Immediate {
         _: &str,
         _: Language,
         _: &AtomicBool,
-    ) -> Result<Vec<ProposedEdit>, FailureKind> {
-        Ok(Vec::new())
+    ) -> Result<StagedEdits, FailureKind> {
+        Ok(StagedEdits::default())
     }
     fn finish(self) -> Result<(), FailureKind> {
         Ok(())
@@ -90,7 +90,7 @@ fn ready_requests_and_shutdown_preserve_identity_and_finish_cleanly() -> TestRes
         },
     )?;
     assert!(
-        matches!(read_response(&mut client)?,Some(Response::Completed {job:actual,edits}) if actual==job && edits.is_empty())
+        matches!(read_response(&mut client)?,Some(Response::Completed {job:actual,proposal}) if actual==job && proposal == StagedEdits::default())
     );
     write_request(&mut client, &Request::Shutdown {})?;
     handle.join().map_err(|_| "worker panicked")??;
@@ -141,7 +141,7 @@ impl Generator for Blocking {
         _: &str,
         _: Language,
         cancel: &AtomicBool,
-    ) -> Result<Vec<ProposedEdit>, FailureKind> {
+    ) -> Result<StagedEdits, FailureKind> {
         self.started.send(()).map_err(|_| FailureKind::Generation)?;
         let deadline = std::time::Instant::now() + Duration::from_secs(4);
         while !cancel.load(Ordering::Acquire) {
@@ -150,7 +150,7 @@ impl Generator for Blocking {
             }
             thread::park_timeout(Duration::from_millis(1));
         }
-        Ok(Vec::new())
+        Ok(StagedEdits::default())
     }
     fn finish(self) -> Result<(), FailureKind> {
         self.finished.store(true, Ordering::Release);

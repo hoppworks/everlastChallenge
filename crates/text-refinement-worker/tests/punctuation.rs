@@ -1,0 +1,41 @@
+use dictation_core::refinement::{Language, OriginalTranscript, validate};
+use text_refinement_worker::punctuation::Plan;
+type TestResult = Result<(), Box<dyn std::error::Error>>;
+#[test]
+fn decoded_punctuation_remains_bound_to_words_and_original_anchors() -> TestResult {
+    let source = OriginalTranscript::new("wir danken dir vielen Dank".into())?;
+    let plan = Plan::new(source.clone()).map_err(|e| format!("{e:?}"))?;
+    let edits = plan
+        .decode(
+            r#"{"text":"Wir danken dir. Vielen Dank."}"#,
+            Language::German,
+        )
+        .map_err(|e| format!("{e:?}"))?;
+    assert_eq!(
+        validate(&source, &edits, Language::German)?.as_str(),
+        "Wir danken dir. Vielen Dank."
+    );
+    for output in [
+        r#"{"text":"Wir danken euch."}"#,
+        r#"{"text":"Wir danken dir.","extra":true}"#,
+        r#"{"text":"x","text":"y"}"#,
+    ] {
+        assert!(plan.decode(output, Language::German).is_err());
+    }
+    Ok(())
+}
+#[test]
+fn pattern_preserves_existing_lines_and_escapes_literal_syntax() -> TestResult {
+    let plan = Plan::new(OriginalTranscript::new("iPhone a+b\n\nnext.".into())?)
+        .map_err(|e| format!("{e:?}"))?;
+    let schema = plan.schema();
+    let pattern = schema["properties"]["text"]["pattern"]
+        .as_str()
+        .ok_or("pattern")?;
+    assert!(pattern.contains("iPhone"));
+    assert!(!pattern.contains("IPhone"));
+    assert!(pattern.contains("a\\+b"));
+    assert!(pattern.contains("\n\n"));
+    assert!(!pattern.contains("*"));
+    Ok(())
+}

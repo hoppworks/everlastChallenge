@@ -115,3 +115,78 @@ pub(super) fn sentence_start(prefix: &str) -> bool {
     let prefix = prefix.trim_end_matches([' ', '\t']);
     prefix.is_empty() || prefix.ends_with(['.', '!', '?', '\n', '\r'])
 }
+
+pub(super) fn propose(
+    original: &super::OriginalTranscript,
+    candidate: &str,
+    language: super::Language,
+) -> Result<Vec<super::ProposedEdit>, super::ValidationError> {
+    use super::{EditKind, MAX_ORIGINAL_BYTES, ProposedEdit, ValidationError};
+    let source = original.as_str();
+    if candidate.len() > MAX_ORIGINAL_BYTES {
+        return Err(ValidationError::Limit);
+    }
+    if source == candidate {
+        return Ok(Vec::new());
+    }
+    let old = text::word_ranges(source);
+    let new = text::word_ranges(candidate);
+    if old.is_empty() || old.len() != new.len() {
+        return Err(ValidationError::InvalidEdit);
+    }
+    let mut edits = Vec::new();
+    for (index, (before_word, after_word)) in old.iter().zip(&new).enumerate() {
+        if source[before_word.clone()].to_lowercase()
+            != candidate[after_word.clone()].to_lowercase()
+        {
+            return Err(ValidationError::InvalidEdit);
+        }
+        let start = if index == 0 { 0 } else { before_word.start };
+        let after_start = if index == 0 { 0 } else { after_word.start };
+        let end = old.get(index + 1).map_or(source.len(), |word| word.start);
+        let after_end = new
+            .get(index + 1)
+            .map_or(candidate.len(), |word| word.start);
+        let before = &source[start..end];
+        let after = &candidate[after_start..after_end];
+        if before == after {
+            continue;
+        }
+        // Keep unchanged punctuation outside the edit. In particular an
+        // adjacent opening quote or dash does not belong to a case change.
+        // Only trim the gaps: every edited word retains its whole-word anchor.
+        let prefix = source[start..before_word.start]
+            .chars()
+            .zip(candidate[after_start..after_word.start].chars())
+            .take_while(|(left, right)| left == right)
+            .map(|(c, _)| c.len_utf8())
+            .sum::<usize>();
+        let suffix = source[before_word.end..end]
+            .chars()
+            .rev()
+            .zip(candidate[after_word.end..after_end].chars().rev())
+            .take_while(|(left, right)| left == right)
+            .map(|(c, _)| c.len_utf8())
+            .sum::<usize>();
+        let start = start + prefix;
+        let end = end - suffix;
+        let before = &source[start..end];
+        let after = &candidate[after_start + prefix..after_end - suffix];
+        if edits.len() == super::validator::MAX_EDITS {
+            return Err(ValidationError::Limit);
+        }
+        let (left_context, right_context) = super::candidates::context(source, &(start..end));
+        edits.push(ProposedEdit {
+            kind: EditKind::PunctuationCase,
+            before: before.into(),
+            after: after.into(),
+            left_context: Some(left_context),
+            right_context: Some(right_context),
+        });
+    }
+    let accepted = super::validate(original, &edits, language)?;
+    if accepted.as_str() != candidate {
+        return Err(ValidationError::InvalidEdit);
+    }
+    Ok(edits)
+}

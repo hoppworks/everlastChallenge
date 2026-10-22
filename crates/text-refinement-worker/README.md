@@ -32,12 +32,14 @@ The input thread never performs inference or blocking output. One output frame
 can be queued behind the writer; further backpressure terminates the process.
 The host must enforce startup/job deadlines and kill an unresponsive worker.
 
-The model selects a complete boolean vector over source-bound Rust options and
-may propose additional punctuation edits. The selection decoder checks vector
-length and validates the complete combination before returning proposals. The
-host must still validate the response for its active original/session. Current
+The first model pass selects a complete boolean vector over source-bound filler
+and self-correction options. The second pass adds punctuation and sentence-initial
+case to the exact intermediate text using a grammar that fixes the word sequence.
+Rust derives local punctuation proposals and validates both stages atomically.
+The host independently repeats this validation for its active original/session;
+the final accepted value remains bound to the raw ASR text. Current
 model-quality limitations are recorded in the
-[candidate report](../../docs/verification/refinement-candidates-2026-10-22.md).
+[pipeline report](../../docs/verification/refinement-pipeline-2026-10-22.md).
 
 Validation anchors stay in Rust and are not exposed as option context. If a
 source span occurs repeatedly, model options give its one-based occurrence.
@@ -54,6 +56,14 @@ Policy version 4 additionally rejects punctuation edits that introduce doubled
 full stops, commas, colons or semicolons inside a replacement or at a source
 boundary. Existing ellipses can remain unchanged. This is a structural check;
 it does not decide whether a sentence boundary is linguistically appropriate.
+
+Protocol 2, prompt 7 and policy 5 carry both stages explicitly. They share the
+30-second request deadline, 4,096 generated-token budget and 32-KiB output-byte
+budget. Each model prompt is limited to 8,192 tokens. No first model call is
+needed when the structural option list is empty. The punctuation grammar retains
+existing whitespace and offers bounded punctuation insertion at plain spaces;
+its generated pattern is capped at 512 KiB. A failed or incomplete second pass
+does not return the first pass as a fallback.
 
 ## Host service
 
